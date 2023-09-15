@@ -1,4 +1,4 @@
-# tts-framework
+# TTS-Framework
 Modified version of DelightfulTTS and UnivNet
 
 ### Conda env
@@ -15,4 +15,15 @@ Export / import env
 ```
 conda env export > environment.yml
 conda env create -f environment.yml
+```
+
+Generate docs:
+
+
+```
+# live preview server
+mkdocs serve
+
+# build a static site from your Markdown files
+mkdocs build
 ```

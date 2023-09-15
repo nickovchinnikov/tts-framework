@@ -1,0 +1,7 @@
+site_name: TTS-Framework
+theme:
+  name: material
+plugins:
+- search
+- mkdocstrings:
+    default_handler: python
