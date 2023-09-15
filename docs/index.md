@@ -1,22 +1,14 @@
-# Welcome to MkDocs
+# TTS-Framework docs
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+This is the documentation for the TTS-Framework. Here you can find the technical description of the project and the API reference.
+Also, here you can find the code specs, the project structure and the development guidelines.
 
-## Commands
+**Basically here you can find everything you need to know about the project.**
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+You can read about this mkdocs-material here: [mkdocs-material](readme.md)
 
-## Project layout
+## [WIP] Modified version of DelightfulTTS and UnivNet codec.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+## References
 
-
-# Reference
-
-::: model.conv_blocks.activation
+### [Model](model/readme.md)

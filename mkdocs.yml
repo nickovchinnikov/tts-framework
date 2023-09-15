@@ -1,7 +1,23 @@
 site_name: TTS-Framework
+nav:
+  - Home: index.md
+  - Model:
+    - Basic: model/readme.md
+    - Activation: model/activation.md
+    - Conv1d: model/conv1d.md
+  - About mkdocs-material: readme.md
 theme:
   name: material
+  features:
+  - navigation.footer
 plugins:
 - search
 - mkdocstrings:
     default_handler: python
+extra_javascript:
+  - javascripts/katex.js 
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js  
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js
+
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css

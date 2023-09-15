@@ -16,7 +16,7 @@ class GLUActivation(nn.Module):
     what information to suppress, which can help improving the model performance on certain tasks.
     
     Args:
-        slope(float, optional): Controls the slope for the leaky ReLU activation function. Default: 0.3
+        slope: Controls the slope for the leaky ReLU activation function. Default: 0.3
     
     Shape:
         - Input: (N, 2*C, L) where C is the number of input channels.

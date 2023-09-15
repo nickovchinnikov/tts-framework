@@ -67,9 +67,10 @@ class PointwiseConv1d(nn.Module):
     (N, C_in, L) and output (N, C_out, L_out) can be
     precisely described as:
 
-    .. math::
+    $$
         out(N_i, C_{out_j}) = bias(C_{out_j}) +
         weight(C_{out_j}, k) * input(N_i, k)
+    $$
 
     where 'N' is a batch size, 'C' denotes a number of channels,
     'L' is a length of signal sequence.
