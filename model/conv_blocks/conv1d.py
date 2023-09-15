@@ -8,7 +8,9 @@ class DepthWiseConv1d(nn.Module):
     independently over each input channel in the style of depthwise convolutions.
     
     In a depthwise convolution, each input channel is convolved with its own set of filters, as opposed 
-    to standard convolutions where each input channel is convolved with all filters. Filters in the
+    to standard convolutions where each input channel is convolved with all filters. 
+    At `groups=in_channels`, each input channel is convolved with its own set of filters.
+    Filters in the
     DepthwiseConv1d are not shared among channels. This method can drastically reduce the number of
     parameters/learnable weights in the model, as each input channel gets its own filter.
 
@@ -29,8 +31,8 @@ class DepthWiseConv1d(nn.Module):
           L_out = [L_in + 2*padding - (dilation*(kernel_size-1) + 1)]/stride + 1
 
     Attributes:
-        weight (Tensor): the learnable weights of shape (out_channels, in_channels/group, kernel_size)
-        bias (Tensor, optional): the learnable bias of the module of shape (out_channels)
+        weight (Tensor): the learnable weights of shape (`out_channels`, `in_channels`/`group`, `kernel_size`)
+        bias (Tensor, optional): the learnable bias of the module of shape (`out_channels`)
 
     Examples::
         m = DepthWiseConv1d(16, 33, 3, padding=1)
@@ -76,7 +78,7 @@ class PointwiseConv1d(nn.Module):
     'L' is a length of signal sequence.
     The symbol '*' in the above indicates a 1D cross-correlation operation. 
 
-    The 1D cross correlation operation "*": https://en.wikipedia.org/wiki/Cross-correlation 
+    The 1D cross correlation operation "*": [Wikipedia Cross-correlation](https://en.wikipedia.org/wiki/Cross-correlation)
     
     This module supports :ref:`TensorFloat32<tf32_on_ampere>`.
 
