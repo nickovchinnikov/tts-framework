@@ -10,7 +10,7 @@ conda create --name tts_framework python=3.11
 conda activate tts_framework
 ```
 
-Export /import env
+Export / import env
 
 ```
 conda env export > environment.yml
