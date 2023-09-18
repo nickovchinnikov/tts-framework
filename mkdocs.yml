@@ -11,6 +11,9 @@ nav:
       - ConvTransposed: model/conv_blocks/conv_transposed.md
       - CoordConv1d: model/conv_blocks/coord_conv1d.md
       - AddCoords: model/conv_blocks/add_coords.md
+    - Attention:
+      - References: model/attention/readme.md
+      - Style Embed Attention: model/attention/style_embed_attention.md
   - About mkdocs-material: readme.md
 theme:
   name: material
