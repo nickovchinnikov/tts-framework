@@ -3,7 +3,7 @@ import torch.nn as nn
     
 
 class GLUActivation(nn.Module):
-    """
+    r"""
     Implements the Gated Linear Unit (GLU) activation function. 
 
     The GLU activation splits the input in half across the channel dimension. 
@@ -23,9 +23,11 @@ class GLUActivation(nn.Module):
         - Output: (N, C, L) 
 
     Examples:
-        m = GLUActivation(0.3)
-        input = torch.randn(16, 2*20, 44)
-        output = m(input)
+    ```python
+    m = GLUActivation(0.3)
+    input = torch.randn(16, 2*20, 44)
+    output = m(input)
+    ```
 
     """
 

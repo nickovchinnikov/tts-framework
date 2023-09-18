@@ -10,6 +10,8 @@ theme:
   name: material
   features:
   - navigation.footer
+markdown_extensions:
+  - pymdownx.superfences
 plugins:
 - search
 - mkdocstrings:

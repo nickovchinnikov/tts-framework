@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class DepthWiseConv1d(nn.Module):
-    """
+    r"""
     Implements Depthwise 1D convolution. This module will apply a spatial convolution over inputs
     independently over each input channel in the style of depthwise convolutions.
     
@@ -34,10 +34,12 @@ class DepthWiseConv1d(nn.Module):
         weight (Tensor): the learnable weights of shape (`out_channels`, `in_channels`/`group`, `kernel_size`)
         bias (Tensor, optional): the learnable bias of the module of shape (`out_channels`)
 
-    Examples::
-        m = DepthWiseConv1d(16, 33, 3, padding=1)
-        input = torch.randn(20, 16, 50)
-        output = m(input)
+    Examples:
+    ```python
+    m = DepthWiseConv1d(16, 33, 3, padding=1)
+    input = torch.randn(20, 16, 50)
+    output = m(input)
+    ```
     """
 
     def __init__(self, in_channels: int, out_channels: int, kernel_size: int, padding: int):
@@ -58,7 +60,7 @@ class DepthWiseConv1d(nn.Module):
 
 
 class PointwiseConv1d(nn.Module):
-    """
+    r"""
     Applies a 1D pointwise (aka 1x1) convolution over an input signal composed of several input
     planes, officially known as channels in this context.
 
@@ -69,10 +71,8 @@ class PointwiseConv1d(nn.Module):
     (N, C_in, L) and output (N, C_out, L_out) can be
     precisely described as:
 
-    $$
-        out(N_i, C_{out_j}) = bias(C_{out_j}) +
-        weight(C_{out_j}, k) * input(N_i, k)
-    $$
+    $$out(N_i, C_{out_j}) = bias(C_{out_j}) +
+        weight(C_{out_j}, k) * input(N_i, k)$$
 
     where 'N' is a batch size, 'C' denotes a number of channels,
     'L' is a length of signal sequence.
@@ -80,15 +80,15 @@ class PointwiseConv1d(nn.Module):
 
     The 1D cross correlation operation "*": [Wikipedia Cross-correlation](https://en.wikipedia.org/wiki/Cross-correlation)
     
-    This module supports :ref:`TensorFloat32<tf32_on_ampere>`.
+    This module supports `TensorFloat32<tf32_on_ampere>`.
 
     Args:
-        in_channels: Number of channels in the input image
-        out_channels : Number of channels produced by the convolution
-        stride : Stride of the convolution. Default: 1
-        padding : Zero-padding added to both sides of the input. Default: 0
-        bias : If set to False, the layer will not learn an additive bias. Default: True
-        kernel_size : Size of the convolving kernel. Default: 1
+        in_channels (int): Number of channels in the input image
+        out_channels (int): Number of channels produced by the convolution
+        stride (int): Stride of the convolution. Default: 1
+        padding (int): Zero-padding added to both sides of the input. Default: 0
+        bias (bool): If set to False, the layer will not learn an additive bias. Default: True
+        kernel_size (int): Size of the convolving kernel. Default: 1
 
     Shape:
         - Input: (N, C_in, L_in)
@@ -100,10 +100,12 @@ class PointwiseConv1d(nn.Module):
         weight (Tensor): the learnable weights of shape (out_channels, in_channels, kernel_size)
         bias (Tensor, optional): the learnable bias of the module of shape (out_channels)
 
-    Example::
-        m = PointwiseConv1d(16, 33, 1, padding=0, bias=True)
-        input = torch.randn(20, 16, 50)
-        output = m(input)
+    Example:
+    ```python
+    m = PointwiseConv1d(16, 33, 1, padding=0, bias=True)
+    input = torch.randn(20, 16, 50)
+    output = m(input)
+    ```
 
         
     Description of parameters:
@@ -145,14 +147,14 @@ class PointwiseConv1d(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
+        r"""
         Defines the computation performed at every call.
         
         Args: 
-            x: input tensor of shape (batch_size, in_channels, signal_length)
+            x (torch.Tensor): input tensor of shape (batch_size, in_channels, signal_length)
 
         Returns: 
-            output tensor of shape (batch_size, out_channels, signal_length)
+            output (torch.Tensor): tensor of shape (batch_size, out_channels, signal_length)
         """
         return self.conv(x)
 
