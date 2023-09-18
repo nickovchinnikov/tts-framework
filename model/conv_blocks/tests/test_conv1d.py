@@ -1,5 +1,6 @@
 import torch
 import unittest
+
 from model.conv_blocks.conv1d import DepthWiseConv1d, PointwiseConv1d
 
 

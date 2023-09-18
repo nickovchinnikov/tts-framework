@@ -1,9 +1,10 @@
-import torch
-import torch.nn as nn
 import unittest
+
+import torch
 from torch.autograd import gradcheck
 
 from model.conv_blocks.activation import GLUActivation
+
 
 # Unit Testing Class
 class TestGLUActivation(unittest.TestCase):
