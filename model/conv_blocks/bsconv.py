@@ -21,8 +21,8 @@ class BSConv1d(nn.Module):
         padding (int): Zeropadding added around the input tensor along the height and width directions
 
     Attributes:
-        pointwise (nn.Module): Pointwise convolution module
-        depthwise (nn.Module): Depthwise separable convolution module
+        pointwise (PointwiseConv1d): Pointwise convolution module
+        depthwise (DepthWiseConv1d): Depthwise separable convolution module
     """
 
     def __init__(

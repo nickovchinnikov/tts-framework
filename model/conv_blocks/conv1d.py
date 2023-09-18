@@ -28,7 +28,7 @@ class DepthWiseConv1d(nn.Module):
         - Input: (N, C_in, L_in)
         - Output: (N, C_out, L_out), where
 
-          L_out = [L_in + 2*padding - (dilation*(kernel_size-1) + 1)]/stride + 1
+          `L_out = [L_in + 2*padding - (dilation*(kernel_size-1) + 1)]/stride + 1`
 
     Attributes:
         weight (Tensor): the learnable weights of shape (`out_channels`, `in_channels`/`group`, `kernel_size`)
