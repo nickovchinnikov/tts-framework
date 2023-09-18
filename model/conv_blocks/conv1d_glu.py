@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from model.conv_blocks.bsconv import BSConv1d
+from .bsconv import BSConv1d
 
 
 class Conv1dGLU(nn.Module):

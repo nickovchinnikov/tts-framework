@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from model.conv_blocks.conv1d import PointwiseConv1d, DepthWiseConv1d
+from .conv1d import PointwiseConv1d, DepthWiseConv1d
 
 
 class BSConv1d(nn.Module):
