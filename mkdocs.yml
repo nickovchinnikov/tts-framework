@@ -3,14 +3,14 @@ nav:
   - Home: index.md
   - Model:
     - Convolution Blocks:
-      - Basic: model/conv_blocks/readme.md
+      - References: model/conv_blocks/readme.md
       - Activation: model/conv_blocks/activation.md
       - Conv1d: model/conv_blocks/conv1d.md
       - BSConv: model/conv_blocks/bsconv.md
       - Conv1dGLU: model/conv_blocks/conv1d_glu.md
       - ConvTransposed: model/conv_blocks/conv_transposed.md
-      - AddCoords: model/conv_blocks/add_coords.md
       - CoordConv1d: model/conv_blocks/coord_conv1d.md
+      - AddCoords: model/conv_blocks/add_coords.md
   - About mkdocs-material: readme.md
 theme:
   name: material
