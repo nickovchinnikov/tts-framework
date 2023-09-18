@@ -6,6 +6,7 @@ nav:
     - Activation: model/activation.md
     - Conv1d: model/conv1d.md
     - BSConv: model/bsconv.md
+    - Conv1dGLU: model/conv1d_glu.md
   - About mkdocs-material: readme.md
 theme:
   name: material
