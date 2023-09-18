@@ -5,6 +5,7 @@ nav:
     - Basic: model/readme.md
     - Activation: model/activation.md
     - Conv1d: model/conv1d.md
+    - BSConv: model/bsconv.md
   - About mkdocs-material: readme.md
 theme:
   name: material
