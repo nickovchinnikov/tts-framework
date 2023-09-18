@@ -11,4 +11,4 @@ You can read about this mkdocs-material here: [mkdocs-material](readme.md)
 
 ## References
 
-### [Model](model/readme.md)
+### [Model](model/conv_blocks/readme.md)

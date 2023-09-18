@@ -2,12 +2,14 @@ site_name: TTS-Framework
 nav:
   - Home: index.md
   - Model:
-    - Basic: model/readme.md
-    - Activation: model/activation.md
-    - Conv1d: model/conv1d.md
-    - BSConv: model/bsconv.md
-    - Conv1dGLU: model/conv1d_glu.md
-    - ConvTransposed: model/conv_transposed.md
+    - conv_blocks:
+      - Basic: model/conv_blocks/readme.md
+      - Activation: model/conv_blocks/activation.md
+      - Conv1d: model/conv_blocks/conv1d.md
+      - BSConv: model/conv_blocks/bsconv.md
+      - Conv1dGLU: model/conv_blocks/conv1d_glu.md
+      - ConvTransposed: model/conv_blocks/conv_transposed.md
+      - AddCoords: model/conv_blocks/add_coords.md
   - About mkdocs-material: readme.md
 theme:
   name: material
