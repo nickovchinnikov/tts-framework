@@ -5,8 +5,8 @@ from model.conv_blocks.bsconv import BSConv1d
 
 
 class Conv1dGLU(nn.Module):
-    """
-    Conv1dGLU implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
+    r"""
+    `Conv1dGLU` implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
     It's based on the Deep Voice 3 project. 
 
     Args:

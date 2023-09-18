@@ -5,11 +5,11 @@ from model.conv_blocks.conv1d import PointwiseConv1d, DepthWiseConv1d
 
 
 class BSConv1d(nn.Module):
-    """
-    BSConv1d implements the BSConv concept which is based on the paper [BSConv: 
+    r"""
+    `BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv: 
     Binarized Separated Convolutional Neural Networks](https://arxiv.org/pdf/2003.13549.pdf). 
     
-    BSConv is an amalgamation of depthwise separable convolution and pointwise convolution. 
+    `BSConv` is an amalgamation of depthwise separable convolution and pointwise convolution. 
     Depthwise separable convolution utilizes far fewer parameters by separating the spatial 
     (depthwise) and channel-wise (pointwise) operations. Meanwhile, pointwise convolution 
     helps in transforming the channel characteristics without considering the channel's context.
