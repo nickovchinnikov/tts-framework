@@ -20,7 +20,7 @@ class TestRelativeMultiHeadAttention(unittest.TestCase):
 
         # A simple test case without actual masked positions
         self.mask_shape = (3, 8, 10, 10)
-        self.mask = torch.zeros(self.mask_shape)
+        self.mask = torch.zeros(self.mask_shape).type(torch.bool)
 
     def test_init_assert(self):
         # Test initializing with an invalid d_model and num_head pair
