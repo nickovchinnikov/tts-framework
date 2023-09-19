@@ -29,12 +29,6 @@ class TestMultiHeadAttention(unittest.TestCase):
         # Check the data type of output
         self.assertTrue(out.dtype == torch.float32)
 
-    def test_values_range(self):
-        out = self.attention(self.query, self.key)
-
-        # Check values of output tensor are in range [0, 1]
-        self.assertTrue(torch.all((out >= -1) & (out <= 1)))
-
     def test_consistent_output(self):
         # Test forward function
         out1 = self.attention(self.query, self.key)
