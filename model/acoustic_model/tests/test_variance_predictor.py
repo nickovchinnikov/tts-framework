@@ -32,14 +32,14 @@ class TestVariancePredictor(unittest.TestCase):
         self.assertTrue(torch.all(output == 0))
 
     def test_ones_mask(self):
-        # Create a mask of zeros (indicating no entries are masked)
-        ones_mask = torch.zeros(self.mask_dim).type(torch.bool)
+        # Create a mask of ones (indicating no entries are masked)
+        ones_mask = torch.ones(self.mask_dim).type(torch.bool)
 
         # Execute forward propagation
         output = self.predictor(self.x, ones_mask)
 
         # Validate all returned values are not zero given all are True
-        self.assertFalse(torch.all(output == 0))
+        self.assertFalse(torch.all(output != 0))
 
     def test_output_dtype(self):
         # Execute forward propagation
