@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from model.conv_blocks import ConvTransposed
-from model.config import LEAKY_RELU_SLOPE
+from model.constants import LEAKY_RELU_SLOPE
 
 
 class VariancePredictor(nn.Module):
