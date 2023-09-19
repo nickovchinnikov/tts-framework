@@ -7,10 +7,9 @@ This technique is often used in text-to-speech synthesis (TTS) such as Tacotron-
 
 [Style Tokens: Unsupervised Style Modeling, Control and Transfer in End-to-End Speech Synthesis](https://arxiv.org/abs/1803.09017) by Yuxuan Wang et al.
 
+### [Multi-Head Attention](multi_head_attention.md)
 
-### [Relative Multi-Head Attention](relative_multi_head_attention.md)
-
-I found great explanations with code implementation of relative multi-head attention in [Multi-Headed Attention (MHA)](https://nn.labml.ai/transformers/mha.html) by labml.ai Deep Learning Paper Implementations.
+I found great explanations with code implementation of [Multi-Headed Attention (MHA)](https://nn.labml.ai/transformers/mha.html) by labml.ai Deep Learning Paper Implementations.
 
 > This is a tutorial/implementation of multi-headed attention from paper Attention Is All You Need in PyTorch. The implementation is inspired from Annotated Transformer.
 
@@ -28,4 +27,9 @@ give very small gradients when $d_k$ is large.
 
 Softmax is calculated along the axis of of the sequence (or time).
 
+### [Relative Multi-Head Attention](relative_multi_head_attention.md)
 
+Explanations with code implementation of [Relative Multi-Headed Attention](https://nn.labml.ai/transformers/xl/relative_mha.html) by labml.ai Deep Learning Paper Implementations.
+
+Paper: [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](https://papers.labml.ai/paper/1901.02860)
+in [PyTorch](https://pytorch.org)
