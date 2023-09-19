@@ -15,6 +15,9 @@ nav:
       - References: model/attention/readme.md
       - Style Embed Attention: model/attention/style_embed_attention.md
       - Relative Multi-Head Attention: model/attention/relative_multi_head_attention.md
+    - Acoustic Model:
+      - References: model/acoustic_model/readme.md
+      - Variance Predictor: model/acoustic_model/variance_predictor.md
   - About mkdocs-material: readme.md
 theme:
   name: material
