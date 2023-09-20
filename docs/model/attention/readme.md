@@ -33,3 +33,9 @@ Explanations with code implementation of [Relative Multi-Headed Attention](https
 
 Paper: [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](https://papers.labml.ai/paper/1901.02860)
 in [PyTorch](https://pytorch.org)
+
+
+### [Conformer Multi-Headed Self Attention](conformer_multi_headed_self_attention.md)
+
+Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
+the relative sinusoidal positional encoding scheme.
