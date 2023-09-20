@@ -24,6 +24,7 @@ nav:
     - Reference Encoder:
       - References: model/reference_encoder/readme.md
       - Style Token Layer (STL): model/reference_encoder/STL.md
+      - Reference Encoder: model/reference_encoder/reference_encoder.md
     - Utils:
       - References: utils/readme.md
       - Tools: utils/tools.md
