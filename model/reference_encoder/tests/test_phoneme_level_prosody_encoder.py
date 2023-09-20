@@ -9,6 +9,9 @@ from config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder.phoneme_level_prosody_encoder import PhonemeLevelProsodyEncoder
 
+# @todo: it's one of the most important component test
+# But it's too complicated to cover it from the first glance.
+# You need to come back here when acoustic model is ready!
 # Test class for the PhonemeLevelProsodyEncoder class
 class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
     @classmethod
