@@ -3,7 +3,7 @@ from torch import nn
 from typing import List, Tuple
 
 from config import AcousticModelConfigType
-from utils import tools
+import utils.tools as tools
 
 from .variance_predictor import VariancePredictor
 
