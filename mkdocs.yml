@@ -21,6 +21,7 @@ nav:
       - Variance Predictor: model/acoustic_model/variance_predictor.md
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
       - Length Adaptor: model/acoustic_model/length_adaptor.md
+      - Phoneme Prosody Predictor: model/acoustic_model/phoneme_prosody_predictor.md
     - Reference Encoder:
       - References: model/reference_encoder/readme.md
       - Style Token Layer (STL): model/reference_encoder/STL.md
