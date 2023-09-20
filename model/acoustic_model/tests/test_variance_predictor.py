@@ -48,6 +48,14 @@ class TestVariancePredictor(unittest.TestCase):
         # Check the data type of output
         self.assertEqual(output.dtype, torch.float32)
 
+    def test_output_range(self):
+        # Execute forward propagation
+        output = self.predictor(self.x, self.zero_mask)
+
+        # Validate the output values are between 0 and 1
+        self.assertGreaterEqual(output.min(), 0)
+        self.assertLessEqual(output.max(), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
