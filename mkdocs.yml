@@ -28,6 +28,7 @@ nav:
       - Style Token Layer (STL): model/reference_encoder/STL.md
       - Reference Encoder: model/reference_encoder/reference_encoder.md
       - Utterance Level Prosody Encoder: model/reference_encoder/utterance_level_prosody_encoder.md
+      - Phoneme Level Prosody Encoder: model/reference_encoder/phoneme_level_prosody_encoder.md
     - Utils:
       - References: utils/readme.md
       - Tools: utils/tools.md
