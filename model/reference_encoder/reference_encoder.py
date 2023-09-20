@@ -10,6 +10,8 @@ from helpers import tools
 
 from config import AcousticModelConfigType, PreprocessingConfig
 
+from model.constants import LEAKY_RELU_SLOPE
+
 
 class ReferenceEncoder(nn.Module):
     r"""A class to define the reference encoder.
@@ -86,7 +88,9 @@ class ReferenceEncoder(nn.Module):
         )
 
     def forward(
-        self, x: torch.Tensor, mel_lens: torch.Tensor
+        self, x: torch.Tensor,
+        mel_lens: torch.Tensor, 
+        leaky_relu_slope: float = LEAKY_RELU_SLOPE
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""
         Forward pass of the ReferenceEncoder.
@@ -105,7 +109,7 @@ class ReferenceEncoder(nn.Module):
         x = x.masked_fill(mel_masks, 0)
         for conv, norm in zip(self.convs, self.norms):
             x = conv(x)
-            x = F.leaky_relu(x, 0.3)  # [N, 128, Ty//2^K, n_mels//2^K]
+            x = F.leaky_relu(x, leaky_relu_slope)  # [N, 128, Ty//2^K, n_mels//2^K]
             x = norm(x)
 
         for _ in range(2):

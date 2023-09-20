@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
-    
+
+from model.constants import LEAKY_RELU_SLOPE
+
 
 class GLUActivation(nn.Module):
     r"""
@@ -16,7 +18,7 @@ class GLUActivation(nn.Module):
     what information to suppress, which can help improving the model performance on certain tasks.
     
     Args:
-        slope: Controls the slope for the leaky ReLU activation function. Default: 0.3
+        slope: Controls the slope for the leaky ReLU activation function. Default: 0.3 or see the const `LEAKY_RELU_SLOPE`
     
     Shape:
         - Input: (N, 2*C, L) where C is the number of input channels.
@@ -31,7 +33,7 @@ class GLUActivation(nn.Module):
 
     """
 
-    def __init__(self, slope: float = 0.3):
+    def __init__(self, slope: float = LEAKY_RELU_SLOPE):
         super().__init__()
         self.lrelu = nn.LeakyReLU(slope)
 
