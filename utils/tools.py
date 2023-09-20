@@ -77,3 +77,21 @@ def get_mask_from_lengths(lengths: torch.Tensor) -> torch.Tensor:
     # indicating padding positions in the original sequences
     mask = ids >= lengths.unsqueeze(1).type(torch.int64).expand(-1, max_len)
     return mask
+
+
+def stride_lens_downsampling(lens: torch.Tensor, stride: int = 2) -> torch.Tensor:
+    r"""
+    This function computes the lengths of 1D tensor when applying a stride for downsampling.
+
+    Args:
+        lens (torch.Tensor): Tensor containing the lengths to be downsampled.
+        stride (int, optional): The stride to be used for downsampling. Defaults to 2.
+
+    Returns:
+        torch.Tensor: A tensor of the same shape as the input containing the downsampled lengths.
+    """
+    # The torch.ceil function is used to handle cases where the length is not evenly divisible 
+    # by the stride. The torch.ceil function rounds up to the nearest integer, ensuring that 
+    # each item is present at least once in the downsampled lengths.
+    # Finally, the .int() is used to convert the resulting float32 tensor to an integer tensor.
+    return torch.ceil(lens / stride).int()
