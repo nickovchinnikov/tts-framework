@@ -29,9 +29,9 @@ nav:
       - Reference Encoder: model/reference_encoder/reference_encoder.md
       - Utterance Level Prosody Encoder: model/reference_encoder/utterance_level_prosody_encoder.md
       - Phoneme Level Prosody Encoder: model/reference_encoder/phoneme_level_prosody_encoder.md
-    - Utils:
-      - References: utils/readme.md
-      - Tools: utils/tools.md
+  - Helpers:
+    - References: helpers/readme.md
+    - Tools: helpers/tools.md
   - About mkdocs-material: readme.md
 theme:
   name: material
