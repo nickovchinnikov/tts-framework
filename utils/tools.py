@@ -36,3 +36,44 @@ def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
     out_padded = torch.stack(out_list)
     return out_padded
 
+
+def get_mask_from_lengths(lengths: torch.Tensor) -> torch.Tensor:
+    r"""
+    Generate a mask tensor from a tensor of sequence lengths.
+    
+    Args:
+        lengths (torch.Tensor): A tensor of sequence lengths of shape: (batch_size, )
+
+    Returns:
+        torch.Tensor: A mask tensor of shape: (batch_size, max_len) where max_len is the 
+            maximum sequence length in the provided tensor. The mask tensor has a value of 
+            True at each position that is more than the length of the sequence (padding positions).
+
+    Example:
+      lengths: `torch.tensor([2, 3, 1, 4])`
+      Mask tensor will be: `torch.tensor([
+            [False, False, True, True],
+            [False, False, False, True],
+            [False, True, True, True],
+            [False, False, False, False]
+        ])`
+    """
+    # Get batch size
+    batch_size = lengths.shape[0]
+
+    # Get maximum sequence length in the batch
+    max_len = int(torch.max(lengths).item())
+
+    # Generate a tensor of shape (batch_size, max_len)
+    # where each row contains values from 0 to max_len
+    ids = (
+        torch.arange(0, max_len, device=lengths.device)
+        .unsqueeze(0)
+        .expand(batch_size, -1)
+    )
+    # Compare each value in the ids tensor with
+    # corresponding sequence length to generate a mask.
+    # The mask will have True at positions where id >= sequence length,
+    # indicating padding positions in the original sequences
+    mask = ids >= lengths.unsqueeze(1).type(torch.int64).expand(-1, max_len)
+    return mask
