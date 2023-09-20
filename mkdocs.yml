@@ -20,6 +20,10 @@ nav:
       - Embedding: model/acoustic_model/embedding.md
       - Variance Predictor: model/acoustic_model/variance_predictor.md
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
+      - Length Adaptor: model/acoustic_model/length_adaptor.md
+    - Utils:
+      - References: utils/readme.md
+      - Tools: utils/tools.md
   - About mkdocs-material: readme.md
 theme:
   name: material

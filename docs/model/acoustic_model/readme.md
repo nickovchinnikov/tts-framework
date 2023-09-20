@@ -12,3 +12,7 @@ This is a Duration and Pitch predictor neural network module in PyTorch.
 
 The PitchAdaptor class is a pitch adaptor network in the model.
 
+### [Length Adaptor](length_adaptor.md)
+
+The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
+
