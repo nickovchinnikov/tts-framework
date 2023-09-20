@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from utils import stride_lens_downsampling  # replace 'your_module' with the name of the module where stride_lens is defined
+from helpers import stride_lens_downsampling  # replace 'your_module' with the name of the module where stride_lens is defined
 
 class TestStrideLens(unittest.TestCase):
 

@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from utils.tools import pad
+from helpers.tools import pad
 
 class TestPad(unittest.TestCase):
     def test_1D_tensors_pad(self):

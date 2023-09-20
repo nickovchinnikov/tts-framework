@@ -6,7 +6,7 @@ from typing import Tuple
 
 from model.conv_blocks import CoordConv1d
 
-import utils.tools as tools
+from helpers import tools
 
 from config import AcousticModelConfigType, PreprocessingConfig
 

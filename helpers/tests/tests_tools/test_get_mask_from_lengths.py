@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from utils.tools import get_mask_from_lengths
+from helpers.tools import get_mask_from_lengths
 
 class TestGetMaskFromLengths(unittest.TestCase):
 
