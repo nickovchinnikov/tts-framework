@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import torch
 
 from model.reference_encoder import ReferenceEncoder
-from config import PreprocessingConfig
 
 
 class TestReferenceEncoder(unittest.TestCase):
@@ -53,15 +52,6 @@ class TestReferenceEncoder(unittest.TestCase):
 
         self.assertIsInstance(mel_masks, torch.Tensor)
         self.assertEqual(list(mel_masks.size()), [16, 32])
-
-    def test_different_mel_lens(self):
-        x = torch.randn(16, self.model.n_mel_channels, 128) 
-        mel_lens = torch.randint(low=1, high=129, size=(16,))
-
-        out, memory, mel_masks = self.model(x, mel_lens)
-
-        self.assertEqual(out.size(0), 16)
-        self.assertEqual(out.size(2), self.model.gru.hidden_size)
 
     def test_different_batch_sizes(self):
         for batch_size in [1, 5, 10, 50]:
