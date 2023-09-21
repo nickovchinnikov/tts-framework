@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 
+import numpy as np
+
 from typing import List, Tuple
 
 
@@ -121,3 +123,29 @@ def calc_same_padding(kernel_size: int) -> Tuple[int, int]:
     # Return padding for each side of the kernel. If kernel size is odd, padding is (pad, pad).
     # If kernel size is even, padding is (pad, pad - 1) because we can't pad equally on both sides.
     return (pad, pad - (kernel_size + 1) % 2)
+
+
+def initialize_embeddings(shape: Tuple[int, ...]) -> torch.Tensor:
+    r"""
+    Initialize embeddings using Kaiming initialization (He initialization).
+
+    This method is specifically designed for 2D matrices and helps to avoid
+    the vanishing/exploding gradient problem in deep neural networks.
+    This is achieved by keeping the variance of the outputs of a layer to be
+    the same as the variance of its inputs.
+
+    Args:
+        shape (Tuple[int, ...]): The shape of the embedding matrix to create, denoted as a tuple of integers.
+                                 The shape should comprise 2 dimensions, i.e., (embedding_dim, num_embeddings).
+
+    Raises:
+        AssertionError: if the provided shape is not 2D.
+
+    Returns:
+        torch.Tensor: the created embedding matrix.
+    """
+    # Check if the input shape is 2D
+    assert len(shape) == 2, "Can only initialize 2-D embedding matrices ..."
+
+    # Initialize the embedding matrix using Kaiming initialization
+    return torch.randn(shape) * np.sqrt(2 / shape[1])

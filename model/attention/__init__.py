@@ -3,3 +3,4 @@ from .multi_head_attention import MultiHeadAttention
 from .relative_multi_head_attention import RelativeMultiHeadAttention
 from .conformer_multi_headed_self_attention import ConformerMultiHeadedSelfAttention
 from .conformer_block import ConformerBlock
+from .conformer import Conformer
