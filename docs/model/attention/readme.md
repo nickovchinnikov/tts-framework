@@ -57,3 +57,8 @@ Gated Linear Units (GLU) activation, and dropout layer.
 The block includes a pointwise convolution followed by Gated Linear Units (`GLU`) activation layer (`Conv1dGLU`),
 a Conformer self attention layer (`ConformerMultiHeadedSelfAttention`), and optional feed-forward layer (`FeedForward`).
 
+### [Conformer](conformer.md)
+
+`Conformer` class represents the `Conformer` model which is a sequence-to-sequence model
+used in some modern automated speech recognition systems. It is composed of several `ConformerBlocks`.
+

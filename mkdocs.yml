@@ -19,6 +19,7 @@ nav:
       - Feed Forward: model/attention/feed_forward.md
       - Conformer Convolution Module: model/attention/conformer_conv_module.md
       - Conformer Block: model/attention/conformer_block.md
+      - Conformer: model/attention/conformer.md
     - Acoustic Model:
       - References: model/acoustic_model/readme.md
       - Embedding: model/acoustic_model/embedding.md
