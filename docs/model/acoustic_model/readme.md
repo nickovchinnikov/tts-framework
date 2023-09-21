@@ -25,3 +25,10 @@ In linguistics, prosody (/ˈprɒsədi, ˈprɒzədi/)is the study of elements of 
 
 [Wikipedia Prosody (linguistics)](https://en.wikipedia.org/wiki/Prosody_(linguistics))
 
+### [Monotonic Alignments Shrink](mas.md)
+
+`mas_width1` Applies a Monotonic Alignments Shrink (MAS) operation with a hard-coded width of 1 to an attention map.
+Mas with hardcoded `width=1`
+
+`b_mas` Applies Monotonic Alignments Shrink (MAS) operation in parallel to the batches of an attention map.
+It uses the `mas_width1` function internally to perform MAS operation.
