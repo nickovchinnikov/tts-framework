@@ -3,3 +3,4 @@ from .embedding import Embedding
 from .pitch_adaptor import PitchAdaptor
 from .length_adaptor import LengthAdaptor
 from .phoneme_prosody_predictor import PhonemeProsodyPredictor
+from .acoustic_model import AcousticModel

@@ -1,5 +1,13 @@
 ## References
 
+### [Accoustic Model](acoustic_model.md)
+
+The DelightfulTTS AcousticModel class represents a PyTorch module for an acoustic model in text-to-speech (TTS).
+The acoustic model is responsible for predicting speech signals from phoneme sequences.
+
+The model comprises multiple sub-modules including encoder, decoder and various prosody encoders and predictors.
+Additionally, a pitch and length adaptor are instantiated.
+
 ### [Embedding](embedding.md)
 
 This class represents a simple embedding layer but without any learning of the embeddings.

@@ -22,6 +22,7 @@ nav:
       - Conformer: model/attention/conformer.md
     - Acoustic Model:
       - References: model/acoustic_model/readme.md
+      - Accoustic Model: model/acoustic_model/acoustic_model.md
       - Embedding: model/acoustic_model/embedding.md
       - Variance Predictor: model/acoustic_model/variance_predictor.md
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
