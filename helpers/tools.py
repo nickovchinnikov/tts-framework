@@ -15,7 +15,7 @@ def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
     Returns:
         torch.Tensor: A tensor containing all the padded input tensors.
     """
-    
+
     # Create an empty list to store the padded tensors
     out_list = torch.jit.annotate(List[torch.Tensor], [])
     for batch in input_ele:
@@ -40,13 +40,13 @@ def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
 def get_mask_from_lengths(lengths: torch.Tensor) -> torch.Tensor:
     r"""
     Generate a mask tensor from a tensor of sequence lengths.
-    
+
     Args:
         lengths (torch.Tensor): A tensor of sequence lengths of shape: (batch_size, )
 
     Returns:
-        torch.Tensor: A mask tensor of shape: (batch_size, max_len) where max_len is the 
-            maximum sequence length in the provided tensor. The mask tensor has a value of 
+        torch.Tensor: A mask tensor of shape: (batch_size, max_len) where max_len is the
+            maximum sequence length in the provided tensor. The mask tensor has a value of
             True at each position that is more than the length of the sequence (padding positions).
 
     Example:
@@ -90,8 +90,8 @@ def stride_lens_downsampling(lens: torch.Tensor, stride: int = 2) -> torch.Tenso
     Returns:
         torch.Tensor: A tensor of the same shape as the input containing the downsampled lengths.
     """
-    # The torch.ceil function is used to handle cases where the length is not evenly divisible 
-    # by the stride. The torch.ceil function rounds up to the nearest integer, ensuring that 
+    # The torch.ceil function is used to handle cases where the length is not evenly divisible
+    # by the stride. The torch.ceil function rounds up to the nearest integer, ensuring that
     # each item is present at least once in the downsampled lengths.
     # Finally, the .int() is used to convert the resulting float32 tensor to an integer tensor.
     return torch.ceil(lens / stride).int()

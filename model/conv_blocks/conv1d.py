@@ -6,15 +6,15 @@ class DepthWiseConv1d(nn.Module):
     r"""
     Implements Depthwise 1D convolution. This module will apply a spatial convolution over inputs
     independently over each input channel in the style of depthwise convolutions.
-    
-    In a depthwise convolution, each input channel is convolved with its own set of filters, as opposed 
-    to standard convolutions where each input channel is convolved with all filters. 
+
+    In a depthwise convolution, each input channel is convolved with its own set of filters, as opposed
+    to standard convolutions where each input channel is convolved with all filters.
     At `groups=in_channels`, each input channel is convolved with its own set of filters.
     Filters in the
     DepthwiseConv1d are not shared among channels. This method can drastically reduce the number of
     parameters/learnable weights in the model, as each input channel gets its own filter.
 
-    This technique is best suited to scenarios where the correlation between different channels is 
+    This technique is best suited to scenarios where the correlation between different channels is
     believed to be low. It is commonly employed in MobileNet models due to the reduced number of
     parameters, which is critical in mobile devices where computational resources are limited.
 
@@ -42,7 +42,9 @@ class DepthWiseConv1d(nn.Module):
     ```
     """
 
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int, padding: int):
+    def __init__(
+        self, in_channels: int, out_channels: int, kernel_size: int, padding: int
+    ):
         super().__init__()
         self.conv = nn.Conv1d(
             in_channels, out_channels, kernel_size, padding=padding, groups=in_channels
@@ -51,9 +53,9 @@ class DepthWiseConv1d(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Defines the computation performed at every call.
-        Args: 
+        Args:
             x: input tensor of shape (batch_size, in_channels, signal_length)
-        Returns: 
+        Returns:
             output tensor of shape (batch_size, out_channels, signal_length)
         """
         return self.conv(x)
@@ -64,9 +66,9 @@ class PointwiseConv1d(nn.Module):
     Applies a 1D pointwise (aka 1x1) convolution over an input signal composed of several input
     planes, officially known as channels in this context.
 
-    The operation implemented is also known as a "channel mixing" operation, as each output channel can be 
+    The operation implemented is also known as a "channel mixing" operation, as each output channel can be
     seen as a linear combination of input channels.
-    
+
     In the simplest case, the output value of the layer with input size
     (N, C_in, L) and output (N, C_out, L_out) can be
     precisely described as:
@@ -76,10 +78,10 @@ class PointwiseConv1d(nn.Module):
 
     where 'N' is a batch size, 'C' denotes a number of channels,
     'L' is a length of signal sequence.
-    The symbol '*' in the above indicates a 1D cross-correlation operation. 
+    The symbol '*' in the above indicates a 1D cross-correlation operation.
 
     The 1D cross correlation operation "*": [Wikipedia Cross-correlation](https://en.wikipedia.org/wiki/Cross-correlation)
-    
+
     This module supports `TensorFloat32<tf32_on_ampere>`.
 
     Args:
@@ -107,26 +109,27 @@ class PointwiseConv1d(nn.Module):
     output = m(input)
     ```
 
-        
+
     Description of parameters:
         stride (default 1): Controls the stride for the operation, which is the number of steps the convolutional
         kernel moves for each operation. A stride of 1 means that the kernel moves one step at a time and a stride
-        of 2 means skipping every other step. Higher stride values can down sample the output and lead to smaller 
+        of 2 means skipping every other step. Higher stride values can down sample the output and lead to smaller
         output shapes.
 
-        padding (default 0): Controls the amount of padding applied to the input. By adding padding, the spatial 
-        size of the output can be controlled. If it is set to 0, no padding is applied. If it is set to 1, zero 
+        padding (default 0): Controls the amount of padding applied to the input. By adding padding, the spatial
+        size of the output can be controlled. If it is set to 0, no padding is applied. If it is set to 1, zero
         padding of one pixel width is added to the input data.
 
-        bias (default True): Controls whether the layer uses a bias vector. By default, it is True, meaning that 
+        bias (default True): Controls whether the layer uses a bias vector. By default, it is True, meaning that
         the layer has a learnable bias parameter.
 
         kernel_size (default 1): The size of the convolving kernel. In the case of 1D convolution, kernel_size is
-        a single integer that specifies the number of elements the filter that convolves the input should have. 
-        In your PointwiseConv1d case, the default kernel size is 1, indicating a 1x1 convolution is applied 
+        a single integer that specifies the number of elements the filter that convolves the input should have.
+        In your PointwiseConv1d case, the default kernel size is 1, indicating a 1x1 convolution is applied
         which is commonly known as a pointwise convolution.
 
     """
+
     def __init__(
         self,
         in_channels: int,
@@ -134,7 +137,7 @@ class PointwiseConv1d(nn.Module):
         stride: int = 1,
         padding: int = 0,
         bias: bool = True,
-        kernel_size: int = 1
+        kernel_size: int = 1,
     ):
         super().__init__()
         self.conv = nn.Conv1d(
@@ -149,12 +152,11 @@ class PointwiseConv1d(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""
         Defines the computation performed at every call.
-        
-        Args: 
+
+        Args:
             x (torch.Tensor): input tensor of shape (batch_size, in_channels, signal_length)
 
-        Returns: 
+        Returns:
             output (torch.Tensor): tensor of shape (batch_size, out_channels, signal_length)
         """
         return self.conv(x)
-

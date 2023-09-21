@@ -5,8 +5,8 @@ import torch
 
 from model.reference_encoder.STL import STL
 
-class TestSTL(unittest.TestCase):
 
+class TestSTL(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.model_config = Mock()
@@ -18,10 +18,10 @@ class TestSTL(unittest.TestCase):
         cls.n_hidden = cls.model_config.encoder.n_hidden
 
         cls.x = torch.rand(cls.batch_size, cls.n_hidden // 2)
-  
+
     def test_forward(self):
         output = self.stl(self.x)
-        
+
         self.assertTrue(torch.is_tensor(output))
 
         # Validate the output size
@@ -29,5 +29,5 @@ class TestSTL(unittest.TestCase):
         self.assertEqual(output.shape, expected_shape)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

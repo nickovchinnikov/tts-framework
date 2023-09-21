@@ -3,9 +3,10 @@ import torch.nn as nn
 
 from .bsconv import BSConv1d
 
+
 class ConvTransposed(nn.Module):
     r"""
-    `ConvTransposed` applies a 1D convolution operation, with the main difference that it transposes the 
+    `ConvTransposed` applies a 1D convolution operation, with the main difference that it transposes the
     last two dimensions of the input tensor before and after applying the `BSConv1d` convolution operation.
     This can be useful in certain architectures where the tensor dimensions are processed in a different order.
 
@@ -22,13 +23,20 @@ class ConvTransposed(nn.Module):
     """
 
     def __init__(
-        self, in_channels: int, out_channels: int, kernel_size: int = 1, padding: int = 0
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 1,
+        padding: int = 0,
     ):
         super().__init__()
 
         # Define BSConv1d convolutional layer
         self.conv = BSConv1d(
-            in_channels, out_channels, kernel_size=kernel_size, padding=padding,
+            in_channels,
+            out_channels,
+            kernel_size=kernel_size,
+            padding=padding,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -41,7 +49,7 @@ class ConvTransposed(nn.Module):
         Returns:
             x (torch.Tensor): output tensor after application of ConvTransposed
         """
-        
+
         # Transpose the last two dimensions (dimension 1 and 2 here). Now the tensor has shape (N, W, C)
         x = x.contiguous().transpose(1, 2)
 

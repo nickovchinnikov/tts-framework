@@ -12,7 +12,7 @@ class RelativeMultiHeadAttention(nn.Module):
     Multi-head attention with relative positional encoding.
     This concept was proposed in the
     [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](https://arxiv.org/abs/1901.02860)
-    
+
     Args:
         d_model (int): The dimension of model
         num_heads (int): The number of attention heads.
@@ -28,6 +28,7 @@ class RelativeMultiHeadAttention(nn.Module):
 
     Note: `d_model` should be divisible by `num_heads` in other words `d_model % num_heads` should be zero.
     """
+
     def __init__(
         self,
         d_model: int = 512,
@@ -63,14 +64,14 @@ class RelativeMultiHeadAttention(nn.Module):
         This function applies multi-head attention along with relative positional encoding to the inputs. It restructures the input queries, keys, and values according to individual attention heads, applies biases, calculates content and position scores, and combines these to get the final score. A softmax activation is applied over the final score, followed by the calculation of context (contextual representation of input).
 
         Performs the forward pass on the queries, keys, values, and positional embeddings with a mask.
-        
+
         Args:
             query (torch.Tensor): The input tensor containing query vectors.
             key (torch.Tensor): The input tensor containing key vectors.
             value (torch.Tensor): The input tensor containing value vectors.
             pos_embedding (torch.Tensor): The positional embedding tensor.
             mask (torch.Tensor): The mask tensor containing indices to be masked.
-        
+
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: The context and attention tensors.
             Tensor produces by relative multi head attention module.
@@ -90,7 +91,7 @@ class RelativeMultiHeadAttention(nn.Module):
         pos_embedding = self.pos_proj(pos_embedding).view(
             batch_size, -1, self.num_heads, self.d_head
         )
-        u_bias = self.u_bias.expand_as(query) 
+        u_bias = self.u_bias.expand_as(query)
         v_bias = self.v_bias.expand_as(query)
         a = (query + u_bias).transpose(1, 2)
         content_score = a @ key.transpose(2, 3)
@@ -115,10 +116,10 @@ class RelativeMultiHeadAttention(nn.Module):
         The main idea of relative positional encoding is that the attention score doesn't only depend on the query and the key, but also on the relative position of the key with respect to the query. This becomes particularly useful when working with sequences of tokens, like in NLP tasks, as it helps the model to be aware of the position of the words (or tokens) in the sentence.
 
         Performs the relative shift operation on the positional scores.
-        
+
         Args:
             pos_score (torch.Tensor): The positional scores tensor.
-            
+
         Returns:
             torch.Tensor: The shifted positional scores tensor.
         """
@@ -132,4 +133,3 @@ class RelativeMultiHeadAttention(nn.Module):
         )
         pos_score = padded_pos_score[:, :, 1:].view_as(pos_score)
         return pos_score
-

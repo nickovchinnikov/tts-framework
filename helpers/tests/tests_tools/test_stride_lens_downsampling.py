@@ -1,10 +1,12 @@
 import unittest
 import torch
 
-from helpers import stride_lens_downsampling  # replace 'your_module' with the name of the module where stride_lens is defined
+from helpers import (
+    stride_lens_downsampling,
+)
+
 
 class TestStrideLens(unittest.TestCase):
-
     def test_stride_lens(self):
         # Define test case inputs
         input_lengths = torch.tensor([5, 7, 10, 12])
@@ -15,13 +17,13 @@ class TestStrideLens(unittest.TestCase):
 
         # Call the function with the test cases
         output = stride_lens_downsampling(input_lengths, stride)
-        
+
         # Check if the output is a tensor
         self.assertIsInstance(output, torch.Tensor)
-        
+
         # Check if the output shape is as expected
         self.assertEqual(output.shape, expected_output.shape)
-        
+
         # Check if the output values are as expected
         self.assertTrue(torch.all(output.eq(expected_output)))
 
@@ -34,15 +36,16 @@ class TestStrideLens(unittest.TestCase):
 
         # Call the function with the test cases
         output = stride_lens_downsampling(input_lengths)
-        
+
         # Check if the output is a tensor
         self.assertIsInstance(output, torch.Tensor)
-        
+
         # Check if the output shape is as expected
         self.assertEqual(output.shape, expected_output.shape)
-        
+
         # Check if the output values are as expected
         self.assertTrue(torch.all(output.eq(expected_output)))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

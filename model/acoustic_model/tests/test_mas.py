@@ -10,11 +10,11 @@ class TestMasWidth1(unittest.TestCase):
     def setUp(self):
         # Example attn_map with random number between 0 and 1
         self.attn_map = np.random.rand(5, 5)
-    
+
     def test_mas_width1(self):
         # Test output of mas_width1 function
         opt = mas_width1(self.attn_map)
-        
+
         # Assert opt returned is a numpy ndarray
         self.assertIsInstance(opt, np.ndarray)
 
@@ -23,10 +23,9 @@ class TestMasWidth1(unittest.TestCase):
 
         # Assert opt only contains 0s and 1s (as per function description)
         self.assertTrue(np.array_equal(opt, opt.astype(bool)))
-        
+
         # Assert that at least one entry in opt is 1.0 (since at least one optimal position should exist)
         self.assertIn(1.0, opt)
-
 
 
 class TestBMas(unittest.TestCase):
@@ -42,7 +41,7 @@ class TestBMas(unittest.TestCase):
     def test_b_mas(self):
         # Run the b_mas function taking width = 1
         attn_out = b_mas(self.b_attn_map, self.in_lens, self.out_lens, width=1)
- 
+
         # Check the output type
         self.assertIsInstance(attn_out, np.ndarray)
 
@@ -57,7 +56,10 @@ class TestBMas(unittest.TestCase):
 
         # Verify that the third and fourth dimensions size matches the given out_lens and in_len
         for b in prange(attn_out.shape[0]):
-            self.assertEqual(np.sum(attn_out[b, 0, : self.out_lens[b], : self.in_lens[b]]), self.out_lens[b])
+            self.assertEqual(
+                np.sum(attn_out[b, 0, : self.out_lens[b], : self.in_lens[b]]),
+                self.out_lens[b],
+            )
 
 
 if __name__ == "__main__":

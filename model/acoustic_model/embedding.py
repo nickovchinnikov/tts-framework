@@ -15,6 +15,7 @@ class Embedding(nn.Module):
     Returns:
         torch.Tensor: An output tensor resulting from the lookup operation.
     """
+
     def __init__(self, num_embeddings: int, embedding_dim: int):
         super().__init__()
         self.embeddings = nn.Parameter(torch.randn(num_embeddings, embedding_dim))
@@ -25,7 +26,7 @@ class Embedding(nn.Module):
 
         Args:
             idx (torch.Tensor): A tensor containing the indices of the embeddings to be accessed.
-            
+
         Returns:
             torch.Tensor: An output tensor resulting from the lookup operation.
         """

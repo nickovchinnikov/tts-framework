@@ -9,7 +9,7 @@ class StyleEmbedAttention(nn.Module):
 
     Each style token (parameterized by an embedding vector) represents a unique style feature. The model applies the `StyleEmbedAttention` mechanism to combine these style tokens (style features) in a weighted manner. The output of the attention module is a sum of style tokens, with each token weighted by its relevance to the input.
 
-    This technique is often used in text-to-speech synthesis (TTS) such as Tacotron-2, where the goal is to modulate the prosody, stress, and intonation of the synthesized speech based on the reference audio or some control parameters. The concept of "global style tokens" (GST) was introduced in 
+    This technique is often used in text-to-speech synthesis (TTS) such as Tacotron-2, where the goal is to modulate the prosody, stress, and intonation of the synthesized speech based on the reference audio or some control parameters. The concept of "global style tokens" (GST) was introduced in
     [Style Tokens: Unsupervised Style Modeling, Control and Transfer in End-to-End Speech Synthesis](https://arxiv.org/abs/1803.09017) by Yuxuan Wang et al.
 
     The `StyleEmbedAttention` class is a PyTorch module implementing the attention mechanism.
@@ -26,6 +26,7 @@ class StyleEmbedAttention(nn.Module):
 
     Note: `num_units` should be divisible by `num_heads`.
     """
+
     def __init__(self, query_dim: int, key_dim: int, num_units: int, num_heads: int):
         super().__init__()
         self.num_units = num_units
@@ -47,7 +48,7 @@ class StyleEmbedAttention(nn.Module):
         Args:
             query (torch.Tensor): The input tensor for queries of shape `[N, T_q, query_dim]`
             key_soft (torch.Tensor): The input tensor for keys of shape `[N, T_k, key_dim]`
-        
+
         Returns:
             out (torch.Tensor): The output tensor of shape `[N, T_q, num_units]`
         """

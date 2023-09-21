@@ -16,12 +16,12 @@ from model.constants import LEAKY_RELU_SLOPE
 class ReferenceEncoder(nn.Module):
     r"""A class to define the reference encoder.
     Similar to Tacotron model, the reference encoder is used to extract the high-level features from the reference
-    
-    It consists of a number of convolutional blocks (`CoordConv1d` for the first one and `nn.Conv1d` for the rest), 
+
+    It consists of a number of convolutional blocks (`CoordConv1d` for the first one and `nn.Conv1d` for the rest),
     then followed by instance normalization and GRU layers.
     The `CoordConv1d` at the first layer to better preserve positional information, paper:
     [Robust and fine-grained prosody control of end-to-end speech synthesis](https://arxiv.org/pdf/1811.02122.pdf)
-    
+
     Applies a multi-layer gated recurrent unit (GRU) RNN to an input sequence.
 
     Args:
@@ -29,11 +29,12 @@ class ReferenceEncoder(nn.Module):
         model_config (AcousticModelConfigType): Configuration object with acoustic model parameters.
 
     Returns:
-        Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing three tensors. _First_: The sequence tensor 
+        Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing three tensors. _First_: The sequence tensor
             produced by the last GRU layer after padding has been removed. _Second_: The GRU's final hidden state tensor.
-            _Third_: The mask tensor, which has the same shape as x, and contains `True` at positions where the input x 
+            _Third_: The mask tensor, which has the same shape as x, and contains `True` at positions where the input x
             has been masked.
     """
+
     def __init__(
         self,
         preprocess_config: PreprocessingConfig,
@@ -61,14 +62,16 @@ class ReferenceEncoder(nn.Module):
                 padding=ref_enc_size // 2,
                 with_r=True,
             ),
-            *[nn.Conv1d(
-                in_channels=filters[i],
-                out_channels=filters[i + 1],
-                kernel_size=ref_enc_size,
-                stride=strides[i],
-                padding=ref_enc_size // 2,
-            )
-            for i in range(1, K)]
+            *[
+                nn.Conv1d(
+                    in_channels=filters[i],
+                    out_channels=filters[i + 1],
+                    kernel_size=ref_enc_size,
+                    stride=strides[i],
+                    padding=ref_enc_size // 2,
+                )
+                for i in range(1, K)
+            ],
         ]
         # Define convolution layers (ModuleList)
         self.convs = nn.ModuleList(convs)
@@ -88,9 +91,10 @@ class ReferenceEncoder(nn.Module):
         )
 
     def forward(
-        self, x: torch.Tensor,
-        mel_lens: torch.Tensor, 
-        leaky_relu_slope: float = LEAKY_RELU_SLOPE
+        self,
+        x: torch.Tensor,
+        mel_lens: torch.Tensor,
+        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""
         Forward pass of the ReferenceEncoder.
@@ -100,9 +104,9 @@ class ReferenceEncoder(nn.Module):
             mel_lens (torch.Tensor): A 1-dimensional tensor containing the lengths of each sequence in x. Its length is N.
 
         Returns:
-            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing three tensors. _First_: The sequence tensor 
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing three tensors. _First_: The sequence tensor
                 produced by the last GRU layer after padding has been removed. _Second_: The GRU's final hidden state tensor.
-                _Third_: The mask tensor, which has the same shape as x, and contains `True` at positions where the input x 
+                _Third_: The mask tensor, which has the same shape as x, and contains `True` at positions where the input x
                 has been masked.
         """
         mel_masks = tools.get_mask_from_lengths(mel_lens).unsqueeze(1)
@@ -121,15 +125,12 @@ class ReferenceEncoder(nn.Module):
         x = x.permute((0, 2, 1))
 
         packed_sequence = torch.nn.utils.rnn.pack_padded_sequence(
-            x,
-            mel_lens.cpu().int(),
-            batch_first=True,
-            enforce_sorted=False
+            x, mel_lens.cpu().int(), batch_first=True, enforce_sorted=False
         )
 
         self.gru.flatten_parameters()
         # memory --- [N, Ty, E//2], out --- [1, N, E//2]
-        out, memory = self.gru(packed_sequence)  
+        out, memory = self.gru(packed_sequence)
         out, _ = torch.nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
 
         return out, memory, mel_masks
@@ -155,4 +156,3 @@ class ReferenceEncoder(nn.Module):
             # Calculate the size after each convolution
             L = (L - kernel_size + 2 * pad) // stride + 1
         return L
-

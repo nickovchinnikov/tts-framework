@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class MultiHeadAttention(nn.Module):
     r"""
     A class that implements a Multi-head Attention mechanism.
-    Multi-head attention allows the model to focus on different positions, 
+    Multi-head attention allows the model to focus on different positions,
     capturing various aspects of the input.
 
     Args:
@@ -19,11 +19,11 @@ class MultiHeadAttention(nn.Module):
         - **query**: Tensor of shape [N, T_q, query_dim]
         - **key**: Tensor of shape [N, T_k, key_dim]
 
-    Outputs: 
+    Outputs:
         - An output tensor of shape [N, T_q, num_units]
     """
-    def __init__(self, query_dim: int, key_dim: int, num_units: int, num_heads: int):
 
+    def __init__(self, query_dim: int, key_dim: int, num_units: int, num_heads: int):
         super().__init__()
         self.num_units = num_units
         self.num_heads = num_heads
@@ -40,20 +40,20 @@ class MultiHeadAttention(nn.Module):
     def forward(self, query: torch.Tensor, key: torch.Tensor) -> torch.Tensor:
         r"""
         Performs the forward pass over input tensors.
-        
+
         Args:
             query (torch.Tensor): The input tensor containing query vectors.
                 It is expected to have the dimensions [N, T_q, query_dim]
-                where N is the batch size, T_q is the sequence length of queries, 
+                where N is the batch size, T_q is the sequence length of queries,
                 and query_dim is the dimensionality of a single query vector.
 
             key (torch.Tensor): The input tensor containing key vectors.
                 It is expected to have the dimensions [N, T_k, key_dim]
                 where N is the batch size, T_k is the sequence length of keys,
-                and key_dim is the dimensionality of a single key vector. 
-                
+                and key_dim is the dimensionality of a single key vector.
+
         Returns:
-            torch.Tensor: The output tensor of shape [N, T_q, num_units] which 
+            torch.Tensor: The output tensor of shape [N, T_q, num_units] which
                 represents the results of the multi-head attention mechanism applied
                 on the provided queries and keys.
         """
@@ -82,4 +82,3 @@ class MultiHeadAttention(nn.Module):
             0
         )  # [N, T_q, num_units]
         return out
-

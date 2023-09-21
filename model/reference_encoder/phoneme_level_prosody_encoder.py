@@ -9,9 +9,9 @@ from .reference_encoder import ReferenceEncoder
 
 class PhonemeLevelProsodyEncoder(nn.Module):
     r"""Phoneme Level Prosody Encoder Module
-    
+
     This Class is used to encode the phoneme level prosody in the speech synthesis pipeline.
-    
+
     Args:
         preprocess_config (PreprocessingConfig): Configuration for preprocessing.
         model_config (AcousticModelConfigType): Acoustic model configuration.
@@ -19,6 +19,7 @@ class PhonemeLevelProsodyEncoder(nn.Module):
     Returns:
         torch.Tensor: The encoded tensor after applying masked fill.
     """
+
     def __init__(
         self,
         preprocess_config: PreprocessingConfig,
@@ -42,7 +43,7 @@ class PhonemeLevelProsodyEncoder(nn.Module):
             num_heads=model_config.encoder.n_heads,
             dropout_p=model_config.encoder.p_dropout,
         )
-        
+
         # Bottleneck layer to transform the output of the attention mechanism.
         self.encoder_bottleneck = nn.Linear(
             model_config.encoder.n_hidden, bottleneck_size
@@ -56,7 +57,7 @@ class PhonemeLevelProsodyEncoder(nn.Module):
         mel_lens: torch.Tensor,
         encoding: torch.Tensor,
     ) -> torch.Tensor:
-        r""" 
+        r"""
         The forward pass of the PhonemeLevelProsodyEncoder. Input tensors are passed through the reference encoder,
         attention mechanism, and a bottleneck.
 

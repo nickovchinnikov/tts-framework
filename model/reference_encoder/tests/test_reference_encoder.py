@@ -9,7 +9,6 @@ from model.reference_encoder import ReferenceEncoder
 
 class TestReferenceEncoder(unittest.TestCase):
     def setUp(self):
-
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
 
@@ -17,12 +16,16 @@ class TestReferenceEncoder(unittest.TestCase):
 
     def test_forward_shape(self):
         # Define test case
-        x = torch.randn(16, self.model.n_mel_channels, 128)  # assuming the input sequence length is 128
-        mel_lens = torch.ones(16).type(torch.LongTensor) * 128  # assuming all sequences are of equal length
+        x = torch.randn(
+            16, self.model.n_mel_channels, 128
+        )  # assuming the input sequence length is 128
+        mel_lens = (
+            torch.ones(16).type(torch.LongTensor) * 128
+        )  # assuming all sequences are of equal length
 
         # Call the forward method
         out, memory, mel_masks = self.model(x, mel_lens)
-        
+
         # Verify the outputs
         self.assertIsInstance(out, torch.Tensor)
         self.assertEqual(out.size(0), 16)

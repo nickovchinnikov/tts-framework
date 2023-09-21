@@ -5,7 +5,6 @@ from model.attention.relative_multi_head_attention import RelativeMultiHeadAtten
 
 
 class TestRelativeMultiHeadAttention(unittest.TestCase):
-
     def setUp(self):
         # Initialize an instance of RelativeMultiHeadAttention
         self.attention = RelativeMultiHeadAttention(d_model=512, num_heads=8)
@@ -45,7 +44,7 @@ class TestRelativeMultiHeadAttention(unittest.TestCase):
         # Generate a random positional score tensor
         # Assuming batch=3, num_heads=8, seq_length1=10, seq_length2=10
         params_shape = (*self.params_shape, 10)
-        pos_score = torch.rand(params_shape)  
+        pos_score = torch.rand(params_shape)
 
         # Test the _relative_shift function
         shifted_pos_score = self.attention._relative_shift(pos_score)
@@ -53,17 +52,16 @@ class TestRelativeMultiHeadAttention(unittest.TestCase):
         # Assert output shape and values
         self.assertEqual(shifted_pos_score.shape, params_shape)
         self.assertTrue(torch.all((shifted_pos_score >= 0) & (shifted_pos_score <= 1)))
-    
-    def test_attention_values(self): 
+
+    def test_attention_values(self):
         # Test the forward function
         context, attn = self.attention(
             self.query, self.key, self.value, self.pos_embedding, self.mask
         )
-    
+
         # Check values of attention output are in range [0, 1]
         self.assertTrue(torch.all((attn >= 0) & (attn <= 1)))
-    
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

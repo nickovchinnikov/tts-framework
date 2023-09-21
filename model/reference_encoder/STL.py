@@ -8,9 +8,9 @@ from config import AcousticModelConfigType
 
 class STL(nn.Module):
     r"""
-    Style Token Layer (STL). 
+    Style Token Layer (STL).
     This layer helps to encapsulate different speaking styles in token embeddings.
-    
+
     Args:
         model_config (AcousticModelConfigType): An object containing the model's configuration parameters.
 
@@ -18,6 +18,7 @@ class STL(nn.Module):
         embed (nn.Parameter): The style token embedding tensor.
         attention (StyleEmbedAttention): The attention module used to compute a weighted sum of embeddings.
     """
+
     def __init__(
         self,
         model_config: AcousticModelConfigType,
@@ -25,14 +26,16 @@ class STL(nn.Module):
         super(STL, self).__init__()
 
         # Number of attention heads
-        num_heads = 1 
+        num_heads = 1
         # Dimension of encoder hidden states
-        n_hidden = model_config.encoder.n_hidden 
+        n_hidden = model_config.encoder.n_hidden
         # Number of style tokens
         self.token_num = model_config.reference_encoder.token_num
 
         # Define a learnable tensor for style tokens embedding
-        self.embed = nn.Parameter(torch.FloatTensor(self.token_num, n_hidden // num_heads))
+        self.embed = nn.Parameter(
+            torch.FloatTensor(self.token_num, n_hidden // num_heads)
+        )
 
         # Dimension of query in attention
         d_q = n_hidden // 2
@@ -52,7 +55,7 @@ class STL(nn.Module):
         Forward pass of the Style Token Layer
         Args:
             x (torch.Tensor): The input tensor.
-        
+
         Returns:
             torch.Tensor: The emotion embedded tensor after applying attention mechanism.
         """
@@ -69,4 +72,3 @@ class STL(nn.Module):
         emotion_embed_soft = self.attention(query, keys_soft)
 
         return emotion_embed_soft
-    

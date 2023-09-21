@@ -4,6 +4,7 @@ repos:
   rev: v0.0.290
   hooks:
     - id: ruff
+      stages: [commit,push]
 
   # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
 - repo: https://github.com/psf/black-pre-commit-mirror
@@ -15,6 +16,7 @@ repos:
       # pre-commit's default_language_version, see
       # https://pre-commit.com/#top_level-default_language_version
       language_version: python3.11
+      stages: [push]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v0.981
@@ -22,3 +24,4 @@ repos:
     - id: mypy
       exclude: ^tests/
       args: [--strict]
+      stages: [push]

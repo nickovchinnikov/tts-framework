@@ -3,11 +3,16 @@ import unittest
 import torch.nn as nn
 
 from model.reference_encoder.reference_encoder import ReferenceEncoder
-from model.attention.conformer_multi_headed_self_attention import ConformerMultiHeadedSelfAttention
+from model.attention.conformer_multi_headed_self_attention import (
+    ConformerMultiHeadedSelfAttention,
+)
 
 from config import AcousticENModelConfig, PreprocessingConfig
 
-from model.reference_encoder.phoneme_level_prosody_encoder import PhonemeLevelProsodyEncoder
+from model.reference_encoder.phoneme_level_prosody_encoder import (
+    PhonemeLevelProsodyEncoder,
+)
+
 
 # @todo: it's one of the most important component test
 # But it's too complicated to cover it from the first glance.
@@ -19,7 +24,9 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
 
-        self.model = PhonemeLevelProsodyEncoder(self.preprocess_config, self.model_config)
+        self.model = PhonemeLevelProsodyEncoder(
+            self.preprocess_config, self.model_config
+        )
 
     def test_model_attributes(self):
         # Test model type

@@ -8,7 +8,9 @@ from model.acoustic_model.variance_predictor import VariancePredictor
 class TestVariancePredictor(unittest.TestCase):
     def setUp(self):
         # Initialize a VariancePredictor instance
-        self.predictor = VariancePredictor(channels_in=32, channels=32, channels_out=1, kernel_size=3, p_dropout=0.5)
+        self.predictor = VariancePredictor(
+            channels_in=32, channels=32, channels_out=1, kernel_size=3, p_dropout=0.5
+        )
 
         # Assume batch size=3, channels_in=32, sequence_length=32
         self.x = torch.rand((3, 32, 32))
@@ -22,7 +24,9 @@ class TestVariancePredictor(unittest.TestCase):
         output = self.predictor(self.x, self.zero_mask)
 
         # Validate output shape
-        self.assertEqual(output.shape, self.mask_dim)  # Expected shape is (N, T) where N=batch size and T=sequence length
+        self.assertEqual(
+            output.shape, self.mask_dim
+        )  # Expected shape is (N, T) where N=batch size and T=sequence length
 
     def test_zero_mask(self):
         # Execute forward propagation

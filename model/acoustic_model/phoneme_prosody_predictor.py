@@ -14,9 +14,9 @@ class PhonemeProsodyPredictor(nn.Module):
     In linguistics, prosody (/ˈprɒsədi, ˈprɒzədi/) is the study of elements of speech that are not individual phonetic segments (vowels and consonants) but which are properties of syllables and larger units of speech, including linguistic functions such as intonation, stress, and rhythm. Such elements are known as suprasegmentals.
 
     [Wikipedia Prosody (linguistics)](https://en.wikipedia.org/wiki/Prosody_(linguistics))
-    
-    This prosody predictor is non-parallel and is inspired by the **work of Du et al., 2021 ?**. It consists of 
-    multiple convolution transpose, Leaky ReLU activation, LayerNorm, and dropout layers, followed by a 
+
+    This prosody predictor is non-parallel and is inspired by the **work of Du et al., 2021 ?**. It consists of
+    multiple convolution transpose, Leaky ReLU activation, LayerNorm, and dropout layers, followed by a
     linear transformation to generate the final output.
 
     Args:
@@ -24,12 +24,13 @@ class PhonemeProsodyPredictor(nn.Module):
         phoneme_level (bool): A flag to decide whether to use phoneme level bottleneck size.
         leaky_relu_slope (float): The negative slope of LeakyReLU activation function.
     """
+
     def __init__(
-            self,
-            model_config: AcousticModelConfigType,
-            phoneme_level: bool,
-            leaky_relu_slope: float = LEAKY_RELU_SLOPE
-        ):
+        self,
+        model_config: AcousticModelConfigType,
+        phoneme_level: bool,
+        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
+    ):
         super().__init__()
 
         # Get the configuration
@@ -73,7 +74,7 @@ class PhonemeProsodyPredictor(nn.Module):
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         r"""Forward pass of the prosody predictor.
-        
+
         Args:
             x (torch.Tensor): A 3-dimensional tensor `[B, src_len, d_model]`.
             mask (torch.Tensor): A 2-dimensional tensor `[B, src_len]`.
@@ -88,7 +89,7 @@ class PhonemeProsodyPredictor(nn.Module):
         # Pass the input through the layers
         for layer in self.layers:
             x = layer(x)
-        
+
         # Apply mask
         x = x.masked_fill(mask, 0.0)
 

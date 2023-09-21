@@ -55,6 +55,7 @@ class TestAddCoords(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             out = layer(x)
 
+
 # Execute the unit test
 if __name__ == "__main__":
     unittest.main()

@@ -9,10 +9,10 @@ class VariancePredictor(nn.Module):
     r"""
     This is a Duration and Pitch predictor neural network module in PyTorch.
 
-    It consists of multiple layers, including `ConvTransposed` layers (custom convolution transpose layers from 
+    It consists of multiple layers, including `ConvTransposed` layers (custom convolution transpose layers from
     the `model.conv_blocks` module), LeakyReLU activation functions, Layer Normalization and Dropout layers.
 
-    Constructor for `VariancePredictor` class. 
+    Constructor for `VariancePredictor` class.
 
     Args:
         channels_in (int): Number of input channels.
@@ -24,6 +24,7 @@ class VariancePredictor(nn.Module):
     Returns:
         torch.Tensor: Output tensor.
     """
+
     def __init__(
         self,
         channels_in: int,
@@ -69,13 +70,13 @@ class VariancePredictor(nn.Module):
 
         Args:
             x (torch.Tensor): Input tensor.
-            mask (torch.Tensor): Mask tensor, has the same size as x. 
-            
+            mask (torch.Tensor): Mask tensor, has the same size as x.
+
         Returns:
             torch.Tensor: Output tensor.
         """
 
-        # Sequentially pass the input through all defined layers 
+        # Sequentially pass the input through all defined layers
         # (ConvTransposed -> LeakyReLU -> LayerNorm -> Dropout -> ConvTransposed -> LeakyReLU -> LayerNorm -> Dropout)
         for layer in self.layers:
             x = layer(x)

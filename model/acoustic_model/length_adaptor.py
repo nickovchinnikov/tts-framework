@@ -7,6 +7,7 @@ from helpers import tools
 
 from .variance_predictor import VariancePredictor
 
+
 class LengthAdaptor(nn.Module):
     r"""
     The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
@@ -15,6 +16,7 @@ class LengthAdaptor(nn.Module):
     Args:
         model_config (AcousticModelConfigType): The model configuration object containing model parameters.
     """
+
     def __init__(self, model_config: AcousticModelConfigType):
         super().__init__()
         # Initialize the duration predictor
@@ -35,7 +37,7 @@ class LengthAdaptor(nn.Module):
         Args:
             x (torch.Tensor): The input tensor.
             duration (torch.Tensor): The tensor containing duration for each time step in x.
-        
+
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: The regulated output tensor and the tensor containing the length of each sequence in the batch.
         """
@@ -58,7 +60,7 @@ class LengthAdaptor(nn.Module):
         Args:
             batch (torch.Tensor): The input tensor.
             predicted (torch.Tensor): The tensor containing predicted expansion factors.
-        
+
         Returns:
             torch.Tensor: The expanded tensor.
         """
@@ -79,19 +81,21 @@ class LengthAdaptor(nn.Module):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""
         Upsamples the input tensor during training using ground truth durations.
-        
+
         Args:
             x (torch.Tensor): The input tensor.
-            x_res (torch.Tensor): Another input tensor for duration prediction. 
+            x_res (torch.Tensor): Another input tensor for duration prediction.
             duration_target (torch.Tensor): The ground truth durations tensor.
             embeddings (torch.Tensor): The tensor containing phoneme embeddings.
             src_mask (torch.Tensor): The mask tensor indicating valid entries in x and x_res.
-            
+
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: The upsampled x, log duration prediction, and upsampled embeddings.
         """
         x_res = x_res.detach()
-        log_duration_prediction = self.duration_predictor(x_res, src_mask) # type: torch.Tensor
+        log_duration_prediction = self.duration_predictor(
+            x_res, src_mask
+        )  # type: torch.Tensor
         x, _ = self.length_regulate(x, duration_target)
         embeddings, _ = self.length_regulate(embeddings, duration_target)
         return x, log_duration_prediction, embeddings
@@ -106,22 +110,25 @@ class LengthAdaptor(nn.Module):
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""
         Upsamples the input tensor during inference.
-        
+
         Args:
             x (torch.Tensor): The input tensor.
-            x_res (torch.Tensor): Another input tensor for duration prediction. 
+            x_res (torch.Tensor): Another input tensor for duration prediction.
             src_mask (torch.Tensor): The mask tensor indicating valid entries in x and x_res.
             embeddings (torch.Tensor): The tensor containing phoneme embeddings.
             control (float): A control parameter for pitch regulation.
-            
+
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: The upsampled x, approximated duration, and upsampled embeddings.
         """
-        log_duration_prediction = self.duration_predictor(x_res, src_mask,)
+        log_duration_prediction = self.duration_predictor(
+            x_res,
+            src_mask,
+        )
         duration_rounded = torch.clamp(
-            (torch.round(torch.exp(log_duration_prediction) - 1) * control), min=0,
+            (torch.round(torch.exp(log_duration_prediction) - 1) * control),
+            min=0,
         )
         x, _ = self.length_regulate(x, duration_rounded)
         embeddings, _ = self.length_regulate(embeddings, duration_rounded)
         return x, duration_rounded, embeddings
-

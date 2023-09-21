@@ -6,12 +6,12 @@ from .conv1d import PointwiseConv1d, DepthWiseConv1d
 
 class BSConv1d(nn.Module):
     r"""
-    `BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv: 
-    Binarized Separated Convolutional Neural Networks](https://arxiv.org/pdf/2003.13549.pdf). 
-    
-    `BSConv` is an amalgamation of depthwise separable convolution and pointwise convolution. 
-    Depthwise separable convolution utilizes far fewer parameters by separating the spatial 
-    (depthwise) and channel-wise (pointwise) operations. Meanwhile, pointwise convolution 
+    `BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv:
+    Binarized Separated Convolutional Neural Networks](https://arxiv.org/pdf/2003.13549.pdf).
+
+    `BSConv` is an amalgamation of depthwise separable convolution and pointwise convolution.
+    Depthwise separable convolution utilizes far fewer parameters by separating the spatial
+    (depthwise) and channel-wise (pointwise) operations. Meanwhile, pointwise convolution
     helps in transforming the channel characteristics without considering the channel's context.
 
     Args:
@@ -33,25 +33,21 @@ class BSConv1d(nn.Module):
         # Instantiate Pointwise Convolution Module:
         # First operation in BSConv: the number of input channels is transformed to the number
         # of output channels without taking into account the channel context.
-        self.pointwise = PointwiseConv1d(channels_in, channels_out)  
+        self.pointwise = PointwiseConv1d(channels_in, channels_out)
 
         # Instantiate Depthwise Convolution Module:
         # Second operation in BSConv: A spatial convolution is performed independently over each output
-        # channel from the pointwise convolution. 
+        # channel from the pointwise convolution.
         self.depthwise = DepthWiseConv1d(
-            channels_out,
-            channels_out,
-            kernel_size=kernel_size,
-            padding=padding
+            channels_out, channels_out, kernel_size=kernel_size, padding=padding
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Propagate input tensor through pointwise convolution.  
-        x1 = self.pointwise(x)  
+        # Propagate input tensor through pointwise convolution.
+        x1 = self.pointwise(x)
 
         # Propagate the result of the previous pointwise convolution through the depthwise convolution.
-        x2 = self.depthwise(x1)  
-        
-        # Return final output of the sequence of pointwise and depthwise convolutions
-        return x2  
+        x2 = self.depthwise(x1)
 
+        # Return final output of the sequence of pointwise and depthwise convolutions
+        return x2

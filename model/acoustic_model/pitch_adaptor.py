@@ -15,15 +15,16 @@ from .embedding import Embedding
 class PitchAdaptor(nn.Module):
     r"""
     The PitchAdaptor class is a pitch adaptor network in the model.
-    
+
     It has methods to get the pitch embeddings for train and test,
     and to add pitch during training and in inference.
 
     Args:
         model_config (AcousticModelConfigType): The model configuration.
         data_path (str): The path to data.
-        
+
     """
+
     def __init__(self, model_config: AcousticModelConfigType, data_path: str):
         super().__init__()
         self.pitch_predictor = VariancePredictor(
@@ -67,9 +68,7 @@ class PitchAdaptor(nn.Module):
 
         prediction = self.pitch_predictor(x, mask)
         embedding_true = self.pitch_embedding(torch.bucketize(target, pitch_bins))
-        embedding_pred = self.pitch_embedding(
-            torch.bucketize(prediction, pitch_bins)
-        )
+        embedding_pred = self.pitch_embedding(torch.bucketize(prediction, pitch_bins))
         return prediction, embedding_true, embedding_pred
 
     def get_pitch_embedding(
@@ -141,4 +140,3 @@ class PitchAdaptor(nn.Module):
         pitch_embedding_pred = self.get_pitch_embedding(x, src_mask, control=control)
         x = x + pitch_embedding_pred
         return x
-

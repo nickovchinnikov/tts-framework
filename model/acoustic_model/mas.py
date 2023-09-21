@@ -32,7 +32,7 @@ def mas_width1(attn_map: np.ndarray) -> np.ndarray:
     # Placeholder to remember the previous indices for backtracking later
     prev_ind = np.zeros_like(attn_map, dtype=np.int64)
 
-    # Compute the log probabilities based on previous attention distribution 
+    # Compute the log probabilities based on previous attention distribution
     for i in range(1, attn_map.shape[0]):
         for j in range(attn_map.shape[1]):  # for each text dim
             prev_log = log_p[i - 1, j]
@@ -63,7 +63,7 @@ def mas_width1(attn_map: np.ndarray) -> np.ndarray:
 def b_mas(b_attn_map, in_lens, out_lens, width=1):
     r"""
     Applies Monotonic Alignments Shrink (MAS) operation in parallel to the batches of an attention map.
-    It uses the `mas_width1` function internally to perform MAS operation. 
+    It uses the `mas_width1` function internally to perform MAS operation.
 
     Args:
         b_attn_map (np.ndarray): The batched attention map; a 3D array where the first dimension is the batch size, second dimension corresponds to source length, and third dimension corresponds to target length.
@@ -89,5 +89,5 @@ def b_mas(b_attn_map, in_lens, out_lens, width=1):
         # Update the b-th attention map in the output with the result of MAS operation
         attn_out[b, 0, : out_lens[b], : in_lens[b]] = out
 
-    # Return the batched attention map after applying the MAS operation 
+    # Return the batched attention map after applying the MAS operation
     return attn_out

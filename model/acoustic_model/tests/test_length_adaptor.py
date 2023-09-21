@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from unittest.mock import Mock 
+from unittest.mock import Mock
 from model.acoustic_model.length_adaptor import LengthAdaptor
 
 
@@ -23,7 +23,7 @@ class TestLengthAdaptor(unittest.TestCase):
         cls.length_adaptor = LengthAdaptor(cls.model_config)
         cls.batch_size = 2
         cls.seq_length = 5
-        cls.n_hidden = 512    # should match cls.model_config.encoder.n_hidden
+        cls.n_hidden = 512  # should match cls.model_config.encoder.n_hidden
 
         cls.x = torch.rand(cls.batch_size, cls.seq_length, cls.n_hidden)
         cls.x_res = torch.rand(cls.batch_size, cls.seq_length, cls.n_hidden)
@@ -31,7 +31,7 @@ class TestLengthAdaptor(unittest.TestCase):
 
     def test_length_regulate(self):
         duration = torch.full((self.batch_size, self.seq_length), fill_value=2.0)
-        output, mel_len = self.length_adaptor.length_regulate(self.x, duration)        
+        output, mel_len = self.length_adaptor.length_regulate(self.x, duration)
         self.assertTrue(torch.is_tensor(output))
         self.assertTrue(torch.is_tensor(mel_len))
 
@@ -44,10 +44,10 @@ class TestLengthAdaptor(unittest.TestCase):
         # Assuming dimension 0 (time-steps) is being expanded
         expected_dim_0 = predicted.sum().item()
         actual_dim_0 = out.size(0)
-        
+
         # Check if the size of expanded dimension matches with the sum of predicted values.
         self.assertEqual(expected_dim_0, actual_dim_0)
-        
+
         # Check the size of unexpanded dimensions
         self.assertEqual(self.x.size(1), self.seq_length)
         self.assertEqual(out.size(1), self.n_hidden)
@@ -81,7 +81,6 @@ class TestLengthAdaptor(unittest.TestCase):
         self.assertEqual(new_embeddings.size(1), self.seq_length * self.batch_size)
         self.assertEqual(new_embeddings.size(2), self.n_hidden)
 
-
     def test_upsample(self):
         embeddings = torch.rand(self.batch_size, self.seq_length, self.n_hidden)
         control = 0.5
@@ -91,20 +90,20 @@ class TestLengthAdaptor(unittest.TestCase):
         self.assertTrue(torch.is_tensor(x))
         self.assertTrue(torch.is_tensor(duration_rounded))
         self.assertTrue(torch.is_tensor(new_embeddings))
-        
+
         # Check the size of tensor x, duration_rounded and new_embeddings
         self.assertEqual(x.size(0), self.batch_size)
         self.assertEqual(self.x.size(1), self.seq_length)
         self.assertEqual(x.size(2), self.n_hidden)
-        
+
         self.assertEqual(duration_rounded.size(0), self.batch_size)
         self.assertEqual(duration_rounded.size(1), self.seq_length)
-        
+
         self.assertEqual(new_embeddings.size(0), self.batch_size)
         # Always different?
         # self.assertEqual(new_embeddings.size(1), 1)
         self.assertEqual(new_embeddings.size(2), self.n_hidden)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

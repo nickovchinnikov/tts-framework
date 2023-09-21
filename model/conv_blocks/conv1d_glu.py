@@ -7,7 +7,7 @@ from .bsconv import BSConv1d
 class Conv1dGLU(nn.Module):
     r"""
     `Conv1dGLU` implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
-    It's based on the Deep Voice 3 project. 
+    It's based on the Deep Voice 3 project.
 
     Args:
         d_model (int): model dimension parameter.
@@ -34,9 +34,8 @@ class Conv1dGLU(nn.Module):
         self.embedding_proj = nn.Linear(embedding_dim, d_model)
 
         self.register_buffer("sqrt", torch.sqrt(torch.FloatTensor([0.5])).squeeze(0))
-        
-        self.softsign = torch.nn.Softsign()
 
+        self.softsign = torch.nn.Softsign()
 
     def forward(self, x: torch.Tensor, embeddings: torch.Tensor) -> torch.Tensor:
         """

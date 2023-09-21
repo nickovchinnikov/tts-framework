@@ -54,8 +54,7 @@ class ConformerMultiHeadedSelfAttention(nn.Module):
         outputs, attn = self.attention(
             query, key, value, pos_embedding=encoding, mask=mask
         )
-        
+
         # Apply dropout to the attention outputs
         outputs = self.dropout(outputs)
         return outputs, attn
-

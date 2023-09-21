@@ -23,11 +23,11 @@ class TestPhonemeProsodyPredictor(unittest.TestCase):
                 predictor_kernel_size=3,
                 p_dropout=0.1,
                 bottleneck_size_p=128,
-                bottleneck_size_u=256
+                bottleneck_size_u=256,
             ),
         )
         self.model = PhonemeProsodyPredictor(model_config, phoneme_level=True)
-        
+
     def test_forward(self):
         x = torch.rand(16, 384, 384)
         mask = torch.zeros(16, 384).bool()
@@ -37,7 +37,7 @@ class TestPhonemeProsodyPredictor(unittest.TestCase):
 
         # Check if the output is of expected type and shape
         self.assertIsInstance(out, torch.Tensor)
-        self.assertEqual(out.size(), (16, 384, 128))  # adjust as per your expected output size
+        self.assertEqual(out.size(), (16, 384, 128))
 
 
 if __name__ == "__main__":

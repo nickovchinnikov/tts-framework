@@ -12,16 +12,19 @@ class UtteranceLevelProsodyEncoder(nn.Module):
 
     The encoder uses a Reference encoder class to convert input sequences into high-level features,
     followed by prosody embedding, self attention on the embeddings, and a feedforward transformation to generate the final output.Initializes the encoder with given specifications and creates necessary layers.
-    
+
     Args:
         preprocess_config (PreprocessingConfig): Configuration object with preprocessing parameters.
         model_config (AcousticModelConfigType): Configuration object with acoustic model parameters.
-    
+
     Returns:
         torch.Tensor: A 3-dimensional tensor sized `[N, seq_len, E]`.
     """
+
     def __init__(
-        self, preprocess_config: PreprocessingConfig, model_config: AcousticModelConfigType,
+        self,
+        preprocess_config: PreprocessingConfig,
+        model_config: AcousticModelConfigType,
     ):
         super().__init__()
 
@@ -40,7 +43,7 @@ class UtteranceLevelProsodyEncoder(nn.Module):
 
     def forward(self, mels: torch.Tensor, mel_lens: torch.Tensor) -> torch.Tensor:
         r"""Defines the forward pass of the utterance level prosody encoder.
-        
+
         Args:
             mels (torch.Tensor): A 3-dimensional tensor containing input sequences. Size is `[N, Ty/r, n_mels*r]`.
             mel_lens (torch.Tensor): A 1-dimensional tensor containing the lengths of each sequence in mels. Length is N.

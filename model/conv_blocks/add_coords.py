@@ -12,7 +12,7 @@ class AddCoords(nn.Module):
     matters (such as an image or speech signal).
 
     This additional spatial context allows subsequent layers (such as convolutions) to learn position-dependent
-    features. For example, in tasks where the absolute position of features matters (such as denoising and 
+    features. For example, in tasks where the absolute position of features matters (such as denoising and
     segmentation tasks), it helps the model to know where (in terms of relative position) the features are.
 
     Args:
@@ -21,9 +21,10 @@ class AddCoords(nn.Module):
                     or 3D data (like an image).
 
         with_r (bool): Boolean indicating whether to add an extra radial distance channel or not. If True, an extra
-                       channel is appended, which measures the Euclidean (L2) distance from the center of the image. 
+                       channel is appended, which measures the Euclidean (L2) distance from the center of the image.
                        This might be useful when the proximity to the center of the image is important to the task.
     """
+
     def __init__(self, rank: int, with_r: bool = False):
         super().__init__()
         self.rank = rank
@@ -34,7 +35,7 @@ class AddCoords(nn.Module):
         Forward pass of the AddCoords module. Depending on the rank of the tensor, it adds one or more new channels
         with relative coordinate values. If `with_r` is True, an extra radial channel is included.
 
-        For example, for an image (`rank=2`), two channels would be added which contain the normalized x and y 
+        For example, for an image (`rank=2`), two channels would be added which contain the normalized x and y
         coordinates respectively of each pixel.
 
         Calling the forward method updates the original tensor `x` with the added channels.
