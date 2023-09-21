@@ -44,3 +44,10 @@ the relative sinusoidal positional encoding scheme.
 
 Creates a feed-forward neural network.
 The network includes a layer normalization, an activation function (`LeakyReLU`), and dropout layers.
+
+### [Conformer Conv Module](conformer_conv_module.md)
+
+Conformer Convolution Module class represents a module in the Conformer model architecture.
+The module includes a layer normalization, pointwise and depthwise convolutional layers,
+Gated Linear Units (GLU) activation, and dropout layer.
+
