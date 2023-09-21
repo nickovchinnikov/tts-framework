@@ -51,3 +51,9 @@ Conformer Convolution Module class represents a module in the Conformer model ar
 The module includes a layer normalization, pointwise and depthwise convolutional layers,
 Gated Linear Units (GLU) activation, and dropout layer.
 
+### [Conformer Block](conformer_block.md)
+
+`ConformerBlock` class represents a block in the Conformer model architecture.
+The block includes a pointwise convolution followed by Gated Linear Units (`GLU`) activation layer (`Conv1dGLU`),
+a Conformer self attention layer (`ConformerMultiHeadedSelfAttention`), and optional feed-forward layer (`FeedForward`).
+
