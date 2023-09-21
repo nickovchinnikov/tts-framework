@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from model.acoustic_model.feed_forward import FeedForward
+from model.attention.feed_forward import FeedForward
 
 
 class TestFeedForward(unittest.TestCase):

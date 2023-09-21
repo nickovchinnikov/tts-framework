@@ -39,3 +39,8 @@ in [PyTorch](https://pytorch.org)
 
 Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
 the relative sinusoidal positional encoding scheme.
+
+### [Feed Forward](feed_forward.md)
+
+Creates a feed-forward neural network.
+The network includes a layer normalization, an activation function (`LeakyReLU`), and dropout layers.
