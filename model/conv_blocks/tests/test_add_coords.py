@@ -53,7 +53,7 @@ class TestAddCoords(unittest.TestCase):
         layer = AddCoords(rank=4, with_r=False)
         x = torch.rand(4, 3, 10, 20, 30, 40)
         with self.assertRaises(NotImplementedError):
-            out = layer(x)
+            layer(x)
 
 
 # Execute the unit test
