@@ -23,6 +23,7 @@ nav:
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
       - Length Adaptor: model/acoustic_model/length_adaptor.md
       - Phoneme Prosody Predictor: model/acoustic_model/phoneme_prosody_predictor.md
+      - Feed Forward: model/acoustic_model/feed_forward.md
       - Aligner:
         - Monotonic Alignments Shrink: model/acoustic_model/mas.md
     - Reference Encoder:

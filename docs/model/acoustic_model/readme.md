@@ -38,3 +38,8 @@ Mas with hardcoded `width=1`
 
 `b_mas` Applies Monotonic Alignments Shrink (MAS) operation in parallel to the batches of an attention map.
 It uses the `mas_width1` function internally to perform MAS operation.
+
+### [Feed Forward](feed_forward.md)
+
+Creates a feed-forward neural network.
+The network includes a layer normalization, an activation function (`LeakyReLU`), and dropout layers.
