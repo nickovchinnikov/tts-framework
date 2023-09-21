@@ -25,7 +25,13 @@ In linguistics, prosody (/ˈprɒsədi, ˈprɒzədi/)is the study of elements of 
 
 [Wikipedia Prosody (linguistics)](https://en.wikipedia.org/wiki/Prosody_(linguistics))
 
-### [Monotonic Alignments Shrink](mas.md)
+### [Aligner](aligner.md)
+
+Aligner class represents a PyTorch module responsible for alignment tasks in a sequence-to-sequence model. It uses convolutional layers combined with LeakyReLU activation functions to project inputs to a hidden representation.
+
+Also, for training purposes, binarizes attention with [MAS](mas.md)
+
+#### [Monotonic Alignments Shrink](mas.md)
 
 `mas_width1` Applies a Monotonic Alignments Shrink (MAS) operation with a hard-coded width of 1 to an attention map.
 Mas with hardcoded `width=1`

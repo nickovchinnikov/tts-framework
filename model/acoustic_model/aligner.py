@@ -1,72 +1,33 @@
 import torch
 import torch.nn as nn
 
+from typing import Tuple
+
 from model.constants import LEAKY_RELU_SLOPE
 from .mas import b_mas
 
 
-class ConvLeakyReLU(nn.Module):
-    def __init__(
-        self,
-        dim_in: int,
-        dim_out: int,
-        kernel_size: int,
-        padding: int,
-        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
-    ):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Conv1d(dim_in, dim_out, kernel_size=kernel_size, padding=padding),
-            nn.LeakyReLU(leaky_relu_slope),
-        )
-
-    def forward(self, x):
-        return self.layers(x)
-
-
-class Aligner2(nn.Module):
-    def __init__(
-        self,
-        d_enc_in: int,
-        d_dec_in: int,
-        d_hidden: int,
-        kernel_size_enc: int = 3,
-        kernel_size_dec: int = 7,
-        temperature: float = 0.0005,
-        softmax_dim: int = 3,
-        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
-    ):
-        super().__init__()
-        self.temperature = temperature
-
-        self.softmax = torch.nn.Softmax(dim=softmax_dim)
-        self.log_softmax = torch.nn.LogSoftmax(dim=softmax_dim)
-
-        seq_basic_args = {
-            "out_channels": d_hidden,
-            "padding": kernel_size_dec // 2,
-        }
-
-        key_proj_args = {
-            **seq_basic_args,
-            "kernel_size": kernel_size_enc,
-        }
-
-        self.key_proj = nn.Sequential(
-            ConvLeakyReLU(d_enc_in, **key_proj_args),
-            ConvLeakyReLU(d_hidden, **key_proj_args),
-        )
-
-        query_proj_args = {**seq_basic_args, "kernel_size": kernel_size_dec}
-
-        self.query_proj = nn.Sequential(
-            ConvLeakyReLU(d_dec_in, **query_proj_args),
-            ConvLeakyReLU(d_hidden, **query_proj_args),
-            ConvLeakyReLU(d_hidden, **query_proj_args),
-        )
-
-
 class Aligner(nn.Module):
+    r"""
+    Aligner class represents a PyTorch module responsible for alignment tasks
+    in a sequence-to-sequence model. It uses convolutional layers combined with
+    LeakyReLU activation functions to project inputs to a hidden representation.
+    The class utilizes both softmax and log-softmax to calculate softmax
+    along dimension 3.
+
+    Args:
+        d_enc_in (int): Number of channels in the input for the encoder.
+        d_dec_in (int): Number of channels in the input for the decoder.
+        d_hidden (int): Number of channels in the output (hidden layers).
+        kernel_size_enc (int, optional): Size of the convolving kernel for encoder, default is 3.
+        kernel_size_dec (int, optional): Size of the convolving kernel for decoder, default is 7.
+        temperature (float, optional): The temperature value applied in Gaussian isotropic
+            attention mechanism, default is 0.0005.
+        leaky_relu_slope (float, optional): Controls the angle of the negative slope of
+            LeakyReLU activation, default is LEAKY_RELU_SLOPE.
+
+    """
+
     def __init__(
         self,
         d_enc_in: int,
@@ -124,11 +85,28 @@ class Aligner(nn.Module):
             nn.LeakyReLU(leaky_relu_slope),
         )
 
-    def binarize_attention_parallel(self, attn, in_lens, out_lens):
-        """For training purposes only. Binarizes attention with MAS.
-        These will no longer recieve a gradient.
+    def binarize_attention_parallel(
+        self, attn: torch.Tensor, in_lens: torch.Tensor, out_lens: torch.Tensor
+    ) -> torch.Tensor:
+        r"""
+        For training purposes only! Binarizes attention with MAS.
+        Binarizes the attention tensor using Maximum Attention Strategy (MAS).
+
+        This process is applied for training purposes only and the resulting
+        binarized attention tensor will no longer receive a gradient in the
+        backpropagation process.
+
         Args:
-            attn: B x 1 x max_mel_len x max_text_len
+            attn (Tensor): The attention tensor. Must be of shape (B, 1, max_mel_len, max_text_len),
+                where B represents the batch size, max_mel_len represents the maximum length
+                of the mel spectrogram, and max_text_len represents the maximum length of the text.
+            in_lens (Tensor): A 1D tensor of shape (B,) that contains the input sequence lengths,
+                which likely corresponds to text sequence lengths.
+            out_lens (Tensor): A 1D tensor of shape (B,) that contains the output sequence lengths,
+                which likely corresponds to mel spectrogram lengths.
+
+        Returns:
+            Tensor: The binarized attention tensor. The output tensor has the same shape as the input `attn` tensor.
         """
         with torch.no_grad():
             attn_cpu = attn.data.cpu().numpy()
@@ -137,11 +115,33 @@ class Aligner(nn.Module):
             )
         return torch.from_numpy(attn_out).to(attn.device)
 
-    def forward(self, enc_in, dec_in, enc_len, dec_len, enc_mask, attn_prior):
-        """
-        :param enc_in: (B, C_1, T_1) Text encoder outputs.
-        :param dec_in: (B, C_2, T_2) Data to align encoder outputs to.
-        :speaker_emb: (B, C_3) Batch of speaker embeddings.
+    def forward(
+        self,
+        enc_in: torch.Tensor,
+        dec_in: torch.Tensor,
+        enc_len: torch.Tensor,
+        dec_len: torch.Tensor,
+        enc_mask: torch.Tensor,
+        attn_prior: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        r"""
+        Performs the forward pass through the Aligner module.
+
+        Args:
+            enc_in (Tensor): The text encoder outputs.
+                Must be of shape (B, C_1, T_1), where B is the batch size, C_1 the number of
+                channels in encoder inputs,
+                and T_1 the sequence length of encoder inputs.
+            dec_in (Tensor): The data to align with encoder outputs.
+                Must be of shape (B, C_2, T_2), where C_2 is the number of channels in decoder inputs,
+                and T_2 the sequence length of decoder inputs.
+            enc_len (Tensor): 1D tensor representing the lengths of each sequence in the batch in `enc_in`.
+            dec_len (Tensor): 1D tensor representing the lengths of each sequence in the batch in `dec_in`.
+            enc_mask (Tensor): Binary mask tensor used to avoid attention to certain timesteps.
+            attn_prior (Tensor): Previous attention values for attention calculation.
+
+        Returns:
+            Tuple[Tensor, Tensor, Tensor, Tensor]: Returns a tuple of Tensors representing the log-probability, soft attention, hard attention, and hard attention duration.
         """
         queries = dec_in
         keys = enc_in
