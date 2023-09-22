@@ -13,10 +13,13 @@ from config import (
 from model.attention.conformer import Conformer
 
 import helpers.tools as tools
+from helpers.initializer import (
+    init_acoustic_model,
+    init_conformer,
+    init_forward_trains_params,
+)
 
 from model.acoustic_model.helpers import positional_encoding
-
-from .helpers import init_acoustic_model, init_conformer, init_forward_trains_params
 
 
 # It's one of the most important component test
@@ -32,10 +35,10 @@ class TestConformer(unittest.TestCase):
         n_speakers = 10
 
         # # Add Conformer as encoder
-        self.encoder = init_conformer(self.model_config)
+        self.encoder, _ = init_conformer(self.model_config)
 
         # Add AcousticModel instance
-        self.acoustic_model = init_acoustic_model(
+        self.acoustic_model, _ = init_acoustic_model(
             self.preprocess_config, self.model_config, n_speakers
         )
 
