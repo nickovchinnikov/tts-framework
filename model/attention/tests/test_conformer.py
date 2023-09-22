@@ -11,7 +11,6 @@ from config import (
     AcousticPretrainingConfig,
     PreprocessingConfig,
     SUPPORTED_LANGUAGES,
-    symbols,
 )
 
 from model.acoustic_model import AcousticModel
@@ -56,10 +55,9 @@ class AcousticModelConfig:
     n_speakers: int
 
 
-# @inprogress
-# @todo: it's one of the most important component test
-# But it's too complicated to cover it from the first glance.
-# You need to come back here when acoustic model is ready!
+# It's one of the most important component test
+# Conformer is used in the encoder of the AccousticModel, crucial for the training
+# Here you can understand the input and output shapes of the Conformer
 class TestConformer(unittest.TestCase):
     def setUp(self):
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
@@ -69,20 +67,22 @@ class TestConformer(unittest.TestCase):
         # Based on speaker.json mock
         n_speakers = 10
 
+        # Create a ConformerConfig instance
         self.conformer_config = ConformerConfig(
             dim=self.model_config.encoder.n_hidden,
             n_layers=self.model_config.encoder.n_layers,
             n_heads=self.model_config.encoder.n_heads,
             embedding_dim=self.model_config.speaker_embed_dim
-            + self.model_config.lang_embed_dim,
+            + self.model_config.lang_embed_dim,  # speaker_embed_dim + lang_embed_dim = 385
             p_dropout=self.model_config.encoder.p_dropout,
             kernel_size_conv_mod=self.model_config.encoder.kernel_size_conv_mod,
             with_ff=self.model_config.encoder.with_ff,
         )
 
-        # Convert ConformerConfig to a dictionary
+        # Add Conformer as encoder
         self.encoder = Conformer(**vars(self.conformer_config))
 
+        # Create an AcousticModelConfig instance
         self.acoustic_model_config = AcousticModelConfig(
             data_path="./model/acoustic_model/tests/mocks",
             preprocess_config=self.preprocess_config,
@@ -91,92 +91,65 @@ class TestConformer(unittest.TestCase):
             n_speakers=n_speakers,
         )
 
+        # Add AcousticModel instance
         self.acoustic_model = AcousticModel(**vars(self.acoustic_model_config))
 
         # Generate mock data for the forward pass
         self.forward_train_params = ForwardTrainParams(
+            # x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size]
             x=torch.randint(
                 1,
                 255,
                 (
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
-                    # self.acoustic_pretraining_config.batch_size,
-                    # self.model_config.speaker_embed_dim,
-                    # self.acoustic_pretraining_config.batch_size,
                 ),
             ),
-            # speakers=torch.tensor([[2, 0, 6], [9, 2, 3], [4, 5, 6]]),
+            # speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]
             speakers=torch.randint(
                 1,
                 n_speakers - 1,
                 (
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
-                    # self.acoustic_pretraining_config.batch_size,
-                    # self.model_config.speaker_embed_dim,
-                    # self.acoustic_pretraining_config.batch_size,
                 ),
             ),
-            src_lens=torch.tensor([3]),
+            # src_lens: Tensor containing the lengths of source sequences. Shape: [batch_size]
+            src_lens=torch.tensor([self.acoustic_pretraining_config.batch_size]),
+            # mels: Tensor containing the mel spectrogram. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
             mels=torch.randn(
                 self.acoustic_pretraining_config.batch_size,
                 self.model_config.speaker_embed_dim,
                 self.model_config.encoder.n_hidden,
             ),
+            # mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]
             mel_lens=torch.randint(
                 0,
                 self.model_config.speaker_embed_dim,
                 (self.acoustic_pretraining_config.batch_size,),
             ),
+            # pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
             pitches=torch.randn(
                 self.acoustic_pretraining_config.batch_size,
                 self.model_config.speaker_embed_dim,
                 self.model_config.encoder.n_hidden,
             ),
-            # langs=torch.randint(
-            #     1,
-            #     len(SUPPORTED_LANGUAGES) - 1,
-            #     (
-            #         self.acoustic_pretraining_config.batch_size,
-            #         self.model_config.speaker_embed_dim,
-            #         # self.acoustic_pretraining_config.batch_size,
-            #         # self.model_config.speaker_embed_dim,
-            #         # self.acoustic_pretraining_config.batch_size,
-            #     ),
-            # ),
+            # langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]
             langs=torch.randint(
                 1,
                 len(SUPPORTED_LANGUAGES) - 1,
                 (
                     self.model_config.speaker_embed_dim,
-                    # self.model_config.lang_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                 ),
             ),
-            # langs=torch.tensor([[3, 4, 5], [9, 2, 3], [4, 5, 6]]),
+            # attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]
             attn_priors=torch.randn(
                 self.acoustic_pretraining_config.batch_size,
                 self.model_config.speaker_embed_dim,
                 self.model_config.speaker_embed_dim,
             ),
             use_ground_truth=True,
-        )
-        self.src_word_emb = Parameter(
-            tools.initialize_embeddings(
-                (len(symbols), self.model_config.encoder.n_hidden)
-            )
-        )
-
-        self.speaker_embed = Parameter(
-            tools.initialize_embeddings(
-                (n_speakers, self.model_config.speaker_embed_dim)
-            )
-        )
-        self.lang_embed = Parameter(
-            tools.initialize_embeddings(
-                (len(SUPPORTED_LANGUAGES), self.model_config.lang_embed_dim)
-            )
         )
 
     def test_initialization(self):
@@ -185,79 +158,17 @@ class TestConformer(unittest.TestCase):
         """
         self.assertIsInstance(self.model, Conformer)
 
-    def test_check(self):
-        src_mask = tools.get_mask_from_lengths(self.forward_train_params.src_lens)
-        n_speakers = 10
-
-        token_idx = torch.randint(
-            1,
-            255,
-            (
-                self.model_config.speaker_embed_dim,
-                self.acoustic_pretraining_config.batch_size,
-            ),
-        )
-
-        speaker_idx = torch.randint(
-            1,
-            n_speakers - 1,
-            (
-                self.model_config.speaker_embed_dim,
-                self.acoustic_pretraining_config.batch_size,
-            ),
-        )
-
-        lang_idx = torch.randint(
-            1,
-            len(SUPPORTED_LANGUAGES) - 1,
-            (
-                self.model_config.speaker_embed_dim,
-                # self.model_config.lang_embed_dim,
-                self.acoustic_pretraining_config.batch_size,
-            ),
-        )
-
-        # speaker_idx = torch.tensor([[2, 0, 6], [9, 2, 3], [4, 5, 6]])
-        # lang_idx = torch.tensor([[3, 4, 5], [9, 2, 3], [4, 5, 6]])
-
-        # token_idx.shape == torch.Size([384, 3])
-        # self.src_word_emb.shape == torch.Size([256, 384])
-        # token_embeddings.shape == torch.Size([384, 3, 384])
-        token_embeddings = F.embedding(token_idx, self.src_word_emb)
-
-        # speaker_idx.shape == torch.Size([384, 3])
-        # self.speaker_embed == torch.Size([10, 384])
-        # speaker_embeds.shape == torch.Size([384, 3, 384])
-        speaker_embeds = F.embedding(speaker_idx, self.speaker_embed)
-
-        # #1 lang_idx.shape == torch.Size([3, 3])
-        # self.lang_embed == torch.Size([19, 1])
-        # lang_embeds.shape == torch.Size([3, 3, 1])
-
-        # Check this out!
-        # lang_idx.shape
-        # > torch.Size([384, 3])
-        # self.lang_embed == torch.Size([19, 1])
-        # lang_embeds.shape
-        # > torch.Size([384, 3, 1])
-        #
-        lang_embeds = F.embedding(lang_idx, self.lang_embed)
-
-        # Merge the speaker and language embeddings
-        embeddings = torch.cat([speaker_embeds, lang_embeds], dim=2)
-
-        # Apply the mask to the embeddings and token embeddings
-        embeddings = embeddings.masked_fill(src_mask.unsqueeze(-1), 0.0)
-        token_embeddings = token_embeddings.masked_fill(src_mask.unsqueeze(-1), 0.0)
-
     def test_forward(self):
         """
         Test that a Conformer instance can correctly perform a forward pass.
         For this test case we use the code from AccousticModel.
         """
         # Generate masks for padding positions in the source sequences and mel sequences
+        # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
         src_mask = tools.get_mask_from_lengths(self.forward_train_params.src_lens)
 
+        # x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
+        # embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]
         x, embeddings = self.acoustic_model.get_embeddings(
             token_idx=self.forward_train_params.x,
             speaker_idx=self.forward_train_params.speakers,
@@ -290,8 +201,8 @@ class TestConformer(unittest.TestCase):
             ),
         )
 
-        # encoding.shape
-        # > torch.Size([1, 287, 384])
+        # encoding: Tensor containing the positional encoding.
+        # Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]
         encoding = positional_encoding(
             self.model_config.encoder.n_hidden,
             max(x.shape[1], max(self.forward_train_params.mel_lens)),
@@ -299,6 +210,7 @@ class TestConformer(unittest.TestCase):
         )
 
         # Run conformer encoder
+        # x: Tensor containing the encoded sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
 
         # Assert the shape of x
