@@ -159,9 +159,14 @@ class AcousticModel(nn.Module):
         token_embeddings = F.embedding(token_idx, self.src_word_emb)
         speaker_embeds = F.embedding(speaker_idx, self.speaker_embed)
         lang_embeds = F.embedding(lang_idx, self.lang_embed)
+
+        # Merge the speaker and language embeddings
         embeddings = torch.cat([speaker_embeds, lang_embeds], dim=2)
+
+        # Apply the mask to the embeddings and token embeddings
         embeddings = embeddings.masked_fill(src_mask.unsqueeze(-1), 0.0)
         token_embeddings = token_embeddings.masked_fill(src_mask.unsqueeze(-1), 0.0)
+
         return token_embeddings, embeddings
 
     def prepare_for_export(self) -> None:
