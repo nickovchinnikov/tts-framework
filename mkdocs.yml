@@ -13,13 +13,13 @@ nav:
       - AddCoords: model/conv_blocks/add_coords.md
     - Attention:
       - References: model/attention/readme.md
+      - Conformer: model/attention/conformer.md
+      - Feed Forward: model/attention/feed_forward.md
       - Style Embed Attention: model/attention/style_embed_attention.md
       - Relative Multi-Head Attention: model/attention/relative_multi_head_attention.md
       - Conformer Multi-Headed Self Attention: model/attention/conformer_multi_headed_self_attention.md
-      - Feed Forward: model/attention/feed_forward.md
       - Conformer Convolution Module: model/attention/conformer_conv_module.md
       - Conformer Block: model/attention/conformer_block.md
-      - Conformer: model/attention/conformer.md
     - Acoustic Model:
       - References: model/acoustic_model/readme.md
       - Accoustic Model: model/acoustic_model/acoustic_model.md
@@ -38,6 +38,7 @@ nav:
       - Phoneme Level Prosody Encoder: model/reference_encoder/phoneme_level_prosody_encoder.md
   - Helpers:
     - References: helpers/readme.md
+    - Initializer: helpers/initializer.md
     - Tools: helpers/tools.md
   - About mkdocs-material: readme.md
 theme:
