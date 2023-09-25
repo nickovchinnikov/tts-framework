@@ -122,6 +122,7 @@ class ForwardTrainParams:
     src_lens: torch.Tensor
     mels: torch.Tensor
     mel_lens: torch.Tensor
+    enc_len: torch.Tensor
     pitches: torch.Tensor
     langs: torch.Tensor
     attn_priors: torch.Tensor
@@ -131,6 +132,7 @@ class ForwardTrainParams:
 def init_forward_trains_params(
     model_config: AcousticENModelConfig,
     acoustic_pretraining_config: AcousticPretrainingConfig,
+    preprocess_config: PreprocessingConfig,
     n_speakers: int = 10,
 ) -> ForwardTrainParams:
     r"""
@@ -178,17 +180,35 @@ def init_forward_trains_params(
         ),
         # src_lens: Tensor containing the lengths of source sequences. Shape: [batch_size]
         src_lens=torch.tensor([acoustic_pretraining_config.batch_size]),
-        # mels: Tensor containing the mel spectrogram. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
+        # mels: Tensor containing the mel spectrogram. Shape: [batch_size, stft.n_mel_channels, encoder.n_hidden]
         mels=torch.randn(
-            acoustic_pretraining_config.batch_size,
             model_config.speaker_embed_dim,
+            preprocess_config.stft.n_mel_channels,
             model_config.encoder.n_hidden,
         ),
+        # enc_len: Tensor containing the lengths of mel sequences. Shape: [speaker_embed_dim]
+        enc_len=torch.cat(
+            [
+                torch.randint(
+                    1,
+                    model_config.speaker_embed_dim,
+                    (model_config.speaker_embed_dim - 1,),
+                ),
+                torch.tensor([model_config.speaker_embed_dim]),
+            ],
+            dim=0,
+        ),
         # mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]
-        mel_lens=torch.randint(
-            0,
-            model_config.speaker_embed_dim,
-            (acoustic_pretraining_config.batch_size,),
+        mel_lens=torch.cat(
+            [
+                torch.randint(
+                    1,
+                    model_config.speaker_embed_dim,
+                    (model_config.speaker_embed_dim - 1,),
+                ),
+                torch.tensor([model_config.speaker_embed_dim]),
+            ],
+            dim=0,
         ),
         # pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
         pitches=torch.randn(

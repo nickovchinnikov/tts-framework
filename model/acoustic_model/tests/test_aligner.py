@@ -48,7 +48,10 @@ class TestAligner(unittest.TestCase):
 
         # Generate mock data for the forward pass
         self.forward_train_params = init_forward_trains_params(
-            self.model_config, self.acoustic_pretraining_config, n_speakers
+            self.model_config,
+            self.acoustic_pretraining_config,
+            self.preprocess_config,
+            n_speakers,
         )
 
         preprocess_config = self.preprocess_config
@@ -58,15 +61,13 @@ class TestAligner(unittest.TestCase):
             preprocess_config,
             model_config,
         )
+
         self.utterance_prosody_predictor = PhonemeProsodyPredictor(
             model_config=model_config, phoneme_level=False
         )
         self.phoneme_prosody_encoder = PhonemeLevelProsodyEncoder(
             preprocess_config,
             model_config,
-        )
-        self.phoneme_prosody_predictor = PhonemeProsodyPredictor(
-            model_config=model_config, phoneme_level=True
         )
         self.u_bottle_out = nn.Linear(
             model_config.reference_encoder.bottleneck_size_u,
@@ -129,45 +130,73 @@ class TestAligner(unittest.TestCase):
             ),
         )
 
-        # u_prosody_ref = self.u_norm(
-        #     self.utterance_prosody_encoder(
-        #         mels=mels, mel_lens=self.forward_train_params.mel_lens
-        #     )
-        # )
+        # params for the testing
+        mels = self.forward_train_params.mels
+        mel_lens = self.forward_train_params.mel_lens
+        enc_len = self.forward_train_params.enc_len
 
-        # u_prosody_pred = self.u_norm(
-        #     self.average_utterance_prosody(
-        #         u_prosody_pred=self.utterance_prosody_predictor(x=x, mask=src_mask),
-        #         src_mask=src_mask,
-        #     )
-        # )
+        u_prosody_ref = self.u_norm(
+            self.utterance_prosody_encoder(
+                mels=mels,
+                mel_lens=mel_lens,
+            )
+        )
 
-        # p_prosody_ref = self.p_norm(
-        #     self.phoneme_prosody_encoder(
-        #         x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding
-        #     )
-        # )
-        # p_prosody_pred = self.p_norm(
-        #     self.phoneme_prosody_predictor(
-        #         x=x,
-        #         mask=src_mask,
-        #     )
-        # )
-        # if use_ground_truth:
-        #     x = x + self.u_bottle_out(u_prosody_ref)
-        #     x = x + self.p_bottle_out(p_prosody_ref)
-        # else:
-        #     x = x + self.u_bottle_out(u_prosody_pred)
-        #     x = x + self.p_bottle_out(p_prosody_pred)
-        # x_res = x
-        # attn_logprob, attn_soft, attn_hard, attn_hard_dur = self.aligner(
-        #     enc_in=x_res.permute((0, 2, 1)),
-        #     dec_in=mels,
-        #     enc_len=src_lens,
-        #     dec_len=mel_lens,
-        #     enc_mask=src_mask,
-        #     attn_prior=attn_priors,
-        # )
+        p_prosody_ref = self.p_norm(
+            self.phoneme_prosody_encoder(
+                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding
+            )
+        )
+
+        x = x + self.u_bottle_out(u_prosody_ref)
+        x = x + self.p_bottle_out(p_prosody_ref)
+
+        x_res = x
+
+        attn_logprob, attn_soft, attn_hard, attn_hard_dur = self.aligner(
+            enc_in=x_res.permute((0, 2, 1)),
+            dec_in=mels,
+            enc_len=enc_len,
+            dec_len=mel_lens,
+            enc_mask=src_mask,
+            attn_prior=None,
+        )
+
+        # Assert the shape of attn_logprob
+        self.assertEqual(
+            attn_logprob.shape,
+            torch.Size(
+                [
+                    self.model_config.speaker_embed_dim,
+                    self.model_config.lang_embed_dim,
+                    self.model_config.speaker_embed_dim,
+                    self.acoustic_pretraining_config.batch_size,
+                ]
+            ),
+        )
+
+        # Assert the shape of attn_logprob==attn_soft
+        self.assertEqual(
+            attn_soft.shape,
+            attn_logprob.shape,
+        )
+
+        # Assert the shape of attn_logprob==attn_hard
+        self.assertEqual(
+            attn_soft.shape,
+            attn_hard.shape,
+        )
+
+        # Assert the shape of attn_logprob==attn_hard
+        self.assertEqual(
+            attn_hard_dur.shape,
+            torch.Size(
+                [
+                    self.model_config.speaker_embed_dim,
+                    self.acoustic_pretraining_config.batch_size,
+                ]
+            ),
+        )
 
     def test_binarize_attention_parallel(self):
         aligner = Aligner(d_enc_in=10, d_dec_in=10, d_hidden=20)
