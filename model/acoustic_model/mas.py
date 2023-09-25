@@ -1,8 +1,8 @@
 import numpy as np
-from numba import jit, prange
+from numba import jit, njit, prange
 
 
-@jit(nopython=True)
+@njit(fastmath=True)
 def mas_width1(attn_map: np.ndarray) -> np.ndarray:
     r"""
     Applies a Monotonic Alignments Shrink (MAS) operation with a hard-coded width of 1 to an attention map.
@@ -59,7 +59,7 @@ def mas_width1(attn_map: np.ndarray) -> np.ndarray:
     return opt
 
 
-@jit(nopython=True, parallel=True)
+@njit(parallel=True)
 def b_mas(b_attn_map, in_lens, out_lens, width=1):
     r"""
     Applies Monotonic Alignments Shrink (MAS) operation in parallel to the batches of an attention map.
