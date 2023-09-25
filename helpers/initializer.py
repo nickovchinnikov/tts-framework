@@ -182,7 +182,19 @@ def init_forward_trains_params(
             ),
         ),
         # src_lens: Tensor containing the lengths of source sequences. Shape: [batch_size]
-        src_lens=torch.tensor([acoustic_pretraining_config.batch_size]),
+        # src_lens=torch.tensor([acoustic_pretraining_config.batch_size]),
+        # src_lens: Tensor containing the lengths of source sequences. Shape: [speaker_embed_dim]
+        src_lens=torch.cat(
+            [
+                # torch.tensor([self.model_config.speaker_embed_dim]),
+                torch.randint(
+                    1,
+                    acoustic_pretraining_config.batch_size + 1,
+                    (model_config.speaker_embed_dim,),
+                ),
+            ],
+            dim=0,
+        ),
         # mels: Tensor containing the mel spectrogram. Shape: [batch_size, stft.n_mel_channels, encoder.n_hidden]
         mels=torch.randn(
             model_config.speaker_embed_dim,
@@ -215,8 +227,9 @@ def init_forward_trains_params(
         ),
         # pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
         pitches=torch.randn(
-            acoustic_pretraining_config.batch_size,
+            # acoustic_pretraining_config.batch_size,
             model_config.speaker_embed_dim,
+            # model_config.speaker_embed_dim,
             model_config.encoder.n_hidden,
         ),
         # langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]
@@ -230,9 +243,9 @@ def init_forward_trains_params(
         ),
         # attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]
         attn_priors=torch.randn(
+            model_config.speaker_embed_dim,
+            model_config.speaker_embed_dim,
             acoustic_pretraining_config.batch_size,
-            model_config.speaker_embed_dim,
-            model_config.speaker_embed_dim,
         ),
         use_ground_truth=True,
     )
