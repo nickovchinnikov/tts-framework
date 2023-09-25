@@ -7,17 +7,16 @@ from model.reference_encoder.STL import STL
 
 
 class TestSTL(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.model_config = Mock()
-        cls.model_config.encoder.n_hidden = 512
-        cls.model_config.reference_encoder.token_num = 32
+    def setUp(self):
+        self.model_config = Mock()
+        self.model_config.encoder.n_hidden = 512
+        self.model_config.reference_encoder.token_num = 32
 
-        cls.stl = STL(cls.model_config)
-        cls.batch_size = 10
-        cls.n_hidden = cls.model_config.encoder.n_hidden
+        self.stl = STL(self.model_config)
+        self.batch_size = 10
+        self.n_hidden = self.model_config.encoder.n_hidden
 
-        cls.x = torch.rand(cls.batch_size, cls.n_hidden // 2)
+        self.x = torch.rand(self.batch_size, self.n_hidden // 2)
 
     def test_forward(self):
         output = self.stl(self.x)

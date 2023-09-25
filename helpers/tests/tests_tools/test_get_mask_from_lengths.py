@@ -5,10 +5,9 @@ from helpers.tools import get_mask_from_lengths
 
 
 class TestGetMaskFromLengths(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         # Test cases: [2, 3, 1, 4]
-        cls.input_lengths = torch.tensor([2, 3, 1, 4])
+        self.input_lengths = torch.tensor([2, 3, 1, 4])
 
     def test_get_mask_from_lengths(self):
         expected_output = torch.tensor(
