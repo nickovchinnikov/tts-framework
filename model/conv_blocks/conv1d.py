@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from helpers.tools import get_device
+
 
 class DepthWiseConv1d(nn.Module):
     r"""
@@ -23,6 +25,7 @@ class DepthWiseConv1d(nn.Module):
         out_channels (int): Number of channels produced by the convolution
         kernel_size (int): Size of the convolving kernel
         padding (int): Zero-padding added to both sides of the input
+        device (torch.device): Device where the tensors should be placed
 
     Shape:
         - Input: (N, C_in, L_in)
@@ -43,11 +46,21 @@ class DepthWiseConv1d(nn.Module):
     """
 
     def __init__(
-        self, in_channels: int, out_channels: int, kernel_size: int, padding: int
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        padding: int,
+        device: torch.device = get_device(),
     ):
         super().__init__()
         self.conv = nn.Conv1d(
-            in_channels, out_channels, kernel_size, padding=padding, groups=in_channels
+            in_channels,
+            out_channels,
+            kernel_size,
+            padding=padding,
+            groups=in_channels,
+            device=device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -138,6 +151,7 @@ class PointwiseConv1d(nn.Module):
         padding: int = 0,
         bias: bool = True,
         kernel_size: int = 1,
+        device: torch.device = get_device(),
     ):
         super().__init__()
         self.conv = nn.Conv1d(
@@ -147,6 +161,7 @@ class PointwiseConv1d(nn.Module):
             stride=stride,
             padding=padding,
             bias=bias,
+            device=device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
