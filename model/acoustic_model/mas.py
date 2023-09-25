@@ -2,6 +2,7 @@ import numpy as np
 from numba import jit, njit, prange
 
 
+# @todo: Don't see any performance improvement with numba
 @njit(fastmath=True)
 def mas_width1(attn_map: np.ndarray) -> np.ndarray:
     r"""
