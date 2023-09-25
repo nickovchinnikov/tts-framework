@@ -8,7 +8,6 @@ from config import (
     PreprocessingConfig,
 )
 
-from model.acoustic_model.helpers import positional_encoding
 from model.attention.conformer_block import ConformerBlock
 
 from helpers.initializer import (
@@ -17,12 +16,11 @@ from helpers.initializer import (
     init_forward_trains_params,
     init_mask_input_embeddings_encoding_attn_mask,
 )
-import helpers.tools as tools
 
 
-# @todo: it's one of the most important component test
-# But it's too complicated to cover it from the first glance.
-# You need to come back here when acoustic model is ready!
+# ConformerBlock is used in the Conformer, crucial for the training
+# Here you can understand the input and output shapes of the Conformer
+# Integration test
 class TestConformerBlock(unittest.TestCase):
     def setUp(self):
         self.acoustic_pretraining_config = AcousticPretrainingConfig()

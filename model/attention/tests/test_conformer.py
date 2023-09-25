@@ -1,7 +1,5 @@
 import unittest
 
-from dataclasses import dataclass
-
 import torch
 
 from config import (
@@ -12,17 +10,14 @@ from config import (
 
 from model.attention.conformer import Conformer
 
-import helpers.tools as tools
 from helpers.initializer import (
     init_acoustic_model,
     init_conformer,
     init_forward_trains_params,
+    init_mask_input_embeddings_encoding_attn_mask,
 )
 
-from model.acoustic_model.helpers import positional_encoding
 
-
-# It's one of the most important component test
 # Conformer is used in the encoder of the AccousticModel, crucial for the training
 # Here you can understand the input and output shapes of the Conformer
 # Integration test
@@ -62,17 +57,16 @@ class TestConformer(unittest.TestCase):
         Test that a Conformer instance can correctly perform a forward pass.
         For this test case we use the code from AccousticModel.
         """
-        # Generate masks for padding positions in the source sequences and mel sequences
-        # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
-        src_mask = tools.get_mask_from_lengths(self.forward_train_params.src_lens)
-
-        # x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
-        # embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]
-        x, embeddings = self.acoustic_model.get_embeddings(
-            token_idx=self.forward_train_params.x,
-            speaker_idx=self.forward_train_params.speakers,
-            src_mask=src_mask,
-            lang_idx=self.forward_train_params.langs,
+        (
+            src_mask,
+            x,
+            embeddings,
+            encoding,
+            _,
+        ) = init_mask_input_embeddings_encoding_attn_mask(
+            self.acoustic_model,
+            self.forward_train_params,
+            self.model_config,
         )
 
         # Assert the shape of x
@@ -98,14 +92,6 @@ class TestConformer(unittest.TestCase):
                     + self.model_config.lang_embed_dim,
                 ]
             ),
-        )
-
-        # encoding: Tensor containing the positional encoding.
-        # Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]
-        encoding = positional_encoding(
-            self.model_config.encoder.n_hidden,
-            max(x.shape[1], max(self.forward_train_params.mel_lens)),
-            device=x.device,
         )
 
         # Run conformer encoder

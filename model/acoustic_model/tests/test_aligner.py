@@ -12,10 +12,9 @@ from helpers.initializer import (
     init_acoustic_model,
     init_conformer,
     init_forward_trains_params,
+    init_mask_input_embeddings_encoding_attn_mask,
 )
-import helpers.tools as tools
 
-from model.acoustic_model.helpers import positional_encoding
 from model.acoustic_model.aligner import Aligner
 
 from model.reference_encoder import (
@@ -24,7 +23,6 @@ from model.reference_encoder import (
 )
 
 
-# it's one of the most important component test
 # It checks for most of the acoustic model code
 # Here you can understand the input and output shapes of the Aligner
 # Integration test
@@ -93,25 +91,16 @@ class TestAligner(unittest.TestCase):
         )
 
     def test_forward(self):
-        # Generate masks for padding positions in the source sequences and mel sequences
-        # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
-        src_mask = tools.get_mask_from_lengths(self.forward_train_params.src_lens)
-
-        # x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
-        # embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]
-        x, embeddings = self.acoustic_model.get_embeddings(
-            token_idx=self.forward_train_params.x,
-            speaker_idx=self.forward_train_params.speakers,
-            src_mask=src_mask,
-            lang_idx=self.forward_train_params.langs,
-        )
-
-        # encoding: Tensor containing the positional encoding.
-        # Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]
-        encoding = positional_encoding(
-            self.model_config.encoder.n_hidden,
-            max(x.shape[1], max(self.forward_train_params.mel_lens)),
-            device=x.device,
+        (
+            src_mask,
+            x,
+            embeddings,
+            encoding,
+            _,
+        ) = init_mask_input_embeddings_encoding_attn_mask(
+            self.acoustic_model,
+            self.forward_train_params,
+            self.model_config,
         )
 
         # Run conformer encoder

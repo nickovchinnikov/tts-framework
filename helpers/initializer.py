@@ -243,6 +243,27 @@ def init_mask_input_embeddings_encoding_attn_mask(
     forward_train_params: ForwardTrainParams,
     model_config: AcousticENModelConfig,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    r"""
+    Function to initialize masks for padding positions, input sequences, embeddings, positional encoding and attention masks.
+
+    Args:
+        acoustic_model (AcousticModel): Initialized Acoustic Model.
+        forward_train_params (ForwardTrainParams): Parameters for the forward training process.
+        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.
+
+    Returns:
+        Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing the following elements:
+            - src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
+            - x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
+            - embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]
+            - encoding: Tensor containing the positional encoding. Shape: [lang_embed_dim, max(forward_train_params.mel_lens), model_config.encoder.n_hidden]
+            - attn_maskЖ Tensor containing the attention masks. Shape: [1, 1, 1, batch_size]
+
+    The function starts by generating masks for padding positions in the source and mel sequences.
+    Then, it uses the acoustic model to get the input sequences and embeddings.
+    Finally, it computes the positional encoding.
+
+    """
     # Generate masks for padding positions in the source sequences and mel sequences
     # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
     src_mask = tools.get_mask_from_lengths(forward_train_params.src_lens)
