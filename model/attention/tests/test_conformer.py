@@ -25,6 +25,7 @@ from model.acoustic_model.helpers import positional_encoding
 # It's one of the most important component test
 # Conformer is used in the encoder of the AccousticModel, crucial for the training
 # Here you can understand the input and output shapes of the Conformer
+# Integration test
 class TestConformer(unittest.TestCase):
     def setUp(self):
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
@@ -44,7 +45,10 @@ class TestConformer(unittest.TestCase):
 
         # Generate mock data for the forward pass
         self.forward_train_params = init_forward_trains_params(
-            self.model_config, self.acoustic_pretraining_config, n_speakers
+            self.model_config,
+            self.acoustic_pretraining_config,
+            self.preprocess_config,
+            n_speakers,
         )
 
     def test_initialization(self):

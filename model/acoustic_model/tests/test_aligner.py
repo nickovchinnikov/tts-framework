@@ -17,7 +17,6 @@ import helpers.tools as tools
 
 from model.acoustic_model.helpers import positional_encoding
 from model.acoustic_model.aligner import Aligner
-from model.acoustic_model.phoneme_prosody_predictor import PhonemeProsodyPredictor
 
 from model.reference_encoder import (
     UtteranceLevelProsodyEncoder,
@@ -25,10 +24,10 @@ from model.reference_encoder import (
 )
 
 
-# @inprogress!
-# @todo: it's one of the most important component test
-# But it's too complicated to cover it from the first glance.
-# You need to come back here when acoustic model is ready!
+# it's one of the most important component test
+# It checks for most of the acoustic model code
+# Here you can understand the input and output shapes of the Aligner
+# Integration test
 class TestAligner(unittest.TestCase):
     def setUp(self):
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
@@ -62,25 +61,26 @@ class TestAligner(unittest.TestCase):
             model_config,
         )
 
-        self.utterance_prosody_predictor = PhonemeProsodyPredictor(
-            model_config=model_config, phoneme_level=False
-        )
         self.phoneme_prosody_encoder = PhonemeLevelProsodyEncoder(
             preprocess_config,
             model_config,
         )
+
         self.u_bottle_out = nn.Linear(
             model_config.reference_encoder.bottleneck_size_u,
             model_config.encoder.n_hidden,
         )
+
         self.u_norm = nn.LayerNorm(
             model_config.reference_encoder.bottleneck_size_u,
             elementwise_affine=False,
         )
+
         self.p_bottle_out = nn.Linear(
             model_config.reference_encoder.bottleneck_size_p,
             model_config.encoder.n_hidden,
         )
+
         self.p_norm = nn.LayerNorm(
             model_config.reference_encoder.bottleneck_size_p,
             elementwise_affine=False,
