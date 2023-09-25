@@ -11,7 +11,10 @@ from config import (
     SUPPORTED_LANGUAGES,
 )
 
+import helpers.tools as tools
+
 from model.acoustic_model import AcousticModel
+from model.acoustic_model.helpers import positional_encoding
 
 from model.attention.conformer import Conformer
 
@@ -233,3 +236,34 @@ def init_forward_trains_params(
         ),
         use_ground_truth=True,
     )
+
+
+def init_mask_input_embeddings_encoding_attn_mask(
+    acoustic_model: AcousticModel,
+    forward_train_params: ForwardTrainParams,
+    model_config: AcousticENModelConfig,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    # Generate masks for padding positions in the source sequences and mel sequences
+    # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
+    src_mask = tools.get_mask_from_lengths(forward_train_params.src_lens)
+
+    # x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
+    # embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]
+    x, embeddings = acoustic_model.get_embeddings(
+        token_idx=forward_train_params.x,
+        speaker_idx=forward_train_params.speakers,
+        src_mask=src_mask,
+        lang_idx=forward_train_params.langs,
+    )
+
+    # encoding: Tensor containing the positional encoding
+    # Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]
+    encoding = positional_encoding(
+        model_config.encoder.n_hidden,
+        max(x.shape[1], max(forward_train_params.mel_lens)),
+        device=x.device,
+    )
+
+    attn_mask = src_mask.view((src_mask.shape[0], 1, 1, src_mask.shape[1]))
+
+    return src_mask, x, embeddings, encoding, attn_mask
