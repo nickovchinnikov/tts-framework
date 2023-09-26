@@ -25,7 +25,7 @@ from helpers.tools import get_device
 # Integration test
 class TestConformer(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device(get_device())
+        self.device = get_device()
 
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
         self.model_config = AcousticENModelConfig()
@@ -35,11 +35,11 @@ class TestConformer(unittest.TestCase):
         n_speakers = 10
 
         # # Add Conformer as encoder
-        self.encoder, _ = init_conformer(self.model_config)
+        self.encoder, _ = init_conformer(self.model_config, device=self.device)
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers, device=self.device
         )
 
         # Generate mock data for the forward pass
@@ -48,6 +48,7 @@ class TestConformer(unittest.TestCase):
             self.acoustic_pretraining_config,
             self.preprocess_config,
             n_speakers,
+            device=self.device,
         )
 
     def test_initialization(self):
@@ -72,6 +73,12 @@ class TestConformer(unittest.TestCase):
             self.forward_train_params,
             self.model_config,
         )
+
+        # Assert the device type
+        self.assertEqual(src_mask.device.type, self.device.type)
+        self.assertEqual(x.device.type, self.device.type)
+        self.assertEqual(embeddings.device.type, self.device.type)
+        self.assertEqual(encoding.device.type, self.device.type)
 
         # Assert the shape of x
         self.assertEqual(
