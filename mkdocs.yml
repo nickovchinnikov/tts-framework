@@ -37,6 +37,9 @@ nav:
       - Reference Encoder: model/reference_encoder/reference_encoder.md
       - Utterance Level Prosody Encoder: model/reference_encoder/utterance_level_prosody_encoder.md
       - Phoneme Level Prosody Encoder: model/reference_encoder/phoneme_level_prosody_encoder.md
+    - Univnet:
+      - References: model/univnet/readme.md
+      - Kernel Predictor: model/univnet/kernel_predictor.md
   - Helpers:
     - References: helpers/readme.md
     - Initializer: helpers/initializer.md
