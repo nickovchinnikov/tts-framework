@@ -3,8 +3,13 @@ import torch
 
 from model.conv_blocks.bsconv import BSConv1d
 
+from helpers.tools import get_device
+
 
 class TestBSConv1d(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_given_kernel_size_and_padding(self):
         # Batch size, Input channels, output channels
         N, C_in, C_out = 16, 4, 8

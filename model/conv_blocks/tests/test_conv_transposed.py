@@ -4,8 +4,13 @@ import torch
 from model.conv_blocks.conv_transposed import ConvTransposed
 from model.conv_blocks.bsconv import BSConv1d
 
+from helpers.tools import get_device
+
 
 class TestConvTransposed(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_initialization(self):
         """
         Test to check if the ConvTransposed instance is properly created.

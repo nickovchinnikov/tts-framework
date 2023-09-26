@@ -3,10 +3,12 @@ import unittest
 
 from model.conv_blocks.conv1d import DepthWiseConv1d, PointwiseConv1d
 
+from helpers.tools import get_device
+
 
 class TestDepthwiseConv1d(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device("cuda")
+        torch.set_default_device(get_device())
         # initialize parameters once and reuse them in multiple test cases
         self.in_channels, self.out_channels, self.kernel_size, self.padding = 2, 4, 3, 1
         self.depthwise_conv = DepthWiseConv1d(
@@ -51,7 +53,7 @@ class TestDepthwiseConv1d(unittest.TestCase):
 
 class TestPointwiseConv1d(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device("cuda")
+        torch.set_default_device(get_device())
         # initialize parameters once and reuse them in multiple test cases
         self.in_channels, self.out_channels, self.stride, self.padding, self.bias = (
             2,

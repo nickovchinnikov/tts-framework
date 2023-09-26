@@ -3,12 +3,17 @@ import unittest
 import torch
 import torch.nn as nn
 
+from helpers.tools import get_device
+
 from model.conv_blocks.conv1d_glu import Conv1dGLU
 from model.conv_blocks.bsconv import BSConv1d
 from model.conv_blocks.conv1d import PointwiseConv1d, DepthWiseConv1d
 
 
 class TestConv1dGLU(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_initialization(self):
         """
         Test to check if the Conv1dGLU instance is properly created.

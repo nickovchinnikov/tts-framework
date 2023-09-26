@@ -6,6 +6,17 @@ import numpy as np
 from typing import List, Tuple
 
 
+# @todo add env variable to set device for testing or any other specific purpose
+def get_device() -> torch.device:
+    r"""
+    This function returns the device where the model and tensors should be placed.
+
+    Returns:
+        torch.device: The device where the model and tensors should be placed.
+    """
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
     r"""
     Takes a list of 1D or 2D tensors and pads them to match the maximum length.

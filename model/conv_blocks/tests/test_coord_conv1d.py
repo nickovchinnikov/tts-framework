@@ -3,8 +3,13 @@ import unittest
 
 from model.conv_blocks.coord_conv1d import CoordConv1d
 
+from helpers.tools import get_device
+
 
 class TestCoordConv1d(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_simple_case(self):
         """Tests a simple case with input of size (1, 2, 10)"""
         rank1_model = CoordConv1d(

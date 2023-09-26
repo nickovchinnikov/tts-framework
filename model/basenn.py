@@ -1,10 +1,11 @@
+from typing import Any
 import torch
 import torch.nn as nn
 
 from helpers.tools import get_device
 
 
-class BaseNN(nn.Module):
+class BaseNNModule(nn.Module):
     r"""
     This is the base class for all neural networks in this module. It provides basic support for device
     placement of the model.
@@ -14,9 +15,7 @@ class BaseNN(nn.Module):
     to ensure that all of its parameters and buffers are moved.
 
     Args:
-        device (torch.device): The device to which the model should be moved. Defaults to the device
-        returned by the `get_device()` helper function (which selects a GPU if available, and falls
-        back to CPU otherwise).
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Attributes:
         device (torch.device): The device to which the model is currently allocated.
@@ -36,5 +35,8 @@ class BaseNN(nn.Module):
         # Store the device with the model for later reference
         self.device = device
 
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
         # Moves all model parameters and buffers to the device.
         self.to(self.device)
+
+        return super().__call__(*args, **kwds)
