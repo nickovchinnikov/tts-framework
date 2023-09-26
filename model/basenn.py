@@ -1,0 +1,40 @@
+import torch
+import torch.nn as nn
+
+from helpers.tools import get_device
+
+
+class BaseNN(nn.Module):
+    r"""
+    This is the base class for all neural networks in this module. It provides basic support for device
+    placement of the model.
+
+    In PyTorch, a significant feature is the ability to move your entire model to a GPU for better
+    performance. All subclasses should ensure to forward the device argument to this class's constructor
+    to ensure that all of its parameters and buffers are moved.
+
+    Args:
+        device (torch.device): The device to which the model should be moved. Defaults to the device
+        returned by the `get_device()` helper function (which selects a GPU if available, and falls
+        back to CPU otherwise).
+
+    Attributes:
+        device (torch.device): The device to which the model is currently allocated.
+
+    Examples:
+    ```python
+    model = BaseNN(device=torch.device('cpu'))
+    ```
+    """
+
+    def __init__(
+        self,
+        device: torch.device = get_device(),
+    ):
+        super().__init__()
+
+        # Store the device with the model for later reference
+        self.device = device
+
+        # Moves all model parameters and buffers to the device.
+        self.to(self.device)
