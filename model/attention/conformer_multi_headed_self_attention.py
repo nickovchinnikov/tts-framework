@@ -5,8 +5,12 @@ from torch import nn
 
 from .relative_multi_head_attention import RelativeMultiHeadAttention
 
+from model.basenn import BaseNNModule
 
-class ConformerMultiHeadedSelfAttention(nn.Module):
+from helpers.tools import get_device
+
+
+class ConformerMultiHeadedSelfAttention(BaseNNModule):
     """
     Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
     the relative sinusoidal positional encoding scheme. The relative positional encoding allows the self-attention
@@ -18,6 +22,7 @@ class ConformerMultiHeadedSelfAttention(nn.Module):
         d_model (int): The dimension of model
         num_heads (int): The number of attention heads.
         dropout_p (float): probability of dropout
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Inputs: inputs, mask
         - **inputs** (batch, time, dim): Tensor containing input vector
@@ -27,12 +32,18 @@ class ConformerMultiHeadedSelfAttention(nn.Module):
         (batch, time, dim): Tensor produces by relative multi headed self attention module.
     """
 
-    def __init__(self, d_model: int, num_heads: int, dropout_p: float):
-        super().__init__()
+    def __init__(
+        self,
+        d_model: int,
+        num_heads: int,
+        dropout_p: float,
+        device: torch.device = get_device(),
+    ):
+        super().__init__(device)
 
         # Initialize the RelativeMultiHeadAttention module passing the model dimension and number of attention heads
         self.attention = RelativeMultiHeadAttention(
-            d_model=d_model, num_heads=num_heads
+            d_model=d_model, num_heads=num_heads, device=self.device
         )
         self.dropout = nn.Dropout(p=dropout_p)
 

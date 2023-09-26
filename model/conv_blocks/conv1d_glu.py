@@ -1,10 +1,14 @@
 import torch
 import torch.nn as nn
 
+from helpers.tools import get_device
+
+from model.basenn import BaseNNModule
+
 from .bsconv import BSConv1d
 
 
-class Conv1dGLU(nn.Module):
+class Conv1dGLU(BaseNNModule):
     r"""
     `Conv1dGLU` implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
     It's based on the Deep Voice 3 project.
@@ -14,6 +18,7 @@ class Conv1dGLU(nn.Module):
         kernel_size (int): kernel size for the convolution layer.
         padding (int): padding size for the convolution layer.
         embedding_dim (int): dimension of the embedding.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Attributes:
          bsconv1d (BSConv1d) : an instance of the Binarized Separated Convolution (1d)
@@ -23,15 +28,28 @@ class Conv1dGLU(nn.Module):
     """
 
     def __init__(
-        self, d_model: int, kernel_size: int, padding: int, embedding_dim: int
+        self,
+        d_model: int,
+        kernel_size: int,
+        padding: int,
+        embedding_dim: int,
+        device: torch.device = get_device(),
     ):
-        super().__init__()
+        super().__init__(device)
 
         self.bsconv1d = BSConv1d(
-            d_model, 2 * d_model, kernel_size=kernel_size, padding=padding
+            d_model,
+            2 * d_model,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=self.device,
         )
 
-        self.embedding_proj = nn.Linear(embedding_dim, d_model)
+        self.embedding_proj = nn.Linear(
+            embedding_dim,
+            d_model,
+            device=self.device,
+        )
 
         self.register_buffer("sqrt", torch.sqrt(torch.FloatTensor([0.5])).squeeze(0))
 

@@ -2,8 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from helpers.tools import get_device
+from model.basenn import BaseNNModule
 
-class StyleEmbedAttention(nn.Module):
+
+class StyleEmbedAttention(BaseNNModule):
     r"""
     This mechanism is being used to extract style features from audio data in the form of spectrograms.
 
@@ -23,22 +26,35 @@ class StyleEmbedAttention(nn.Module):
         key_dim (int): Dimensionality of the key vectors.
         num_units (int): Total dimensionality of the query, key, and value vectors.
         num_heads (int): Number of parallel attention layers (heads).
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Note: `num_units` should be divisible by `num_heads`.
     """
 
-    def __init__(self, query_dim: int, key_dim: int, num_units: int, num_heads: int):
-        super().__init__()
+    def __init__(
+        self,
+        query_dim: int,
+        key_dim: int,
+        num_units: int,
+        num_heads: int,
+        device: torch.device = get_device(),
+    ):
+        super().__init__(device)
         self.num_units = num_units
         self.num_heads = num_heads
         self.key_dim = key_dim
 
         self.W_query = nn.Linear(
-            in_features=query_dim, out_features=num_units, bias=False
+            in_features=query_dim,
+            out_features=num_units,
+            bias=False,
+            device=self.device,
         )
-        self.W_key = nn.Linear(in_features=key_dim, out_features=num_units, bias=False)
+        self.W_key = nn.Linear(
+            in_features=key_dim, out_features=num_units, bias=False, device=self.device
+        )
         self.W_value = nn.Linear(
-            in_features=key_dim, out_features=num_units, bias=False
+            in_features=key_dim, out_features=num_units, bias=False, device=self.device
         )
 
     def forward(self, query: torch.Tensor, key_soft: torch.Tensor) -> torch.Tensor:

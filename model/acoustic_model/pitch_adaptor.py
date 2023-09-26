@@ -8,11 +8,15 @@ from typing import Tuple
 
 from config import AcousticModelConfigType
 
+from model.basenn import BaseNNModule
+
+from helpers import tools
+
 from .variance_predictor import VariancePredictor
 from .embedding import Embedding
 
 
-class PitchAdaptor(nn.Module):
+class PitchAdaptor(BaseNNModule):
     r"""
     The PitchAdaptor class is a pitch adaptor network in the model.
 
@@ -22,17 +26,24 @@ class PitchAdaptor(nn.Module):
     Args:
         model_config (AcousticModelConfigType): The model configuration.
         data_path (str): The path to data.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     """
 
-    def __init__(self, model_config: AcousticModelConfigType, data_path: str):
-        super().__init__()
+    def __init__(
+        self,
+        model_config: AcousticModelConfigType,
+        data_path: str,
+        device: torch.device = tools.get_device(),
+    ):
+        super().__init__(device=device)
         self.pitch_predictor = VariancePredictor(
             channels_in=model_config.encoder.n_hidden,
             channels=model_config.variance_adaptor.n_hidden,
             channels_out=1,
             kernel_size=model_config.variance_adaptor.kernel_size,
             p_dropout=model_config.variance_adaptor.p_dropout,
+            device=self.device,
         )
 
         n_bins = model_config.variance_adaptor.n_bins
@@ -45,9 +56,17 @@ class PitchAdaptor(nn.Module):
         print(f"Min pitch: {pitch_min} - Max pitch: {pitch_max}")
 
         self.register_buffer(
-            "pitch_bins", torch.linspace(pitch_min, pitch_max, n_bins - 1)
+            "pitch_bins",
+            torch.linspace(
+                pitch_min,
+                pitch_max,
+                n_bins - 1,
+                device=self.device,
+            ),
         )
-        self.pitch_embedding = Embedding(n_bins, model_config.encoder.n_hidden)
+        self.pitch_embedding = Embedding(
+            n_bins, model_config.encoder.n_hidden, device=self.device
+        )
 
     def get_pitch_embedding_train(
         self, x: torch.Tensor, target: torch.Tensor, mask: torch.Tensor
@@ -64,7 +83,7 @@ class PitchAdaptor(nn.Module):
             Tuple of Tensors: The pitch prediction, true pitch embedding and predicted pitch embedding.
         """
         # Explicitly convert self.pitch_bins to a Tensor if it's not already
-        pitch_bins = torch.Tensor(self.pitch_bins)
+        pitch_bins = torch.Tensor(self.pitch_bins).to(self.device)
 
         prediction = self.pitch_predictor(x, mask)
         embedding_true = self.pitch_embedding(torch.bucketize(target, pitch_bins))
@@ -86,7 +105,7 @@ class PitchAdaptor(nn.Module):
             torch.Tensor: The tensor containing pitch embeddings.
         """
         # Explicitly convert self.pitch_bins to a Tensor if it's not already
-        pitch_bins = torch.Tensor(self.pitch_bins)
+        pitch_bins = torch.Tensor(self.pitch_bins).to(self.device)
 
         prediction = self.pitch_predictor(x, mask)
         prediction = prediction * control

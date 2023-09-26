@@ -2,9 +2,11 @@ import torch
 
 import math
 
+from helpers.tools import get_device
+
 
 def positional_encoding(
-    d_model: int, length: int, device: torch.device
+    d_model: int, length: int, device: torch.device = get_device()
 ) -> torch.Tensor:
     r"""
     Function to calculate positional encoding for transformer model.
@@ -12,7 +14,7 @@ def positional_encoding(
     Args:
         d_model (int): Dimension of the model (often corresponds to embedding size).
         length (int): Length of sequences.
-        device (torch.device): Device type (CPU/GPU) where torch.Tensor will be stored.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Returns:
         torch.Tensor: Tensor having positional encodings.

@@ -6,6 +6,8 @@ from model.conv_blocks.add_coords import AddCoords
 
 # Test case for the AddCoords class
 class TestAddCoords(unittest.TestCase):
+    """Test case for the AddCoords class"""
+
     def test_rank_1_without_r(self):
         """Test for rank=1, with_r=False"""
         layer = AddCoords(rank=1, with_r=False)

@@ -6,6 +6,17 @@ import numpy as np
 from typing import List, Tuple
 
 
+# @todo add env variable to set device for testing or any other specific purpose
+def get_device() -> torch.device:
+    r"""
+    This function returns the device where the model and tensors should be placed.
+
+    Returns:
+        torch.device: The device where the model and tensors should be placed.
+    """
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
     r"""
     Takes a list of 1D or 2D tensors and pads them to match the maximum length.
@@ -125,7 +136,9 @@ def calc_same_padding(kernel_size: int) -> Tuple[int, int]:
     return (pad, pad - (kernel_size + 1) % 2)
 
 
-def initialize_embeddings(shape: Tuple[int, ...]) -> torch.Tensor:
+def initialize_embeddings(
+    shape: Tuple[int, ...], device: torch.device = get_device()
+) -> torch.Tensor:
     r"""
     Initialize embeddings using Kaiming initialization (He initialization).
 
@@ -137,6 +150,7 @@ def initialize_embeddings(shape: Tuple[int, ...]) -> torch.Tensor:
     Args:
         shape (Tuple[int, ...]): The shape of the embedding matrix to create, denoted as a tuple of integers.
                                  The shape should comprise 2 dimensions, i.e., (embedding_dim, num_embeddings).
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Raises:
         AssertionError: if the provided shape is not 2D.
@@ -148,4 +162,4 @@ def initialize_embeddings(shape: Tuple[int, ...]) -> torch.Tensor:
     assert len(shape) == 2, "Can only initialize 2-D embedding matrices ..."
 
     # Initialize the embedding matrix using Kaiming initialization
-    return torch.randn(shape) * np.sqrt(2 / shape[1])
+    return torch.randn(shape, device=device) * np.sqrt(2 / shape[1])

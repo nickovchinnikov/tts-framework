@@ -2,17 +2,21 @@ import torch
 import torch.nn as nn
 
 from model.attention import StyleEmbedAttention
+from model.basenn import BaseNNModule
+
+from helpers.tools import get_device
 
 from config import AcousticModelConfigType
 
 
-class STL(nn.Module):
+class STL(BaseNNModule):
     r"""
     Style Token Layer (STL).
     This layer helps to encapsulate different speaking styles in token embeddings.
 
     Args:
         model_config (AcousticModelConfigType): An object containing the model's configuration parameters.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Attributes:
         embed (nn.Parameter): The style token embedding tensor.
@@ -22,8 +26,9 @@ class STL(nn.Module):
     def __init__(
         self,
         model_config: AcousticModelConfigType,
+        device: torch.device = get_device(),
     ):
-        super(STL, self).__init__()
+        super(STL, self).__init__(device=device)
 
         # Number of attention heads
         num_heads = 1
@@ -35,7 +40,7 @@ class STL(nn.Module):
         # Define a learnable tensor for style tokens embedding
         self.embed = nn.Parameter(
             torch.FloatTensor(self.token_num, n_hidden // num_heads)
-        )
+        ).to(self.device)
 
         # Dimension of query in attention
         d_q = n_hidden // 2
@@ -44,7 +49,11 @@ class STL(nn.Module):
 
         # Style Embedding Attention module
         self.attention = StyleEmbedAttention(
-            query_dim=d_q, key_dim=d_k, num_units=n_hidden, num_heads=num_heads
+            query_dim=d_q,
+            key_dim=d_k,
+            num_units=n_hidden,
+            num_heads=num_heads,
+            device=self.device,
         )
 
         # Initialize the embedding with normal distribution

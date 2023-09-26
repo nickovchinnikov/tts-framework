@@ -2,6 +2,7 @@ site_name: TTS-Framework
 nav:
   - Home: index.md
   - Model:
+    - BaseNN: model/basenn.md
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
       - Activation: model/conv_blocks/activation.md

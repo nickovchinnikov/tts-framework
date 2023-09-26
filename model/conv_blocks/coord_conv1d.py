@@ -3,10 +3,14 @@ import torch.nn as nn
 
 import torch.nn.modules.conv as conv
 
+from helpers.tools import get_device
+
+from model.basenn import BaseNNModule
+
 from .add_coords import AddCoords
 
 
-class CoordConv1d(conv.Conv1d):
+class CoordConv1d(conv.Conv1d, BaseNNModule):
     r"""
     `CoordConv1d` is an extension of the standard 1D convolution layer (`conv.Conv1d`), with the addition of extra coordinate
     channels. These extra channels encode positional coordinates, and optionally, the radial distance from the origin.
@@ -40,6 +44,7 @@ class CoordConv1d(conv.Conv1d):
         groups (int): Number of blocked connections from input channels to output channels. Default: 1.
         bias (bool): If True, adds a learnable bias to the output. Default: True.
         with_r (bool): If True, adds a radial coordinate channel. Default: False.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     """
 
@@ -54,6 +59,7 @@ class CoordConv1d(conv.Conv1d):
         groups: int = 1,
         bias: bool = True,
         with_r: bool = False,
+        device: torch.device = get_device(),
     ):
         super().__init__(
             in_channels,
@@ -64,9 +70,12 @@ class CoordConv1d(conv.Conv1d):
             dilation,
             groups,
             bias,
+            device=device,
         )
+
         self.rank = 1
-        self.addcoords = AddCoords(self.rank, with_r)
+        self.addcoords = AddCoords(self.rank, with_r).to(self.device)
+
         self.conv = nn.Conv1d(
             in_channels + self.rank + int(with_r),
             out_channels,
@@ -76,6 +85,7 @@ class CoordConv1d(conv.Conv1d):
             dilation,
             groups,
             bias,
+            device=self.device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -94,7 +104,7 @@ class CoordConv1d(conv.Conv1d):
             torch.Tensor: The output tensor of shape (batch_size, out_channels, length).
         """
         # Apply AddCoords layer to add coordinate channels to the input tensor
-        x = self.addcoords(x)
+        x = self.addcoords(x).to(self.device)
 
         # Apply convolution
         x = self.conv(x)

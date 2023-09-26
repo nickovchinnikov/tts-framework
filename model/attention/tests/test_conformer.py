@@ -17,12 +17,16 @@ from helpers.initializer import (
     init_mask_input_embeddings_encoding_attn_mask,
 )
 
+from helpers.tools import get_device
+
 
 # Conformer is used in the encoder of the AccousticModel, crucial for the training
 # Here you can understand the input and output shapes of the Conformer
 # Integration test
 class TestConformer(unittest.TestCase):
     def setUp(self):
+        self.device = get_device()
+
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
         self.model_config = AcousticENModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
@@ -31,11 +35,11 @@ class TestConformer(unittest.TestCase):
         n_speakers = 10
 
         # # Add Conformer as encoder
-        self.encoder, _ = init_conformer(self.model_config)
+        self.encoder, _ = init_conformer(self.model_config, device=self.device)
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers, device=self.device
         )
 
         # Generate mock data for the forward pass
@@ -44,6 +48,7 @@ class TestConformer(unittest.TestCase):
             self.acoustic_pretraining_config,
             self.preprocess_config,
             n_speakers,
+            device=self.device,
         )
 
     def test_initialization(self):
@@ -68,6 +73,12 @@ class TestConformer(unittest.TestCase):
             self.forward_train_params,
             self.model_config,
         )
+
+        # Assert the device type
+        self.assertEqual(src_mask.device.type, self.device.type)
+        self.assertEqual(x.device.type, self.device.type)
+        self.assertEqual(embeddings.device.type, self.device.type)
+        self.assertEqual(encoding.device.type, self.device.type)
 
         # Assert the shape of x
         self.assertEqual(

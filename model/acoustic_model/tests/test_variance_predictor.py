@@ -4,24 +4,36 @@ import torch
 
 from model.acoustic_model.variance_predictor import VariancePredictor
 
+from helpers.tools import get_device
+
 
 class TestVariancePredictor(unittest.TestCase):
     def setUp(self):
+        self.device = get_device()
+
         # Initialize a VariancePredictor instance
         self.predictor = VariancePredictor(
-            channels_in=32, channels=32, channels_out=1, kernel_size=3, p_dropout=0.5
+            channels_in=32,
+            channels=32,
+            channels_out=1,
+            kernel_size=3,
+            p_dropout=0.5,
+            device=self.device,
         )
 
         # Assume batch size=3, channels_in=32, sequence_length=32
-        self.x = torch.rand((3, 32, 32))
+        self.x = torch.rand((3, 32, 32), device=self.device)
 
         # Assume batch size=3, sequence_length=32
         self.mask_dim = (3, 32)
-        self.zero_mask = torch.ones(self.mask_dim).type(torch.bool)
+        self.zero_mask = torch.ones(self.mask_dim).type(torch.bool).to(self.device)
 
     def test_forward(self):
         # Execute forward propagation
         output = self.predictor(self.x, self.zero_mask)
+
+        # Assert the device type of output
+        self.assertEqual(output.device.type, self.device.type)
 
         # Validate output shape
         self.assertEqual(
@@ -32,12 +44,15 @@ class TestVariancePredictor(unittest.TestCase):
         # Execute forward propagation
         output = self.predictor(self.x, self.zero_mask)
 
+        # Assert the device type of output
+        self.assertEqual(output.device.type, self.device.type)
+
         # Validate all returned values are zero, given the mask is all False
         self.assertTrue(torch.all(output == 0))
 
     def test_ones_mask(self):
         # Create a mask of ones (indicating no entries are masked)
-        ones_mask = torch.ones(self.mask_dim).type(torch.bool)
+        ones_mask = torch.ones(self.mask_dim).type(torch.bool).to(self.device)
 
         # Execute forward propagation
         output = self.predictor(self.x, ones_mask)

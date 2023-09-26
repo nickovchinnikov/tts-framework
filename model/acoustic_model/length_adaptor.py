@@ -5,20 +5,27 @@ from typing import List, Tuple
 from config import AcousticModelConfigType
 from helpers import tools
 
+from model.basenn import BaseNNModule
+
 from .variance_predictor import VariancePredictor
 
 
-class LengthAdaptor(nn.Module):
+class LengthAdaptor(BaseNNModule):
     r"""
     The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
     It contains a dedicated duration predictor and methods to upsample the input features to match predicted durations.
 
     Args:
         model_config (AcousticModelConfigType): The model configuration object containing model parameters.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
-    def __init__(self, model_config: AcousticModelConfigType):
-        super().__init__()
+    def __init__(
+        self,
+        model_config: AcousticModelConfigType,
+        device: torch.device = tools.get_device(),
+    ):
+        super().__init__(device=device)
         # Initialize the duration predictor
         self.duration_predictor = VariancePredictor(
             channels_in=model_config.encoder.n_hidden,
@@ -26,6 +33,7 @@ class LengthAdaptor(nn.Module):
             channels_out=1,
             kernel_size=model_config.variance_adaptor.kernel_size,
             p_dropout=model_config.variance_adaptor.p_dropout,
+            device=self.device,
         )
 
     def length_regulate(
@@ -51,7 +59,7 @@ class LengthAdaptor(nn.Module):
             output.append(expanded)
             mel_len.append(expanded.shape[0])
         output = tools.pad(output, max_len)
-        return output, torch.tensor(mel_len, dtype=torch.int64)
+        return output, torch.tensor(mel_len, dtype=torch.int64, device=self.device)
 
     def expand(self, batch: torch.Tensor, predicted: torch.Tensor) -> torch.Tensor:
         r"""
@@ -68,7 +76,7 @@ class LengthAdaptor(nn.Module):
         for i, vec in enumerate(batch):
             expand_size = predicted[i].item()
             out.append(vec.expand(max(int(expand_size), 0), -1))
-        out = torch.cat(out, 0)
+        out = torch.cat(out, 0).to(self.device)
         return out
 
     def upsample_train(

@@ -1,10 +1,14 @@
 import torch
 import torch.nn as nn
 
+from helpers.tools import get_device
+
+from model.basenn import BaseNNModule
+
 from .bsconv import BSConv1d
 
 
-class ConvTransposed(nn.Module):
+class ConvTransposed(BaseNNModule):
     r"""
     `ConvTransposed` applies a 1D convolution operation, with the main difference that it transposes the
     last two dimensions of the input tensor before and after applying the `BSConv1d` convolution operation.
@@ -17,6 +21,7 @@ class ConvTransposed(nn.Module):
         out_channels (int): Number of channels produced by the convolution
         kernel_size (int): Size of the kernel used in convolution
         padding (int): Zero-padding added around the input tensor along the width direction
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Attributes:
         conv (BSConv1d): `BSConv1d` module to apply convolution.
@@ -28,8 +33,9 @@ class ConvTransposed(nn.Module):
         out_channels: int,
         kernel_size: int = 1,
         padding: int = 0,
+        device: torch.device = get_device(),
     ):
-        super().__init__()
+        super().__init__(device)
 
         # Define BSConv1d convolutional layer
         self.conv = BSConv1d(
@@ -37,6 +43,7 @@ class ConvTransposed(nn.Module):
             out_channels,
             kernel_size=kernel_size,
             padding=padding,
+            device=self.device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

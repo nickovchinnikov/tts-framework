@@ -17,12 +17,16 @@ from helpers.initializer import (
     init_mask_input_embeddings_encoding_attn_mask,
 )
 
+from helpers.tools import get_device
+
 
 # ConformerBlock is used in the Conformer, crucial for the training
 # Here you can understand the input and output shapes of the Conformer
 # Integration test
 class TestConformerBlock(unittest.TestCase):
     def setUp(self):
+        self.device = get_device()
+
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
         self.model_config = AcousticENModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
@@ -31,11 +35,11 @@ class TestConformerBlock(unittest.TestCase):
         n_speakers = 10
 
         # Init conformer config
-        _, self.conformer_config = init_conformer(self.model_config)
+        _, self.conformer_config = init_conformer(self.model_config, device=self.device)
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers, device=self.device
         )
 
         d_k = d_v = self.conformer_config.dim // self.conformer_config.n_heads
@@ -49,6 +53,7 @@ class TestConformerBlock(unittest.TestCase):
             embedding_dim=self.conformer_config.embedding_dim,
             dropout=self.conformer_config.p_dropout,
             with_ff=self.conformer_config.with_ff,
+            device=self.device,
         )
 
         # Generate mock data for the forward pass
@@ -57,6 +62,7 @@ class TestConformerBlock(unittest.TestCase):
             self.acoustic_pretraining_config,
             self.preprocess_config,
             n_speakers,
+            device=self.device,
         )
 
     def test_initialization(self):
@@ -91,6 +97,9 @@ class TestConformerBlock(unittest.TestCase):
             encoding=encoding,
         )
 
+        # Assert the device type
+        self.assertEqual(x.device.type, self.device.type)
+
         # Assert the shape of x
         self.assertEqual(
             x.shape,
@@ -116,6 +125,7 @@ class TestConformerBlock(unittest.TestCase):
             embedding_dim=20,
             dropout=0.4,
             with_ff=False,
+            device=self.device,
         )
         self.assertFalse(hasattr(model, "ff"))
 
@@ -128,6 +138,7 @@ class TestConformerBlock(unittest.TestCase):
             embedding_dim=12,
             dropout=0.1,
             with_ff=True,
+            device=self.device,
         )
         self.assertTrue(hasattr(model, "ff"))
 

@@ -6,8 +6,11 @@ import math
 
 from typing import Tuple
 
+from helpers.tools import get_device
+from model.basenn import BaseNNModule
 
-class RelativeMultiHeadAttention(nn.Module):
+
+class RelativeMultiHeadAttention(BaseNNModule):
     r"""
     Multi-head attention with relative positional encoding.
     This concept was proposed in the
@@ -16,6 +19,7 @@ class RelativeMultiHeadAttention(nn.Module):
     Args:
         d_model (int): The dimension of model
         num_heads (int): The number of attention heads.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Inputs: query, key, value, pos_embedding, mask
         - **query** (batch, time, dim): Tensor containing query vector
@@ -33,24 +37,29 @@ class RelativeMultiHeadAttention(nn.Module):
         self,
         d_model: int = 512,
         num_heads: int = 16,
+        device: torch.device = get_device(),
     ):
-        super().__init__()
+        super().__init__(device)
         assert d_model % num_heads == 0, "d_model % num_heads should be zero."
         self.d_model = d_model
         self.d_head = int(d_model / num_heads)
         self.num_heads = num_heads
         self.sqrt_dim = math.sqrt(d_model)
 
-        self.query_proj = nn.Linear(d_model, d_model)
-        self.key_proj = nn.Linear(d_model, d_model, bias=False)
-        self.value_proj = nn.Linear(d_model, d_model, bias=False)
-        self.pos_proj = nn.Linear(d_model, d_model, bias=False)
+        self.query_proj = nn.Linear(d_model, d_model, device=self.device)
+        self.key_proj = nn.Linear(d_model, d_model, bias=False, device=self.device)
+        self.value_proj = nn.Linear(d_model, d_model, bias=False, device=self.device)
+        self.pos_proj = nn.Linear(d_model, d_model, bias=False, device=self.device)
 
-        self.u_bias = nn.Parameter(torch.Tensor(self.num_heads, self.d_head))
-        self.v_bias = nn.Parameter(torch.Tensor(self.num_heads, self.d_head))
+        self.u_bias = nn.Parameter(torch.Tensor(self.num_heads, self.d_head)).to(
+            self.device
+        )
+        self.v_bias = nn.Parameter(torch.Tensor(self.num_heads, self.d_head)).to(
+            self.device
+        )
         torch.nn.init.xavier_uniform_(self.u_bias)
         torch.nn.init.xavier_uniform_(self.v_bias)
-        self.out_proj = nn.Linear(d_model, d_model)
+        self.out_proj = nn.Linear(d_model, d_model, device=self.device)
 
     def forward(
         self,
@@ -71,6 +80,7 @@ class RelativeMultiHeadAttention(nn.Module):
             value (torch.Tensor): The input tensor containing value vectors.
             pos_embedding (torch.Tensor): The positional embedding tensor.
             mask (torch.Tensor): The mask tensor containing indices to be masked.
+            device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: The context and attention tensors.

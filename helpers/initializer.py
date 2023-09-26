@@ -30,9 +30,44 @@ class ConformerConfig:
     with_ff: bool
 
 
+def get_test_configs(
+    srink_factor: int = 4,
+) -> Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig,]:
+    r"""
+    Returns a tuple of configuration objects for testing purposes.
+
+    Args:
+        srink_factor (int, optional): The shrink factor to apply to the model configuration. Defaults to 4.
+
+    Returns:
+        Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig]: A tuple of configuration objects for testing purposes.
+
+    This function returns a tuple of configuration objects for testing purposes. The configuration objects are as follows:
+    - `PreprocessingConfig`: A configuration object for preprocessing.
+    - `AcousticENModelConfig`: A configuration object for the acoustic model.
+    - `AcousticPretrainingConfig`: A configuration object for acoustic pretraining.
+
+    The `srink_factor` parameter is used to shrink the dimensions of the model configuration to prevent out of memory issues during testing.
+    """
+    preprocess_config = PreprocessingConfig("english_only")
+    model_config = AcousticENModelConfig()
+
+    model_config.speaker_embed_dim = model_config.speaker_embed_dim // srink_factor
+    model_config.encoder.n_hidden = model_config.encoder.n_hidden // srink_factor
+    model_config.decoder.n_hidden = model_config.decoder.n_hidden // srink_factor
+    model_config.variance_adaptor.n_hidden = (
+        model_config.variance_adaptor.n_hidden // srink_factor
+    )
+
+    acoustic_pretraining_config = AcousticPretrainingConfig()
+
+    return (preprocess_config, model_config, acoustic_pretraining_config)
+
+
 # Function to initialize a Conformer with a given AcousticModelConfigType configuration
 def init_conformer(
     model_config: AcousticModelConfigType,
+    device: torch.device = tools.get_device(),
 ) -> Tuple[Conformer, ConformerConfig]:
     r"""
     Function to initialize a `Conformer` with a given `AcousticModelConfigType` configuration.
@@ -67,7 +102,9 @@ def init_conformer(
         with_ff=model_config.encoder.with_ff,
     )
 
-    return Conformer(**vars(conformer_config)), conformer_config
+    model = Conformer(**vars(conformer_config)).to(device)
+
+    return model, conformer_config
 
 
 @dataclass
@@ -84,6 +121,7 @@ def init_acoustic_model(
     model_config: AcousticENModelConfig,
     n_speakers: int = 10,
     data_path: str = "./model/acoustic_model/tests/mocks",
+    device: torch.device = tools.get_device(),
 ) -> Tuple[AcousticModel, AcousticModelConfig]:
     r"""
     Function to initialize an `AcousticModel` with given preprocessing and model configurations.
@@ -115,7 +153,9 @@ def init_acoustic_model(
         n_speakers=n_speakers,
     )
 
-    return AcousticModel(**vars(acoustic_model_config)), acoustic_model_config
+    model = AcousticModel(**vars(acoustic_model_config)).to(device)
+
+    return model, acoustic_model_config
 
 
 @dataclass
@@ -137,6 +177,7 @@ def init_forward_trains_params(
     acoustic_pretraining_config: AcousticPretrainingConfig,
     preprocess_config: PreprocessingConfig,
     n_speakers: int = 10,
+    device: torch.device = tools.get_device(),
 ) -> ForwardTrainParams:
     r"""
     Function to initialize the parameters for forward propagation during training.
@@ -171,7 +212,7 @@ def init_forward_trains_params(
                 model_config.speaker_embed_dim,
                 acoustic_pretraining_config.batch_size,
             ),
-        ),
+        ).to(device),
         # speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]
         speakers=torch.randint(
             1,
@@ -180,9 +221,7 @@ def init_forward_trains_params(
                 model_config.speaker_embed_dim,
                 acoustic_pretraining_config.batch_size,
             ),
-        ),
-        # src_lens: Tensor containing the lengths of source sequences. Shape: [batch_size]
-        # src_lens=torch.tensor([acoustic_pretraining_config.batch_size]),
+        ).to(device),
         # src_lens: Tensor containing the lengths of source sequences. Shape: [speaker_embed_dim]
         src_lens=torch.cat(
             [
@@ -194,13 +233,13 @@ def init_forward_trains_params(
                 ),
             ],
             dim=0,
-        ),
+        ).to(device),
         # mels: Tensor containing the mel spectrogram. Shape: [batch_size, stft.n_mel_channels, encoder.n_hidden]
         mels=torch.randn(
             model_config.speaker_embed_dim,
             preprocess_config.stft.n_mel_channels,
             model_config.encoder.n_hidden,
-        ),
+        ).to(device),
         # enc_len: Tensor containing the lengths of mel sequences. Shape: [speaker_embed_dim]
         enc_len=torch.cat(
             [
@@ -212,7 +251,7 @@ def init_forward_trains_params(
                 torch.tensor([model_config.speaker_embed_dim]),
             ],
             dim=0,
-        ),
+        ).to(device),
         # mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]
         mel_lens=torch.cat(
             [
@@ -224,14 +263,14 @@ def init_forward_trains_params(
                 torch.tensor([model_config.speaker_embed_dim]),
             ],
             dim=0,
-        ),
+        ).to(device),
         # pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
         pitches=torch.randn(
             # acoustic_pretraining_config.batch_size,
             model_config.speaker_embed_dim,
             # model_config.speaker_embed_dim,
             model_config.encoder.n_hidden,
-        ),
+        ).to(device),
         # langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]
         langs=torch.randint(
             1,
@@ -240,13 +279,13 @@ def init_forward_trains_params(
                 model_config.speaker_embed_dim,
                 acoustic_pretraining_config.batch_size,
             ),
-        ),
+        ).to(device),
         # attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]
         attn_priors=torch.randn(
             model_config.speaker_embed_dim,
             model_config.speaker_embed_dim,
             acoustic_pretraining_config.batch_size,
-        ),
+        ).to(device),
         use_ground_truth=True,
     )
 
