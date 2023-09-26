@@ -3,9 +3,12 @@ from torch import nn
 
 from model.conv_blocks import ConvTransposed
 from model.constants import LEAKY_RELU_SLOPE
+from model.basenn import BaseNNModule
+
+from helpers.tools import get_device
 
 
-class VariancePredictor(nn.Module):
+class VariancePredictor(BaseNNModule):
     r"""
     This is a Duration and Pitch predictor neural network module in PyTorch.
 
@@ -20,6 +23,7 @@ class VariancePredictor(nn.Module):
         channels_out (int): Number of output channels for linear layer.
         kernel_size (int): Size of the kernel for ConvTransposed layers.
         p_dropout (float): Probability of dropout.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Returns:
         torch.Tensor: Output tensor.
@@ -33,8 +37,9 @@ class VariancePredictor(nn.Module):
         kernel_size: int,
         p_dropout: float,
         leaky_relu_slope: float = LEAKY_RELU_SLOPE,
+        device: torch.device = get_device(),
     ):
-        super().__init__()
+        super().__init__(device=device)
 
         self.layers = nn.ModuleList(
             [
@@ -44,9 +49,13 @@ class VariancePredictor(nn.Module):
                     channels,
                     kernel_size=kernel_size,
                     padding=(kernel_size - 1) // 2,
+                    device=self.device,
                 ),
                 nn.LeakyReLU(leaky_relu_slope),
-                nn.LayerNorm(channels),
+                nn.LayerNorm(
+                    channels,
+                    device=self.device,
+                ),
                 nn.Dropout(p_dropout),
                 # Another "block" of ConvTransposed, LeakyReLU, LayerNorm, and Dropout
                 ConvTransposed(
@@ -54,15 +63,23 @@ class VariancePredictor(nn.Module):
                     channels,
                     kernel_size=kernel_size,
                     padding=(kernel_size - 1) // 2,
+                    device=self.device,
                 ),
                 nn.LeakyReLU(leaky_relu_slope),
-                nn.LayerNorm(channels),
+                nn.LayerNorm(
+                    channels,
+                    device=self.device,
+                ),
                 nn.Dropout(p_dropout),
             ]
         )
 
         # Output linear layer
-        self.linear_layer = nn.Linear(channels, channels_out)
+        self.linear_layer = nn.Linear(
+            channels,
+            channels_out,
+            device=self.device,
+        )
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         r"""

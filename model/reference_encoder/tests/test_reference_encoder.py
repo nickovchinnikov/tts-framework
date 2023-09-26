@@ -2,8 +2,6 @@ import unittest
 
 import torch
 
-import helpers.tools as tools
-
 from config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder import ReferenceEncoder
