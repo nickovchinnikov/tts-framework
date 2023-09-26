@@ -3,9 +3,13 @@ import torch
 
 from model.attention.feed_forward import FeedForward
 
+from helpers.tools import get_device
+
 
 class TestFeedForward(unittest.TestCase):
     def setUp(self):
+        torch.set_default_device(get_device())
+
         self.d_model = 10
         self.kernel_size = 3
         self.dropout = 0.2

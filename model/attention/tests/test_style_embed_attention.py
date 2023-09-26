@@ -3,8 +3,13 @@ import unittest
 
 from model.attention.style_embed_attention import StyleEmbedAttention
 
+from helpers.tools import get_device
+
 
 class TestStyleEmbedAttention(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_output_shape(self):
         model = StyleEmbedAttention(query_dim=16, key_dim=16, num_units=32, num_heads=4)
         query = torch.rand(

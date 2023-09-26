@@ -3,9 +3,12 @@ import torch
 
 from model.attention.relative_multi_head_attention import RelativeMultiHeadAttention
 
+from helpers.tools import get_device
+
 
 class TestRelativeMultiHeadAttention(unittest.TestCase):
     def setUp(self):
+        torch.set_default_device(get_device())
         # Initialize an instance of RelativeMultiHeadAttention
         self.attention = RelativeMultiHeadAttention(d_model=512, num_heads=8)
 

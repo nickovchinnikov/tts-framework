@@ -17,12 +17,16 @@ from helpers.initializer import (
     init_mask_input_embeddings_encoding_attn_mask,
 )
 
+from helpers.tools import get_device
+
 
 # ConformerBlock is used in the Conformer, crucial for the training
 # Here you can understand the input and output shapes of the Conformer
 # Integration test
 class TestConformerBlock(unittest.TestCase):
     def setUp(self):
+        torch.set_default_device(get_device())
+
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
         self.model_config = AcousticENModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")

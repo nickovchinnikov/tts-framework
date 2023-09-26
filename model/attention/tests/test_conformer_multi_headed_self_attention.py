@@ -1,12 +1,16 @@
 import unittest
 import torch
 
+from helpers.tools import get_device
 
 from model.attention import ConformerMultiHeadedSelfAttention
 
 
 # Test class for the ConformerMultiHeadedSelfAttention class
 class TestConformerMultiHeadedSelfAttention(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_forward(self):
         # Create an instance of ConformerMultiHeadedSelfAttention
         model = ConformerMultiHeadedSelfAttention(
@@ -19,7 +23,7 @@ class TestConformerMultiHeadedSelfAttention(unittest.TestCase):
         query = torch.rand(batch_size, seq_length, 512)
         key = torch.rand(batch_size, seq_length, 512)
         value = torch.rand(batch_size, seq_length, 512)
-        mask = torch.ones(batch_size, 1, seq_length)
+        mask = torch.ones(batch_size, 1, seq_length, dtype=torch.bool)
         encoding = torch.rand(1, seq_length, 512)
 
         # Execute the forward pass

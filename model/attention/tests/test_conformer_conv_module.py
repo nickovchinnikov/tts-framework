@@ -4,8 +4,13 @@ import torch
 
 from model.attention.conformer_conv_module import ConformerConvModule
 
+from helpers.tools import get_device
+
 
 class TestConformerConvModule(unittest.TestCase):
+    def setUp(self):
+        torch.set_default_device(get_device())
+
     def test_forward_output_shape(self):
         """
         Test that the output shape from the forward method matches the expected shape.

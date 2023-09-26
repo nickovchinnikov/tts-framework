@@ -2,8 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from helpers.tools import get_device
+from model.basenn import BaseNNModule
 
-class MultiHeadAttention(nn.Module):
+
+class MultiHeadAttention(BaseNNModule):
     r"""
     A class that implements a Multi-head Attention mechanism.
     Multi-head attention allows the model to focus on different positions,
@@ -14,6 +17,7 @@ class MultiHeadAttention(nn.Module):
         key_dim (int): The dimensionality of the key.
         num_units (int): The total number of dimensions of the output.
         num_heads (int): The number of parallel attention layers (multi-heads).
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Inputs: query, and key
         - **query**: Tensor of shape [N, T_q, query_dim]
@@ -23,18 +27,30 @@ class MultiHeadAttention(nn.Module):
         - An output tensor of shape [N, T_q, num_units]
     """
 
-    def __init__(self, query_dim: int, key_dim: int, num_units: int, num_heads: int):
-        super().__init__()
+    def __init__(
+        self,
+        query_dim: int,
+        key_dim: int,
+        num_units: int,
+        num_heads: int,
+        device: torch.device = get_device(),
+    ):
+        super().__init__(device)
         self.num_units = num_units
         self.num_heads = num_heads
         self.key_dim = key_dim
 
         self.W_query = nn.Linear(
-            in_features=query_dim, out_features=num_units, bias=False
+            in_features=query_dim,
+            out_features=num_units,
+            bias=False,
+            device=self.device,
         )
-        self.W_key = nn.Linear(in_features=key_dim, out_features=num_units, bias=False)
+        self.W_key = nn.Linear(
+            in_features=key_dim, out_features=num_units, bias=False, device=self.device
+        )
         self.W_value = nn.Linear(
-            in_features=key_dim, out_features=num_units, bias=False
+            in_features=key_dim, out_features=num_units, bias=False, device=self.device
         )
 
     def forward(self, query: torch.Tensor, key: torch.Tensor) -> torch.Tensor:

@@ -4,9 +4,12 @@ import torch
 
 from model.attention.multi_head_attention import MultiHeadAttention
 
+from helpers.tools import get_device
+
 
 class TestMultiHeadAttention(unittest.TestCase):
     def setUp(self):
+        torch.set_default_device(get_device())
         # Initialize an instance of MultiHeadAttention
         self.attention = MultiHeadAttention(
             query_dim=512, key_dim=512, num_units=512, num_heads=8
