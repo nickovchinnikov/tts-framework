@@ -30,6 +30,40 @@ class ConformerConfig:
     with_ff: bool
 
 
+def get_test_configs(
+    srink_factor: int = 4,
+) -> Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig,]:
+    r"""
+    Returns a tuple of configuration objects for testing purposes.
+
+    Args:
+        srink_factor (int, optional): The shrink factor to apply to the model configuration. Defaults to 4.
+
+    Returns:
+        Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig]: A tuple of configuration objects for testing purposes.
+
+    This function returns a tuple of configuration objects for testing purposes. The configuration objects are as follows:
+    - `PreprocessingConfig`: A configuration object for preprocessing.
+    - `AcousticENModelConfig`: A configuration object for the acoustic model.
+    - `AcousticPretrainingConfig`: A configuration object for acoustic pretraining.
+
+    The `srink_factor` parameter is used to shrink the dimensions of the model configuration to prevent out of memory issues during testing.
+    """
+    preprocess_config = PreprocessingConfig("english_only")
+    model_config = AcousticENModelConfig()
+
+    model_config.speaker_embed_dim = model_config.speaker_embed_dim // srink_factor
+    model_config.encoder.n_hidden = model_config.encoder.n_hidden // srink_factor
+    model_config.decoder.n_hidden = model_config.decoder.n_hidden // srink_factor
+    model_config.variance_adaptor.n_hidden = (
+        model_config.variance_adaptor.n_hidden // srink_factor
+    )
+
+    acoustic_pretraining_config = AcousticPretrainingConfig()
+
+    return (preprocess_config, model_config, acoustic_pretraining_config)
+
+
 # Function to initialize a Conformer with a given AcousticModelConfigType configuration
 def init_conformer(
     model_config: AcousticModelConfigType,
