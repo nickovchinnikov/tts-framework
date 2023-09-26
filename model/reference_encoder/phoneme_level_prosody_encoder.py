@@ -2,12 +2,16 @@ import torch
 from torch import nn
 
 from config import AcousticModelConfigType, PreprocessingConfig
+
 from model.attention import ConformerMultiHeadedSelfAttention
+from model.basenn import BaseNNModule
+
+from helpers import tools
 
 from .reference_encoder import ReferenceEncoder
 
 
-class PhonemeLevelProsodyEncoder(nn.Module):
+class PhonemeLevelProsodyEncoder(BaseNNModule):
     r"""Phoneme Level Prosody Encoder Module
 
     This Class is used to encode the phoneme level prosody in the speech synthesis pipeline.
@@ -15,6 +19,7 @@ class PhonemeLevelProsodyEncoder(nn.Module):
     Args:
         preprocess_config (PreprocessingConfig): Configuration for preprocessing.
         model_config (AcousticModelConfigType): Acoustic model configuration.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Returns:
         torch.Tensor: The encoded tensor after applying masked fill.
@@ -24,8 +29,9 @@ class PhonemeLevelProsodyEncoder(nn.Module):
         self,
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
+        device: torch.device = tools.get_device(),
     ):
-        super().__init__()
+        super().__init__(device=device)
 
         # Hidden dimensions are assigned to instance variables.
         self.E = model_config.encoder.n_hidden
@@ -36,17 +42,22 @@ class PhonemeLevelProsodyEncoder(nn.Module):
         ref_enc_gru_size = model_config.reference_encoder.ref_enc_gru_size
 
         # Initialize ReferenceEncoder, Linear layer and ConformerMultiHeadedSelfAttention for attention mechanism.
-        self.encoder = ReferenceEncoder(preprocess_config, model_config)
-        self.encoder_prj = nn.Linear(ref_enc_gru_size, model_config.encoder.n_hidden)
+        self.encoder = ReferenceEncoder(
+            preprocess_config, model_config, device=self.device
+        )
+        self.encoder_prj = nn.Linear(
+            ref_enc_gru_size, model_config.encoder.n_hidden, device=self.device
+        )
         self.attention = ConformerMultiHeadedSelfAttention(
             d_model=model_config.encoder.n_hidden,
             num_heads=model_config.encoder.n_heads,
             dropout_p=model_config.encoder.p_dropout,
+            device=self.device,
         )
 
         # Bottleneck layer to transform the output of the attention mechanism.
         self.encoder_bottleneck = nn.Linear(
-            model_config.encoder.n_hidden, bottleneck_size
+            model_config.encoder.n_hidden, bottleneck_size, device=self.device
         )
 
     def forward(

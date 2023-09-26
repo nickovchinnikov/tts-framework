@@ -5,15 +5,15 @@ import torch.nn.functional as F
 from typing import Tuple
 
 from model.conv_blocks import CoordConv1d
+from model.constants import LEAKY_RELU_SLOPE
+from model.basenn import BaseNNModule
 
 from helpers import tools
 
 from config import AcousticModelConfigType, PreprocessingConfig
 
-from model.constants import LEAKY_RELU_SLOPE
 
-
-class ReferenceEncoder(nn.Module):
+class ReferenceEncoder(BaseNNModule):
     r"""A class to define the reference encoder.
     Similar to Tacotron model, the reference encoder is used to extract the high-level features from the reference
 
@@ -27,6 +27,7 @@ class ReferenceEncoder(nn.Module):
     Args:
         preprocess_config (PreprocessingConfig): Configuration object with preprocessing parameters.
         model_config (AcousticModelConfigType): Configuration object with acoustic model parameters.
+        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Returns:
         Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing three tensors. _First_: The sequence tensor
@@ -41,9 +42,7 @@ class ReferenceEncoder(nn.Module):
         model_config: AcousticModelConfigType,
         device: torch.device = tools.get_device(),
     ):
-        super().__init__()
-        self.device = device
-        self.to(device)
+        super().__init__(device=device)
 
         n_mel_channels = preprocess_config.stft.n_mel_channels
         ref_enc_filters = model_config.reference_encoder.ref_enc_filters
@@ -65,7 +64,8 @@ class ReferenceEncoder(nn.Module):
                 stride=strides[0],
                 padding=ref_enc_size // 2,
                 with_r=True,
-            ).to(device),
+                device=self.device,
+            ),
             *[
                 nn.Conv1d(
                     in_channels=filters[i],
@@ -73,26 +73,30 @@ class ReferenceEncoder(nn.Module):
                     kernel_size=ref_enc_size,
                     stride=strides[i],
                     padding=ref_enc_size // 2,
+                    device=self.device,
                 )
                 for i in range(1, K)
             ],
         ]
         # Define convolution layers (ModuleList)
-        self.convs = nn.ModuleList(convs).to(device)
+        self.convs = nn.ModuleList(convs)
 
         self.norms = nn.ModuleList(
             [
-                nn.InstanceNorm1d(num_features=ref_enc_filters[i], affine=True)
+                nn.InstanceNorm1d(
+                    num_features=ref_enc_filters[i], affine=True, device=self.device
+                )
                 for i in range(K)
             ]
-        ).to(device)
+        )
 
         # Define GRU layer
         self.gru = nn.GRU(
             input_size=ref_enc_filters[-1],
             hidden_size=ref_enc_gru_size,
             batch_first=True,
-        ).to(device)
+            device=self.device,
+        )
 
     def forward(
         self,

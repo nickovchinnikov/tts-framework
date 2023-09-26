@@ -9,8 +9,6 @@ from model.conv_blocks.conv1d_glu import Conv1dGLU
 from model.conv_blocks.bsconv import BSConv1d
 from model.conv_blocks.conv1d import PointwiseConv1d, DepthWiseConv1d
 
-from helpers.tools import get_device
-
 
 class TestConv1dGLU(unittest.TestCase):
     def setUp(self):

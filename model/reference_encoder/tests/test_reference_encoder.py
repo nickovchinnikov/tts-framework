@@ -8,27 +8,36 @@ from config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder import ReferenceEncoder
 
+from helpers.tools import get_device
+
 
 class TestReferenceEncoder(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device("cuda")
+        self.device = get_device()
 
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
 
-        self.model = ReferenceEncoder(self.preprocess_config, self.model_config)
+        self.model = ReferenceEncoder(
+            self.preprocess_config, self.model_config, self.device
+        )
 
     def test_forward_shape(self):
         # Define test case
         x = torch.randn(
-            16, self.model.n_mel_channels, 128
+            16, self.model.n_mel_channels, 128, device=self.device
         )  # assuming the input sequence length is 128
         mel_lens = (
-            torch.ones(16).type(torch.LongTensor) * 128
+            torch.ones(16).type(torch.LongTensor).to(self.device) * 128
         )  # assuming all sequences are of equal length
 
         # Call the forward method
         out, memory, mel_masks = self.model(x, mel_lens)
+
+        # Assert device type
+        self.assertEqual(out.device.type, self.device.type)
+        self.assertEqual(memory.device.type, self.device.type)
+        self.assertEqual(mel_masks.device.type, self.device.type)
 
         # Verify the outputs
         self.assertIsInstance(out, torch.Tensor)
@@ -44,10 +53,22 @@ class TestReferenceEncoder(unittest.TestCase):
 
     def test_different_batch_sizes(self):
         for batch_size in [1, 5, 10, 50]:
-            x = torch.randn(batch_size, self.model.n_mel_channels, 128)
-            mel_lens = torch.ones(batch_size).type(torch.LongTensor) * 128
+            x = torch.randn(
+                batch_size, self.model.n_mel_channels, 128, device=self.device
+            )
+            mel_lens = (
+                torch.ones(batch_size, device=self.device)
+                .type(torch.LongTensor)
+                .to(self.device)
+                * 128
+            )
 
             out, memory, mel_masks = self.model(x, mel_lens)
+
+            # Assert device type
+            self.assertEqual(out.device.type, self.device.type)
+            self.assertEqual(memory.device.type, self.device.type)
+            self.assertEqual(mel_masks.device.type, self.device.type)
 
             self.assertEqual(out.size(0), batch_size)
             self.assertEqual(out.size(2), self.model.gru.hidden_size)
