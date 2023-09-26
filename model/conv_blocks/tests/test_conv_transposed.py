@@ -9,7 +9,7 @@ from helpers.tools import get_device
 
 class TestConvTransposed(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device(get_device())
+        self.device = get_device()
 
     def test_initialization(self):
         """
@@ -18,7 +18,9 @@ class TestConvTransposed(unittest.TestCase):
         C_in, C_out, kernel_size, padding = 4, 6, 3, 1
 
         # Initialize ConvTransposed with input channels, output channels, kernel size and padding.
-        conv_transposed = ConvTransposed(C_in, C_out, kernel_size, padding)
+        conv_transposed = ConvTransposed(
+            C_in, C_out, kernel_size, padding, device=self.device
+        )
 
         # Check type and value of 'conv' attribute which is an instance of BSConv1d
         self.assertIsInstance(
@@ -60,12 +62,17 @@ class TestConvTransposed(unittest.TestCase):
         N, C_in, C_out, kernel_size, padding, length = 5, 4, 6, 3, 1, 10
 
         # Initialize ConvTransposed with input channels, output channels, kernel size and padding.
-        conv_transposed = ConvTransposed(C_in, C_out, kernel_size, padding)
+        conv_transposed = ConvTransposed(
+            C_in, C_out, kernel_size, padding, device=self.device
+        )
 
         # Generate a random tensor of shape (batch_size, channel, length).
-        x = torch.randn(N, length, C_in)
+        x = torch.randn(N, length, C_in, device=self.device)
 
         out = conv_transposed(x)
+
+        # Assert device type
+        self.assertEqual(out.device.type, self.device.type)
 
         # The output shape should be the same as the input shape, as the ConvTransposed should not
         # alter the input's dimensions.

@@ -39,8 +39,12 @@ class ReferenceEncoder(nn.Module):
         self,
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
+        device: torch.device = tools.get_device(),
     ):
         super().__init__()
+        self.device = device
+        self.to(device)
+
         n_mel_channels = preprocess_config.stft.n_mel_channels
         ref_enc_filters = model_config.reference_encoder.ref_enc_filters
         ref_enc_size = model_config.reference_encoder.ref_enc_size
@@ -61,7 +65,7 @@ class ReferenceEncoder(nn.Module):
                 stride=strides[0],
                 padding=ref_enc_size // 2,
                 with_r=True,
-            ),
+            ).to(device),
             *[
                 nn.Conv1d(
                     in_channels=filters[i],
@@ -74,21 +78,21 @@ class ReferenceEncoder(nn.Module):
             ],
         ]
         # Define convolution layers (ModuleList)
-        self.convs = nn.ModuleList(convs)
+        self.convs = nn.ModuleList(convs).to(device)
 
         self.norms = nn.ModuleList(
             [
                 nn.InstanceNorm1d(num_features=ref_enc_filters[i], affine=True)
                 for i in range(K)
             ]
-        )
+        ).to(device)
 
         # Define GRU layer
         self.gru = nn.GRU(
             input_size=ref_enc_filters[-1],
             hidden_size=ref_enc_gru_size,
             batch_first=True,
-        )
+        ).to(device)
 
     def forward(
         self,
@@ -125,7 +129,7 @@ class ReferenceEncoder(nn.Module):
         x = x.permute((0, 2, 1))
 
         packed_sequence = torch.nn.utils.rnn.pack_padded_sequence(
-            x, mel_lens.cpu().int(), batch_first=True, enforce_sorted=False
+            x, lengths=mel_lens.cpu().int(), batch_first=True, enforce_sorted=False
         )
 
         self.gru.flatten_parameters()

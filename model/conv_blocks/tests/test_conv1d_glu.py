@@ -9,17 +9,21 @@ from model.conv_blocks.conv1d_glu import Conv1dGLU
 from model.conv_blocks.bsconv import BSConv1d
 from model.conv_blocks.conv1d import PointwiseConv1d, DepthWiseConv1d
 
+from helpers.tools import get_device
+
 
 class TestConv1dGLU(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device(get_device())
+        self.device = get_device()
 
     def test_initialization(self):
         """
         Test to check if the Conv1dGLU instance is properly created.
         """
         d_model, kernel_size, padding, embedding_dim = 16, 3, 1, 32
-        conv_glu = Conv1dGLU(d_model, kernel_size, padding, embedding_dim)
+        conv_glu = Conv1dGLU(
+            d_model, kernel_size, padding, embedding_dim, device=self.device
+        )
 
         # Checking attribute types
         self.assertIsInstance(
@@ -63,15 +67,22 @@ class TestConv1dGLU(unittest.TestCase):
             1,
             16,
         )
-        conv_glu = Conv1dGLU(d_model, kernel_size, padding, embedding_dim)
+        conv_glu = Conv1dGLU(
+            d_model, kernel_size, padding, embedding_dim, device=self.device
+        )
 
         # Create input tensor 'x' of shape (batch_size, sequence_length, embed_dim)
-        x = torch.randn(batch_size, sequence_length, d_model)
+        x = torch.randn(batch_size, sequence_length, d_model, device=self.device)
 
         # Create embeddings tensor of shape (batch_size, d_model, embedding_dim)
-        embeddings = torch.randn(batch_size, sequence_length, embedding_dim)
+        embeddings = torch.randn(
+            batch_size, sequence_length, embedding_dim, device=self.device
+        )
 
         out = conv_glu(x, embeddings)
+
+        # Assert device type
+        self.assertEqual(out.device.type, self.device.type)
 
         # Assuming embeddings transformations don't change the width of the input
         self.assertEqual(

@@ -8,11 +8,13 @@ from helpers.tools import get_device
 
 class TestCoordConv1d(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device(get_device())
+        self.device = get_device()
+
+        self.x_rand = torch.randn(1, 2, 10, device=self.device)
 
     def test_simple_case(self):
         """Tests a simple case with input of size (1, 2, 10)"""
-        rank1_model = CoordConv1d(
+        model = CoordConv1d(
             in_channels=2,
             out_channels=8,
             kernel_size=3,
@@ -22,9 +24,13 @@ class TestCoordConv1d(unittest.TestCase):
             groups=1,
             bias=True,
             with_r=False,
+            device=self.device,
         )
-        x = torch.randn(1, 2, 10)
-        output = rank1_model(x)
+        output = model(self.x_rand)
+
+        # Assert device type
+        self.assertEqual(output.device.type, self.device.type)
+
         self.assertEqual(list(output.shape), [1, 8, 8])
 
     def test_with_r(self):
@@ -39,9 +45,13 @@ class TestCoordConv1d(unittest.TestCase):
             groups=1,
             bias=True,
             with_r=True,
+            device=self.device,
         )
-        x = torch.randn(1, 2, 10)
-        output = model(x)
+        output = model(self.x_rand)
+
+        # Assert device type
+        self.assertEqual(output.device.type, self.device.type)
+
         self.assertEqual(list(output.shape), [1, 8, 8])
 
     def test_with_padding(self):
@@ -56,9 +66,9 @@ class TestCoordConv1d(unittest.TestCase):
             groups=1,
             bias=True,
             with_r=False,
+            device=self.device,
         )
-        x = torch.randn(1, 2, 10)
-        output = model(x)
+        output = model(self.x_rand)
         self.assertEqual(list(output.shape), [1, 8, 10])
 
 

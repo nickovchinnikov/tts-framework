@@ -2,6 +2,8 @@ import unittest
 
 import torch
 
+import helpers.tools as tools
+
 from config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder import ReferenceEncoder
@@ -9,6 +11,8 @@ from model.reference_encoder import ReferenceEncoder
 
 class TestReferenceEncoder(unittest.TestCase):
     def setUp(self):
+        torch.set_default_device("cuda")
+
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
 
