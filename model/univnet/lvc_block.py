@@ -32,7 +32,7 @@ class LVCBlock(BaseNNModule):
         kpnet_hidden_channels (int): The number of hidden channels in the kernel predictor network.
         kpnet_conv_size (int): The kernel size of the convolutional layers in the kernel predictor network.
         kpnet_dropout (float): The dropout rate for the kernel predictor network.
-        device (torch.device): The device on which to run the computation.
+        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
 
     Attributes:
         cond_hop_length (int): The hop length of the conditioning sequence.

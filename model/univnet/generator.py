@@ -26,6 +26,7 @@ class Generator(BaseNNModule):
         Args:
             model_config (VocoderModelConfig): the model configuration.
             preprocess_config (PreprocessingConfig): the preprocessing configuration.
+            device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
         """
         super(Generator, self).__init__(device=device)
 

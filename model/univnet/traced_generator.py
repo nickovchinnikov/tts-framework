@@ -22,7 +22,7 @@ class TracedGenerator(BaseNNModule):
         Args:
             generator (Generator): The Generator instance to trace.
             example_inputs (Tuple[Any]): Example inputs to use for tracing.
-            device (torch.device, optional): The device to use. Defaults to the current device.
+            device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
         """
         super().__init__(device=device)
 
