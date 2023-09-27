@@ -9,6 +9,10 @@
 UnivNet Generator.
 Initializes the Generator module.
 
+### [Traced Generator](traced_generator.md)
+
+A traced version of the UnivNet Generator class that can be used for faster inference.
+
 ### [Kernel Predictor](kernel_predictor.md)
 
 KernelPredictor is a class that predicts the kernel size for the convolutional layers in the UnivNet model.

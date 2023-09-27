@@ -40,6 +40,7 @@ nav:
     - Univnet:
       - References: model/univnet/readme.md
       - Univnet: model/univnet/generator.md
+      - Traced Generator: model/univnet/traced_generator.md
       - Kernel Predictor: model/univnet/kernel_predictor.md
       - LVC Block: model/univnet/lvc_block.md
   - Helpers:
