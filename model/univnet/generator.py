@@ -82,7 +82,7 @@ class Generator(BaseNNModule):
         # Output of STFT(zeros)
         self.mel_mask_value = -11.5129
 
-    def forward(self, c):
+    def forward(self, c: torch.Tensor) -> torch.Tensor:
         r"""
         Forward pass of the Generator module.
 
@@ -102,7 +102,7 @@ class Generator(BaseNNModule):
 
         return z
 
-    def eval(self, inference=False):
+    def eval(self, inference: bool = False):
         r"""
         Sets the module to evaluation mode.
 
@@ -114,7 +114,7 @@ class Generator(BaseNNModule):
         if inference:
             self.remove_weight_norm()
 
-    def remove_weight_norm(self):
+    def remove_weight_norm(self) -> None:
         r"""
         Removes weight normalization from the module.
         """
@@ -129,7 +129,7 @@ class Generator(BaseNNModule):
         for res_block in self.res_stack:
             res_block.remove_weight_norm()
 
-    def infer(self, c: torch.Tensor, mel_lens: torch.Tensor):
+    def infer(self, c: torch.Tensor, mel_lens: torch.Tensor) -> torch.Tensor:
         r"""
         Infers the audio waveform from the mel-spectrogram conditioning sequence.
 
