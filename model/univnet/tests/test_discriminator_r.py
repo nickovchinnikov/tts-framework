@@ -15,8 +15,6 @@ class TestDiscriminatorR(unittest.TestCase):
         self.model_config = VocoderModelConfig()
         self.model = DiscriminatorR(self.resolution, self.model_config, self.device)
 
-        self.x = torch.randn(4, 1, 16384, device=self.device)
-
     def test_forward(self):
         x = torch.randn(1, 1024, device=self.device)
 
@@ -30,8 +28,9 @@ class TestDiscriminatorR(unittest.TestCase):
         self.assertEqual(output.shape, (1, 65))
 
     def test_spectrogram(self):
+        x = torch.randn(4, 1, 16384, device=self.device)
         # Test the spectrogram function of the DiscriminatorR class
-        mag = self.model.spectrogram(self.x)
+        mag = self.model.spectrogram(x)
 
         # Assert the device
         self.assertEqual(mag.device.type, self.device.type)

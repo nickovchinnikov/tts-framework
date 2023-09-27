@@ -35,3 +35,6 @@ DiscriminatorP is a class that implements a discriminator network for the UnivNe
 
 A class representing the Residual Discriminator network for a UnivNet vocoder.
 
+### [MultiResolutionDiscriminator](multi_resolution_discriminator.md)
+
+Multi-resolution discriminator for the UnivNet vocoder.
