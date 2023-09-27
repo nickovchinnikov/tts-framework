@@ -44,6 +44,7 @@ nav:
       - Kernel Predictor: model/univnet/kernel_predictor.md
       - LVC Block: model/univnet/lvc_block.md
       - DiscriminatorP: model/univnet/discriminator_p.md
+      - DiscriminatorR: model/univnet/discriminator_r.md
       - Multi Period Discriminator: model/univnet/multi_period_discriminator.md
   - Helpers:
     - References: helpers/readme.md
