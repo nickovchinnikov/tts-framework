@@ -7,4 +7,9 @@
 ### [Kernel Predictor](kernel_predictor.md)
 
 KernelPredictor is a class that predicts the kernel size for the convolutional layers in the UnivNet model.
+The kernels of the LVC layers are predicted using a kernel predictor that takes the log-mel-spectrogram as the input.
 
+### [LVC Block](lvc_block.md)
+
+The location-variable convolutions block.
+To efficiently capture the local information of the condition, location-variable convolution (LVC) obtained better sound quality and speed while maintaining the model size. 

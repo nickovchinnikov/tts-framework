@@ -23,6 +23,7 @@ class KernelPredictor(BaseNNModule):
         r"""
         Initializes a KernelPredictor object.
         KernelPredictor is a class that predicts the kernel size for the convolutional layers in the UnivNet model.
+        The kernels of the LVC layers are predicted using a kernel predictor that takes the log-mel-spectrogram as the input.
 
         Args:
             cond_channels (int): The number of channels for the conditioning sequence.
