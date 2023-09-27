@@ -15,10 +15,10 @@ class LVCBlock(BaseNNModule):
     r"""
     The location-variable convolutions block.
 
-    To efficiently capture the local information of the condition, location-variable convolution (LVC) 
-    obtained better sound quality and speed while maintaining the model size. 
-    The kernels of the LVC layers are predicted using a kernel predictor that takes the log-mel-spectrogram 
-    as the input. The kernel predictor is connected to a residual stack. One kernel predictor simultaneously 
+    To efficiently capture the local information of the condition, location-variable convolution (LVC)
+    obtained better sound quality and speed while maintaining the model size.
+    The kernels of the LVC layers are predicted using a kernel predictor that takes the log-mel-spectrogram
+    as the input. The kernel predictor is connected to a residual stack. One kernel predictor simultaneously
     predicts the kernels of all LVC layers in one residual stack.
 
     Args:
@@ -192,10 +192,8 @@ class LVCBlock(BaseNNModule):
         )  # (batch, in_channels, kernel_length, dilation, _, kernel_size)
 
         o = torch.einsum("bildsk,biokl->bolsd", x, kernel)
-        # @todo: test this!
         o = o.contiguous(memory_format=torch.channels_last_3d)
 
-        # @todo: test this!
         bias = (
             bias.unsqueeze(-1)
             .unsqueeze(-1)
