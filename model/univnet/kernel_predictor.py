@@ -19,11 +19,6 @@ class KernelPredictor(BaseNNModule):
         kpnet_dropout: float = 0.0,
         lReLU_slope: float = 0.1,
         device: torch.device = get_device(),
-        # @todo: remove this when the model will be done
-        # kpnet_nonlinear_activation="LeakyReLU",
-        # kpnet_nonlinear_activation_params={"negative_slope": 0.1},
-        # kpnet_nonlinear_activation (str, optional): The name of the nonlinear activation function to use for the kernel predictor network. Defaults to "LeakyReLU".
-        # kpnet_nonlinear_activation_params (dict, optional): The parameters to pass to the nonlinear activation function. Defaults to {"negative_slope": 0.1}.
     ):
         r"""
         Initializes a KernelPredictor object.
