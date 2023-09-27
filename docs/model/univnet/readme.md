@@ -21,5 +21,8 @@ The kernels of the LVC layers are predicted using a kernel predictor that takes 
 ### [LVC Block](lvc_block.md)
 
 The location-variable convolutions block.
-To efficiently capture the local information of the condition, location-variable convolution (LVC) obtained better sound quality and speed while maintaining the model size. 
+To efficiently capture the local information of the condition, location-variable convolution (LVC) obtained better sound quality and speed while maintaining the model size.
 
+### [DiscriminatorP](discriminator_p.md)
+
+DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.

@@ -43,6 +43,7 @@ nav:
       - Traced Generator: model/univnet/traced_generator.md
       - Kernel Predictor: model/univnet/kernel_predictor.md
       - LVC Block: model/univnet/lvc_block.md
+      - DiscriminatorP: model/univnet/discriminator_p.md
   - Helpers:
     - References: helpers/readme.md
     - Initializer: helpers/initializer.md
