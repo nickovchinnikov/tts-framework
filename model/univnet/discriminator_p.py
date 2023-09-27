@@ -114,7 +114,7 @@ class DiscriminatorP(BaseNNModule):
             x (torch.Tensor): The input tensor of shape (batch_size, channels, time_steps).
 
         Returns:
-            Tuple[list, torch.Tensor]: A tuple containing a list of feature maps and the output tensor of shape (batch_size, 1).
+            Tuple[list, torch.Tensor]: A tuple containing a list of feature maps and the output tensor of shape (batch_size, period).
         """
         fmap = []
 

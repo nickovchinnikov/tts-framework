@@ -26,3 +26,7 @@ To efficiently capture the local information of the condition, location-variable
 ### [DiscriminatorP](discriminator_p.md)
 
 DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.
+
+### [MultiPeriodDiscriminator](multi_period_discriminator.md)
+
+MultiPeriodDiscriminator is a class that implements a multi-period discriminator network for the UnivNet vocoder.
