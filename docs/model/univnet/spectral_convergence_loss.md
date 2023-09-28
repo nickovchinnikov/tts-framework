@@ -1,0 +1,1 @@
+::: model.univnet.spectral_convergence_loss

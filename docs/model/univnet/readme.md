@@ -49,3 +49,11 @@ Multi-resolution discriminator for the UnivNet vocoder.
 
 Perform STFT and convert to magnitude spectrogram.
 STFT stands for Short-Time Fourier Transform. It is a signal processing technique that is used to analyze the frequency content of a signal over time. The STFT is computed by dividing a long signal into shorter segments, and then computing the Fourier transform of each segment. This results in a time-frequency representation of the signal, where the frequency content of the signal is shown as a function of time.
+
+### [Spectral Convergence Loss](spectral_convergence_loss.md)
+
+Spectral convergence loss is a measure of the similarity between two magnitude spectrograms.
+
+The spectral convergence loss is calculated as the Frobenius norm of the difference between the predicted and groundtruth magnitude spectrograms, divided by the Frobenius norm of the groundtruth magnitude spectrogram. The Frobenius norm is a matrix norm that is equivalent to the square root of the sum of the squared elements of a matrix.
+
+The spectral convergence loss is a useful metric for evaluating the quality of a predicted signal, as it measures the degree to which the predicted signal matches the groundtruth signal in terms of its spectral content. A lower spectral convergence loss indicates a better match between the predicted and groundtruth signals.
