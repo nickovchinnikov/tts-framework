@@ -50,6 +50,7 @@ nav:
       - Multi Resolution Discriminator: model/univnet/multi_resolution_discriminator.md
       - STFT: model/univnet/stft.md
       - Spectral Convergence Loss: model/univnet/spectral_convergence_loss.md
+      - Log STFT Magnitude Loss: model/univnet/log_stft_magnitude_loss.md
   - Helpers:
     - References: helpers/readme.md
     - Initializer: helpers/initializer.md
