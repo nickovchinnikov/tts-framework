@@ -45,7 +45,9 @@ class STFTLoss(BaseNNModule):
         self.spectral_convergenge_loss = SpectralConvergengeLoss()
         self.log_stft_magnitude_loss = LogSTFTMagnitudeLoss()
 
-    def forward(self, x, y):
+    def forward(
+        self, x: torch.Tensor, y: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         r"""
         Calculate forward propagation.
 

@@ -52,6 +52,7 @@ nav:
       - Spectral Convergence Loss: model/univnet/spectral_convergence_loss.md
       - Log STFT Magnitude Loss: model/univnet/log_stft_magnitude_loss.md
       - STFT Loss: model/univnet/stft_loss.md
+      - Multi Resolution STFT Loss: model/univnet/multi_resolution_stft_loss.md
   - Helpers:
     - References: helpers/readme.md
     - Initializer: helpers/initializer.md
