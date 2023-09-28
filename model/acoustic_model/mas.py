@@ -1,6 +1,10 @@
 import numpy as np
 from numba import jit, njit, prange
 
+# @todo:
+# Check this: https://github.com/archinetai/aligner-pytorch
+# and this: https://github.com/resemble-ai/monotonic_align/tree/master
+
 
 # @todo: Don't see any performance improvement with numba
 @njit(fastmath=True)
