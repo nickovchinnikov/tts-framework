@@ -1,6 +1,8 @@
 import torch
 import unittest
 
+import math
+
 from model.univnet import DiscriminatorP
 from config import VocoderModelConfig
 
@@ -28,12 +30,36 @@ class TestDiscriminatorP(unittest.TestCase):
         self.assertEqual(self.model.device.type, self.device.type)
 
         self.assertEqual(len(fmap), len(self.model.convs) + 1)
+
+        # Assert the shape of the feature maps
+        dim_2nd = 4
+        for i in range(len(self.model_config.mpd.periods)):
+            self.assertEqual(fmap[i].shape[0], self.batch_size)
+            self.assertEqual(fmap[i].shape[1], 2 ** (i + 6))
+            self.assertEqual(fmap[i].shape[2], dim_2nd)
+
+            dim_2nd = math.ceil(dim_2nd / self.model_config.mpd.stride)
+
+            self.assertEqual(fmap[i].shape[3], self.period)
+
         self.assertEqual(output.shape, (self.batch_size, self.period))
 
     def test_forward_with_padding(self):
         fmap, output = self.model(self.x)
 
         self.assertEqual(len(fmap), len(self.model.convs) + 1)
+
+        # Assert the shape of the feature maps
+        dim_2nd = 4
+        for i in range(len(self.model_config.mpd.periods)):
+            self.assertEqual(fmap[i].shape[0], self.batch_size)
+            self.assertEqual(fmap[i].shape[1], 2 ** (i + 6))
+            self.assertEqual(fmap[i].shape[2], dim_2nd)
+
+            dim_2nd = math.ceil(dim_2nd / self.model_config.mpd.stride)
+
+            self.assertEqual(fmap[i].shape[3], self.period)
+
         self.assertEqual(output.shape, (self.batch_size, self.period))
 
     def test_forward_with_different_period(self):
@@ -46,6 +72,18 @@ class TestDiscriminatorP(unittest.TestCase):
         fmap, output = model(x)
 
         self.assertEqual(len(fmap), len(model.convs) + 1)
+
+        # Assert the shape of the feature maps
+        dim_2nd = 7
+        for i in range(len(self.model_config.mpd.periods)):
+            self.assertEqual(fmap[i].shape[0], self.batch_size)
+            self.assertEqual(fmap[i].shape[1], 2 ** (i + 6))
+            self.assertEqual(fmap[i].shape[2], dim_2nd)
+
+            dim_2nd = math.ceil(dim_2nd / self.model_config.mpd.stride)
+
+            self.assertEqual(fmap[i].shape[3], model.period)
+
         self.assertEqual(output.shape, (self.batch_size, model.period))
 
 

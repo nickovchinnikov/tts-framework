@@ -1,6 +1,8 @@
 import torch
 import unittest
 
+import math
+
 from model.univnet import MultiPeriodDiscriminator
 from config import VocoderModelConfig
 
@@ -25,16 +27,25 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
 
         self.assertEqual(len(output), len(self.model_config.mpd.periods))
 
+        init_2nd_dims = [17, 12, 7, 5, 4]
+
         for mpd_k in range(len(self.model_config.mpd.periods)):
             fmap = output[mpd_k][0]
             x = output[mpd_k][1]
+
             self.assertEqual(len(x), self.batch_size)
 
-            for i, _ in enumerate(self.model_config.mpd.periods):
+            dim_2nd = init_2nd_dims[mpd_k]
+            period = self.model_config.mpd.periods[mpd_k]
+
+            for i in range(len(self.model_config.mpd.periods)):
                 self.assertEqual(fmap[i].shape[0], self.batch_size)
                 self.assertEqual(fmap[i].shape[1], 2 ** (i + 6))
+                self.assertEqual(fmap[i].shape[2], dim_2nd)
 
-                # dim 2 and 3 are very complicated to calculate...
+                dim_2nd = math.ceil(dim_2nd / self.model_config.mpd.stride)
+
+                self.assertEqual(fmap[i].shape[3], period)
 
         self.assertEqual(len(output), len(self.model_config.mpd.periods))
 
