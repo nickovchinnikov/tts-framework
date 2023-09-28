@@ -63,3 +63,12 @@ The spectral convergence loss is a useful metric for evaluating the quality of a
 Log STFT magnitude loss is a loss function that is commonly used in speech and audio signal processing tasks, such as speech enhancement and source separation. It is a modification of the spectral convergence loss, which measures the similarity between two magnitude spectrograms.
 
 The log STFT magnitude loss is calculated as the mean squared error between the logarithm of the predicted and groundtruth magnitude spectrograms. The logarithm is applied to the magnitude spectrograms to convert them to a decibel scale, which is more perceptually meaningful than the linear scale. The mean squared error is used to penalize large errors between the predicted and groundtruth spectrograms.
+
+
+### [STFT Loss](stft_loss.md)
+
+STFT loss is a combination of two loss functions: the spectral convergence loss and the log STFT magnitude loss.
+
+The spectral convergence loss measures the similarity between two magnitude spectrograms, while the log STFT magnitude loss measures the similarity between two logarithmically-scaled magnitude spectrograms. The logarithm is applied to the magnitude spectrograms to convert them to a decibel scale, which is more perceptually meaningful than the linear scale.
+
+The STFT loss is a useful metric for evaluating the quality of a predicted signal, as it measures the degree to which the predicted signal matches the groundtruth signal in terms of its spectral content on both a linear and decibel scale. A lower STFT loss indicates a better match between the predicted and groundtruth signals.
