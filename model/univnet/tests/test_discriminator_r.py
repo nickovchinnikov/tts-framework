@@ -26,6 +26,20 @@ class TestDiscriminatorR(unittest.TestCase):
 
         self.assertEqual(len(fmap), 6)
 
+        # Assert the shape of the feature maps explicitly
+        fmap_dims = [
+            torch.Size([32, 1, 513]),
+            torch.Size([32, 1, 257]),
+            torch.Size([32, 1, 129]),
+            torch.Size([32, 1, 65]),
+            torch.Size([32, 1, 65]),
+            torch.Size([1, 1, 65]),
+        ]
+
+        for i in range(len(fmap)):
+            self.assertEqual(fmap[i].shape, fmap_dims[i])
+            self.assertEqual(fmap[i].device.type, self.device.type)
+
         first_dim, second_dim = 32, 1
 
         init_p = 9

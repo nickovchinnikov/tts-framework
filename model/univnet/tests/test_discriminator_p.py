@@ -31,6 +31,20 @@ class TestDiscriminatorP(unittest.TestCase):
 
         self.assertEqual(len(fmap), len(self.model.convs) + 1)
 
+        # Assert the shape of the feature maps explicitly
+        fmap_dims = [
+            torch.Size([self.batch_size, 64, 4, self.period]),
+            torch.Size([self.batch_size, 128, 2, self.period]),
+            torch.Size([self.batch_size, 256, 1, self.period]),
+            torch.Size([self.batch_size, 512, 1, self.period]),
+            torch.Size([self.batch_size, 1024, 1, self.period]),
+            torch.Size([self.batch_size, 1, 1, self.period]),
+        ]
+
+        for i in range(len(fmap)):
+            self.assertEqual(fmap[i].shape, fmap_dims[i])
+            self.assertEqual(fmap[i].device.type, self.device.type)
+
         # Assert the shape of the feature maps
         dim_2nd = 4
         for i in range(len(self.model_config.mpd.periods)):
@@ -48,6 +62,20 @@ class TestDiscriminatorP(unittest.TestCase):
         fmap, output = self.model(self.x)
 
         self.assertEqual(len(fmap), len(self.model.convs) + 1)
+
+        # Assert the shape of the feature maps explicitly
+        fmap_dims = [
+            torch.Size([self.batch_size, 64, 4, self.period]),
+            torch.Size([self.batch_size, 128, 2, self.period]),
+            torch.Size([self.batch_size, 256, 1, self.period]),
+            torch.Size([self.batch_size, 512, 1, self.period]),
+            torch.Size([self.batch_size, 1024, 1, self.period]),
+            torch.Size([self.batch_size, 1, 1, self.period]),
+        ]
+
+        for i in range(len(fmap)):
+            self.assertEqual(fmap[i].shape, fmap_dims[i])
+            self.assertEqual(fmap[i].device.type, self.device.type)
 
         # Assert the shape of the feature maps
         dim_2nd = 4
@@ -72,6 +100,20 @@ class TestDiscriminatorP(unittest.TestCase):
         fmap, output = model(x)
 
         self.assertEqual(len(fmap), len(model.convs) + 1)
+
+        # Assert the shape of the feature maps explicitly
+        fmap_dims = [
+            torch.Size([self.batch_size, 64, 7, model.period]),
+            torch.Size([self.batch_size, 128, 3, model.period]),
+            torch.Size([self.batch_size, 256, 1, model.period]),
+            torch.Size([self.batch_size, 512, 1, model.period]),
+            torch.Size([self.batch_size, 1024, 1, model.period]),
+            torch.Size([self.batch_size, 1, 1, model.period]),
+        ]
+
+        for i in range(len(fmap)):
+            self.assertEqual(fmap[i].shape, fmap_dims[i])
+            self.assertEqual(fmap[i].device.type, self.device.type)
 
         # Assert the shape of the feature maps
         dim_2nd = 7
