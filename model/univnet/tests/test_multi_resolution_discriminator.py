@@ -76,7 +76,6 @@ class TestMultiResolutionDiscriminator(unittest.TestCase):
                     fmap.shape, torch.Size([first_dim, second_dim, dim_3rd(p_max - i)])
                 )
 
-            print(fmap[-1].shape, torch.Size([second_dim, 2**p_min + 1]))
             self.assertEqual(fmap[-1].shape, torch.Size([second_dim, 2**p_min + 1]))
 
 

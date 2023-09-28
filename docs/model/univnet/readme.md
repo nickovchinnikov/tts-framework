@@ -23,13 +23,19 @@ The kernels of the LVC layers are predicted using a kernel predictor that takes 
 The location-variable convolutions block.
 To efficiently capture the local information of the condition, location-variable convolution (LVC) obtained better sound quality and speed while maintaining the model size.
 
+### [Discriminator](discriminator.md)
+
+Discriminator for the UnuvNet vocoder.
+
+This class implements a discriminator that consists of a `MultiResolutionDiscriminator` and a `MultiPeriodDiscriminator`.
+
 ### [MultiPeriodDiscriminator](multi_period_discriminator.md)
 
-MultiPeriodDiscriminator is a class that implements a multi-period discriminator network for the UnivNet vocoder.
+`MultiPeriodDiscriminator` is a class that implements a multi-period discriminator network for the UnivNet vocoder.
 
 ### [DiscriminatorP](discriminator_p.md)
 
-DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.
+`DiscriminatorP` is a class that implements a discriminator network for the UnivNet vocoder.
 
 ### [DiscriminatorR](discriminator_r.md)
 

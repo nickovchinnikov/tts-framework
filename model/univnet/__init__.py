@@ -6,3 +6,5 @@ from .discriminator_p import DiscriminatorP
 from .multi_period_discriminator import MultiPeriodDiscriminator
 from .discriminator_r import DiscriminatorR
 from .multi_resolution_discriminator import MultiResolutionDiscriminator
+from .multi_period_discriminator import MultiPeriodDiscriminator
+from .discriminator import Discriminator

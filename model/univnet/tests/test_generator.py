@@ -15,7 +15,6 @@ class TestGenerator(unittest.TestCase):
 
         self.batch_size = 3
         self.in_length = 100
-        # self.mel_channels = 80
 
         self.model_config = VocoderModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
