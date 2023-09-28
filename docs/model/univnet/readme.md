@@ -44,3 +44,8 @@ A class representing the Residual Discriminator network for a UnivNet vocoder.
 ### [MultiResolutionDiscriminator](multi_resolution_discriminator.md)
 
 Multi-resolution discriminator for the UnivNet vocoder.
+
+### [STFT](stft.md)
+
+Perform STFT and convert to magnitude spectrogram.
+STFT stands for Short-Time Fourier Transform. It is a signal processing technique that is used to analyze the frequency content of a signal over time. The STFT is computed by dividing a long signal into shorter segments, and then computing the Fourier transform of each segment. This results in a time-frequency representation of the signal, where the frequency content of the signal is shown as a function of time.
