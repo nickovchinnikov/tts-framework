@@ -8,7 +8,11 @@ from model.attention.conformer_multi_headed_self_attention import (
     ConformerMultiHeadedSelfAttention,
 )
 
-from config import AcousticENModelConfig, PreprocessingConfig, AcousticPretrainingConfig
+from model.config import (
+    AcousticENModelConfig,
+    PreprocessingConfig,
+    AcousticPretrainingConfig,
+)
 
 from model.reference_encoder import (
     PhonemeLevelProsodyEncoder,

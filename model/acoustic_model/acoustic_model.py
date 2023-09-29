@@ -5,7 +5,7 @@ from torch.nn.parameter import Parameter
 
 from typing import Dict, Tuple
 
-from config import (
+from model.config import (
     AcousticModelConfigType,
     PreprocessingConfig,
     symbols,

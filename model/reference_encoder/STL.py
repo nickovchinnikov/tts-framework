@@ -6,7 +6,7 @@ from model.basenn import BaseNNModule
 
 from helpers.tools import get_device
 
-from config import AcousticModelConfigType
+from model.config import AcousticModelConfigType
 
 
 class STL(BaseNNModule):

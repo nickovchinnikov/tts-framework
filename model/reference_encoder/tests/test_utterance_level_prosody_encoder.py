@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from config import AcousticENModelConfig, PreprocessingConfig
+from model.config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder import UtteranceLevelProsodyEncoder
 

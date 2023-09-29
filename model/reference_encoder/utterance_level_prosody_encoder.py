@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from config import AcousticModelConfigType, PreprocessingConfig
+from model.config import AcousticModelConfigType, PreprocessingConfig
 
 from model.basenn import BaseNNModule
 

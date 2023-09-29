@@ -15,7 +15,7 @@ import torch
 from acoustic_model import AcousticModel
 from univnet import Generator as UnivNet
 
-from config import (
+from model.config import (
     PreprocessingConfig,
     AcousticENModelConfig,
     AcousticPretrainingConfig,

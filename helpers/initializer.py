@@ -3,7 +3,7 @@ import torch
 from typing import Tuple
 from dataclasses import dataclass
 
-from config import (
+from model.config import (
     AcousticModelConfigType,
     PreprocessingConfig,
     AcousticENModelConfig,

@@ -4,7 +4,7 @@ import unittest
 from helpers.tools import get_device
 
 from model.univnet.discriminator_r import DiscriminatorR
-from config import VocoderModelConfig
+from model.config import VocoderModelConfig
 
 
 class TestDiscriminatorR(unittest.TestCase):

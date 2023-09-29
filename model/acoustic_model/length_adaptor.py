@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from typing import List, Tuple
 
-from config import AcousticModelConfigType
+from model.config import AcousticModelConfigType
 from helpers import tools
 
 from model.basenn import BaseNNModule

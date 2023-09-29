@@ -2,7 +2,7 @@ import unittest
 import torch
 import torch.nn as nn
 
-from config import (
+from model.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
     PreprocessingConfig,

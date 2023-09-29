@@ -10,7 +10,7 @@ from model.basenn import BaseNNModule
 
 from helpers import tools
 
-from config import AcousticModelConfigType, PreprocessingConfig
+from model.config import AcousticModelConfigType, PreprocessingConfig
 
 
 class ReferenceEncoder(BaseNNModule):

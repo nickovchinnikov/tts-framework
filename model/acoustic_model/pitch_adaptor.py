@@ -6,7 +6,7 @@ from pathlib import Path
 
 from typing import Tuple
 
-from config import AcousticModelConfigType
+from model.config import AcousticModelConfigType
 
 from model.basenn import BaseNNModule
 

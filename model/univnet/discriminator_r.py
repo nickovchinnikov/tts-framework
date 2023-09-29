@@ -10,7 +10,7 @@ from model.basenn import BaseNNModule
 
 from torch.nn.utils import spectral_norm, weight_norm
 
-from config import VocoderModelConfig
+from model.config import VocoderModelConfig
 
 
 class DiscriminatorR(BaseNNModule):

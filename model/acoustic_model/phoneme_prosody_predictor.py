@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from config import AcousticModelConfigType
+from model.config import AcousticModelConfigType
 
 from model.conv_blocks import ConvTransposed
 from model.constants import LEAKY_RELU_SLOPE

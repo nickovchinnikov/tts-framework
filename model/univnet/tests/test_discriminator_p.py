@@ -4,7 +4,7 @@ import unittest
 import math
 
 from model.univnet import DiscriminatorP
-from config import VocoderModelConfig
+from model.config import VocoderModelConfig
 
 from helpers.tools import get_device
 

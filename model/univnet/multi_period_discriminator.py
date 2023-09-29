@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from config import VocoderModelConfig
+from model.config import VocoderModelConfig
 
 from model.basenn import BaseNNModule
 from model.univnet import DiscriminatorP
