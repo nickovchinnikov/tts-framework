@@ -8,20 +8,24 @@ from model.attention.conformer_multi_headed_self_attention import (
     ConformerMultiHeadedSelfAttention,
 )
 
-from config import AcousticENModelConfig, PreprocessingConfig, AcousticPretrainingConfig
+from model.config import (
+    AcousticENModelConfig,
+    PreprocessingConfig,
+    AcousticPretrainingConfig,
+)
 
 from model.reference_encoder import (
     PhonemeLevelProsodyEncoder,
     UtteranceLevelProsodyEncoder,
 )
 
-from helpers.initializer import (
+from model.helpers.initializer import (
     init_acoustic_model,
     init_conformer,
     init_forward_trains_params,
     init_mask_input_embeddings_encoding_attn_mask,
 )
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 # It checks for most of the acoustic model code

@@ -3,7 +3,7 @@ import unittest
 
 from model.attention.style_embed_attention import StyleEmbedAttention
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestStyleEmbedAttention(unittest.TestCase):

@@ -2,20 +2,20 @@ import unittest
 import torch
 import torch.nn as nn
 
-from config import (
+from model.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
     PreprocessingConfig,
 )
 
-from helpers.initializer import (
+from model.helpers.initializer import (
     init_acoustic_model,
     init_conformer,
     init_forward_trains_params,
     init_mask_input_embeddings_encoding_attn_mask,
 )
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from model.acoustic_model.aligner import Aligner
 

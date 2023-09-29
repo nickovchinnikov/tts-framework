@@ -5,7 +5,7 @@ from torch.nn import functional as F
 
 from typing import List
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 from model.basenn import BaseNNModule
 
 from .kernel_predictor import KernelPredictor

@@ -1,6 +1,6 @@
 import unittest
 
-from helpers.tools import calc_same_padding
+from model.helpers.tools import calc_same_padding
 
 
 class TestCalcSamePadding(unittest.TestCase):

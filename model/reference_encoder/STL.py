@@ -4,9 +4,9 @@ import torch.nn as nn
 from model.attention import StyleEmbedAttention
 from model.basenn import BaseNNModule
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
-from config import AcousticModelConfigType
+from model.config import AcousticModelConfigType
 
 
 class STL(BaseNNModule):

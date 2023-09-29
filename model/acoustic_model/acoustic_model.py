@@ -5,14 +5,14 @@ from torch.nn.parameter import Parameter
 
 from typing import Dict, Tuple
 
-from config import (
+from model.config import (
     AcousticModelConfigType,
     PreprocessingConfig,
     symbols,
     SUPPORTED_LANGUAGES,
 )
 
-from helpers import tools
+from model.helpers import tools
 
 from model.attention import Conformer
 from model.reference_encoder import (

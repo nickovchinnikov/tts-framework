@@ -3,7 +3,7 @@ import torch.nn as nn
 import unittest
 
 from model.univnet.lvc_block import LVCBlock
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestLVCBlock(unittest.TestCase):

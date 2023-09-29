@@ -3,7 +3,7 @@ import unittest
 
 from model.univnet.kernel_predictor import KernelPredictor
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestKernelPredictor(unittest.TestCase):

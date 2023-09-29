@@ -8,9 +8,9 @@ from model.conv_blocks import CoordConv1d
 from model.constants import LEAKY_RELU_SLOPE
 from model.basenn import BaseNNModule
 
-from helpers import tools
+from model.helpers import tools
 
-from config import AcousticModelConfigType, PreprocessingConfig
+from model.config import AcousticModelConfigType, PreprocessingConfig
 
 
 class ReferenceEncoder(BaseNNModule):

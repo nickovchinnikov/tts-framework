@@ -1,12 +1,12 @@
 import torch
 from torch import nn
 
-from config import AcousticModelConfigType, PreprocessingConfig
+from model.config import AcousticModelConfigType, PreprocessingConfig
 
 from model.attention import ConformerMultiHeadedSelfAttention
 from model.basenn import BaseNNModule
 
-from helpers import tools
+from model.helpers import tools
 
 from .reference_encoder import ReferenceEncoder
 

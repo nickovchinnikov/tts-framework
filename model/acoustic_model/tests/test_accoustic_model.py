@@ -5,15 +5,15 @@ import torch
 # @todo: profile deeply the memory usage
 # from torch.profiler import profile, record_function, ProfilerActivity
 
-import helpers.tools as tools
+import model.helpers.tools as tools
 
-from helpers.initializer import (
+from model.helpers.initializer import (
     init_acoustic_model,
     init_forward_trains_params,
     get_test_configs,
 )
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 # AcousticModel test

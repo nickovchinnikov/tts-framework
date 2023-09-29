@@ -15,14 +15,14 @@ import torch
 from acoustic_model import AcousticModel
 from univnet import Generator as UnivNet
 
-from config import (
+from model.config import (
     PreprocessingConfig,
     AcousticENModelConfig,
     AcousticPretrainingConfig,
     VocoderModelConfig,
 )
 
-from helpers import get_device
+from model.helpers import get_device
 
 # %%
 checkpoint_base = os.path.join(
@@ -50,7 +50,7 @@ acoustic_pretraining_config = AcousticPretrainingConfig()
 
 data_path = os.path.join(
     SCRIPT_DIR,
-    "conf",
+    "config",
 )
 
 device = get_device()

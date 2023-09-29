@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import torch
 
-from helpers.tools import initialize_embeddings
+from model.helpers.tools import initialize_embeddings
 
 
 class TestInitializeEmbeddings(unittest.TestCase):

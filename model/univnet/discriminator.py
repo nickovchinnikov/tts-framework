@@ -1,9 +1,9 @@
 import torch
 
 from model.basenn import BaseNNModule
-from config import VocoderModelConfig
+from model.config import VocoderModelConfig
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from .multi_period_discriminator import MultiPeriodDiscriminator
 from .multi_resolution_discriminator import MultiResolutionDiscriminator

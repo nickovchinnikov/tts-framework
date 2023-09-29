@@ -5,7 +5,7 @@ import torch
 
 from model.reference_encoder.STL import STL
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestSTL(unittest.TestCase):

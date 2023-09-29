@@ -4,7 +4,7 @@ from typing import Tuple, Any
 
 from model.basenn import BaseNNModule
 
-from helpers.tools import get_mask_from_lengths, get_device
+from model.helpers.tools import get_mask_from_lengths, get_device
 
 from .generator import Generator
 

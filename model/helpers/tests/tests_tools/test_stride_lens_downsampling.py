@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from helpers import (
+from model.helpers import (
     stride_lens_downsampling,
 )
 

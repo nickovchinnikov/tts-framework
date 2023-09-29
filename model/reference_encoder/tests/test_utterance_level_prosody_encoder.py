@@ -2,11 +2,11 @@ import unittest
 
 import torch
 
-from config import AcousticENModelConfig, PreprocessingConfig
+from model.config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder import UtteranceLevelProsodyEncoder
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestUtteranceLevelProsodyEncoder(unittest.TestCase):
