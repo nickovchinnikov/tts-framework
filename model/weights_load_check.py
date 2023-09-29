@@ -50,7 +50,7 @@ acoustic_pretraining_config = AcousticPretrainingConfig()
 
 data_path = os.path.join(
     SCRIPT_DIR,
-    "conf",
+    "config",
 )
 
 device = get_device()
