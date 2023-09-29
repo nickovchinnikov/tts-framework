@@ -7,7 +7,7 @@ from model.conv_blocks import ConvTransposed
 from model.constants import LEAKY_RELU_SLOPE
 from model.basenn import BaseNNModule
 
-from helpers import tools
+from model.helpers import tools
 
 
 class PhonemeProsodyPredictor(BaseNNModule):

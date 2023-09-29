@@ -4,7 +4,7 @@ import torch
 
 from model.acoustic_model.variance_predictor import VariancePredictor
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestVariancePredictor(unittest.TestCase):

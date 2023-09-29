@@ -4,7 +4,7 @@ import torch
 from unittest.mock import Mock
 from model.acoustic_model.length_adaptor import LengthAdaptor
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestLengthAdaptor(unittest.TestCase):

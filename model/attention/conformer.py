@@ -4,7 +4,7 @@ import torch.nn as nn
 from model.attention import ConformerBlock
 from model.basenn import BaseNNModule
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class Conformer(BaseNNModule):

@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from model.basenn import BaseNNModule
 
-from helpers import tools
+from model.helpers import tools
 
 
 class Embedding(BaseNNModule):

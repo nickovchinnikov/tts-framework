@@ -3,7 +3,7 @@ import unittest
 
 from model.conv_blocks.conv1d import DepthWiseConv1d, PointwiseConv1d
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestDepthwiseConv1d(unittest.TestCase):

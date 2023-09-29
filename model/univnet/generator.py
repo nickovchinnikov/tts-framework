@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from model.config import VocoderModelConfig, PreprocessingConfig
 
-from helpers.tools import get_mask_from_lengths, get_device
+from model.helpers.tools import get_mask_from_lengths, get_device
 
 from model.basenn import BaseNNModule
 

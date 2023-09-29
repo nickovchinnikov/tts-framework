@@ -22,7 +22,7 @@ from model.config import (
     VocoderModelConfig,
 )
 
-from helpers import get_device
+from model.helpers import get_device
 
 # %%
 checkpoint_base = os.path.join(

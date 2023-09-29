@@ -5,7 +5,7 @@ import torch
 
 from model.acoustic_model import PitchAdaptor
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestPitchAdaptor(unittest.TestCase):

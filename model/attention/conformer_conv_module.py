@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from model.constants import LEAKY_RELU_SLOPE
 
-from helpers import tools
+from model.helpers import tools
 
 from model.conv_blocks import PointwiseConv1d, GLUActivation, DepthWiseConv1d
 from model.basenn import BaseNNModule

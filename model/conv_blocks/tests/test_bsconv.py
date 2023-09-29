@@ -3,7 +3,7 @@ import torch
 
 from model.conv_blocks.bsconv import BSConv1d
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestBSConv1d(unittest.TestCase):

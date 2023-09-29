@@ -11,7 +11,7 @@ from model.config import (
     SUPPORTED_LANGUAGES,
 )
 
-import helpers.tools as tools
+import model.helpers.tools as tools
 
 from model.acoustic_model import AcousticModel
 from model.acoustic_model.helpers import positional_encoding

@@ -3,7 +3,7 @@ import unittest
 import torch
 import torch.nn as nn
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from model.conv_blocks.conv1d_glu import Conv1dGLU
 from model.conv_blocks.bsconv import BSConv1d

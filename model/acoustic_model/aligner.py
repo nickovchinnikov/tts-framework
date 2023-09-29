@@ -6,7 +6,7 @@ from typing import Tuple
 from model.constants import LEAKY_RELU_SLOPE
 from model.basenn import BaseNNModule
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from .mas import b_mas
 

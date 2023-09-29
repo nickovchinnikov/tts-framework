@@ -6,7 +6,7 @@ from model.config import AcousticENModelConfig, PreprocessingConfig
 
 from model.reference_encoder import ReferenceEncoder
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestReferenceEncoder(unittest.TestCase):

@@ -5,7 +5,7 @@ from model.config import AcousticModelConfigType, PreprocessingConfig
 
 from model.basenn import BaseNNModule
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from .STL import STL
 from .reference_encoder import ReferenceEncoder

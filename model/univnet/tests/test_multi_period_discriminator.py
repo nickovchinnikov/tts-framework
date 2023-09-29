@@ -6,7 +6,7 @@ import math
 from model.univnet import MultiPeriodDiscriminator
 from model.config import VocoderModelConfig
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestMultiPeriodDiscriminator(unittest.TestCase):

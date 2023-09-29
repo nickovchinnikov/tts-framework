@@ -2,7 +2,7 @@ import torch
 
 import math
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 def positional_encoding(

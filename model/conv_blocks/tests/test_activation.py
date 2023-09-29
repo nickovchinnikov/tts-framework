@@ -5,7 +5,7 @@ from torch.autograd import gradcheck
 
 from model.conv_blocks.activation import GLUActivation
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 # Unit Testing Class

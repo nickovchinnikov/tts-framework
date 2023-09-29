@@ -4,7 +4,7 @@ import torch
 
 from model.attention.multi_head_attention import MultiHeadAttention
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestMultiHeadAttention(unittest.TestCase):

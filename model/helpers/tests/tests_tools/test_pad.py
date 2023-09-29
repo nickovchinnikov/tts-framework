@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from helpers.tools import pad
+from model.helpers.tools import pad
 
 
 class TestPad(unittest.TestCase):

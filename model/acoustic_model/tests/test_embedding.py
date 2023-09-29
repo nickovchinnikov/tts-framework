@@ -3,7 +3,7 @@ import unittest
 
 from model.acoustic_model.embedding import Embedding
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestEmbedding(unittest.TestCase):

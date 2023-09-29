@@ -12,7 +12,7 @@ from model.config import (
     SUPPORTED_LANGUAGES,
 )
 
-from helpers import tools
+from model.helpers import tools
 
 from model.attention import Conformer
 from model.reference_encoder import (

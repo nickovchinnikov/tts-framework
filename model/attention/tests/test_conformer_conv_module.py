@@ -4,7 +4,7 @@ import torch
 
 from model.attention.conformer_conv_module import ConformerConvModule
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestConformerConvModule(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 import torch
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from model.attention import ConformerMultiHeadedSelfAttention
 

@@ -4,7 +4,7 @@ import torch.nn as nn
 
 from model.config import VocoderModelConfig, PreprocessingConfig
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from model.univnet.generator import Generator
 

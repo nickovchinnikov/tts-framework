@@ -1,7 +1,7 @@
 import torch
 
 from model.basenn import BaseNNModule
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 from .stft_loss import STFTLoss
 

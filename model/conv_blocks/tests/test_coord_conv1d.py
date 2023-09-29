@@ -3,7 +3,7 @@ import unittest
 
 from model.conv_blocks.coord_conv1d import CoordConv1d
 
-from helpers.tools import get_device
+from model.helpers.tools import get_device
 
 
 class TestCoordConv1d(unittest.TestCase):

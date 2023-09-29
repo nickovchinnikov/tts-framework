@@ -10,7 +10,7 @@ from model.config import AcousticModelConfigType
 
 from model.basenn import BaseNNModule
 
-from helpers import tools
+from model.helpers import tools
 
 from .variance_predictor import VariancePredictor
 from .embedding import Embedding
