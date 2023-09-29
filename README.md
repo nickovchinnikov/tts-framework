@@ -17,6 +17,20 @@ conda env export > environment.yml
 conda env create -f environment.yml
 ```
 
+If you have troubles with export, like:
+```
+InvalidVersionSpec: Invalid version '3.0<3.3': invalid character(s)                                                           
+```
+
+Find a problem by this way:
+
+```
+cd /mnt/Data/anaconda3/envs/tts_framework/lib/python3.11/site-packages/
+
+grep -Rnw . -e "3.0<3.3"
+
+```
+
 Generate docs:
 
 
