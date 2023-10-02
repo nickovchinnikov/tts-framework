@@ -59,6 +59,9 @@ nav:
       - Tools: model/helpers/tools.md
   - Training:
     - References: training/readme.md
+    - Dataset:
+      - References: training/dataset/readme.md
+      - Acoustic Dataset: training/dataset/acoustic_dataset.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:
