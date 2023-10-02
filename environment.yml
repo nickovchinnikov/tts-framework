@@ -3,6 +3,7 @@ channels:
   - numba
   - pytorch
   - nvidia
+  - anaconda
   - conda-forge
   - defaults
 dependencies:
@@ -23,10 +24,10 @@ dependencies:
   - boltons=23.0.0=py311h06a4308_0
   - brotlipy=0.7.0=py311h5eee18b_1002
   - bzip2=1.0.8=h7b6447c_0
-  - ca-certificates=2023.7.22=hbcca054_0
+  - ca-certificates=2023.01.10=h06a4308_0
   - cachecontrol=0.13.1=pyhd8ed1ab_0
   - cachecontrol-with-filecache=0.13.1=pyhd8ed1ab_0
-  - certifi=2023.7.22=pyhd8ed1ab_0
+  - certifi=2020.6.20=pyhd3eb1b0_3
   - cffi=1.15.1=py311h5eee18b_3
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
   - cleo=2.0.1=pyhd8ed1ab_0
@@ -103,6 +104,8 @@ dependencies:
   - libdeflate=1.17=h5eee18b_0
   - libffi=3.4.4=h6a678d5_0
   - libgcc-ng=11.2.0=h1234567_1
+  - libgfortran-ng=11.2.0=h00389a5_1
+  - libgfortran5=11.2.0=h1234567_1
   - libgomp=11.2.0=h1234567_1
   - libiconv=1.16=h7f8727e_2
   - libidn2=2.3.4=h5eee18b_0
@@ -215,6 +218,7 @@ dependencies:
   - requests-toolbelt=1.0.0=pyhd8ed1ab_0
   - rich=13.5.3=pyhd8ed1ab_0
   - ruamel.yaml=0.17.21=py311h5eee18b_0
+  - scipy=1.11.1=py311h08b1b3b_0
   - secretstorage=3.3.3=py311h38be061_2
   - setuptools=68.0.0=py311h06a4308_0
   - shellingham=1.5.3=pyhd8ed1ab_0
