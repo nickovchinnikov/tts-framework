@@ -62,6 +62,9 @@ nav:
     - Dataset:
       - References: training/dataset/readme.md
       - Acoustic Dataset: training/dataset/acoustic_dataset.md
+    - Loss:
+      - References: training/loss/readme.md
+      - Binary Cross Entropy Loss: training/loss/bin_loss.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:
