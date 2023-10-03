@@ -3,7 +3,6 @@ import unittest
 import torch
 
 from model.acoustic_model.variance_predictor import VariancePredictor
-
 from model.helpers.tools import get_device
 
 

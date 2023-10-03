@@ -1,8 +1,8 @@
 import unittest
+
 import torch
 
 from model.attention.feed_forward import FeedForward
-
 from model.helpers.tools import get_device
 
 

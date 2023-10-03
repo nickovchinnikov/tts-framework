@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-from model.attention import ConformerBlock
 from model.basenn import BaseNNModule
-
 from model.helpers.tools import get_device
+
+from .conformer_block import ConformerBlock
 
 
 class Conformer(BaseNNModule):

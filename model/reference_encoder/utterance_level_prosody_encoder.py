@@ -1,14 +1,12 @@
 import torch
 import torch.nn as nn
 
-from model.config import AcousticModelConfigType, PreprocessingConfig
-
 from model.basenn import BaseNNModule
-
+from model.config import AcousticModelConfigType, PreprocessingConfig
 from model.helpers.tools import get_device
 
-from .STL import STL
 from .reference_encoder import ReferenceEncoder
+from .STL import STL
 
 
 class UtteranceLevelProsodyEncoder(BaseNNModule):

@@ -1,10 +1,9 @@
+from typing import Any, Tuple
+
 import torch
 
-from typing import Tuple, Any
-
 from model.basenn import BaseNNModule
-
-from model.helpers.tools import get_mask_from_lengths, get_device
+from model.helpers.tools import get_device, get_mask_from_lengths
 
 from .generator import Generator
 

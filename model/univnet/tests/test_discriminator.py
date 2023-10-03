@@ -1,10 +1,10 @@
-import torch
 import unittest
 
-from model.univnet import Discriminator, Generator
-from model.config import VocoderModelConfig, PreprocessingConfig
+import torch
 
+from model.config import PreprocessingConfig, VocoderModelConfig
 from model.helpers.tools import get_device
+from model.univnet import Discriminator, Generator
 
 
 # One of the most important test case for univnet

@@ -1,4 +1,4 @@
-from .STL import STL
-from .reference_encoder import ReferenceEncoder
-from .utterance_level_prosody_encoder import UtteranceLevelProsodyEncoder
 from .phoneme_level_prosody_encoder import PhonemeLevelProsodyEncoder
+from .reference_encoder import ReferenceEncoder
+from .STL import STL
+from .utterance_level_prosody_encoder import UtteranceLevelProsodyEncoder

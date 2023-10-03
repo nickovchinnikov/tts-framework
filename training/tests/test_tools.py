@@ -1,6 +1,6 @@
 import unittest
-import numpy as np
 
+import numpy as np
 
 from training.tools import pad_1D, pad_2D, pad_3D
 

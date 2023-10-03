@@ -1,16 +1,14 @@
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from typing import Tuple
-
-from model.conv_blocks import CoordConv1d
-from model.constants import LEAKY_RELU_SLOPE
 from model.basenn import BaseNNModule
-
-from model.helpers import tools
-
 from model.config import AcousticModelConfigType, PreprocessingConfig
+from model.constants import LEAKY_RELU_SLOPE
+from model.conv_blocks import CoordConv1d
+from model.helpers import tools
 
 
 class ReferenceEncoder(BaseNNModule):

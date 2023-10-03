@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 
 from model.univnet.spectral_convergence_loss import SpectralConvergengeLoss
 

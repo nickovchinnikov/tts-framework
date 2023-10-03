@@ -1,8 +1,7 @@
 import unittest
 
-import torch
-
 import numpy as np
+import torch
 
 from model.config import lang2id
 from training.dataset.acoustic_dataset import AcousticDataset

@@ -1,14 +1,13 @@
 import torch
 import torch.nn as nn
 
-from model.conv_blocks import Conv1dGLU
-from model.attention import ConformerMultiHeadedSelfAttention
 from model.basenn import BaseNNModule
-
+from model.conv_blocks import Conv1dGLU
 from model.helpers.tools import get_device
 
-from .feed_forward import FeedForward
 from .conformer_conv_module import ConformerConvModule
+from .conformer_multi_headed_self_attention import ConformerMultiHeadedSelfAttention
+from .feed_forward import FeedForward
 
 
 class ConformerBlock(BaseNNModule):

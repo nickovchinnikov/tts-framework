@@ -1,5 +1,5 @@
-import numpy as np
 from numba import jit, njit, prange
+import numpy as np
 
 # TODO:
 # Check this: https://github.com/archinetai/aligner-pytorch

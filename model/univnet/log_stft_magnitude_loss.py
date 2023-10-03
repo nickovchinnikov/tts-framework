@@ -12,7 +12,7 @@ class LogSTFTMagnitudeLoss(torch.nn.Module):
 
     def __init__(self):
         r"""Initilize los STFT magnitude loss module."""
-        super(LogSTFTMagnitudeLoss, self).__init__()
+        super().__init__()
 
     def forward(self, x_mag: torch.Tensor, y_mag: torch.Tensor) -> torch.Tensor:
         r"""Calculate forward propagation.

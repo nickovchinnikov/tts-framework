@@ -1,8 +1,8 @@
-import torch
 import unittest
 
-from model.attention.style_embed_attention import StyleEmbedAttention
+import torch
 
+from model.attention.style_embed_attention import StyleEmbedAttention
 from model.helpers.tools import get_device
 
 

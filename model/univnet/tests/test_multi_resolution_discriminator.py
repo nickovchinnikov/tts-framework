@@ -1,10 +1,10 @@
-import torch
 import unittest
 
-from model.helpers.tools import get_device
+import torch
 
-from model.univnet import MultiResolutionDiscriminator
 from model.config import VocoderModelConfig
+from model.helpers.tools import get_device
+from model.univnet import MultiResolutionDiscriminator
 
 
 class TestMultiResolutionDiscriminator(unittest.TestCase):

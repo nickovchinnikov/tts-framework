@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 
 from model.conv_blocks.add_coords import AddCoords
 

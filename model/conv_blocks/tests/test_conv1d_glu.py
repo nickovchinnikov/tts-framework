@@ -3,11 +3,10 @@ import unittest
 import torch
 import torch.nn as nn
 
-from model.helpers.tools import get_device
-
-from model.conv_blocks.conv1d_glu import Conv1dGLU
 from model.conv_blocks.bsconv import BSConv1d
-from model.conv_blocks.conv1d import PointwiseConv1d, DepthWiseConv1d
+from model.conv_blocks.conv1d import DepthWiseConv1d, PointwiseConv1d
+from model.conv_blocks.conv1d_glu import Conv1dGLU
+from model.helpers.tools import get_device
 
 
 class TestConv1dGLU(unittest.TestCase):

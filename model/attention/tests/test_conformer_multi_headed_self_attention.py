@@ -1,9 +1,9 @@
 import unittest
+
 import torch
 
-from model.helpers.tools import get_device
-
 from model.attention import ConformerMultiHeadedSelfAttention
+from model.helpers.tools import get_device
 
 
 # Test class for the ConformerMultiHeadedSelfAttention class

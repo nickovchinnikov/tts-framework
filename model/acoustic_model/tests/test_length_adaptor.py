@@ -1,9 +1,9 @@
 import unittest
+from unittest.mock import Mock
+
 import torch
 
-from unittest.mock import Mock
 from model.acoustic_model.length_adaptor import LengthAdaptor
-
 from model.helpers.tools import get_device
 
 

@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 
-from model.constants import LEAKY_RELU_SLOPE
 from model.basenn import BaseNNModule
-
+from model.constants import LEAKY_RELU_SLOPE
 from model.helpers.tools import get_device
 
 

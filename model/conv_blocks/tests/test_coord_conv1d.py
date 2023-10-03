@@ -1,8 +1,8 @@
-import torch
 import unittest
 
-from model.conv_blocks.coord_conv1d import CoordConv1d
+import torch
 
+from model.conv_blocks.coord_conv1d import CoordConv1d
 from model.helpers.tools import get_device
 
 

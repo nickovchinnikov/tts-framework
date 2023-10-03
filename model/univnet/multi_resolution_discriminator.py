@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
 
-from model.helpers.tools import get_device
-from model.config import VocoderModelConfig
-
 from model.basenn import BaseNNModule
+from model.config import VocoderModelConfig
+from model.helpers.tools import get_device
 
 from .discriminator_r import DiscriminatorR
 
@@ -31,7 +30,7 @@ class MultiResolutionDiscriminator(BaseNNModule):
     def __init__(
         self, model_config: VocoderModelConfig, device: torch.device = get_device()
     ):
-        super(MultiResolutionDiscriminator, self).__init__(device=device)
+        super().__init__(device=device)
 
         self.resolutions = model_config.mrd.resolutions
         self.discriminators = nn.ModuleList(

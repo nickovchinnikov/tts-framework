@@ -1,5 +1,7 @@
 import unittest
+
 import torch
+
 from training.loss.fast_speech_2_loss_gen import FastSpeech2LossGen
 
 

@@ -1,9 +1,8 @@
-import torch
-import torch.nn.functional as F
+from typing import List, Tuple
 
 import numpy as np
-
-from typing import List, Tuple
+import torch
+import torch.nn.functional as F
 
 
 # TODO add env variable to set device for testing or any other specific purpose

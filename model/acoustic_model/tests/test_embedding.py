@@ -1,8 +1,8 @@
-import torch
 import unittest
 
-from model.acoustic_model.embedding import Embedding
+import torch
 
+from model.acoustic_model.embedding import Embedding
 from model.helpers.tools import get_device
 
 

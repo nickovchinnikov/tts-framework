@@ -2,21 +2,18 @@ import unittest
 
 import torch
 
+from model.attention.conformer import Conformer
 from model.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
     PreprocessingConfig,
 )
-
-from model.attention.conformer import Conformer
-
 from model.helpers.initializer import (
     init_acoustic_model,
     init_conformer,
     init_forward_trains_params,
     init_mask_input_embeddings_encoding_attn_mask,
 )
-
 from model.helpers.tools import get_device
 
 

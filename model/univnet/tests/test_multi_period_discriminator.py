@@ -1,12 +1,11 @@
-import torch
+import math
 import unittest
 
-import math
+import torch
 
-from model.univnet import MultiPeriodDiscriminator
 from model.config import VocoderModelConfig
-
 from model.helpers.tools import get_device
+from model.univnet import MultiPeriodDiscriminator
 
 
 class TestMultiPeriodDiscriminator(unittest.TestCase):

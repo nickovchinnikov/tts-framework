@@ -1,12 +1,11 @@
 import torch
 
+from model.basenn import BaseNNModule
 from model.helpers.tools import get_device
 
-from model.basenn import BaseNNModule
-
-from .stft import stft
-from .spectral_convergence_loss import SpectralConvergengeLoss
 from .log_stft_magnitude_loss import LogSTFTMagnitudeLoss
+from .spectral_convergence_loss import SpectralConvergengeLoss
+from .stft import stft
 
 
 class STFTLoss(BaseNNModule):
@@ -34,7 +33,7 @@ class STFTLoss(BaseNNModule):
         device: torch.device = get_device(),
     ):
         r"""Initialize STFT loss module."""
-        super(STFTLoss, self).__init__(device=device)
+        super().__init__(device=device)
 
         self.fft_size = fft_size
         self.shift_size = shift_size

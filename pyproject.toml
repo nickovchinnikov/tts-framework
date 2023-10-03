@@ -1,2 +1,14 @@
 [tool.ruff]
 ignore = ["F403", "E501", "F401"]
+ignore-init-module-imports = true
+
+select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "UP",  # pyupgrade,
+  "I",   # isort
+]
+
+[tool.ruff.isort]
+force-sort-within-sections = true
+# order-by-type = true

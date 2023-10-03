@@ -1,9 +1,9 @@
 import unittest
 
-import numpy as np
 from numba import prange
+import numpy as np
 
-from model.acoustic_model.mas import mas_width1, b_mas
+from model.acoustic_model.mas import b_mas, mas_width1
 
 
 class TestMasWidth1(unittest.TestCase):

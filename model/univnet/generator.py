@@ -1,11 +1,9 @@
 import torch
 import torch.nn as nn
 
-from model.config import VocoderModelConfig, PreprocessingConfig
-
-from model.helpers.tools import get_mask_from_lengths, get_device
-
 from model.basenn import BaseNNModule
+from model.config import PreprocessingConfig, VocoderModelConfig
+from model.helpers.tools import get_device, get_mask_from_lengths
 
 from .lvc_block import LVCBlock
 
@@ -28,7 +26,7 @@ class Generator(BaseNNModule):
             preprocess_config (PreprocessingConfig): the preprocessing configuration.
             device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
         """
-        super(Generator, self).__init__(device=device)
+        super().__init__(device=device)
 
         self.mel_channel = preprocess_config.stft.n_mel_channels
         self.noise_dim = model_config.gen.noise_dim
@@ -110,7 +108,7 @@ class Generator(BaseNNModule):
         Args:
             inference (bool): whether to remove weight normalization or not.
         """
-        super(Generator, self).eval()
+        super().eval()
         # don't remove weight norm while validation in training loop
         if inference:
             self.remove_weight_norm()
