@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-# @todo: profile deeply the memory usage
+# TODO: profile deeply the memory usage
 # from torch.profiler import profile, record_function, ProfilerActivity
 
 import model.helpers.tools as tools
@@ -22,7 +22,7 @@ class TestAcousticModel(unittest.TestCase):
     def setUp(self):
         self.device = get_device()
 
-        # @todo: optimize the model, so that it can be tested with srink_factor=1
+        # TODO: optimize the model, so that it can be tested with srink_factor=1
         # Get config with srink_factor=4
         # Memory error with srink_factor =< 2
         # Probably because of the size of the model, probably memory leak
@@ -104,9 +104,9 @@ class TestAcousticModel(unittest.TestCase):
             mel_lens=self.forward_train_params.mel_lens,
             pitches=self.forward_train_params.pitches,
             langs=self.forward_train_params.langs,
-            # @todo: add attn_priors check
+            # TODO: add attn_priors check
             attn_priors=None,
-            # @todo: add use_ground_truth check
+            # TODO: add use_ground_truth check
             use_ground_truth=True,
         )
         # print(prof.key_averages().table(sort_by="cuda_memory_usage", row_limit=20))

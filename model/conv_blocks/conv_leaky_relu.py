@@ -3,7 +3,7 @@ import torch.nn as nn
 from model.constants import LEAKY_RELU_SLOPE
 
 
-# @todo: prepared for the refactoring of Aligner
+# TODO: prepared for the refactoring of Aligner
 class ConvLeakyReLU(nn.Module):
     r"""
     This class implements a Convolution followed by a Leaky ReLU activation layer.

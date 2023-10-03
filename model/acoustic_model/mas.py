@@ -1,12 +1,12 @@
 import numpy as np
 from numba import jit, njit, prange
 
-# @todo:
+# TODO:
 # Check this: https://github.com/archinetai/aligner-pytorch
 # and this: https://github.com/resemble-ai/monotonic_align/tree/master
 
 
-# @todo: Don't see any performance improvement with numba
+# TODO: Don't see any performance improvement with numba
 @njit(fastmath=True)
 def mas_width1(attn_map: np.ndarray) -> np.ndarray:
     r"""

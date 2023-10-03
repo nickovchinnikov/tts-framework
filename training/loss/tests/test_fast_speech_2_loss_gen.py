@@ -12,7 +12,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
         # Reproducible results
         torch.random.manual_seed(0)
 
-        # Test case 1: Test with all inputs of shape (1, 11)
+        # Test with all inputs of shape (1, 11)
         src_masks = torch.zeros((1, 11), dtype=torch.bool)
         mel_masks = torch.zeros((1, 11), dtype=torch.bool)
         mel_targets = torch.randn((1, 11, 11))
