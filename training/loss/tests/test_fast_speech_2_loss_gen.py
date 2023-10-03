@@ -1,0 +1,101 @@
+import unittest
+import torch
+from training.loss.fast_speech_2_loss_gen import FastSpeech2LossGen
+
+
+class TestFastSpeech2LossGen(unittest.TestCase):
+    def setUp(self):
+        self.device = torch.device("cpu")
+        self.loss_gen = FastSpeech2LossGen(fine_tuning=False, device=self.device)
+
+    def test_forward(self):
+        # Reproducible results
+        torch.random.manual_seed(0)
+
+        # Test case 1: Test with all inputs of shape (1, 11)
+        src_masks = torch.zeros((1, 11), dtype=torch.bool)
+        mel_masks = torch.zeros((1, 11), dtype=torch.bool)
+        mel_targets = torch.randn((1, 11, 11))
+        mel_predictions = torch.randn((1, 11, 11))
+        log_duration_predictions = torch.randn((1, 11))
+        u_prosody_ref = torch.randn((1, 11))
+        u_prosody_pred = torch.randn((1, 11))
+        p_prosody_ref = torch.randn((1, 11, 11))
+        p_prosody_pred = torch.randn((1, 11, 11))
+        durations = torch.randn((1, 11))
+        pitch_predictions = torch.randn((1, 11))
+        p_targets = torch.randn((1, 11))
+        attn_logprob = torch.randn((1, 1, 11, 11))
+        attn_soft = torch.randn((1, 11, 11))
+        attn_hard = torch.randn((1, 11, 11))
+        step = 0
+        src_lens = torch.ones((1,), dtype=torch.long)
+        mel_lens = torch.ones((1,), dtype=torch.long)
+
+        (
+            total_loss,
+            mel_loss,
+            ssim_loss,
+            duration_loss,
+            u_prosody_loss,
+            p_prosody_loss,
+            pitch_loss,
+            ctc_loss,
+            bin_loss,
+        ) = self.loss_gen(
+            src_masks,
+            mel_masks,
+            mel_targets,
+            mel_predictions,
+            log_duration_predictions,
+            u_prosody_ref,
+            u_prosody_pred,
+            p_prosody_ref,
+            p_prosody_pred,
+            durations,
+            pitch_predictions,
+            p_targets,
+            attn_logprob,
+            attn_soft,
+            attn_hard,
+            step,
+            src_lens,
+            mel_lens,
+        )
+
+        self.assertIsInstance(total_loss, torch.Tensor)
+        self.assertIsInstance(mel_loss, torch.Tensor)
+        self.assertIsInstance(ssim_loss, torch.Tensor)
+        self.assertIsInstance(duration_loss, torch.Tensor)
+        self.assertIsInstance(u_prosody_loss, torch.Tensor)
+        self.assertIsInstance(p_prosody_loss, torch.Tensor)
+        self.assertIsInstance(pitch_loss, torch.Tensor)
+        self.assertIsInstance(ctc_loss, torch.Tensor)
+        self.assertIsInstance(bin_loss, torch.Tensor)
+
+        # Assert the value of losses
+        self.assertTrue(
+            torch.allclose(
+                torch.tensor(
+                    [
+                        total_loss,
+                        mel_loss,
+                        ssim_loss,
+                        duration_loss,
+                        u_prosody_loss,
+                        p_prosody_loss,
+                        pitch_loss,
+                        ctc_loss,
+                        bin_loss,
+                    ]
+                ),
+                torch.tensor(
+                    [7.0773, 1.0965, 0.7479, 1.6295, 0.6886, 0.603, 1.9893, 0.3224, 0.0]
+                ),
+                atol=1e-4,
+            )
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

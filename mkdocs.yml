@@ -66,6 +66,7 @@ nav:
       - References: training/loss/readme.md
       - Binary Cross Entropy Loss: training/loss/bin_loss.md
       - Forward Sum Loss: training/loss/forward_sum_loss.md
+      - FastSpeech 2 Loss: training/loss/fast_speech_2_loss_gen.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:
