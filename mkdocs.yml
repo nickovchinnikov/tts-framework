@@ -68,6 +68,9 @@ nav:
       - Forward Sum Loss: training/loss/forward_sum_loss.md
       - FastSpeech 2 Loss: training/loss/fast_speech_2_loss_gen.md
       - Losses Criterion: training/loss/losses_criterion.md
+    - Optimizer:
+      - References: training/optimizer/readme.md
+      - Scheduled Optim Pretraining: training/optimizer/scheduled_optim_pretraining.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:
