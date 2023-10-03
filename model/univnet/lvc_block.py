@@ -1,12 +1,11 @@
-import torch
-import torch.nn as nn
-
-from torch.nn import functional as F
-
 from typing import List
 
-from model.helpers.tools import get_device
+import torch
+import torch.nn as nn
+from torch.nn import functional as F
+
 from model.basenn import BaseNNModule
+from model.helpers.tools import get_device
 
 from .kernel_predictor import KernelPredictor
 

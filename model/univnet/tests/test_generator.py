@@ -1,11 +1,10 @@
 import unittest
+
 import torch
 import torch.nn as nn
 
-from model.config import VocoderModelConfig, PreprocessingConfig
-
+from model.config import PreprocessingConfig, VocoderModelConfig
 from model.helpers.tools import get_device
-
 from model.univnet.generator import Generator
 
 

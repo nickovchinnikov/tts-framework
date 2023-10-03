@@ -3,14 +3,11 @@ from typing import Any, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from model.helpers.tools import get_device
-
-from model.basenn import BaseNNModule
-
 from torch.nn.utils import spectral_norm, weight_norm
 
+from model.basenn import BaseNNModule
 from model.config import VocoderModelConfig
+from model.helpers.tools import get_device
 
 
 class DiscriminatorP(BaseNNModule):
@@ -29,7 +26,7 @@ class DiscriminatorP(BaseNNModule):
         model_config: VocoderModelConfig,
         device: torch.device = get_device(),
     ):
-        super(DiscriminatorP, self).__init__(device=device)
+        super().__init__(device=device)
 
         self.LRELU_SLOPE = model_config.mpd.lReLU_slope
         self.period = period

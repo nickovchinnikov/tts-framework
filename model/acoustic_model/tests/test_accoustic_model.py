@@ -2,17 +2,15 @@ import unittest
 
 import torch
 
-# TODO: profile deeply the memory usage
-# from torch.profiler import profile, record_function, ProfilerActivity
-
-import model.helpers.tools as tools
-
 from model.helpers.initializer import (
+    get_test_configs,
     init_acoustic_model,
     init_forward_trains_params,
-    get_test_configs,
 )
 
+# TODO: profile deeply the memory usage
+# from torch.profiler import profile, record_function, ProfilerActivity
+import model.helpers.tools as tools
 from model.helpers.tools import get_device
 
 

@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
 
+from model.basenn import BaseNNModule
 from model.helpers.tools import get_device
 
-from model.basenn import BaseNNModule
-
-from .conv1d import PointwiseConv1d, DepthWiseConv1d
+from .conv1d import DepthWiseConv1d, PointwiseConv1d
 
 
 class BSConv1d(BaseNNModule):

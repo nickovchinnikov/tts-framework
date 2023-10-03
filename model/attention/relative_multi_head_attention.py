@@ -1,13 +1,12 @@
+import math
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import math
-
-from typing import Tuple
-
-from model.helpers.tools import get_device
 from model.basenn import BaseNNModule
+from model.helpers.tools import get_device
 
 
 class RelativeMultiHeadAttention(BaseNNModule):

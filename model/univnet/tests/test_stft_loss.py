@@ -1,8 +1,8 @@
-import torch
 import unittest
 
-from model.helpers.tools import get_device
+import torch
 
+from model.helpers.tools import get_device
 from model.univnet.stft_loss import STFTLoss
 
 

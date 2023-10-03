@@ -1,12 +1,10 @@
 import torch
 import torch.nn as nn
 
-from model.constants import LEAKY_RELU_SLOPE
-
-from model.helpers import tools
-
-from model.conv_blocks import PointwiseConv1d, GLUActivation, DepthWiseConv1d
 from model.basenn import BaseNNModule
+from model.constants import LEAKY_RELU_SLOPE
+from model.conv_blocks import DepthWiseConv1d, GLUActivation, PointwiseConv1d
+from model.helpers import tools
 
 
 class ConformerConvModule(BaseNNModule):

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from model.helpers.tools import get_device
 from model.basenn import BaseNNModule
+from model.helpers.tools import get_device
 
 
 class DepthWiseConv1d(BaseNNModule):

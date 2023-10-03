@@ -1,11 +1,11 @@
-import torch
-from torch import nn
 from typing import List, Tuple
 
-from model.config import AcousticModelConfigType
-from model.helpers import tools
+import torch
+from torch import nn
 
 from model.basenn import BaseNNModule
+from model.config import AcousticModelConfigType
+from model.helpers import tools
 
 from .variance_predictor import VariancePredictor
 

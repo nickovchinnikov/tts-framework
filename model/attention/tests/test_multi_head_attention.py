@@ -3,7 +3,6 @@ import unittest
 import torch
 
 from model.attention.multi_head_attention import MultiHeadAttention
-
 from model.helpers.tools import get_device
 
 

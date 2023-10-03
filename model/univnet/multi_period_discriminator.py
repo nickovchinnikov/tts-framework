@@ -1,12 +1,11 @@
 import torch
 import torch.nn as nn
 
-from model.config import VocoderModelConfig
-
 from model.basenn import BaseNNModule
-from model.univnet import DiscriminatorP
-
+from model.config import VocoderModelConfig
 from model.helpers.tools import get_device
+
+from .discriminator_p import DiscriminatorP
 
 
 class MultiPeriodDiscriminator(BaseNNModule):
@@ -21,7 +20,7 @@ class MultiPeriodDiscriminator(BaseNNModule):
     def __init__(
         self, model_config: VocoderModelConfig, device: torch.device = get_device()
     ):
-        super(MultiPeriodDiscriminator, self).__init__(device=device)
+        super().__init__(device=device)
 
         self.discriminators = nn.ModuleList(
             [

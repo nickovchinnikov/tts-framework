@@ -1,5 +1,6 @@
-import numpy as np
 from typing import List, Union
+
+import numpy as np
 
 
 def pad_1D(inputs: List[np.ndarray], pad_value: float = 0.0) -> np.ndarray:
@@ -30,7 +31,7 @@ def pad_1D(inputs: List[np.ndarray], pad_value: float = 0.0) -> np.ndarray:
         )
         return x_padded
 
-    max_len = max((len(x) for x in inputs))
+    max_len = max(len(x) for x in inputs)
     padded = np.stack([pad_data(x, max_len) for x in inputs])
 
     return padded

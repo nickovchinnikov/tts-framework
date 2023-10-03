@@ -1,9 +1,9 @@
-import torch
 import unittest
 
-from model.univnet.kernel_predictor import KernelPredictor
+import torch
 
 from model.helpers.tools import get_device
+from model.univnet.kernel_predictor import KernelPredictor
 
 
 class TestKernelPredictor(unittest.TestCase):

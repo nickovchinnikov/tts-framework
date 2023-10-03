@@ -30,7 +30,7 @@ class MultiResolutionSTFTLoss(BaseNNModule):
         Args:
             resolutions (list): List of (FFT size, shift size, window length).
         """
-        super(MultiResolutionSTFTLoss, self).__init__(device=device)
+        super().__init__(device=device)
 
         self.stft_losses = torch.nn.ModuleList(
             [STFTLoss(fs, ss, wl, device=self.device) for fs, ss, wl in resolutions]

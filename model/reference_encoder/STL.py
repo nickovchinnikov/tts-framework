@@ -3,10 +3,8 @@ import torch.nn as nn
 
 from model.attention import StyleEmbedAttention
 from model.basenn import BaseNNModule
-
-from model.helpers.tools import get_device
-
 from model.config import AcousticModelConfigType
+from model.helpers.tools import get_device
 
 
 class STL(BaseNNModule):
@@ -28,7 +26,7 @@ class STL(BaseNNModule):
         model_config: AcousticModelConfigType,
         device: torch.device = get_device(),
     ):
-        super(STL, self).__init__(device=device)
+        super().__init__(device=device)
 
         # Number of attention heads
         num_heads = 1

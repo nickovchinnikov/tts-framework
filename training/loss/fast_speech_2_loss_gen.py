@@ -1,11 +1,11 @@
-import torch
-import torch.nn as nn
 from typing import Tuple
 
 from piq import SSIMLoss
+import torch
+import torch.nn as nn
 
-from training.loss.forward_sum_loss import ForwardSumLoss
 from training.loss.bin_loss import BinLoss
+from training.loss.forward_sum_loss import ForwardSumLoss
 
 
 def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:

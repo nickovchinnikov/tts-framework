@@ -13,7 +13,7 @@ class SpectralConvergengeLoss(torch.nn.Module):
 
     def __init__(self):
         r"""Initilize spectral convergence loss module."""
-        super(SpectralConvergengeLoss, self).__init__()
+        super().__init__()
 
     def forward(self, x_mag: torch.Tensor, y_mag: torch.Tensor) -> torch.Tensor:
         r"""Calculate forward propagation.

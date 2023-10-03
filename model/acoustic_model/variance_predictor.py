@@ -1,10 +1,9 @@
 import torch
 from torch import nn
 
-from model.conv_blocks import ConvTransposed
-from model.constants import LEAKY_RELU_SLOPE
 from model.basenn import BaseNNModule
-
+from model.constants import LEAKY_RELU_SLOPE
+from model.conv_blocks import ConvTransposed
 from model.helpers.tools import get_device
 
 

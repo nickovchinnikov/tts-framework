@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-import torch
 from scipy.stats import betabinom
+import torch
 from torch.utils.data import Dataset
 
 from model.config import lang2id
@@ -121,7 +121,7 @@ class AcousticDataset(Dataset):
         Returns:
             Tuple[List[str], List[str]]: A tuple containing the basename and speaker lists.
         """
-        with open(self.preprocessed_path / filename, "r", encoding="utf-8") as f:
+        with open(self.preprocessed_path / filename, encoding="utf-8") as f:
             name = []
             speaker = []
             for line in f.readlines():

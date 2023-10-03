@@ -1,6 +1,6 @@
-import torch
-
 import math
+
+import torch
 
 from model.helpers.tools import get_device
 

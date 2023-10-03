@@ -1,9 +1,8 @@
 import unittest
+
 import torch
 
-
 from model.attention.conformer_conv_module import ConformerConvModule
-
 from model.helpers.tools import get_device
 
 

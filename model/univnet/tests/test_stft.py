@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 
 from model.univnet.stft import stft
 

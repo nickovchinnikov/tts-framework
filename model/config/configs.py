@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Union, Tuple, List, Literal
+from typing import List, Literal, Tuple, Union
+
 import torch
 
 PreprocessLangType = Union[Literal["english_only"], Literal["multilingual"]]

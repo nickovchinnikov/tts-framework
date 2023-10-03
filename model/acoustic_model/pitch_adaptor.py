@@ -1,19 +1,15 @@
-import torch
-import torch.nn as nn
-
 import json
 from pathlib import Path
-
 from typing import Tuple
 
-from model.config import AcousticModelConfigType
+import torch
 
 from model.basenn import BaseNNModule
-
+from model.config import AcousticModelConfigType
 from model.helpers import tools
 
-from .variance_predictor import VariancePredictor
 from .embedding import Embedding
+from .variance_predictor import VariancePredictor
 
 
 class PitchAdaptor(BaseNNModule):

@@ -1,32 +1,29 @@
+from typing import Dict, Tuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from typing import Dict, Tuple
-
+from model.attention import Conformer
+from model.basenn import BaseNNModule
 from model.config import (
+    SUPPORTED_LANGUAGES,
     AcousticModelConfigType,
     PreprocessingConfig,
     symbols,
-    SUPPORTED_LANGUAGES,
 )
-
 from model.helpers import tools
-
-from model.attention import Conformer
 from model.reference_encoder import (
-    UtteranceLevelProsodyEncoder,
     PhonemeLevelProsodyEncoder,
+    UtteranceLevelProsodyEncoder,
 )
-from model.basenn import BaseNNModule
 
 from .aligner import Aligner
-from .pitch_adaptor import PitchAdaptor
+from .helpers import pitch_phoneme_averaging, positional_encoding
 from .length_adaptor import LengthAdaptor
 from .phoneme_prosody_predictor import PhonemeProsodyPredictor
-
-from .helpers import positional_encoding, pitch_phoneme_averaging
+from .pitch_adaptor import PitchAdaptor
 
 
 class AcousticModel(BaseNNModule):

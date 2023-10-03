@@ -1,10 +1,10 @@
-import torch
 import unittest
 
-from model.helpers.tools import get_device
+import torch
 
-from model.univnet.discriminator_r import DiscriminatorR
 from model.config import VocoderModelConfig
+from model.helpers.tools import get_device
+from model.univnet.discriminator_r import DiscriminatorR
 
 
 class TestDiscriminatorR(unittest.TestCase):

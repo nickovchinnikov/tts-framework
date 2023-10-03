@@ -4,7 +4,6 @@ import torch
 from torch.autograd import gradcheck
 
 from model.conv_blocks.activation import GLUActivation
-
 from model.helpers.tools import get_device
 
 

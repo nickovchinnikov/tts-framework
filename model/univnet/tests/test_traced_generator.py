@@ -1,10 +1,9 @@
 import unittest
+
 import torch
 
-from model.config import VocoderModelConfig, PreprocessingConfig
-
-from model.helpers.tools import get_mask_from_lengths, get_device
-
+from model.config import PreprocessingConfig, VocoderModelConfig
+from model.helpers.tools import get_device, get_mask_from_lengths
 from model.univnet import Generator, TracedGenerator
 
 

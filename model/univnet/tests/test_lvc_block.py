@@ -1,9 +1,10 @@
-import torch
-import torch.nn as nn
 import unittest
 
-from model.univnet.lvc_block import LVCBlock
+import torch
+import torch.nn as nn
+
 from model.helpers.tools import get_device
+from model.univnet.lvc_block import LVCBlock
 
 
 class TestLVCBlock(unittest.TestCase):

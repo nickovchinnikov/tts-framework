@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import torch
 
 from model.acoustic_model import PitchAdaptor
-
 from model.helpers.tools import get_device
 
 

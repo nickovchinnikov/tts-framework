@@ -3,25 +3,23 @@ import os
 import sys
 
 # Print the current working directory
-print("Current working directory: {0}".format(os.getcwd()))
+print(f"Current working directory: {os.getcwd()}")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 # %%
-
-import torch
-
+# ruff: noqa: E402
 from acoustic_model import AcousticModel
+import torch
 from univnet import Generator as UnivNet
 
 from model.config import (
-    PreprocessingConfig,
     AcousticENModelConfig,
     AcousticPretrainingConfig,
+    PreprocessingConfig,
     VocoderModelConfig,
 )
-
 from model.helpers import get_device
 
 # %%

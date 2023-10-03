@@ -3,9 +3,8 @@ from unittest.mock import Mock
 
 import torch
 
-from model.reference_encoder.STL import STL
-
 from model.helpers.tools import get_device
+from model.reference_encoder.STL import STL
 
 
 class TestSTL(unittest.TestCase):

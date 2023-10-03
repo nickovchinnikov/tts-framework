@@ -3,11 +3,10 @@ from typing import Tuple
 import torch
 from torch import nn
 
-from .relative_multi_head_attention import RelativeMultiHeadAttention
-
 from model.basenn import BaseNNModule
-
 from model.helpers.tools import get_device
+
+from .relative_multi_head_attention import RelativeMultiHeadAttention
 
 
 class ConformerMultiHeadedSelfAttention(BaseNNModule):

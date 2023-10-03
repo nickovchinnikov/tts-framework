@@ -1,22 +1,19 @@
-import torch
-
-from typing import Tuple
 from dataclasses import dataclass
+from typing import Tuple
 
-from model.config import (
-    AcousticModelConfigType,
-    PreprocessingConfig,
-    AcousticENModelConfig,
-    AcousticPretrainingConfig,
-    SUPPORTED_LANGUAGES,
-)
-
-import model.helpers.tools as tools
+import torch
 
 from model.acoustic_model import AcousticModel
 from model.acoustic_model.helpers import positional_encoding
-
 from model.attention.conformer import Conformer
+from model.config import (
+    SUPPORTED_LANGUAGES,
+    AcousticENModelConfig,
+    AcousticModelConfigType,
+    AcousticPretrainingConfig,
+    PreprocessingConfig,
+)
+import model.helpers.tools as tools
 
 
 @dataclass

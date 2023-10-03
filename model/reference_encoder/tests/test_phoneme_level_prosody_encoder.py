@@ -3,22 +3,14 @@ import unittest
 import torch
 import torch.nn as nn
 
-from model.reference_encoder.reference_encoder import ReferenceEncoder
 from model.attention.conformer_multi_headed_self_attention import (
     ConformerMultiHeadedSelfAttention,
 )
-
 from model.config import (
     AcousticENModelConfig,
-    PreprocessingConfig,
     AcousticPretrainingConfig,
+    PreprocessingConfig,
 )
-
-from model.reference_encoder import (
-    PhonemeLevelProsodyEncoder,
-    UtteranceLevelProsodyEncoder,
-)
-
 from model.helpers.initializer import (
     init_acoustic_model,
     init_conformer,
@@ -26,6 +18,11 @@ from model.helpers.initializer import (
     init_mask_input_embeddings_encoding_attn_mask,
 )
 from model.helpers.tools import get_device
+from model.reference_encoder import (
+    PhonemeLevelProsodyEncoder,
+    UtteranceLevelProsodyEncoder,
+)
+from model.reference_encoder.reference_encoder import ReferenceEncoder
 
 
 # It checks for most of the acoustic model code

@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 
 from model.univnet.log_stft_magnitude_loss import LogSTFTMagnitudeLoss
 
