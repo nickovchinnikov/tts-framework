@@ -5,7 +5,7 @@ from model.constants import LEAKY_RELU_SLOPE
 from .mas import b_mas
 
 
-# @todo: refactor this class to use nn.Sequential
+# TODO: refactor this class to use nn.Sequential
 # Won't do this, to save time and because it's not a priority
 
 

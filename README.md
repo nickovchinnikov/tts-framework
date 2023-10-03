@@ -31,6 +31,9 @@ grep -Rnw . -e "3.0<3.3"
 
 ```
 
+A Faster Solver for Conda: [Libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)
+
+
 Generate docs:
 
 

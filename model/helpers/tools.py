@@ -6,7 +6,7 @@ import numpy as np
 from typing import List, Tuple
 
 
-# @todo add env variable to set device for testing or any other specific purpose
+# TODO add env variable to set device for testing or any other specific purpose
 def get_device() -> torch.device:
     r"""
     This function returns the device where the model and tensors should be placed.
