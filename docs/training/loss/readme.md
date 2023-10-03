@@ -13,3 +13,7 @@ Computes the forward sum loss for sequence-to-sequence models with attention.
 ### [Fast Speech 2 loss](./fast_speech_2_loss_gen.md)
 
 FastSpeech 2 Loss module
+
+### [Losses Criterion](./losses_criterion.md)
+
+LossesCriterion module
