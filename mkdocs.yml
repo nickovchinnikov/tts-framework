@@ -75,6 +75,7 @@ nav:
     - Preprocess:
       - References: training/preprocess/readme.md
       - TacotronSTFT: training/preprocess/tacotron_stft.md
+      - Tools: training/preprocess/tools.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:

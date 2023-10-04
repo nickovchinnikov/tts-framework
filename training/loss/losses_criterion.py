@@ -3,7 +3,6 @@ from typing import Dict
 import lightning.pytorch as pl
 import torch
 
-from model.helpers.tools import get_device
 from training.loss import FastSpeech2LossGen
 
 
