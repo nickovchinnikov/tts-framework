@@ -1,6 +1,6 @@
 ## References
 
-Here you can find some references to papers and other resources that are related to the loss functions.
+Here you can find docs for the loss functions.
 
 ### [Bin loss](./bin_loss.md)
 

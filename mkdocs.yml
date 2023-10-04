@@ -72,6 +72,9 @@ nav:
       - References: training/optimizer/readme.md
       - Scheduled Optim Pretraining: training/optimizer/scheduled_optim_pretraining.md
       - Scheduled Optim Finetuning: training/optimizer/scheduled_optim_finetuning.md
+    - Preprocess:
+      - References: training/preprocess/readme.md
+      - TacotronSTFT: training/preprocess/tacotron_stft.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:
