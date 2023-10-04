@@ -1,4 +1,7 @@
+from typing import Union
+
 from pytorch_lightning.core import LightningModule
+import torch
 from torch.utils.data import DataLoader
 
 from model.acoustic_model import AcousticModel
@@ -20,6 +23,8 @@ class AcousticModule(LightningModule):
 
         self.fine_tuning = fine_tuning
 
+        self.train_config: Union[AcousticFinetuningConfig, AcousticPretrainingConfig]
+
         if self.fine_tuning:
             self.train_config = AcousticFinetuningConfig()
         else:
@@ -38,15 +43,16 @@ class AcousticModule(LightningModule):
             fine_tuning=fine_tuning,
             n_speakers=5392,
             # Setup the device, because .to() under the hood of lightning is not working
-            device=self.device,
+            device=self.device,  # type: ignore
         )
 
-        self.loss = LossesCriterion(device=self.device)
+        self.loss = LossesCriterion(device=self.device)  # type: ignore
 
         # print(self.model)
 
     def forward(self, x):
-        pass
+        self.model
+        return True
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer

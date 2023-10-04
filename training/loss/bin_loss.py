@@ -1,13 +1,10 @@
+import lightning.pytorch as pl
 import torch
-from torch import nn
 
 
-class BinLoss(nn.Module):
+class BinLoss(pl.LightningModule):
     r"""
     Binary cross-entropy loss for hard and soft attention.
-
-    Args:
-        nn.Module: PyTorch module base class.
 
     Attributes:
         None

@@ -7,8 +7,7 @@ from training.loss import LossesCriterion
 
 class TestLossesCriterion(TestCase):
     def setUp(self):
-        self.device = torch.device("cpu")
-        self.criterion = LossesCriterion(device=self.device)
+        self.criterion = LossesCriterion()
 
     def test_forward(self):
         torch.random.manual_seed(0)
@@ -30,27 +29,13 @@ class TestLossesCriterion(TestCase):
         pitch_prediction = torch.randn((1, 11))
 
         outputs = {
-            "u_prosody_ref": torch.randn(
-                (1, 11), dtype=torch.float32, device=self.device
-            ),
-            "u_prosody_pred": torch.randn(
-                (1, 11), dtype=torch.float32, device=self.device
-            ),
-            "pitch_target": torch.randn(
-                (1, 11), dtype=torch.float32, device=self.device
-            ),
-            "attn_hard_dur": torch.abs(
-                torch.randn((1, 11, 11), dtype=torch.float32, device=self.device)
-            ),
-            "attn_logprob": torch.randn(
-                (1, 1, 11, 11), dtype=torch.float32, device=self.device
-            ),
-            "attn_soft": torch.randn(
-                (1, 11, 11), dtype=torch.float32, device=self.device
-            ),
-            "attn_hard": torch.randn(
-                (1, 11, 11), dtype=torch.float32, device=self.device
-            ),
+            "u_prosody_ref": torch.randn((1, 11), dtype=torch.float32),
+            "u_prosody_pred": torch.randn((1, 11), dtype=torch.float32),
+            "pitch_target": torch.randn((1, 11), dtype=torch.float32),
+            "attn_hard_dur": torch.abs(torch.randn((1, 11, 11), dtype=torch.float32)),
+            "attn_logprob": torch.randn((1, 1, 11, 11), dtype=torch.float32),
+            "attn_soft": torch.randn((1, 11, 11), dtype=torch.float32),
+            "attn_hard": torch.randn((1, 11, 11), dtype=torch.float32),
         }
         step = 0
 

@@ -1,5 +1,6 @@
 from typing import Tuple
 
+import lightning.pytorch as pl
 from piq import SSIMLoss
 import torch
 import torch.nn as nn
@@ -29,14 +30,13 @@ def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:
     return normalized
 
 
-class FastSpeech2LossGen(nn.Module):
-    def __init__(self, fine_tuning: bool, device: torch.device):
+class FastSpeech2LossGen(pl.LightningModule):
+    def __init__(self, fine_tuning: bool):
         r"""
         Initializes the FastSpeech2LossGen module.
 
         Args:
             fine_tuning (bool): Whether the module is used for fine-tuning.
-            device (torch.device): The device on which to run the module.
         """
         super().__init__()
 
@@ -46,7 +46,6 @@ class FastSpeech2LossGen(nn.Module):
         self.sum_loss = ForwardSumLoss()
         self.bin_loss = BinLoss()
         self.fine_tuning = fine_tuning
-        self.device = device
 
     def forward(
         self,

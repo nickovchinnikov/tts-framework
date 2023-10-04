@@ -1,35 +1,32 @@
 from typing import Dict
 
+import lightning.pytorch as pl
 import torch
-from torch import nn
 
+from model.helpers.tools import get_device
 from training.loss import FastSpeech2LossGen
 
 
-class LossesCriterion(nn.Module):
-    def __init__(self, device: torch.device):
+class LossesCriterion(pl.LightningModule):
+    def __init__(self):
         r"""
         Initializes the LossesCriterion module.
-
-        Args:
-            device (torch.device): The device to use for computations.
         """
         super().__init__()
+
         # Init the loss
-        self.loss = FastSpeech2LossGen(fine_tuning=True, device=device)
+        self.loss = FastSpeech2LossGen(fine_tuning=True)
 
         # Initialize the losses to 0
-        self.reconstruction_loss = torch.tensor(
-            [0.0], dtype=torch.float32, device=device
-        )
-        self.mel_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.ssim_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.duration_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.u_prosody_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.p_prosody_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.pitch_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.ctc_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
-        self.bin_loss = torch.tensor([0.0], dtype=torch.float32, device=device)
+        self.reconstruction_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.mel_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.ssim_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.duration_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.u_prosody_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.p_prosody_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.pitch_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.ctc_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.bin_loss = torch.tensor([0.0], dtype=torch.float32)
 
     def forward(
         self,
