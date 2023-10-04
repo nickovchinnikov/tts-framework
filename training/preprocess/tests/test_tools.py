@@ -10,6 +10,7 @@ from training.preprocess.tools import (
     cumulativeMeanNormalizedDifferenceFunction,
     differenceFunction,
     getPitch,
+    normalize_loudness,
     preprocess_audio,
     resample,
     stereo_to_mono,
@@ -198,6 +199,37 @@ class TestTools(unittest.TestCase):
 
         self.assertEqual(actual_output.shape, expected_shape)
         self.assertEqual(actual_sr, sr)
+
+    def test_normalize_loudness(self):
+        # Test the normalize_loudness function with a simple example
+        wav = np.array([1.0, 2.0, 3.0])
+        expected_output = np.array([0.33333333, 0.66666667, 1.0])
+        actual_output = normalize_loudness(wav)
+        np.testing.assert_allclose(actual_output, expected_output, rtol=1e-6, atol=1e-6)
+
+        # Test the normalize_loudness function with a larger example
+        wav = np.random.randn(44100)
+        expected_output = wav / np.max(np.abs(wav))
+        actual_output = normalize_loudness(wav)
+        np.testing.assert_allclose(actual_output, expected_output, rtol=1e-6, atol=1e-6)
+
+        # Test the normalize_loudness function with a zero-dimensional array
+        wav = np.array(1.0)
+        expected_output = np.array(1.0)
+        actual_output = normalize_loudness(wav)
+        np.testing.assert_allclose(actual_output, expected_output, rtol=1e-6, atol=1e-6)
+
+        # Test the normalize_loudness function with a one-dimensional array
+        wav = np.array([1.0, 2.0, 3.0])
+        expected_output = np.array([0.33333333, 0.66666667, 1.0])
+        actual_output = normalize_loudness(wav)
+        np.testing.assert_allclose(actual_output, expected_output, rtol=1e-6, atol=1e-6)
+
+        # Test the normalize_loudness function with a three-dimensional array
+        wav = np.random.randn(2, 3, 44100)
+        expected_output = wav / np.max(np.abs(wav))
+        actual_output = normalize_loudness(wav)
+        np.testing.assert_allclose(actual_output, expected_output, rtol=1e-6, atol=1e-6)
 
 
 if __name__ == "__main__":

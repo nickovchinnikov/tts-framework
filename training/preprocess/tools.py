@@ -184,6 +184,11 @@ def compute_yin(
     return np.array(pitches), harmonic_rates, argmins, times
 
 
+######################################################################
+######################################################################
+######################################################################
+
+
 def byte_encode(word):
     r"""
     Encode a word as a list of bytes.
@@ -285,3 +290,21 @@ def preprocess_audio(
         ).with_traceback(sys.exc_info()[2])
 
     return audio, sr_actual
+
+
+def normalize_loudness(wav: np.ndarray) -> np.ndarray:
+    r"""
+    Normalize the loudness of an audio waveform.
+
+    Args:
+        wav (np.ndarray): The input waveform.
+
+    Returns:
+        np.ndarray: The normalized waveform.
+
+    Examples:
+        >>> wav = np.array([1.0, 2.0, 3.0])
+        >>> normalize_loudness(wav)
+        array([0.33333333, 0.66666667, 1.  ])
+    """
+    return wav / np.max(np.abs(wav))
