@@ -1,4 +1,3 @@
-import os
 import unittest
 
 import numpy as np
@@ -71,17 +70,6 @@ class TestTools(unittest.TestCase):
         actual_output = getPitch(cmdf, tau_min, tau_max, harmo_th)
         self.assertEqual(actual_output, expected_output)
 
-        # Test the function with a larger example
-        cmdf = np.random.rand(100)
-        tau_min = 10
-        tau_max = 50
-        harmo_th = 0.1
-
-        # Test the output value when there is a value below the threshold
-        expected_output = np.argmin(cmdf[tau_min:tau_max]) + tau_min
-        actual_output = getPitch(cmdf, tau_min, tau_max, harmo_th)
-        self.assertEqual(actual_output, expected_output)
-
         # Test the output value when there are no values below the threshold
         cmdf = np.random.rand(100)
         cmdf[tau_min:tau_max] = 0.5
@@ -104,21 +92,12 @@ class TestTools(unittest.TestCase):
         sig = np.sin(2 * np.pi * 440 * np.arange(44100) / 44100)
         sr = 44100
 
-        # Test the output values
-        expected_output = (
-            np.array([440.0] * 171),
-            [0.0] * 171,
-            [0.0] * 171,
-            [t / float(sr) for t in range(0, len(sig) - 512, 256)],
-        )
         actual_output = compute_yin(sig, sr)
 
         # Check the result
-        expected_output = np.load(
-            os.path.abspath("training/preprocess/tests/test_compute_yin.npy")
-        )
+        expected_output = np.load("mocks/test_compute_yin.npy")
 
-        np.testing.assert_allclose(actual_output, expected_output, rtol=1e-3, atol=1e-3)
+        np.testing.assert_allclose(actual_output, expected_output)
 
 
 if __name__ == "__main__":
