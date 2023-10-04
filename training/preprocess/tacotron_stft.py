@@ -2,6 +2,7 @@ from typing import Union
 
 import librosa
 import lightning.pytorch as pl
+import numpy as np
 import torch
 
 
@@ -84,7 +85,7 @@ class TacotronSTFT(pl.LightningModule):
             self.n_fft,
             hop_length=self.hop_size,
             win_length=self.win_size,
-            window=self.hann_window,
+            window=self.hann_window,  # type: ignore
             center=self.center,
             pad_mode="reflect",
             normalized=False,
@@ -108,7 +109,7 @@ class TacotronSTFT(pl.LightningModule):
 
         return spec
 
-    def forward(self, y: torch.Tensor) -> torch.Tensor:
+    def forward(self, y: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         r"""
         Computes mel-spectrograms from a batch of waves.
 
@@ -123,7 +124,7 @@ class TacotronSTFT(pl.LightningModule):
 
         spec = torch.sqrt(spec.pow(2).sum(-1) + (1e-9))
 
-        mel = torch.matmul(self.mel_basis, spec)
+        mel = torch.matmul(self.mel_basis, spec)  # type: ignore
         mel = self.spectral_normalize_torch(mel)
 
         return spec, mel
@@ -156,3 +157,11 @@ class TacotronSTFT(pl.LightningModule):
             torch.Tensor: Output tensor.
         """
         return torch.log(torch.clamp(x, min=clip_val) * C)
+
+    # TODO: Try to move np.ndarray to torch.Tensor
+    def get_mel_from_wav(self, audio: np.ndarray) -> np.ndarray:
+        audio_tensor = torch.FloatTensor(audio).unsqueeze(0)
+        with torch.no_grad():
+            _, melspec = self.forward(audio_tensor)
+        melspec = melspec.squeeze(0).cpu().numpy().astype(np.float32)
+        return melspec

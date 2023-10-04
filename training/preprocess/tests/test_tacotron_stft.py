@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 import torch
 
 from training.preprocess.tacotron_stft import TacotronSTFT
@@ -89,6 +90,13 @@ class TestTacotronSTFT(unittest.TestCase):
         self.assertEqual(
             output.shape, (self.batch_size, self.n_mel_channels, self.seq_len)
         )
+
+    def test_get_mel_from_wav(self):
+        # Test the get_mel_from_wav method
+        audio = np.random.randn(44100)
+        audio /= np.max(np.abs(audio))
+        melspec = self.model.get_mel_from_wav(audio)
+        self.assertEqual(melspec.shape, (self.n_mel_channels, 176))
 
 
 if __name__ == "__main__":
