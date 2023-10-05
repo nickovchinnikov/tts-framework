@@ -139,6 +139,7 @@ class DiscriminatorR(BaseNNModule):
             hop_length=hop_length,
             win_length=win_length,
             center=False,
+            # TODO: not sure about complex datatype here:
             return_complex=True,
         )  # [B, F, TT, 2]
 

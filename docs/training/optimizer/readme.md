@@ -1,6 +1,6 @@
 ## References
 
-Here you can find some references to papers and other resources that are related to the optimizer.
+Here you can find optimizer code docs.
 
 ### [Scheduled Optim Pretraining](./scheduled_optim_pretraining.md)
 

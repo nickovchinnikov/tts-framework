@@ -72,6 +72,13 @@ nav:
       - References: training/optimizer/readme.md
       - Scheduled Optim Pretraining: training/optimizer/scheduled_optim_pretraining.md
       - Scheduled Optim Finetuning: training/optimizer/scheduled_optim_finetuning.md
+    - Preprocess:
+      - References: training/preprocess/readme.md
+      - TacotronSTFT: training/preprocess/tacotron_stft.md
+      - Preprocess Audio: training/preprocess/preprocess_audio.md
+      - compute_yin: training/preprocess/compute_yin.md
+      - Text: training/preprocess/text.md
+      - Audio: training/preprocess/audio.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:

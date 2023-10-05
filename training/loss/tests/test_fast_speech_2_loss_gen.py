@@ -7,8 +7,7 @@ from training.loss.fast_speech_2_loss_gen import FastSpeech2LossGen
 
 class TestFastSpeech2LossGen(unittest.TestCase):
     def setUp(self):
-        self.device = torch.device("cpu")
-        self.loss_gen = FastSpeech2LossGen(fine_tuning=False, device=self.device)
+        self.loss_gen = FastSpeech2LossGen(fine_tuning=False)
 
     def test_forward(self):
         # Reproducible results
