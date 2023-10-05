@@ -68,17 +68,17 @@ def safe_load(path: str, sr: Union[int, None]) -> Tuple[np.ndarray, int]:
 
 def preprocess_audio(
     audio: torch.FloatTensor, sr_actual: int, sr: Union[int, None]
-) -> Tuple[torch.Tensor, int]:
+) -> Tuple[torch.FloatTensor, int]:
     r"""
     Preprocesses audio by converting stereo to mono, resampling if necessary, and returning the audio tensor and sample rate.
 
     Args:
-        audio (torch.Tensor): The audio tensor to preprocess.
+        audio (torch.FloatTensor): The audio tensor to preprocess.
         sr_actual (int): The actual sample rate of the audio.
         sr (Union[int, None]): The target sample rate to resample the audio to, if necessary.
 
     Returns:
-        Tuple[torch.Tensor, int]: The preprocessed audio tensor and sample rate.
+        Tuple[torch.FloatTensor, int]: The preprocessed audio tensor and sample rate.
     """
     try:
         if audio.shape[0] > 0:
@@ -97,19 +97,19 @@ def preprocess_audio(
     return audio, sr_actual
 
 
-def normalize_loudness(wav: np.ndarray) -> np.ndarray:
+def normalize_loudness(wav: torch.FloatTensor) -> torch.FloatTensor:
     r"""
     Normalize the loudness of an audio waveform.
 
     Args:
-        wav (np.ndarray): The input waveform.
+        wav (torch.FloatTensor): The input waveform.
 
     Returns:
-        np.ndarray: The normalized waveform.
+        torch.FloatTensor: The normalized waveform.
 
     Examples:
         >>> wav = np.array([1.0, 2.0, 3.0])
         >>> normalize_loudness(wav)
-        array([0.33333333, 0.66666667, 1.  ])
+        tensor([0.33333333, 0.66666667, 1.  ])
     """
-    return wav / np.max(np.abs(wav))
+    return wav / torch.max(torch.abs(wav))
