@@ -32,22 +32,19 @@ class Conv1dGLU(BaseNNModule):
         kernel_size: int,
         padding: int,
         embedding_dim: int,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
 
         self.bsconv1d = BSConv1d(
             d_model,
             2 * d_model,
             kernel_size=kernel_size,
             padding=padding,
-            device=self.device,
         )
 
         self.embedding_proj = nn.Linear(
             embedding_dim,
             d_model,
-            device=self.device,
         )
 
         self.register_buffer("sqrt", torch.sqrt(torch.FloatTensor([0.5])).squeeze(0))
