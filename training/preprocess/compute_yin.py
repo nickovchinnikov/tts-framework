@@ -101,7 +101,7 @@ def getPitch(cmdf: np.ndarray, tau_min: int, tau_max: int, harmo_th=0.1) -> int:
 
 
 def compute_yin(
-    sig: np.ndarray,
+    sig_torch: torch.FloatTensor,
     sr: int,
     w_len: int = 512,
     w_step: int = 256,
@@ -141,7 +141,6 @@ def compute_yin(
         [2] A. de Cheveigné and H. Kawahara, "YIN, a fundamental frequency estimator for speech and music," The Journal
             of the Acoustical Society of America, vol. 111, no. 4, pp. 1917-1930, 2002.
     """
-    sig_torch = torch.from_numpy(sig)
     sig_torch = sig_torch.view(1, 1, -1)
     sig_torch = F.pad(
         sig_torch.unsqueeze(1),
