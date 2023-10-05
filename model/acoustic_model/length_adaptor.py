@@ -17,15 +17,13 @@ class LengthAdaptor(BaseNNModule):
 
     Args:
         model_config (AcousticModelConfigType): The model configuration object containing model parameters.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
         self,
         model_config: AcousticModelConfigType,
-        device: torch.device = tools.get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
         # Initialize the duration predictor
         self.duration_predictor = VariancePredictor(
             channels_in=model_config.encoder.n_hidden,
@@ -33,7 +31,6 @@ class LengthAdaptor(BaseNNModule):
             channels_out=1,
             kernel_size=model_config.variance_adaptor.kernel_size,
             p_dropout=model_config.variance_adaptor.p_dropout,
-            device=self.device,
         )
 
     def length_regulate(
