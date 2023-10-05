@@ -11,7 +11,7 @@ from training.preprocess.compute_yin import (
 
 
 # Create a class to test the ComputePitch class
-class TestTools(unittest.TestCase):
+class TestComputeYin(unittest.TestCase):
     def setUp(self):
         np.random.seed(0)
 
