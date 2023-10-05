@@ -7,6 +7,7 @@ from training.preprocess.compute_yin import (
     cumulativeMeanNormalizedDifferenceFunction,
     differenceFunction,
     getPitch,
+    norm_interp_f0,
 )
 
 
@@ -98,3 +99,15 @@ class TestComputeYin(unittest.TestCase):
         expected_output = np.load("mocks/test_compute_yin.npy")
 
         np.testing.assert_allclose(actual_output, expected_output)
+
+    def test_norm_interp_f0(self):
+        # Test the norm_interp_f0 function with a simple example
+        f0 = np.array([0, 100, 0, 200, 0])
+        actual_output = norm_interp_f0(f0)
+        expected_output = (
+            np.array([100, 100, 150, 200, 200]),
+            np.array([True, False, True, False, True]),
+        )
+        np.testing.assert_allclose(actual_output[0], expected_output[0])
+        # Test the norm_interp_f0 function with a zero-dimensional array
+        np.testing.assert_array_equal(actual_output[1], expected_output[1])

@@ -179,3 +179,29 @@ def compute_yin(
             harmonic_rates[i] = min(cmdf)
 
     return np.array(pitches), harmonic_rates, argmins, times
+
+
+def norm_interp_f0(f0: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    r"""
+    Normalize and interpolate the fundamental frequency (f0) values.
+
+    Args:
+        f0 (np.ndarray): The input f0 values.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: A tuple containing the normalized f0 values and a boolean array indicating which values were interpolated.
+
+    Examples:
+        >>> f0 = np.array([0, 100, 0, 200, 0])
+        >>> norm_interp_f0(f0)
+        (
+            np.array([100, 100, 150, 200, 200]),
+            np.array([True, False, True, False, True]),
+        )
+    """
+    uv: np.ndarray = f0 == 0
+    if sum(uv) == len(f0):
+        f0[uv] = 0
+    elif sum(uv) > 0:
+        f0[uv] = np.interp(np.where(uv)[0], np.where(~uv)[0], f0[~uv])
+    return f0, uv
