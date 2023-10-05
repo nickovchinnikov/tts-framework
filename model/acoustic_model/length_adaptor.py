@@ -3,7 +3,7 @@ from typing import List, Tuple
 import torch
 from torch import nn
 
-from model.basenn import BaseNNModule
+from pytorch_lightning import LightningModule as BaseNNModule
 from model.config import AcousticModelConfigType
 from model.helpers import tools
 
@@ -17,15 +17,13 @@ class LengthAdaptor(BaseNNModule):
 
     Args:
         model_config (AcousticModelConfigType): The model configuration object containing model parameters.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
         self,
         model_config: AcousticModelConfigType,
-        device: torch.device = tools.get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
         # Initialize the duration predictor
         self.duration_predictor = VariancePredictor(
             channels_in=model_config.encoder.n_hidden,
@@ -33,7 +31,6 @@ class LengthAdaptor(BaseNNModule):
             channels_out=1,
             kernel_size=model_config.variance_adaptor.kernel_size,
             p_dropout=model_config.variance_adaptor.p_dropout,
-            device=self.device,
         )
 
     def length_regulate(
@@ -59,7 +56,7 @@ class LengthAdaptor(BaseNNModule):
             output.append(expanded)
             mel_len.append(expanded.shape[0])
         output = tools.pad(output, max_len)
-        return output, torch.tensor(mel_len, dtype=torch.int64, device=self.device)
+        return output, torch.tensor(mel_len, dtype=torch.int64)
 
     def expand(self, batch: torch.Tensor, predicted: torch.Tensor) -> torch.Tensor:
         r"""
@@ -76,7 +73,7 @@ class LengthAdaptor(BaseNNModule):
         for i, vec in enumerate(batch):
             expand_size = predicted[i].item()
             out.append(vec.expand(max(int(expand_size), 0), -1))
-        out = torch.cat(out, 0).to(self.device)
+        out = torch.cat(out, 0)
         return out
 
     def upsample_train(
