@@ -36,8 +36,4 @@ class BaseNNModule(nn.Module):
         # Store the device with the model for later reference
         self.device = device
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        # Moves all model parameters and buffers to the device.
-        self.to(self.device)
-
-        return super().__call__(*args, **kwds)
+    # Removed __call__ method as pl.LightningModule handles device placement
