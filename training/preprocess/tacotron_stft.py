@@ -32,6 +32,7 @@ class TacotronSTFT(pl.LightningModule):
             center (bool): Whether to pad the input signal on both sides.
         """
         super().__init__()
+
         self.n_mel_channels = n_mel_channels
         self.sampling_rate = sampling_rate
         self.n_fft = filter_length
@@ -159,9 +160,16 @@ class TacotronSTFT(pl.LightningModule):
         return torch.log(torch.clamp(x, min=clip_val) * C)
 
     # TODO: Try to move np.ndarray to torch.Tensor
-    def get_mel_from_wav(self, audio: np.ndarray) -> np.ndarray:
-        audio_tensor = torch.FloatTensor(audio).unsqueeze(0)
+    # def get_mel_from_wav(self, audio: np.ndarray) -> np.ndarray:
+    #     audio_tensor = torch.FloatTensor(audio).unsqueeze(0)
+    #     with torch.no_grad():
+    #         _, melspec = self.forward(audio_tensor)
+    #     melspec = melspec.squeeze(0).cpu().numpy().astype(np.float32)
+    #     return melspec
+
+    def get_mel_from_wav(self, audio: torch.FloatTensor) -> torch.FloatTensor:
+        audio_tensor = audio.unsqueeze(0)
         with torch.no_grad():
             _, melspec = self.forward(audio_tensor)
-        melspec = melspec.squeeze(0).cpu().numpy().astype(np.float32)
+        melspec = melspec.squeeze(0)
         return melspec
