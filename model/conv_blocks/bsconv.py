@@ -1,13 +1,10 @@
+from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
-
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
 from .conv1d import DepthWiseConv1d, PointwiseConv1d
 
 
-class BSConv1d(BaseNNModule):
+class BSConv1d(LightningModule):
     r"""
     `BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv:
     Binarized Separated Convolutional Neural Networks](https://arxiv.org/pdf/2003.13549.pdf).
@@ -22,7 +19,6 @@ class BSConv1d(BaseNNModule):
         channels_out (int): Number of output channels produced by the convolution
         kernel_size (int): Size of the kernel used in depthwise convolution
         padding (int): Zeropadding added around the input tensor along the height and width directions
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Attributes:
         pointwise (PointwiseConv1d): Pointwise convolution module
@@ -35,14 +31,13 @@ class BSConv1d(BaseNNModule):
         channels_out: int,
         kernel_size: int,
         padding: int,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
 
         # Instantiate Pointwise Convolution Module:
         # First operation in BSConv: the number of input channels is transformed to the number
         # of output channels without taking into account the channel context.
-        self.pointwise = PointwiseConv1d(channels_in, channels_out, device=self.device)
+        self.pointwise = PointwiseConv1d(channels_in, channels_out)
 
         # Instantiate Depthwise Convolution Module:
         # Second operation in BSConv: A spatial convolution is performed independently over each output
@@ -52,7 +47,6 @@ class BSConv1d(BaseNNModule):
             channels_out,
             kernel_size=kernel_size,
             padding=padding,
-            device=self.device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

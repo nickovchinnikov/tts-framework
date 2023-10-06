@@ -4,13 +4,9 @@ import torch
 
 from model.conv_blocks.bsconv import BSConv1d
 from model.conv_blocks.conv_transposed import ConvTransposed
-from model.helpers.tools import get_device
 
 
 class TestConvTransposed(unittest.TestCase):
-    def setUp(self):
-        self.device = get_device()
-
     def test_initialization(self):
         """
         Test to check if the ConvTransposed instance is properly created.
@@ -19,7 +15,10 @@ class TestConvTransposed(unittest.TestCase):
 
         # Initialize ConvTransposed with input channels, output channels, kernel size and padding.
         conv_transposed = ConvTransposed(
-            C_in, C_out, kernel_size, padding, device=self.device
+            C_in,
+            C_out,
+            kernel_size,
+            padding,
         )
 
         # Check type and value of 'conv' attribute which is an instance of BSConv1d
@@ -63,16 +62,20 @@ class TestConvTransposed(unittest.TestCase):
 
         # Initialize ConvTransposed with input channels, output channels, kernel size and padding.
         conv_transposed = ConvTransposed(
-            C_in, C_out, kernel_size, padding, device=self.device
+            C_in,
+            C_out,
+            kernel_size,
+            padding,
         )
 
         # Generate a random tensor of shape (batch_size, channel, length).
-        x = torch.randn(N, length, C_in, device=self.device)
+        x = torch.randn(
+            N,
+            length,
+            C_in,
+        )
 
         out = conv_transposed(x)
-
-        # Assert device type
-        self.assertEqual(out.device.type, self.device.type)
 
         # The output shape should be the same as the input shape, as the ConvTransposed should not
         # alter the input's dimensions.

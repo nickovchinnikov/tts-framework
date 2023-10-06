@@ -1,8 +1,8 @@
+from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
 
 
-class AddCoords(nn.Module):
+class AddCoords(LightningModule):
     r"""
     AddCoords is a PyTorch module that adds additional channels to the input tensor containing the relative
     (normalized to `[-1, 1]`) coordinates of each input element along the specified number of dimensions (`rank`).
