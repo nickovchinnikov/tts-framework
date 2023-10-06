@@ -135,9 +135,7 @@ def calc_same_padding(kernel_size: int) -> Tuple[int, int]:
     return (pad, pad - (kernel_size + 1) % 2)
 
 
-def initialize_embeddings(
-    shape: Tuple[int, ...], device: torch.device = get_device()
-) -> torch.Tensor:
+def initialize_embeddings(shape: Tuple[int, ...], device: torch.device) -> torch.Tensor:
     r"""
     Initialize embeddings using Kaiming initialization (He initialization).
 
