@@ -86,6 +86,7 @@ model
 # )
 # TODO: check this out: https://discuss.pytorch.org/t/how-to-load-part-of-pre-trained-model/1113/13
 # https://stackoverflow.com/a/65065854/10828885
+# Or you can del the broken weight, example: ckpt["gen"]["speaker_embed"]
 model.load_state_dict(ckpt_acoustic["gen"], strict=False)
 model
 

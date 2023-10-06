@@ -163,4 +163,9 @@ cython_debug/
 .vscode
 
 # Checkpoints ignore (too large for lfs)
-model/checkpoints/*
+model/checkpoints/**/*.pt
+model/checkpoints/**/*.json
+model/checkpoints/**/*.bin
+model/checkpoints/**/*.txt
+
+training/checkpoints/**/*.pt
