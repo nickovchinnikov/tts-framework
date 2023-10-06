@@ -42,6 +42,9 @@ ckpt_acoustic
 
 # %%
 
+
+# %%
+
 model_config = AcousticENModelConfig()
 preprocess_config = PreprocessingConfig("english_only")
 acoustic_pretraining_config = AcousticPretrainingConfig()
@@ -81,6 +84,9 @@ model
 #     with_ff=model_config.decoder.with_ff,
 #     device=self.device,
 # )
+# TODO: check this out: https://discuss.pytorch.org/t/how-to-load-part-of-pre-trained-model/1113/13
+# https://stackoverflow.com/a/65065854/10828885
+# Or you can del the broken weight, example: ckpt["gen"]["speaker_embed"]
 model.load_state_dict(ckpt_acoustic["gen"], strict=False)
 model
 
@@ -105,3 +111,13 @@ univnet.load_state_dict(checkpoint_voicoder["generator"], strict=False)
 univnet
 
 # %%
+symbols = [str(el) for el in range(256)]
+symbols
+# %%
+symbol2id = {s: i for i, s in enumerate(symbols)}
+symbol2id
+# %%
+{i: s for i, s in enumerate(symbols)}
+
+# %%
+symbol2id["."]

@@ -153,6 +153,7 @@ class AcousticModel(BaseNNModule):
             device=self.device,
         )
 
+        # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
         self.speaker_embed = Parameter(
             tools.initialize_embeddings((n_speakers, model_config.speaker_embed_dim))
         ).to(device)
@@ -187,6 +188,7 @@ class AcousticModel(BaseNNModule):
             and combined speaker and language embeddings tensor.
         """
         token_embeddings = F.embedding(token_idx, self.src_word_emb)
+        # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
         speaker_embeds = F.embedding(speaker_idx, self.speaker_embed)
         lang_embeds = F.embedding(lang_idx, self.lang_embed)
 

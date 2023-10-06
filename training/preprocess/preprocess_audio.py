@@ -100,11 +100,12 @@ class PreprocessAudio(pl.LightningModule):
 
         # TODO: check this, maybe you need to move it to some other place
         if wav.shape[0] < self.min_samples or wav.shape[0] > self.max_samples:
-            return
+            return None
 
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
 
+        # TODO: maybe use g2p here ???
         phones = byte_encode(raw_text.strip())
 
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
@@ -121,7 +122,7 @@ class PreprocessAudio(pl.LightningModule):
 
         # TODO: check this, maybe you need to move it to some other place
         if np.sum(pitch != 0) <= 1:
-            return
+            return None
 
         # TODO this shouldnt be necessary, currently pitch sometimes has 1 less frame than spectrogram,
         # We should find out why

@@ -288,14 +288,29 @@ dependencies:
   - zstandard=0.19.0=py311h5eee18b_0
   - zstd=1.5.5=hc292b87_0
   - pip:
+      - absl-py==2.0.0
       - black==23.9.1
+      - cachetools==5.3.1
       - cfgv==3.4.0
+      - deep-phonemizer==0.0.19
+      - google-auth==2.23.2
+      - google-auth-oauthlib==1.0.0
+      - grpcio==1.59.0
       - identify==2.5.29
       - markdown-katex==202112.1034
       - nodeenv==1.8.0
+      - oauthlib==3.2.2
       - pathlib2==2.3.7.post1
       - piq==0.8.0
       - pre-commit==3.4.0
+      - protobuf==4.24.4
+      - pyasn1==0.5.0
+      - pyasn1-modules==0.3.0
+      - requests-oauthlib==1.3.1
+      - rsa==4.9
       - ruff==0.0.290
+      - tensorboard==2.14.1
+      - tensorboard-data-server==0.7.1
       - virtualenv==20.24.5
+      - werkzeug==3.0.0
 prefix: /mnt/Data/anaconda3/envs/tts_framework
