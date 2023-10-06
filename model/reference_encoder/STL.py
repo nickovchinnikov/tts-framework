@@ -1,20 +1,18 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
 from model.attention import StyleEmbedAttention
-from model.basenn import BaseNNModule
 from model.config import AcousticModelConfigType
-from model.helpers.tools import get_device
 
 
-class STL(BaseNNModule):
+class STL(LightningModule):
     r"""
     Style Token Layer (STL).
     This layer helps to encapsulate different speaking styles in token embeddings.
 
     Args:
         model_config (AcousticModelConfigType): An object containing the model's configuration parameters.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Attributes:
         embed (nn.Parameter): The style token embedding tensor.
@@ -24,9 +22,8 @@ class STL(BaseNNModule):
     def __init__(
         self,
         model_config: AcousticModelConfigType,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         # Number of attention heads
         num_heads = 1
@@ -38,7 +35,7 @@ class STL(BaseNNModule):
         # Define a learnable tensor for style tokens embedding
         self.embed = nn.Parameter(
             torch.FloatTensor(self.token_num, n_hidden // num_heads)
-        ).to(self.device)
+        )
 
         # Dimension of query in attention
         d_q = n_hidden // 2
@@ -51,7 +48,6 @@ class STL(BaseNNModule):
             key_dim=d_k,
             num_units=n_hidden,
             num_heads=num_heads,
-            device=self.device,
         )
 
         # Initialize the embedding with normal distribution

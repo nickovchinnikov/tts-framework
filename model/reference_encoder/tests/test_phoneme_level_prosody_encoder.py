@@ -17,7 +17,6 @@ from model.helpers.initializer import (
     init_forward_trains_params,
     init_mask_input_embeddings_encoding_attn_mask,
 )
-from model.helpers.tools import get_device
 from model.reference_encoder import (
     PhonemeLevelProsodyEncoder,
     UtteranceLevelProsodyEncoder,
@@ -30,8 +29,6 @@ from model.reference_encoder.reference_encoder import ReferenceEncoder
 # Integration test
 class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         self.acoustic_pretraining_config = AcousticPretrainingConfig()
         self.model_config = AcousticENModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
@@ -40,11 +37,11 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
         n_speakers = 10
 
         # # Add Conformer as encoder
-        self.encoder, _ = init_conformer(self.model_config, device=self.device)
+        self.encoder, _ = init_conformer(self.model_config)
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers, device=self.device
+            self.preprocess_config, self.model_config, n_speakers
         )
 
         # Generate mock data for the forward pass
@@ -53,34 +50,34 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
             self.acoustic_pretraining_config,
             self.preprocess_config,
             n_speakers,
-            device=self.device,
         )
 
         preprocess_config = self.preprocess_config
         model_config = self.model_config
 
         self.utterance_prosody_encoder = UtteranceLevelProsodyEncoder(
-            preprocess_config, model_config, device=self.device
+            preprocess_config,
+            model_config,
         )
 
         self.phoneme_prosody_encoder = PhonemeLevelProsodyEncoder(
-            preprocess_config, model_config, device=self.device
+            preprocess_config,
+            model_config,
         )
 
         self.u_norm = nn.LayerNorm(
             model_config.reference_encoder.bottleneck_size_u,
             elementwise_affine=False,
-            device=self.device,
         )
 
         self.p_norm = nn.LayerNorm(
             model_config.reference_encoder.bottleneck_size_p,
             elementwise_affine=False,
-            device=self.device,
         )
 
         self.model = PhonemeLevelProsodyEncoder(
-            self.preprocess_config, self.model_config, device=self.device
+            self.preprocess_config,
+            self.model_config,
         )
 
     def test_model_attributes(self):
@@ -114,9 +111,6 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
         # Run conformer encoder
         # x: Tensor containing the encoded sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
-
-        # Assert the device type of x
-        self.assertEqual(x.device.type, self.device.type)
 
         # Assert the shape of x
         self.assertEqual(
