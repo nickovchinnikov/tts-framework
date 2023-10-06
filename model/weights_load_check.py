@@ -63,7 +63,6 @@ model = AcousticModel(
     fine_tuning=True,
     # Import from the checkpoint
     n_speakers=5392,
-    device=device,
 )
 model
 
@@ -87,6 +86,16 @@ model
 # TODO: check this out: https://discuss.pytorch.org/t/how-to-load-part-of-pre-trained-model/1113/13
 # https://stackoverflow.com/a/65065854/10828885
 # Or you can del the broken weight, example: ckpt["gen"]["speaker_embed"]
+
+# NOTE: It works, but I don't know if it's the right way to do it
+del ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
+del ckpt_acoustic["gen"]["decoder.layer_stack.1.conditioning.embedding_proj.weight"]
+del ckpt_acoustic["gen"]["decoder.layer_stack.2.conditioning.embedding_proj.weight"]
+del ckpt_acoustic["gen"]["decoder.layer_stack.3.conditioning.embedding_proj.weight"]
+del ckpt_acoustic["gen"]["decoder.layer_stack.4.conditioning.embedding_proj.weight"]
+del ckpt_acoustic["gen"]["decoder.layer_stack.5.conditioning.embedding_proj.weight"]
+
+# %%
 model.load_state_dict(ckpt_acoustic["gen"], strict=False)
 model
 
@@ -102,7 +111,7 @@ checkpoint_voicoder
 # %%
 voicoder_model_conf = VocoderModelConfig()
 
-univnet = UnivNet(voicoder_model_conf, preprocess_config, device=device)
+univnet = UnivNet(voicoder_model_conf, preprocess_config)
 univnet
 
 # %%

@@ -3,7 +3,6 @@ import os
 import sys
 
 from dp.phonemizer import Phonemizer
-from dp.preprocessing.text import SequenceTokenizer
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
