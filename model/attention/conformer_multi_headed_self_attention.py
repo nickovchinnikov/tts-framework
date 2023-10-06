@@ -1,15 +1,13 @@
 from typing import Tuple
 
+from lightning.pytorch import LightningModule
 import torch
 from torch import nn
-
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
 from .relative_multi_head_attention import RelativeMultiHeadAttention
 
 
-class ConformerMultiHeadedSelfAttention(BaseNNModule):
+class ConformerMultiHeadedSelfAttention(LightningModule):
     """
     Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
     the relative sinusoidal positional encoding scheme. The relative positional encoding allows the self-attention
@@ -21,7 +19,6 @@ class ConformerMultiHeadedSelfAttention(BaseNNModule):
         d_model (int): The dimension of model
         num_heads (int): The number of attention heads.
         dropout_p (float): probability of dropout
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Inputs: inputs, mask
         - **inputs** (batch, time, dim): Tensor containing input vector
@@ -36,13 +33,12 @@ class ConformerMultiHeadedSelfAttention(BaseNNModule):
         d_model: int,
         num_heads: int,
         dropout_p: float,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
 
         # Initialize the RelativeMultiHeadAttention module passing the model dimension and number of attention heads
         self.attention = RelativeMultiHeadAttention(
-            d_model=d_model, num_heads=num_heads, device=self.device
+            d_model=d_model, num_heads=num_heads
         )
         self.dropout = nn.Dropout(p=dropout_p)
 

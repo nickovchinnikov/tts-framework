@@ -1,13 +1,11 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
-
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
 from .conformer_block import ConformerBlock
 
 
-class Conformer(BaseNNModule):
+class Conformer(LightningModule):
     r"""
     `Conformer` class represents the `Conformer` model which is a sequence-to-sequence model
     used in some modern automated speech recognition systems. It is composed of several `ConformerBlocks`.
@@ -20,7 +18,6 @@ class Conformer(BaseNNModule):
         p_dropout (float): The dropout probability to be used in each `ConformerBlock`.
         kernel_size_conv_mod (int): The size of the convolving kernel in the convolution module of each `ConformerBlock`.
         with_ff (bool): If True, each `ConformerBlock` uses FeedForward layer inside it.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
@@ -32,9 +29,8 @@ class Conformer(BaseNNModule):
         p_dropout: float,
         kernel_size_conv_mod: int,
         with_ff: bool,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
         d_k = d_v = dim // n_heads
         self.layer_stack = nn.ModuleList(
             [
@@ -47,7 +43,6 @@ class Conformer(BaseNNModule):
                     dropout=p_dropout,
                     embedding_dim=embedding_dim,
                     with_ff=with_ff,
-                    device=self.device,
                 )
                 for _ in range(n_layers)
             ]

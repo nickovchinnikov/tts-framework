@@ -3,29 +3,22 @@ import unittest
 import torch
 
 from model.attention.multi_head_attention import MultiHeadAttention
-from model.helpers.tools import get_device
 
 
 class TestMultiHeadAttention(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
         # Initialize an instance of MultiHeadAttention
         self.attention = MultiHeadAttention(
-            query_dim=512, key_dim=512, num_units=512, num_heads=8, device=self.device
+            query_dim=512, key_dim=512, num_units=512, num_heads=8
         )
         # Assuming batch=3, seq_length=10, dim=512
         self.dim_params = (3, 10, 512)
-        self.query = torch.rand(
-            self.dim_params, device=self.device
-        )  # [N, T_q, query_dim]
-        self.key = torch.rand(self.dim_params, device=self.device)  # [N, T_k, key_dim]
+        self.query = torch.rand(self.dim_params)  # [N, T_q, query_dim]
+        self.key = torch.rand(self.dim_params)  # [N, T_k, key_dim]
 
     def test_forward(self):
         # Test the forward function
         out = self.attention(self.query, self.key)
-
-        # Assert device type
-        self.assertEqual(out.device.type, self.device.type)
 
         # Assert output shape
         self.assertEqual(out.shape, self.dim_params)
