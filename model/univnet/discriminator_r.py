@@ -1,32 +1,29 @@
 from typing import Any
 
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm, weight_norm
 
-from model.basenn import BaseNNModule
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 
 
-class DiscriminatorR(BaseNNModule):
+class DiscriminatorR(LightningModule):
     r"""
     A class representing the Residual Discriminator network for a UnivNet vocoder.
 
     Args:
         resolution (tuple): A tuple containing the number of FFT points, hop length, and window length.
         model_config (VocoderModelConfig): A configuration object for the UnivNet model.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
     """
 
     def __init__(
         self,
         resolution,
         model_config: VocoderModelConfig,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.resolution = resolution
         self.LRELU_SLOPE = model_config.mrd.lReLU_slope
@@ -39,15 +36,12 @@ class DiscriminatorR(BaseNNModule):
         # Define the convolutional layers
         self.convs = nn.ModuleList(
             [
-                norm_f(nn.Conv2d(1, 32, (3, 9), padding=(1, 4), device=self.device)),
                 norm_f(
                     nn.Conv2d(
-                        32,
+                        1,
                         32,
                         (3, 9),
-                        stride=(1, 2),
                         padding=(1, 4),
-                        device=self.device,
                     )
                 ),
                 norm_f(
@@ -57,7 +51,6 @@ class DiscriminatorR(BaseNNModule):
                         (3, 9),
                         stride=(1, 2),
                         padding=(1, 4),
-                        device=self.device,
                     )
                 ),
                 norm_f(
@@ -67,14 +60,34 @@ class DiscriminatorR(BaseNNModule):
                         (3, 9),
                         stride=(1, 2),
                         padding=(1, 4),
-                        device=self.device,
                     )
                 ),
-                norm_f(nn.Conv2d(32, 32, (3, 3), padding=(1, 1), device=self.device)),
+                norm_f(
+                    nn.Conv2d(
+                        32,
+                        32,
+                        (3, 9),
+                        stride=(1, 2),
+                        padding=(1, 4),
+                    )
+                ),
+                norm_f(
+                    nn.Conv2d(
+                        32,
+                        32,
+                        (3, 3),
+                        padding=(1, 1),
+                    )
+                ),
             ]
         )
         self.conv_post = norm_f(
-            nn.Conv2d(32, 1, (3, 3), padding=(1, 1), device=self.device)
+            nn.Conv2d(
+                32,
+                1,
+                (3, 3),
+                padding=(1, 1),
+            )
         )
 
     def forward(self, x: torch.Tensor) -> tuple[list[torch.Tensor], torch.Tensor]:

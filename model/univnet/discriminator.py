@@ -1,14 +1,13 @@
+from lightning.pytorch import LightningModule
 import torch
 
-from model.basenn import BaseNNModule
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 
 from .multi_period_discriminator import MultiPeriodDiscriminator
 from .multi_resolution_discriminator import MultiResolutionDiscriminator
 
 
-class Discriminator(BaseNNModule):
+class Discriminator(LightningModule):
     r"""
     Discriminator for the UnuvNet vocoder.
 
@@ -16,7 +15,6 @@ class Discriminator(BaseNNModule):
 
     Args:
         model_config (VocoderModelConfig): Model configuration object.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
 
     Attributes:
         MRD (MultiResolutionDiscriminator): Multi-resolution discriminator instance.
@@ -27,16 +25,10 @@ class Discriminator(BaseNNModule):
 
     """
 
-    def __init__(
-        self, model_config: VocoderModelConfig, device: torch.device = get_device()
-    ):
-        super().__init__(device=device)
-        self.MRD = MultiResolutionDiscriminator(
-            model_config=model_config, device=self.device
-        )
-        self.MPD = MultiPeriodDiscriminator(
-            model_config=model_config, device=self.device
-        )
+    def __init__(self, model_config: VocoderModelConfig):
+        super().__init__()
+        self.MRD = MultiResolutionDiscriminator(model_config=model_config)
+        self.MPD = MultiPeriodDiscriminator(model_config=model_config)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         r"""

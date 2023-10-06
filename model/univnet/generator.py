@@ -1,21 +1,20 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
 from model.config import PreprocessingConfig, VocoderModelConfig
-from model.helpers.tools import get_device, get_mask_from_lengths
+from model.helpers.tools import get_mask_from_lengths
 
 from .lvc_block import LVCBlock
 
 
-class Generator(BaseNNModule):
+class Generator(LightningModule):
     """UnivNet Generator"""
 
     def __init__(
         self,
         model_config: VocoderModelConfig,
         preprocess_config: PreprocessingConfig,
-        device: torch.device = get_device(),
     ):
         r"""
         UnivNet Generator.
@@ -24,9 +23,8 @@ class Generator(BaseNNModule):
         Args:
             model_config (VocoderModelConfig): the model configuration.
             preprocess_config (PreprocessingConfig): the preprocessing configuration.
-            device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
         """
-        super().__init__(device=device)
+        super().__init__()
 
         self.mel_channel = preprocess_config.stft.n_mel_channels
         self.noise_dim = model_config.gen.noise_dim
@@ -48,7 +46,6 @@ class Generator(BaseNNModule):
                     lReLU_slope=model_config.gen.lReLU_slope,
                     cond_hop_length=hop_length,
                     kpnet_conv_size=kpnet_conv_size,
-                    device=self.device,
                 )
             )
 
@@ -59,7 +56,6 @@ class Generator(BaseNNModule):
                 7,
                 padding=3,
                 padding_mode="reflect",
-                device=self.device,
             )
         )
 
@@ -72,7 +68,6 @@ class Generator(BaseNNModule):
                     7,
                     padding=3,
                     padding_mode="reflect",
-                    device=self.device,
                 )
             ),
             nn.Tanh(),

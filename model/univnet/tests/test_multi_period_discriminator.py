@@ -4,7 +4,6 @@ import unittest
 import torch
 
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 from model.univnet import MultiPeriodDiscriminator
 
 
@@ -14,12 +13,9 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
         self.channels = 1
         self.time_steps = 100
         self.model_config = VocoderModelConfig()
-        self.device = get_device()
 
-        self.model = MultiPeriodDiscriminator(self.model_config, self.device)
-        self.x = torch.randn(
-            self.batch_size, self.channels, self.time_steps, device=self.device
-        )
+        self.model = MultiPeriodDiscriminator(self.model_config)
+        self.x = torch.randn(self.batch_size, self.channels, self.time_steps)
 
     def test_forward(self):
         output = self.model(self.x)
@@ -80,9 +76,6 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
             fmap = output[mpd_k][0]
             x = output[mpd_k][1]
 
-            # Assert the device
-            self.assertEqual(x.device.type, self.device.type)
-
             self.assertEqual(len(x), self.batch_size)
 
             # Assert the shape of the feature maps
@@ -92,9 +85,6 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
             dims_expl = fmaps_dims[mpd_k]
 
             for i in range(len(self.model_config.mpd.periods)):
-                # Assert the device
-                self.assertEqual(fmap[i].device.type, self.device.type)
-
                 # Assert the shape of the feature maps explicitly
                 self.assertEqual(fmap[i].shape, dims_expl[i])
 

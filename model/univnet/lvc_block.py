@@ -1,16 +1,14 @@
 from typing import List
 
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
-
 from .kernel_predictor import KernelPredictor
 
 
-class LVCBlock(BaseNNModule):
+class LVCBlock(LightningModule):
     r"""
     The location-variable convolutions block.
 
@@ -31,7 +29,6 @@ class LVCBlock(BaseNNModule):
         kpnet_hidden_channels (int): The number of hidden channels in the kernel predictor network.
         kpnet_conv_size (int): The kernel size of the convolutional layers in the kernel predictor network.
         kpnet_dropout (float): The dropout rate for the kernel predictor network.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
 
     Attributes:
         cond_hop_length (int): The hop length of the conditioning sequence.
@@ -55,9 +52,8 @@ class LVCBlock(BaseNNModule):
         kpnet_hidden_channels: int = 64,
         kpnet_conv_size: int = 3,
         kpnet_dropout: float = 0.0,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.cond_hop_length = cond_hop_length
         self.conv_layers = len(dilations)
@@ -73,7 +69,6 @@ class LVCBlock(BaseNNModule):
             kpnet_conv_size=kpnet_conv_size,
             kpnet_dropout=kpnet_dropout,
             lReLU_slope=lReLU_slope,
-            device=self.device,
         )
 
         self.convt_pre = nn.Sequential(
@@ -86,7 +81,6 @@ class LVCBlock(BaseNNModule):
                     stride=stride,
                     padding=stride // 2 + stride % 2,
                     output_padding=stride % 2,
-                    device=self.device,
                 )
             ),
         )
@@ -102,7 +96,6 @@ class LVCBlock(BaseNNModule):
                             conv_kernel_size,
                             padding=dilation * (conv_kernel_size - 1) // 2,
                             dilation=dilation,
-                            device=self.device,
                         )
                     ),
                     nn.LeakyReLU(lReLU_slope),

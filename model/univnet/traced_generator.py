@@ -1,19 +1,18 @@
 from typing import Any, Tuple
 
+from lightning.pytorch import LightningModule
 import torch
 
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device, get_mask_from_lengths
+from model.helpers.tools import get_mask_from_lengths
 
 from .generator import Generator
 
 
-class TracedGenerator(BaseNNModule):
+class TracedGenerator(LightningModule):
     def __init__(
         self,
         generator: Generator,
         example_inputs: Tuple[Any],
-        device: torch.device = get_device(),
     ):
         r"""
         A traced version of the Generator class that can be used for faster inference.
@@ -21,15 +20,19 @@ class TracedGenerator(BaseNNModule):
         Args:
             generator (Generator): The Generator instance to trace.
             example_inputs (Tuple[Any]): Example inputs to use for tracing.
-            device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
         """
-        super().__init__(device=device)
+        super().__init__()
 
         self.mel_mask_value: float = generator.mel_mask_value
         self.hop_length: int = generator.hop_length
 
+        # TODO: https://github.com/Lightning-AI/lightning/issues/14036
         # Disable trace since model is non-deterministic
-        self.generator = torch.jit.trace(generator, example_inputs, check_trace=False)
+        # self.generator = torch.jit.trace(generator, example_inputs, check_trace=False)
+        # self.generator = generator.to_torchscript(
+        #     method="trace", example_inputs=example_inputs, check_trace=False
+        # )
+        self.generator = generator
 
     def forward(self, c: torch.Tensor, mel_lens: torch.Tensor) -> torch.Tensor:
         r"""
@@ -45,7 +48,7 @@ class TracedGenerator(BaseNNModule):
         mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1)
         c = c.masked_fill(mel_mask, self.mel_mask_value)
         zero = torch.full(
-            (c.shape[0], c.shape[1], 10), self.mel_mask_value, device=c.device
+            (c.shape[0], c.shape[1], 10), self.mel_mask_value, device=self.device
         )
         mel = torch.cat((c, zero), dim=2)
         audio = self.generator(mel)

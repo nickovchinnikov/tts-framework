@@ -3,14 +3,11 @@ import unittest
 import torch
 import torch.nn as nn
 
-from model.helpers.tools import get_device
 from model.univnet.lvc_block import LVCBlock
 
 
 class TestLVCBlock(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         self.batch_size = 2
         self.in_channels = 3
         self.cond_channels = 4
@@ -27,15 +24,12 @@ class TestLVCBlock(unittest.TestCase):
         self.kpnet_conv_size = 3
         self.kpnet_dropout = 0.0
 
-        self.x = torch.randn(
-            self.batch_size, self.in_channels, self.in_length, device=self.device
-        )
+        self.x = torch.randn(self.batch_size, self.in_channels, self.in_length)
 
         self.kernel = torch.randn(
             self.batch_size,
             self.cond_channels,
             self.cond_length,
-            device=self.device,
         )
 
         self.lvc_block = LVCBlock(
@@ -49,7 +43,6 @@ class TestLVCBlock(unittest.TestCase):
             kpnet_hidden_channels=self.kpnet_hidden_channels,
             kpnet_conv_size=self.kpnet_conv_size,
             kpnet_dropout=self.kpnet_dropout,
-            device=self.device,
         )
 
     def test_remove_weight_norm(self):
@@ -67,11 +60,8 @@ class TestLVCBlock(unittest.TestCase):
             2 * self.in_channels,
             self.conv_kernel_size,
             self.cond_length,
-            device=self.device,
         )
-        bias = torch.randn(
-            self.batch_size, 2 * self.in_channels, self.cond_length, device=self.device
-        )
+        bias = torch.randn(self.batch_size, 2 * self.in_channels, self.cond_length)
 
         output = self.lvc_block.location_variable_convolution(
             x=self.x,
@@ -80,9 +70,6 @@ class TestLVCBlock(unittest.TestCase):
             dilation=1,
             hop_size=self.cond_hop_length,
         )
-
-        # Assert the output device
-        self.assertEqual(output.device.type, self.device.type)
 
         self.assertEqual(
             output.shape, (self.batch_size, 2 * self.in_channels, self.in_length)
@@ -93,7 +80,6 @@ class TestLVCBlock(unittest.TestCase):
             self.batch_size,
             self.in_channels,
             self.in_length // self.stride,
-            device=self.device,
         )
 
         output = self.lvc_block(x, self.kernel)

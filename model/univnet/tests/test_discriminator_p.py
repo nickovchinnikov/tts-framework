@@ -4,7 +4,6 @@ import unittest
 import torch
 
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 from model.univnet import DiscriminatorP
 
 
@@ -15,18 +14,12 @@ class TestDiscriminatorP(unittest.TestCase):
         self.time_steps = 100
         self.period = 10
         self.model_config = VocoderModelConfig()
-        self.device = get_device()
 
-        self.x = torch.randn(
-            self.batch_size, self.channels, self.time_steps, device=self.device
-        )
-        self.model = DiscriminatorP(self.period, self.model_config, self.device)
+        self.x = torch.randn(self.batch_size, self.channels, self.time_steps)
+        self.model = DiscriminatorP(self.period, self.model_config)
 
     def test_forward(self):
         fmap, output = self.model(self.x)
-
-        # Assert the device
-        self.assertEqual(self.model.device.type, self.device.type)
 
         self.assertEqual(len(fmap), len(self.model.convs) + 1)
 
@@ -42,7 +35,6 @@ class TestDiscriminatorP(unittest.TestCase):
 
         for i in range(len(fmap)):
             self.assertEqual(fmap[i].shape, fmap_dims[i])
-            self.assertEqual(fmap[i].device.type, self.device.type)
 
         # Assert the shape of the feature maps
         dim_2nd = 4
@@ -74,7 +66,6 @@ class TestDiscriminatorP(unittest.TestCase):
 
         for i in range(len(fmap)):
             self.assertEqual(fmap[i].shape, fmap_dims[i])
-            self.assertEqual(fmap[i].device.type, self.device.type)
 
         # Assert the shape of the feature maps
         dim_2nd = 4
@@ -90,10 +81,8 @@ class TestDiscriminatorP(unittest.TestCase):
         self.assertEqual(output.shape, (self.batch_size, self.period))
 
     def test_forward_with_different_period(self):
-        model = DiscriminatorP(self.period, self.model_config, self.device)
-        x = torch.randn(
-            self.batch_size, self.channels, self.time_steps - 1, device=self.device
-        )
+        model = DiscriminatorP(self.period, self.model_config)
+        x = torch.randn(self.batch_size, self.channels, self.time_steps - 1)
 
         model.period = 5
         fmap, output = model(x)
@@ -112,7 +101,6 @@ class TestDiscriminatorP(unittest.TestCase):
 
         for i in range(len(fmap)):
             self.assertEqual(fmap[i].shape, fmap_dims[i])
-            self.assertEqual(fmap[i].device.type, self.device.type)
 
         # Assert the shape of the feature maps
         dim_2nd = 7

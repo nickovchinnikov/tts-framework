@@ -3,19 +3,16 @@ import unittest
 import torch
 
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 from model.univnet import MultiResolutionDiscriminator
 
 
 class TestMultiResolutionDiscriminator(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         self.resolution = [(1024, 256, 1024), (2048, 512, 2048)]
         self.model_config = VocoderModelConfig()
-        self.model = MultiResolutionDiscriminator(self.model_config, self.device)
+        self.model = MultiResolutionDiscriminator(self.model_config)
 
-        self.x = torch.randn(1, 1024, device=self.device)
+        self.x = torch.randn(1, 1024)
 
     def test_forward(self):
         # Test the forward pass of the MultiResolutionDiscriminator class
@@ -53,10 +50,6 @@ class TestMultiResolutionDiscriminator(unittest.TestCase):
 
         for key in range(len(output)):
             fmap = output[key][0]
-            x = output[key][1]
-
-            # Assert the device
-            self.assertEqual(x.device.type, self.device.type)
 
             first_dim, second_dim = 32, 1
 

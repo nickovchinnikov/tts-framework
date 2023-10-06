@@ -1,14 +1,13 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 
 from .discriminator_r import DiscriminatorR
 
 
-class MultiResolutionDiscriminator(BaseNNModule):
+class MultiResolutionDiscriminator(LightningModule):
     r"""
     Multi-resolution discriminator for the UnivNet vocoder.
 
@@ -16,7 +15,6 @@ class MultiResolutionDiscriminator(BaseNNModule):
 
     Args:
         model_config (VocoderModelConfig): Model configuration object.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
 
     Attributes:
         resolutions (list): List of resolutions for each DiscriminatorR instance.
@@ -28,16 +26,15 @@ class MultiResolutionDiscriminator(BaseNNModule):
     """
 
     def __init__(
-        self, model_config: VocoderModelConfig, device: torch.device = get_device()
+        self,
+        model_config: VocoderModelConfig,
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.resolutions = model_config.mrd.resolutions
         self.discriminators = nn.ModuleList(
             [
-                DiscriminatorR(
-                    resolution, model_config=model_config, device=self.device
-                )
+                DiscriminatorR(resolution, model_config=model_config)
                 for resolution in self.resolutions
             ]
         )
