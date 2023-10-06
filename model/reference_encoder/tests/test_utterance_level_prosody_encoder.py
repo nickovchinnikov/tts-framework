@@ -3,36 +3,33 @@ import unittest
 import torch
 
 from model.config import AcousticENModelConfig, PreprocessingConfig
-from model.helpers.tools import get_device
 from model.reference_encoder import UtteranceLevelProsodyEncoder
 
 
 class TestUtteranceLevelProsodyEncoder(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
 
         # Instantiate the model to be tested with the mock configurations
         self.model = UtteranceLevelProsodyEncoder(
-            self.preprocess_config, self.model_config, device=self.device
+            self.preprocess_config,
+            self.model_config,
         )
 
     def test_forward_shape(self):
         # Define the input tensor (mels) and corresponding lengths (mel_lens)
         mels = torch.randn(
-            16, 100, 128, device=self.device
+            16,
+            100,
+            128,
         )  # assuming the input sequence length is 128 and n_mel_channels=100
         mel_lens = (
-            torch.ones(16).type(torch.LongTensor).to(self.device) * 128
+            torch.ones(16).type(torch.LongTensor) * 128
         )  # assuming all sequences are of equal length
 
         # Make a forward pass through the model
         out = self.model(mels, mel_lens)
-
-        # Assert device type
-        self.assertEqual(out.device.type, self.device.type)
 
         # Assert the shape of the output tensor
         self.assertIsInstance(out, torch.Tensor)

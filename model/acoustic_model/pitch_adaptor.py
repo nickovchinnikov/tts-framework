@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 from typing import Tuple
 
+from lightning.pytorch import LightningModule
 import torch
 
-from model.basenn import BaseNNModule
 from model.config import AcousticModelConfigType
 from model.helpers import tools
 
@@ -12,7 +12,7 @@ from .embedding import Embedding
 from .variance_predictor import VariancePredictor
 
 
-class PitchAdaptor(BaseNNModule):
+class PitchAdaptor(LightningModule):
     r"""
     The PitchAdaptor class is a pitch adaptor network in the model.
 
@@ -22,7 +22,6 @@ class PitchAdaptor(BaseNNModule):
     Args:
         model_config (AcousticModelConfigType): The model configuration.
         data_path (str): The path to data.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     """
 
@@ -30,16 +29,14 @@ class PitchAdaptor(BaseNNModule):
         self,
         model_config: AcousticModelConfigType,
         data_path: str,
-        device: torch.device = tools.get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
         self.pitch_predictor = VariancePredictor(
             channels_in=model_config.encoder.n_hidden,
             channels=model_config.variance_adaptor.n_hidden,
             channels_out=1,
             kernel_size=model_config.variance_adaptor.kernel_size,
             p_dropout=model_config.variance_adaptor.p_dropout,
-            device=self.device,
         )
 
         n_bins = model_config.variance_adaptor.n_bins
@@ -57,12 +54,9 @@ class PitchAdaptor(BaseNNModule):
                 pitch_min,
                 pitch_max,
                 n_bins - 1,
-                device=self.device,
             ),
         )
-        self.pitch_embedding = Embedding(
-            n_bins, model_config.encoder.n_hidden, device=self.device
-        )
+        self.pitch_embedding = Embedding(n_bins, model_config.encoder.n_hidden)
 
     def get_pitch_embedding_train(
         self, x: torch.Tensor, target: torch.Tensor, mask: torch.Tensor

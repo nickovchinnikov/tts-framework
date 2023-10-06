@@ -3,7 +3,6 @@ import unittest
 import torch
 
 from model.config import PreprocessingConfig, VocoderModelConfig
-from model.helpers.tools import get_device
 from model.univnet import Discriminator, Generator
 
 
@@ -11,15 +10,12 @@ from model.univnet import Discriminator, Generator
 # Integration test
 class TestDiscriminator(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
         self.model_config = VocoderModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
 
-        self.generator = Generator(
-            self.model_config, self.preprocess_config, device=self.device
-        )
+        self.generator = Generator(self.model_config, self.preprocess_config)
 
-        self.model = Discriminator(self.model_config, self.device)
+        self.model = Discriminator(self.model_config)
 
         self.batch_size = 1
         self.in_length = 100
@@ -28,7 +24,6 @@ class TestDiscriminator(unittest.TestCase):
             self.batch_size,
             self.preprocess_config.stft.n_mel_channels,
             self.in_length,
-            device=self.device,
         )
 
     def test_forward(self):
@@ -80,9 +75,6 @@ class TestDiscriminator(unittest.TestCase):
             x = output_mrd[key][1]
 
             fmap_dims = fmap_mrd_dims[key]
-
-            # Assert the device
-            self.assertEqual(x.device.type, self.device.type)
 
             # Assert the shape of the feature maps
             for i, fmap in enumerate(fmap):
@@ -140,9 +132,6 @@ class TestDiscriminator(unittest.TestCase):
             x = output_mpd[key][1]
 
             fmap_dims = fmap_mpd_dims[key]
-
-            # Assert the device
-            self.assertEqual(x.device.type, self.device.type)
 
             # Assert the shape of the feature maps
             for i, fmap in enumerate(fmap):

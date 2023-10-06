@@ -2,14 +2,11 @@ import unittest
 
 import torch
 
-from model.helpers.tools import get_device
 from model.univnet.kernel_predictor import KernelPredictor
 
 
 class TestKernelPredictor(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         self.batch_size = 2
         self.cond_channels = 4
         self.conv_in_channels = 3
@@ -31,16 +28,11 @@ class TestKernelPredictor(unittest.TestCase):
             self.kpnet_conv_size,
             self.kpnet_dropout,
             self.lReLU_slope,
-            device=self.device,
         )
 
     def test_forward(self):
-        c = torch.randn(self.batch_size, self.cond_channels, 10, device=self.device)
+        c = torch.randn(self.batch_size, self.cond_channels, 10)
         kernels, bias = self.model(c)
-
-        # Assert the device
-        self.assertEqual(kernels.device.type, self.device.type)
-        self.assertEqual(bias.device.type, self.device.type)
 
         self.assertIsInstance(kernels, torch.Tensor)
         self.assertEqual(

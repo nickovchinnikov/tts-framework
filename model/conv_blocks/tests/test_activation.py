@@ -4,13 +4,11 @@ import torch
 from torch.autograd import gradcheck
 
 from model.conv_blocks.activation import GLUActivation
-from model.helpers.tools import get_device
 
 
 # Unit Testing Class
 class TestGLUActivation(unittest.TestCase):
     def setUp(self):
-        torch.set_default_device(get_device())
         self.glu = GLUActivation()
 
     # Test that dimensions remain unchanged

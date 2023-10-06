@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+import torch
 
 from training.preprocess.compute_yin import (
     compute_yin,
@@ -90,7 +91,7 @@ class TestComputeYin(unittest.TestCase):
 
     def test_compute_yin(self):
         # Test the function with a simple example
-        sig = np.sin(2 * np.pi * 440 * np.arange(44100) / 44100)
+        sig = torch.from_numpy(np.sin(2 * np.pi * 440 * np.arange(44100) / 44100))
         sr = 44100
 
         actual_output = compute_yin(sig, sr)

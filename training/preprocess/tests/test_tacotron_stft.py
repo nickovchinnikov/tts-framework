@@ -93,8 +93,8 @@ class TestTacotronSTFT(unittest.TestCase):
 
     def test_get_mel_from_wav(self):
         # Test the get_mel_from_wav method
-        audio = np.random.randn(44100)
-        audio /= np.max(np.abs(audio))
+        audio = torch.randn(44100)
+        audio /= torch.max(torch.abs(audio))
         melspec = self.model.get_mel_from_wav(audio)
         self.assertEqual(melspec.shape, (self.n_mel_channels, 176))
 

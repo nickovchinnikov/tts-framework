@@ -1,10 +1,11 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
 from model.constants import LEAKY_RELU_SLOPE
 
 
-class GLUActivation(nn.Module):
+class GLUActivation(LightningModule):
     r"""
     Implements the Gated Linear Unit (GLU) activation function.
 

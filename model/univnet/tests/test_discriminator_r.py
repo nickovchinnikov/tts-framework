@@ -3,26 +3,20 @@ import unittest
 import torch
 
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 from model.univnet.discriminator_r import DiscriminatorR
 
 
 class TestDiscriminatorR(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         self.resolution = (1024, 256, 1024)
         self.model_config = VocoderModelConfig()
-        self.model = DiscriminatorR(self.resolution, self.model_config, self.device)
+        self.model = DiscriminatorR(self.resolution, self.model_config)
 
     def test_forward(self):
-        x = torch.randn(1, 1024, device=self.device)
+        x = torch.randn(1, 1024)
 
         # Test the forward pass of the DiscriminatorR class
         fmap, output = self.model(x)
-
-        # Assert the device
-        self.assertEqual(output.device.type, self.device.type)
 
         self.assertEqual(len(fmap), 6)
 
@@ -38,7 +32,6 @@ class TestDiscriminatorR(unittest.TestCase):
 
         for i in range(len(fmap)):
             self.assertEqual(fmap[i].shape, fmap_dims[i])
-            self.assertEqual(fmap[i].device.type, self.device.type)
 
         first_dim, second_dim = 32, 1
 
@@ -58,12 +51,9 @@ class TestDiscriminatorR(unittest.TestCase):
         self.assertEqual(output.shape, (1, 65))
 
     def test_spectrogram(self):
-        x = torch.randn(4, 1, 16384, device=self.device)
+        x = torch.randn(4, 1, 16384)
         # Test the spectrogram function of the DiscriminatorR class
         mag = self.model.spectrogram(x)
-
-        # Assert the device
-        self.assertEqual(mag.device.type, self.device.type)
 
         self.assertEqual(mag.shape, (4, 513))
 

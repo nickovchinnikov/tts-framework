@@ -1,12 +1,10 @@
+from lightning.pytorch import LightningModule
 import torch
-
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
 from .stft_loss import STFTLoss
 
 
-class MultiResolutionSTFTLoss(BaseNNModule):
+class MultiResolutionSTFTLoss(LightningModule):
     r"""
     Multi resolution STFT loss module.
 
@@ -22,7 +20,6 @@ class MultiResolutionSTFTLoss(BaseNNModule):
     def __init__(
         self,
         resolutions: list[tuple[int, int, int]],
-        device: torch.device = get_device(),
     ):
         r"""
         Initialize Multi resolution STFT loss module.
@@ -30,10 +27,10 @@ class MultiResolutionSTFTLoss(BaseNNModule):
         Args:
             resolutions (list): List of (FFT size, shift size, window length).
         """
-        super().__init__(device=device)
+        super().__init__()
 
         self.stft_losses = torch.nn.ModuleList(
-            [STFTLoss(fs, ss, wl, device=self.device) for fs, ss, wl in resolutions]
+            [STFTLoss(fs, ss, wl) for fs, ss, wl in resolutions]
         )
 
     def forward(

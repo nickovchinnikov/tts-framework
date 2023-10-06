@@ -1,30 +1,29 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 
 from .discriminator_p import DiscriminatorP
 
 
-class MultiPeriodDiscriminator(BaseNNModule):
+class MultiPeriodDiscriminator(LightningModule):
     r"""
     MultiPeriodDiscriminator is a class that implements a multi-period discriminator network for the UnivNet vocoder.
 
     Args:
         model_config (VocoderModelConfig): The configuration object for the UnivNet vocoder model.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
     """
 
     def __init__(
-        self, model_config: VocoderModelConfig, device: torch.device = get_device()
+        self,
+        model_config: VocoderModelConfig,
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.discriminators = nn.ModuleList(
             [
-                DiscriminatorP(period, model_config=model_config, device=self.device)
+                DiscriminatorP(period, model_config=model_config)
                 for period in model_config.mpd.periods
             ]
         )

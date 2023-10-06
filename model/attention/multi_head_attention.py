@@ -1,12 +1,10 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
-
-class MultiHeadAttention(BaseNNModule):
+class MultiHeadAttention(LightningModule):
     r"""
     A class that implements a Multi-head Attention mechanism.
     Multi-head attention allows the model to focus on different positions,
@@ -17,7 +15,6 @@ class MultiHeadAttention(BaseNNModule):
         key_dim (int): The dimensionality of the key.
         num_units (int): The total number of dimensions of the output.
         num_heads (int): The number of parallel attention layers (multi-heads).
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Inputs: query, and key
         - **query**: Tensor of shape [N, T_q, query_dim]
@@ -33,9 +30,8 @@ class MultiHeadAttention(BaseNNModule):
         key_dim: int,
         num_units: int,
         num_heads: int,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
         self.num_units = num_units
         self.num_heads = num_heads
         self.key_dim = key_dim
@@ -44,13 +40,10 @@ class MultiHeadAttention(BaseNNModule):
             in_features=query_dim,
             out_features=num_units,
             bias=False,
-            device=self.device,
         )
-        self.W_key = nn.Linear(
-            in_features=key_dim, out_features=num_units, bias=False, device=self.device
-        )
+        self.W_key = nn.Linear(in_features=key_dim, out_features=num_units, bias=False)
         self.W_value = nn.Linear(
-            in_features=key_dim, out_features=num_units, bias=False, device=self.device
+            in_features=key_dim, out_features=num_units, bias=False
         )
 
     def forward(self, query: torch.Tensor, key: torch.Tensor) -> torch.Tensor:

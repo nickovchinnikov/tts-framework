@@ -4,12 +4,10 @@ from unittest.mock import Mock
 import torch
 
 from model.acoustic_model import PhonemeProsodyPredictor
-from model.helpers.tools import get_device
 
 
 class TestPhonemeProsodyPredictor(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
         model_config = Mock(
             encoder=Mock(
                 n_layers=4,
@@ -27,19 +25,18 @@ class TestPhonemeProsodyPredictor(unittest.TestCase):
                 bottleneck_size_u=256,
             ),
         )
-        self.model = PhonemeProsodyPredictor(
-            model_config, phoneme_level=True, device=self.device
-        )
+        self.model = PhonemeProsodyPredictor(model_config, phoneme_level=True)
 
     def test_forward(self):
-        x = torch.rand(16, 384, 384, device=self.device)
-        mask = torch.zeros(16, 384).bool().to(self.device)
+        x = torch.rand(
+            16,
+            384,
+            384,
+        )
+        mask = torch.zeros(16, 384).bool()
 
         # Calling model's forward method
         out = self.model(x, mask)
-
-        # Assert the device type
-        self.assertEqual(out.device.type, self.device.type)
 
         # Check if the output is of expected type and shape
         self.assertIsInstance(out, torch.Tensor)

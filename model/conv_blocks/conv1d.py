@@ -1,11 +1,9 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
-
-class DepthWiseConv1d(BaseNNModule):
+class DepthWiseConv1d(LightningModule):
     r"""
     Implements Depthwise 1D convolution. This module will apply a spatial convolution over inputs
     independently over each input channel in the style of depthwise convolutions.
@@ -26,7 +24,6 @@ class DepthWiseConv1d(BaseNNModule):
         out_channels (int): Number of channels produced by the convolution
         kernel_size (int): Size of the convolving kernel
         padding (int): Zero-padding added to both sides of the input
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Shape:
         - Input: (N, C_in, L_in)
@@ -52,9 +49,8 @@ class DepthWiseConv1d(BaseNNModule):
         out_channels: int,
         kernel_size: int,
         padding: int,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.conv = nn.Conv1d(
             in_channels,
@@ -62,7 +58,6 @@ class DepthWiseConv1d(BaseNNModule):
             kernel_size,
             padding=padding,
             groups=in_channels,
-            device=self.device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -76,7 +71,7 @@ class DepthWiseConv1d(BaseNNModule):
         return self.conv(x)
 
 
-class PointwiseConv1d(BaseNNModule):
+class PointwiseConv1d(LightningModule):
     r"""
     Applies a 1D pointwise (aka 1x1) convolution over an input signal composed of several input
     planes, officially known as channels in this context.
@@ -106,7 +101,6 @@ class PointwiseConv1d(BaseNNModule):
         padding (int): Zero-padding added to both sides of the input. Default: 0
         bias (bool): If set to False, the layer will not learn an additive bias. Default: True
         kernel_size (int): Size of the convolving kernel. Default: 1
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Shape:
         - Input: (N, C_in, L_in)
@@ -154,9 +148,8 @@ class PointwiseConv1d(BaseNNModule):
         padding: int = 0,
         bias: bool = True,
         kernel_size: int = 1,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
 
         self.conv = nn.Conv1d(
             in_channels=in_channels,
@@ -165,7 +158,6 @@ class PointwiseConv1d(BaseNNModule):
             stride=stride,
             padding=padding,
             bias=bias,
-            device=self.device,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

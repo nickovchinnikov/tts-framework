@@ -1,16 +1,15 @@
 from typing import Tuple
 
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
 from model.constants import LEAKY_RELU_SLOPE
-from model.helpers.tools import get_device
 
 from .mas import b_mas
 
 
-class Aligner(BaseNNModule):
+class Aligner(LightningModule):
     r"""
     Aligner class represents a PyTorch module responsible for alignment tasks
     in a sequence-to-sequence model. It uses convolutional layers combined with
@@ -28,7 +27,6 @@ class Aligner(BaseNNModule):
             attention mechanism, default is 0.0005.
         leaky_relu_slope (float, optional): Controls the angle of the negative slope of
             LeakyReLU activation, default is LEAKY_RELU_SLOPE.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     """
 
@@ -41,9 +39,8 @@ class Aligner(BaseNNModule):
         kernel_size_dec: int = 7,
         temperature: float = 0.0005,
         leaky_relu_slope: float = LEAKY_RELU_SLOPE,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
         self.temperature = temperature
 
         self.softmax = torch.nn.Softmax(dim=3)
@@ -55,7 +52,6 @@ class Aligner(BaseNNModule):
                 d_hidden,
                 kernel_size=kernel_size_enc,
                 padding=kernel_size_enc // 2,
-                device=self.device,
             ),
             nn.LeakyReLU(leaky_relu_slope),
             nn.Conv1d(
@@ -63,7 +59,6 @@ class Aligner(BaseNNModule):
                 d_hidden,
                 kernel_size=kernel_size_enc,
                 padding=kernel_size_enc // 2,
-                device=self.device,
             ),
             nn.LeakyReLU(leaky_relu_slope),
         )
@@ -74,7 +69,6 @@ class Aligner(BaseNNModule):
                 d_hidden,
                 kernel_size=kernel_size_dec,
                 padding=kernel_size_dec // 2,
-                device=self.device,
             ),
             nn.LeakyReLU(leaky_relu_slope),
             nn.Conv1d(
@@ -82,7 +76,6 @@ class Aligner(BaseNNModule):
                 d_hidden,
                 kernel_size=kernel_size_dec,
                 padding=kernel_size_dec // 2,
-                device=self.device,
             ),
             nn.LeakyReLU(leaky_relu_slope),
             nn.Conv1d(
@@ -90,7 +83,6 @@ class Aligner(BaseNNModule):
                 d_hidden,
                 kernel_size=kernel_size_dec,
                 padding=kernel_size_dec // 2,
-                device=self.device,
             ),
             nn.LeakyReLU(leaky_relu_slope),
         )
@@ -123,7 +115,7 @@ class Aligner(BaseNNModule):
             attn_out = b_mas(
                 attn_cpu, in_lens.cpu().numpy(), out_lens.cpu().numpy(), width=1
             )
-        return torch.from_numpy(attn_out).to(attn.device)
+        return torch.from_numpy(attn_out).to(self.device)
 
     def forward(
         self,

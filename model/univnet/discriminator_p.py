@@ -1,32 +1,29 @@
 from typing import Any, Tuple
 
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm, weight_norm
 
-from model.basenn import BaseNNModule
 from model.config import VocoderModelConfig
-from model.helpers.tools import get_device
 
 
-class DiscriminatorP(BaseNNModule):
+class DiscriminatorP(LightningModule):
     r"""
     DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.
 
     Args:
         period (int): The period of the Mel spectrogram.
         model_config (VocoderModelConfig): The configuration object for the UnivNet vocoder model.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
     """
 
     def __init__(
         self,
         period: int,
         model_config: VocoderModelConfig,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.LRELU_SLOPE = model_config.mpd.lReLU_slope
         self.period = period
@@ -47,7 +44,6 @@ class DiscriminatorP(BaseNNModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                        device=self.device,
                     )
                 ),
                 norm_f(
@@ -57,7 +53,6 @@ class DiscriminatorP(BaseNNModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                        device=self.device,
                     )
                 ),
                 norm_f(
@@ -67,7 +62,6 @@ class DiscriminatorP(BaseNNModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                        device=self.device,
                     )
                 ),
                 norm_f(
@@ -77,7 +71,6 @@ class DiscriminatorP(BaseNNModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                        device=self.device,
                     )
                 ),
                 norm_f(
@@ -87,7 +80,6 @@ class DiscriminatorP(BaseNNModule):
                         (kernel_size, 1),
                         1,
                         padding=(kernel_size // 2, 0),
-                        device=self.device,
                     )
                 ),
             ]
@@ -99,7 +91,6 @@ class DiscriminatorP(BaseNNModule):
                 (3, 1),
                 1,
                 padding=(1, 0),
-                device=self.device,
             )
         )
 

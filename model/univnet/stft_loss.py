@@ -1,14 +1,12 @@
+from lightning.pytorch import LightningModule
 import torch
-
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
 from .log_stft_magnitude_loss import LogSTFTMagnitudeLoss
 from .spectral_convergence_loss import SpectralConvergengeLoss
 from .stft import stft
 
 
-class STFTLoss(BaseNNModule):
+class STFTLoss(LightningModule):
     r"""
     STFT loss module.
 
@@ -22,7 +20,6 @@ class STFTLoss(BaseNNModule):
         fft_size (int): FFT size.
         shift_size (int): Shift size.
         win_length (int): Window length.
-        device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
     """
 
     def __init__(
@@ -30,16 +27,15 @@ class STFTLoss(BaseNNModule):
         fft_size: int = 1024,
         shift_size: int = 120,
         win_length: int = 600,
-        device: torch.device = get_device(),
     ):
         r"""Initialize STFT loss module."""
-        super().__init__(device=device)
+        super().__init__()
 
         self.fft_size = fft_size
         self.shift_size = shift_size
         self.win_length = win_length
 
-        self.window = torch.hann_window(win_length, device=self.device)
+        self.window = torch.hann_window(win_length)
 
         self.spectral_convergenge_loss = SpectralConvergengeLoss()
         self.log_stft_magnitude_loss = LogSTFTMagnitudeLoss()

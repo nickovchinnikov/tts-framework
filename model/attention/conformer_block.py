@@ -1,16 +1,15 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
 from model.conv_blocks import Conv1dGLU
-from model.helpers.tools import get_device
 
 from .conformer_conv_module import ConformerConvModule
 from .conformer_multi_headed_self_attention import ConformerMultiHeadedSelfAttention
 from .feed_forward import FeedForward
 
 
-class ConformerBlock(BaseNNModule):
+class ConformerBlock(LightningModule):
     r"""
     ConformerBlock class represents a block in the Conformer model architecture.
     The block includes a pointwise convolution followed by Gated Linear Units (`GLU`) activation layer (`Conv1dGLU`),
@@ -25,7 +24,6 @@ class ConformerBlock(BaseNNModule):
         embedding_dim (int): The dimension of the embeddings.
         dropout (float): The dropout probability.
         with_ff (bool): If True, uses FeedForward layer inside ConformerBlock.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
@@ -38,36 +36,38 @@ class ConformerBlock(BaseNNModule):
         embedding_dim: int,
         dropout: float,
         with_ff: bool,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
         self.with_ff = with_ff
         self.conditioning = Conv1dGLU(
             d_model=d_model,
             kernel_size=kernel_size_conv_mod,
             padding=kernel_size_conv_mod // 2,
             embedding_dim=embedding_dim,
-            device=self.device,
         )
         if self.with_ff:
             self.ff = FeedForward(
-                d_model=d_model, dropout=dropout, kernel_size=3, device=self.device
+                d_model=d_model,
+                dropout=dropout,
+                kernel_size=3,
             )
         self.conformer_conv_1 = ConformerConvModule(
             d_model,
             kernel_size=kernel_size_conv_mod,
             dropout=dropout,
-            device=self.device,
         )
-        self.ln = nn.LayerNorm(d_model, device=self.device)
+        self.ln = nn.LayerNorm(
+            d_model,
+        )
         self.slf_attn = ConformerMultiHeadedSelfAttention(
-            d_model=d_model, num_heads=n_head, dropout_p=dropout, device=self.device
+            d_model=d_model,
+            num_heads=n_head,
+            dropout_p=dropout,
         )
         self.conformer_conv_2 = ConformerConvModule(
             d_model,
             kernel_size=kernel_size_conv_mod,
             dropout=dropout,
-            device=self.device,
         )
 
     def forward(

@@ -1,11 +1,9 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
-from model.helpers.tools import get_device
 
-
-class KernelPredictor(BaseNNModule):
+class KernelPredictor(LightningModule):
     def __init__(
         self,
         cond_channels: int,
@@ -17,7 +15,6 @@ class KernelPredictor(BaseNNModule):
         kpnet_conv_size: int = 3,
         kpnet_dropout: float = 0.0,
         lReLU_slope: float = 0.1,
-        device: torch.device = get_device(),
     ):
         r"""
         Initializes a KernelPredictor object.
@@ -34,10 +31,9 @@ class KernelPredictor(BaseNNModule):
             kpnet_conv_size (int, optional): The kernel size for the kernel predictor network. Defaults to 3.
             kpnet_dropout (float, optional): The dropout rate for the kernel predictor network. Defaults to 0.0.
             lReLU_slope (float, optional): The slope for the leaky ReLU activation function. Defaults to 0.1.
-            device (torch.device, optional): The device to use for the model. Defaults to the result of `get_device()`.
         """
 
-        super().__init__(device=device)
+        super().__init__()
 
         self.conv_in_channels = conv_in_channels
         self.conv_out_channels = conv_out_channels
@@ -60,7 +56,6 @@ class KernelPredictor(BaseNNModule):
                     5,
                     padding=2,
                     bias=True,
-                    device=self.device,
                 )
             ),
             nn.LeakyReLU(lReLU_slope),
@@ -77,7 +72,6 @@ class KernelPredictor(BaseNNModule):
                             kpnet_conv_size,
                             padding=padding,
                             bias=True,
-                            device=self.device,
                         )
                     ),
                     nn.LeakyReLU(lReLU_slope),
@@ -88,7 +82,6 @@ class KernelPredictor(BaseNNModule):
                             kpnet_conv_size,
                             padding=padding,
                             bias=True,
-                            device=self.device,
                         )
                     ),
                     nn.LeakyReLU(lReLU_slope),
@@ -104,7 +97,6 @@ class KernelPredictor(BaseNNModule):
                 kpnet_conv_size,
                 padding=padding,
                 bias=True,
-                device=self.device,
             )
         )
         self.bias_conv = nn.utils.weight_norm(
@@ -114,7 +106,6 @@ class KernelPredictor(BaseNNModule):
                 kpnet_conv_size,
                 padding=padding,
                 bias=True,
-                device=self.device,
             )
         )
 
@@ -131,7 +122,7 @@ class KernelPredictor(BaseNNModule):
         batch, _, cond_length = c.shape
         c = self.input_conv(c)
         for residual_conv in self.residual_convs:
-            residual_conv.to(c.device)
+            residual_conv.to(self.device)
             c = c + residual_conv(c)
         k = self.kernel_conv(c)
         b = self.bias_conv(c)

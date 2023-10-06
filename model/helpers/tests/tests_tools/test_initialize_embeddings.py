@@ -3,14 +3,14 @@ import unittest
 import numpy as np
 import torch
 
-from model.helpers.tools import initialize_embeddings
+from model.helpers.tools import get_device, initialize_embeddings
 
 
 class TestInitializeEmbeddings(unittest.TestCase):
     def test_initialize_embeddings(self):
         # Test with correct input shape
         shape = (5, 10)
-        result = initialize_embeddings(shape)
+        result = initialize_embeddings(shape, device=get_device())
         # Assert output is torch.Tensor
         self.assertIsInstance(result, torch.Tensor)
         # Assert output shape
@@ -26,7 +26,7 @@ class TestInitializeEmbeddings(unittest.TestCase):
         # Test with incorrect number of dimensions in shape
         incorrect_shape = (5, 10, 15)
         with self.assertRaises(AssertionError) as context:
-            initialize_embeddings(incorrect_shape)
+            initialize_embeddings(incorrect_shape, device=get_device())
         self.assertEqual(
             str(context.exception), "Can only initialize 2-D embedding matrices ..."
         )
@@ -34,7 +34,7 @@ class TestInitializeEmbeddings(unittest.TestCase):
         # Test with zero dimensions in shape
         zero_dim_shape = ()
         with self.assertRaises(AssertionError) as context:
-            initialize_embeddings(zero_dim_shape)
+            initialize_embeddings(zero_dim_shape, device=get_device())
         self.assertEqual(
             str(context.exception), "Can only initialize 2-D embedding matrices ..."
         )

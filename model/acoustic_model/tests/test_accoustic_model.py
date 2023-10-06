@@ -11,15 +11,12 @@ from model.helpers.initializer import (
 # TODO: profile deeply the memory usage
 # from torch.profiler import profile, record_function, ProfilerActivity
 import model.helpers.tools as tools
-from model.helpers.tools import get_device
 
 
 # AcousticModel test
 # Integration test
 class TestAcousticModel(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         # TODO: optimize the model, so that it can be tested with srink_factor=1
         # Get config with srink_factor=4
         # Memory error with srink_factor =< 2
@@ -36,7 +33,7 @@ class TestAcousticModel(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers, device=self.device
+            self.preprocess_config, self.model_config, n_speakers
         )
 
         # Generate mock data for the forward pass
@@ -45,7 +42,6 @@ class TestAcousticModel(unittest.TestCase):
             self.acoustic_pretraining_config,
             self.preprocess_config,
             n_speakers,
-            device=self.device,
         )
 
     def test_get_embeddings(self):
@@ -61,10 +57,6 @@ class TestAcousticModel(unittest.TestCase):
             src_mask=src_mask,
             lang_idx=self.forward_train_params.langs,
         )
-
-        # Assert the device type
-        self.assertEqual(token_embeddings.device.type, self.device.type)
-        self.assertEqual(embeddings.device.type, self.device.type)
 
         self.assertEqual(
             token_embeddings.shape,
@@ -108,12 +100,6 @@ class TestAcousticModel(unittest.TestCase):
             use_ground_truth=True,
         )
         # print(prof.key_averages().table(sort_by="cuda_memory_usage", row_limit=20))
-
-        # Assert the device type
-        for key, value in result.items():
-            self.assertEqual(
-                value.device.type, self.device.type, f"Device type mismatch for {key}"
-            )
 
         self.assertEqual(
             result["y_pred"].shape,
@@ -178,12 +164,9 @@ class TestAcousticModel(unittest.TestCase):
         self.assertEqual(result["attn_hard_dur"].shape, pitch_shape)
 
     def test_average_utterance_prosody(self):
-        u_prosody_pred = torch.randn(
-            2, 5, self.model_config.encoder.n_hidden, device=self.device
-        )
+        u_prosody_pred = torch.randn(2, 5, self.model_config.encoder.n_hidden)
         src_mask = torch.tensor(
             [[False, True, True, True, True], [False, False, True, True, True]],
-            device=self.device,
         )
 
         averaged_prosody_pred = self.acoustic_model.average_utterance_prosody(
@@ -203,9 +186,6 @@ class TestAcousticModel(unittest.TestCase):
             p_control=0.5,
             d_control=0.5,
         )
-
-        # Assert the device type
-        self.assertEqual(x.device.type, self.device.type)
 
         # The last dim is not stable!
         self.assertEqual(x.shape[0], self.model_config.speaker_embed_dim)

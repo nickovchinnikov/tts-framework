@@ -1,12 +1,11 @@
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 
-from model.basenn import BaseNNModule
 from model.constants import LEAKY_RELU_SLOPE
-from model.helpers.tools import get_device
 
 
-class FeedForward(BaseNNModule):
+class FeedForward(LightningModule):
     r"""
     Creates a feed-forward neural network.
     The network includes a layer normalization, an activation function (LeakyReLU), and dropout layers.
@@ -17,7 +16,6 @@ class FeedForward(BaseNNModule):
         dropout (float): The dropout probability.
         expansion_factor (int, optional): The expansion factor for the hidden layer size in the feed-forward network, default is 4.
         leaky_relu_slope (float, optional): Controls the angle of the negative slope of LeakyReLU activation, default is `LEAKY_RELU_SLOPE`.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
@@ -27,22 +25,18 @@ class FeedForward(BaseNNModule):
         dropout: float,
         expansion_factor: int = 4,
         leaky_relu_slope: float = LEAKY_RELU_SLOPE,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device)
+        super().__init__()
         self.dropout = nn.Dropout(dropout)
-        self.ln = nn.LayerNorm(d_model, device=self.device)
+        self.ln = nn.LayerNorm(d_model)
         self.conv_1 = nn.Conv1d(
             d_model,
             d_model * expansion_factor,
             kernel_size=kernel_size,
             padding=kernel_size // 2,
-            device=self.device,
         )
         self.act = nn.LeakyReLU(leaky_relu_slope)
-        self.conv_2 = nn.Conv1d(
-            d_model * expansion_factor, d_model, kernel_size=1, device=self.device
-        )
+        self.conv_2 = nn.Conv1d(d_model * expansion_factor, d_model, kernel_size=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""
