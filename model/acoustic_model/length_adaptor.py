@@ -1,31 +1,28 @@
 from typing import List, Tuple
 
+from lightning.pytorch import LightningModule
 import torch
-from torch import nn
 
-from model.basenn import BaseNNModule
 from model.config import AcousticModelConfigType
 from model.helpers import tools
 
 from .variance_predictor import VariancePredictor
 
 
-class LengthAdaptor(BaseNNModule):
+class LengthAdaptor(LightningModule):
     r"""
     The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
     It contains a dedicated duration predictor and methods to upsample the input features to match predicted durations.
 
     Args:
         model_config (AcousticModelConfigType): The model configuration object containing model parameters.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
         self,
         model_config: AcousticModelConfigType,
-        device: torch.device = tools.get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
         # Initialize the duration predictor
         self.duration_predictor = VariancePredictor(
             channels_in=model_config.encoder.n_hidden,
@@ -33,7 +30,6 @@ class LengthAdaptor(BaseNNModule):
             channels_out=1,
             kernel_size=model_config.variance_adaptor.kernel_size,
             p_dropout=model_config.variance_adaptor.p_dropout,
-            device=self.device,
         )
 
     def length_regulate(

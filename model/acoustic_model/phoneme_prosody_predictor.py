@@ -1,14 +1,13 @@
+from lightning.pytorch import LightningModule
 import torch
 from torch import nn
 
-from model.basenn import BaseNNModule
 from model.config import AcousticModelConfigType
 from model.constants import LEAKY_RELU_SLOPE
 from model.conv_blocks import ConvTransposed
-from model.helpers import tools
 
 
-class PhonemeProsodyPredictor(BaseNNModule):
+class PhonemeProsodyPredictor(LightningModule):
     r"""A class to define the Phoneme Prosody Predictor.
 
     In linguistics, prosody (/ˈprɒsədi, ˈprɒzədi/) is the study of elements of speech that are not individual phonetic segments (vowels and consonants) but which are properties of syllables and larger units of speech, including linguistic functions such as intonation, stress, and rhythm. Such elements are known as suprasegmentals.
@@ -23,7 +22,6 @@ class PhonemeProsodyPredictor(BaseNNModule):
         model_config (AcousticModelConfigType): Configuration object with model parameters.
         phoneme_level (bool): A flag to decide whether to use phoneme level bottleneck size.
         leaky_relu_slope (float): The negative slope of LeakyReLU activation function.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
     """
 
     def __init__(
@@ -31,9 +29,8 @@ class PhonemeProsodyPredictor(BaseNNModule):
         model_config: AcousticModelConfigType,
         phoneme_level: bool,
         leaky_relu_slope: float = LEAKY_RELU_SLOPE,
-        device: torch.device = tools.get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         # Get the configuration
         self.d_model = model_config.encoder.n_hidden
@@ -55,12 +52,10 @@ class PhonemeProsodyPredictor(BaseNNModule):
                     self.d_model,
                     kernel_size=kernel_size,
                     padding=(kernel_size - 1) // 2,
-                    device=self.device,
                 ),
                 nn.LeakyReLU(leaky_relu_slope),
                 nn.LayerNorm(
                     self.d_model,
-                    device=self.device,
                 ),
                 nn.Dropout(dropout),
                 ConvTransposed(
@@ -68,12 +63,10 @@ class PhonemeProsodyPredictor(BaseNNModule):
                     self.d_model,
                     kernel_size=kernel_size,
                     padding=(kernel_size - 1) // 2,
-                    device=self.device,
                 ),
                 nn.LeakyReLU(leaky_relu_slope),
                 nn.LayerNorm(
                     self.d_model,
-                    device=self.device,
                 ),
                 nn.Dropout(dropout),
             ]
@@ -83,7 +76,6 @@ class PhonemeProsodyPredictor(BaseNNModule):
         self.predictor_bottleneck = nn.Linear(
             self.d_model,
             bottleneck_size,
-            device=self.device,
         )
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:

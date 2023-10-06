@@ -4,13 +4,10 @@ from unittest.mock import Mock
 import torch
 
 from model.acoustic_model.length_adaptor import LengthAdaptor
-from model.helpers.tools import get_device
 
 
 class TestLengthAdaptor(unittest.TestCase):
     def setUp(self):
-        self.device = get_device()
-
         mock_model_config = Mock()
 
         # Attributes for model_config.encoder
@@ -23,42 +20,46 @@ class TestLengthAdaptor(unittest.TestCase):
 
         self.model_config = mock_model_config
 
-        self.length_adaptor = LengthAdaptor(self.model_config, device=self.device)
+        self.length_adaptor = LengthAdaptor(
+            self.model_config,
+        )
         self.batch_size = 2
         self.seq_length = 5
         self.n_hidden = 512  # should match cls.model_config.encoder.n_hidden
 
         self.x = torch.rand(
-            self.batch_size, self.seq_length, self.n_hidden, device=self.device
+            self.batch_size,
+            self.seq_length,
+            self.n_hidden,
         )
         self.x_res = torch.rand(
-            self.batch_size, self.seq_length, self.n_hidden, device=self.device
+            self.batch_size,
+            self.seq_length,
+            self.n_hidden,
         )
         self.src_mask = torch.ones(
-            self.batch_size, self.seq_length, dtype=torch.bool, device=self.device
+            self.batch_size,
+            self.seq_length,
+            dtype=torch.bool,
         )
 
     def test_length_regulate(self):
         duration = torch.full(
-            (self.batch_size, self.seq_length), fill_value=2.0, device=self.device
+            (self.batch_size, self.seq_length),
+            fill_value=2.0,
         )
         output, mel_len = self.length_adaptor.length_regulate(self.x, duration)
-
-        # Assert the device type
-        self.assertEqual(output.device.type, self.device.type)
-        self.assertEqual(mel_len.device.type, self.device.type)
 
         self.assertTrue(torch.is_tensor(output))
         self.assertTrue(torch.is_tensor(mel_len))
 
     def test_expand(self):
         predicted = torch.randint(
-            low=0, high=2, size=(self.seq_length,), device=self.device
+            low=0,
+            high=2,
+            size=(self.seq_length,),
         )
         out = self.length_adaptor.expand(self.x[0], predicted)
-
-        # Assert the device type
-        self.assertEqual(out.device.type, self.device.type)
 
         self.assertTrue(torch.is_tensor(out))
 
@@ -76,20 +77,18 @@ class TestLengthAdaptor(unittest.TestCase):
 
     def test_upsample_train(self):
         duration_target = torch.full(
-            (self.batch_size, self.seq_length), fill_value=2.0, device=self.device
+            (self.batch_size, self.seq_length),
+            fill_value=2.0,
         )
         embeddings = torch.rand(
-            self.batch_size, self.seq_length, self.n_hidden, device=self.device
+            self.batch_size,
+            self.seq_length,
+            self.n_hidden,
         )
 
         x, log_duration_prediction, new_embeddings = self.length_adaptor.upsample_train(
             self.x, self.x_res, duration_target, embeddings, self.src_mask
         )
-
-        # Assert the device type
-        self.assertEqual(x.device.type, self.device.type)
-        self.assertEqual(log_duration_prediction.device.type, self.device.type)
-        self.assertEqual(new_embeddings.device.type, self.device.type)
 
         self.assertTrue(torch.is_tensor(x))
         self.assertTrue(torch.is_tensor(log_duration_prediction))
@@ -118,11 +117,6 @@ class TestLengthAdaptor(unittest.TestCase):
         x, duration_rounded, new_embeddings = self.length_adaptor.upsample(
             self.x, self.x_res, self.src_mask, embeddings, control
         )
-
-        # Assert the device type
-        self.assertEqual(x.device.type, self.device.type)
-        self.assertEqual(duration_rounded.device.type, self.device.type)
-        self.assertEqual(new_embeddings.device.type, self.device.type)
 
         self.assertTrue(torch.is_tensor(x))
         self.assertTrue(torch.is_tensor(duration_rounded))

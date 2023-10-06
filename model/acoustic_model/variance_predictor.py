@@ -1,13 +1,12 @@
+from lightning.pytorch import LightningModule
 import torch
 from torch import nn
 
-from model.basenn import BaseNNModule
 from model.constants import LEAKY_RELU_SLOPE
 from model.conv_blocks import ConvTransposed
-from model.helpers.tools import get_device
 
 
-class VariancePredictor(BaseNNModule):
+class VariancePredictor(LightningModule):
     r"""
     This is a Duration and Pitch predictor neural network module in PyTorch.
 
@@ -22,7 +21,6 @@ class VariancePredictor(BaseNNModule):
         channels_out (int): Number of output channels for linear layer.
         kernel_size (int): Size of the kernel for ConvTransposed layers.
         p_dropout (float): Probability of dropout.
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Returns:
         torch.Tensor: Output tensor.
@@ -36,9 +34,8 @@ class VariancePredictor(BaseNNModule):
         kernel_size: int,
         p_dropout: float,
         leaky_relu_slope: float = LEAKY_RELU_SLOPE,
-        device: torch.device = get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
 
         self.layers = nn.ModuleList(
             [
@@ -48,12 +45,10 @@ class VariancePredictor(BaseNNModule):
                     channels,
                     kernel_size=kernel_size,
                     padding=(kernel_size - 1) // 2,
-                    device=self.device,
                 ),
                 nn.LeakyReLU(leaky_relu_slope),
                 nn.LayerNorm(
                     channels,
-                    device=self.device,
                 ),
                 nn.Dropout(p_dropout),
                 # Another "block" of ConvTransposed, LeakyReLU, LayerNorm, and Dropout
@@ -62,12 +57,10 @@ class VariancePredictor(BaseNNModule):
                     channels,
                     kernel_size=kernel_size,
                     padding=(kernel_size - 1) // 2,
-                    device=self.device,
                 ),
                 nn.LeakyReLU(leaky_relu_slope),
                 nn.LayerNorm(
                     channels,
-                    device=self.device,
                 ),
                 nn.Dropout(p_dropout),
             ]
@@ -77,7 +70,6 @@ class VariancePredictor(BaseNNModule):
         self.linear_layer = nn.Linear(
             channels,
             channels_out,
-            device=self.device,
         )
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:

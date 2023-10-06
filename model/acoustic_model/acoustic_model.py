@@ -1,12 +1,12 @@
 from typing import Dict, Tuple
 
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
 from model.attention import Conformer
-from model.basenn import BaseNNModule
 from model.config import (
     SUPPORTED_LANGUAGES,
     AcousticModelConfigType,
@@ -26,7 +26,7 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 from .pitch_adaptor import PitchAdaptor
 
 
-class AcousticModel(BaseNNModule):
+class AcousticModel(LightningModule):
     r"""
     The DelightfulTTS AcousticModel class represents a PyTorch module for an acoustic model in text-to-speech (TTS).
     The acoustic model is responsible for predicting speech signals from phoneme sequences.
@@ -40,7 +40,6 @@ class AcousticModel(BaseNNModule):
         model_config (AcousticModelConfigType): Configuration object containing various model parameters
         fine_tuning (bool): Flag to indicate whether model is being fine-tuned
         n_speakers (int): Total number of speakers in the dataset
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Note:
         For more specific details on the implementation of sub-modules please refer to their individual respective modules.
@@ -53,9 +52,8 @@ class AcousticModel(BaseNNModule):
         model_config: AcousticModelConfigType,
         fine_tuning: bool,
         n_speakers: int,
-        device: torch.device = tools.get_device(),
     ):
-        super().__init__(device=device)
+        super().__init__()
         self.emb_dim = model_config.encoder.n_hidden
 
         self.encoder = Conformer(
@@ -66,70 +64,59 @@ class AcousticModel(BaseNNModule):
             p_dropout=model_config.encoder.p_dropout,
             kernel_size_conv_mod=model_config.encoder.kernel_size_conv_mod,
             with_ff=model_config.encoder.with_ff,
-            device=self.device,
         )
 
         self.pitch_adaptor = PitchAdaptor(
             model_config,
             data_path=data_path,
-            device=self.device,
         )
 
-        self.length_regulator = LengthAdaptor(model_config, device=self.device)
+        self.length_regulator = LengthAdaptor(model_config)
 
         self.utterance_prosody_encoder = UtteranceLevelProsodyEncoder(
             preprocess_config,
             model_config,
-            device=self.device,
         )
 
         self.utterance_prosody_predictor = PhonemeProsodyPredictor(
             model_config=model_config,
             phoneme_level=False,
-            device=self.device,
         )
 
         self.phoneme_prosody_encoder = PhonemeLevelProsodyEncoder(
             preprocess_config,
             model_config,
-            device=self.device,
         )
 
         self.phoneme_prosody_predictor = PhonemeProsodyPredictor(
             model_config=model_config,
             phoneme_level=True,
-            device=self.device,
         )
 
         self.u_bottle_out = nn.Linear(
             model_config.reference_encoder.bottleneck_size_u,
             model_config.encoder.n_hidden,
-            device=self.device,
         )
 
         self.u_norm = nn.LayerNorm(
             model_config.reference_encoder.bottleneck_size_u,
             elementwise_affine=False,
-            device=self.device,
         )
 
         self.p_bottle_out = nn.Linear(
             model_config.reference_encoder.bottleneck_size_p,
             model_config.encoder.n_hidden,
-            device=self.device,
         )
 
         self.p_norm = nn.LayerNorm(
             model_config.reference_encoder.bottleneck_size_p,
             elementwise_affine=False,
-            device=self.device,
         )
 
         self.aligner = Aligner(
             d_enc_in=model_config.encoder.n_hidden,
             d_dec_in=preprocess_config.stft.n_mel_channels,
             d_hidden=model_config.encoder.n_hidden,
-            device=self.device,
         )
 
         self.decoder = Conformer(
@@ -140,30 +127,32 @@ class AcousticModel(BaseNNModule):
             p_dropout=model_config.decoder.p_dropout,
             kernel_size_conv_mod=model_config.decoder.kernel_size_conv_mod,
             with_ff=model_config.decoder.with_ff,
-            device=self.device,
         )
 
         self.src_word_emb = Parameter(
-            tools.initialize_embeddings((len(symbols), model_config.encoder.n_hidden))
-        ).to(device)
+            tools.initialize_embeddings(
+                (len(symbols), model_config.encoder.n_hidden), device=self.device
+            )
+        )
 
         self.to_mel = nn.Linear(
             model_config.decoder.n_hidden,
             preprocess_config.stft.n_mel_channels,
-            device=self.device,
         )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
         self.speaker_embed = Parameter(
-            tools.initialize_embeddings((n_speakers, model_config.speaker_embed_dim))
-        ).to(device)
+            tools.initialize_embeddings(
+                (n_speakers, model_config.speaker_embed_dim), device=self.device
+            )
+        )
 
         self.lang_embed = Parameter(
             tools.initialize_embeddings(
                 (len(SUPPORTED_LANGUAGES), model_config.lang_embed_dim),
                 device=self.device,
             )
-        ).to(device)
+        )
 
     def get_embeddings(
         self,
@@ -339,7 +328,7 @@ class AcousticModel(BaseNNModule):
         encoding = positional_encoding(
             self.emb_dim,
             max(x.shape[1], max(mel_lens)),
-            device=x.device,
+            device=self.device,
         )
 
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
@@ -448,7 +437,7 @@ class AcousticModel(BaseNNModule):
 
         # Generate masks for padding positions in the source sequences
         src_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64, device=x.device)
+            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device)
         )
 
         # Obtain the embeddings for the input
@@ -457,7 +446,7 @@ class AcousticModel(BaseNNModule):
         )
 
         # Generate positional encodings
-        encoding = positional_encoding(self.emb_dim, x.shape[1], device=x.device)
+        encoding = positional_encoding(self.emb_dim, x.shape[1], device=self.device)
 
         # Process the embeddings through the encoder
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
@@ -487,10 +476,10 @@ class AcousticModel(BaseNNModule):
             embeddings=embeddings,
         )
         mel_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64, device=x.device)
+            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device)
         )
         if x.shape[1] > encoding.shape[1]:
-            encoding = positional_encoding(self.emb_dim, x.shape[1], device=x.device)
+            encoding = positional_encoding(self.emb_dim, x.shape[1], device=self.device)
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
