@@ -6,6 +6,7 @@ from model.config import PreprocessingConfig
 from training.preprocess import PreprocessAudio
 
 
+# FIXME: This test is broken
 class TestPreprocessAudio(unittest.TestCase):
     def setUp(self):
         torch.random.manual_seed(42)

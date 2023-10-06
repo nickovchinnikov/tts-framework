@@ -1,16 +1,16 @@
-from dataclasses import dataclass
-from typing import Union
+from dataclasses import asdict, dataclass
+from typing import Tuple, Union
 
-import lightning.pytorch as pl
+from dp.phonemizer import Phonemizer
 import numpy as np
+from scipy.stats import betabinom
 import torch
 
-from model.config import PreprocessingConfig
+from model.config import PreprocessingConfig, PreprocessLangType
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
 from .tacotron_stft import TacotronSTFT
-from .text import byte_encode
 
 
 @dataclass
@@ -18,17 +18,23 @@ class PreprocessAudioResult:
     waw: torch.FloatTensor
     mel: torch.FloatTensor
     pitch: torch.FloatTensor
-    phones: bytes
+    phones: torch.Tensor
+    attn_prior: torch.Tensor
     raw_text: str
+    normalized_text: str
+    speaker_id: int
+    chapter_id: int
+    utterance_id: str
     pitch_is_normalized: bool
 
 
-class PreprocessAudio(pl.LightningModule):
+class PreprocessLibriTTS:
     r"""
-    A PyTorch Lightning module for preprocessing audio and text data for use with a TacotronSTFT model.
+    Preprocessing PreprocessLibriTTS audio and text data for use with a TacotronSTFT model.
 
     Args:
-        preprocess_config (PreprocessingConfig): The preprocessing configuration.
+        phonemizer (Phonemizer): The g2p phonemizer object.
+        processing_lang_type (PreprocessLangType): The preprocessing language type.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -43,9 +49,14 @@ class PreprocessAudio(pl.LightningModule):
 
     def __init__(
         self,
-        preprocess_config: PreprocessingConfig,
+        phonemizer: Phonemizer,
+        processing_lang_type: PreprocessLangType = "english_only",
     ):
         super().__init__()
+
+        self.phonemizer = phonemizer
+
+        preprocess_config = PreprocessingConfig(processing_lang_type)
 
         self.min_seconds = preprocess_config.min_seconds
         self.max_seconds = preprocess_config.max_seconds
@@ -72,30 +83,65 @@ class PreprocessAudio(pl.LightningModule):
         self.min_samples = int(self.sampling_rate * self.min_seconds)
         self.max_samples = int(self.sampling_rate * self.max_seconds)
 
-    def forward(
-        self, audio: torch.FloatTensor, sr_actual: int, raw_text: str
+    def beta_binomial_prior_distribution(
+        self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0
+    ) -> torch.Tensor:
+        r"""
+        Computes the beta-binomial prior distribution for the attention mechanism.
+
+        Args:
+            phoneme_count (int): Number of phonemes in the input text.
+            mel_count (int): Number of mel frames in the input mel-spectrogram.
+            scaling_factor (float, optional): Scaling factor for the beta distribution. Defaults to 1.0.
+
+        Returns:
+            torch.Tensor: A 2D tensor containing the prior distribution.
+        """
+        P, M = phoneme_count, mel_count
+        x = np.arange(0, P)
+        mel_text_probs = []
+        for i in range(1, M + 1):
+            a, b = scaling_factor * i, scaling_factor * (M + 1 - i)
+            rv = betabinom(P, a, b)
+            mel_i_prob = rv.pmf(x)
+            mel_text_probs.append(mel_i_prob)
+        result = torch.from_numpy(np.array(mel_text_probs))
+        return result
+
+    def __call__(
+        self,
+        row: Tuple[torch.Tensor, int, str, str, int, int, str],
     ) -> Union[None, PreprocessAudioResult]:
         r"""
         Preprocesses audio and text data for use with a TacotronSTFT model.
 
         Args:
             audio (torch.FloatTensor): The input audio waveform.
-            sr_actual (int): The actual sampling rate of the input audio.
-            raw_text (str): The raw input text.
+            row (Tuple[torch.Tensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
 
         Returns:
             dict: A dictionary containing the preprocessed audio and text data.
 
         Examples:
-            >>> preprocess_config = PreprocessingConfig()
-            >>> preprocess_audio = PreprocessAudio(preprocess_config)
+            >>> preprocess_audio = PreprocessAudio("english_only")
             >>> audio = torch.randn(1, 44100)
             >>> sr_actual = 44100
             >>> raw_text = "Hello, world!"
             >>> output = preprocess_audio(audio, sr_actual, raw_text)
             >>> output.keys()
-            dict_keys(['wav', 'mel', 'pitch', 'phones', 'raw_text', 'pitch_is_normalized'])
+            dict_keys(['wav', 'mel', 'pitch', 'phones', 'raw_text', 'normalized_text', 'speaker_id', 'chapter_id', 'utterance_id', 'pitch_is_normalized'])
         """
+
+        (
+            audio,
+            sr_actual,
+            raw_text,
+            normalized_text,
+            speaker_id,
+            chapter_id,
+            utterance_id,
+        ) = row
+
         wav, sampling_rate = preprocess_audio(audio, sr_actual, self.sampling_rate)
 
         # TODO: check this, maybe you need to move it to some other place
@@ -105,8 +151,11 @@ class PreprocessAudio(pl.LightningModule):
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
 
-        # TODO: maybe use g2p here ???
-        phones = byte_encode(raw_text.strip())
+        phones = self.phonemizer.predictor.phoneme_tokenizer(
+            self.phonemizer(raw_text, lang="en_us"), language="en_us"
+        )
+        # Convert to tensor
+        phones = torch.Tensor(phones)
 
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
 
@@ -128,6 +177,10 @@ class PreprocessAudio(pl.LightningModule):
         # We should find out why
         mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
 
+        attn_prior = self.beta_binomial_prior_distribution(
+            phones.shape[0], mel_spectrogram.shape[1]
+        ).T
+
         pitch, _ = norm_interp_f0(pitch)
 
         assert pitch.shape[0] == mel_spectrogram.shape[1], (
@@ -135,12 +188,18 @@ class PreprocessAudio(pl.LightningModule):
             mel_spectrogram.shape[1],
         )
 
-        return {
-            "wav": wav,
-            "mel": mel_spectrogram,
-            "pitch": torch.from_numpy(pitch),
-            "phones": phones,
-            "raw_text": raw_text,
+        result = PreprocessAudioResult(
+            waw=wav,
+            mel=mel_spectrogram,
+            pitch=torch.from_numpy(pitch),
+            attn_prior=attn_prior,
+            phones=phones,
+            raw_text=raw_text,
+            normalized_text=normalized_text,
+            speaker_id=speaker_id,
+            chapter_id=chapter_id,
+            utterance_id=utterance_id,
             # TODO: check the pitch normalization process
-            "pitch_is_normalized": False,
-        }
+            pitch_is_normalized=False,
+        )
+        return asdict(result)
