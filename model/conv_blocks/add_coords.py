@@ -55,7 +55,7 @@ class AddCoords(LightningModule):
             xx_channel = xx_channel * 2 - 1
             xx_channel = xx_channel.repeat(batch_size_shape, 1, 1)
 
-            xx_channel = xx_channel.to(x.device)
+            xx_channel = xx_channel.to(self.device)
             out = torch.cat([x, xx_channel], dim=1)
 
             if self.with_r:
@@ -87,8 +87,8 @@ class AddCoords(LightningModule):
             xx_channel = xx_channel.repeat(batch_size_shape, 1, 1, 1)
             yy_channel = yy_channel.repeat(batch_size_shape, 1, 1, 1)
 
-            xx_channel = xx_channel.to(x.device)
-            yy_channel = yy_channel.to(x.device)
+            xx_channel = xx_channel.to(self.device)
+            yy_channel = yy_channel.to(self.device)
 
             out = torch.cat([x, xx_channel, yy_channel], dim=1)
 
@@ -124,9 +124,9 @@ class AddCoords(LightningModule):
             zx_channel = zx_channel.permute(0, 1, 4, 2, 3)
             zz_channel = torch.cat([zx_channel + i for i in range(dim_y)], dim=3)
 
-            xx_channel = xx_channel.to(x.device)
-            yy_channel = yy_channel.to(x.device)
-            zz_channel = zz_channel.to(x.device)
+            xx_channel = xx_channel.to(self.device)
+            yy_channel = yy_channel.to(self.device)
+            zz_channel = zz_channel.to(self.device)
             out = torch.cat([x, xx_channel, yy_channel, zz_channel], dim=1)
 
             if self.with_r:
