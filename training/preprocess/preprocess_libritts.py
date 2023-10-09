@@ -144,6 +144,7 @@ class PreprocessLibriTTS:
         wav, sampling_rate = preprocess_audio(audio, sr_actual, self.sampling_rate)
 
         # TODO: check this, maybe you need to move it to some other place
+        # TODO: maybe we can increate the max_samples ?
         if wav.shape[0] < self.min_samples or wav.shape[0] > self.max_samples:
             return None
 
@@ -188,10 +189,12 @@ class PreprocessLibriTTS:
             mel_spectrogram.shape[1],
         )
 
+        pitch = torch.from_numpy(pitch)
+
         result = PreprocessAudioResult(
             wav=wav,
             mel=mel_spectrogram,
-            pitch=torch.from_numpy(pitch, dtype=torch.float32),
+            pitch=pitch,
             attn_prior=attn_prior,
             phones=phones,
             raw_text=raw_text,

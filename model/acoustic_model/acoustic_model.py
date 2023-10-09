@@ -206,7 +206,8 @@ class AcousticModel(LightningModule):
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
 
-    def freeze(self) -> None:
+    # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
+    def freeze_params(self) -> None:
         r"""
         Freeze the trainable parameters in the model.
 
@@ -224,7 +225,8 @@ class AcousticModel(LightningModule):
         # @fixed requires_grad prop
         self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
 
-    def unfreeze(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
+    # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
+    def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
         r"""
         Unfreeze the trainable parameters in the model, allowing them to be updated during training.
 
