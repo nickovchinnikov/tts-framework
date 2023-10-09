@@ -1,44 +1,49 @@
-import json
-from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from dp.phonemizer import Phonemizer
 import numpy as np
-from scipy.stats import betabinom
 import torch
 from torch.utils.data import Dataset
+import torchaudio.datasets as datasets
 
-from model.config import lang2id
+from model.config import PreprocessingConfig, PreprocessLangType, lang2id
+from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
 
-class AcousticDataset(Dataset):
+class LibriTTSDataset(Dataset):
     def __init__(
         self,
-        filename: str,
+        root: str,
         batch_size: int,
-        data_path: str,
-        assets_path: str,
         is_eval: bool,
+        phonemizer: Phonemizer,
+        processing_lang_type: PreprocessLangType = "english_only",
         sort: bool = False,
         drop_last: bool = False,
+        download: bool = True,
     ):
         r"""
         A PyTorch dataset for loading preprocessed acoustic data.
 
         Args:
-            filename (str): Name of the metadata file.
+            root (str): Path to the directory where the dataset is found or downloaded.
             batch_size (int): Batch size for the dataset.
-            data_path (str): Path to the preprocessed data.
-            assets_path (str): Path to the assets directory.
             is_eval (bool): Whether the dataset is for evaluation or training.
+            phonemizer (Phonemizer): The g2p phonemizer.
+            processing_lang_type (PreprocessLangType, optional): The preprocessing language type. Defaults to "english_only".
             sort (bool, optional): Whether to sort the data by text length. Defaults to False.
             drop_last (bool, optional): Whether to drop the last batch if it is smaller than the batch size. Defaults to False.
+            download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
         """
-        self.preprocessed_path = Path(data_path)
+        self.dataset = datasets.LIBRITTS(root=root, download=download)
         self.batch_size = batch_size
-        self.basename, self.speaker = self.process_meta(filename)
-        with open(self.preprocessed_path / "speakers.json", encoding="utf-8") as f:
-            self.speaker_map = json.load(f)
+
+        self.phonemizer = phonemizer
+
+        self.preprocess_config = PreprocessingConfig(processing_lang_type)
+        self.preprocess_libtts = PreprocessLibriTTS(self.phonemizer, processing_lang_type)
+
         self.sort = sort
         self.drop_last = drop_last
         self.is_eval = is_eval
@@ -50,7 +55,7 @@ class AcousticDataset(Dataset):
         Returns:
             int: Number of samples in the dataset.
         """
-        return len(self.basename)
+        return len(self.dataset)
 
     def __getitem__(self, idx: int) -> Dict[str, Any]:
         r"""
@@ -62,97 +67,42 @@ class AcousticDataset(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing the sample data.
         """
-        basename = self.basename[idx]
-        speaker_name = self.speaker[idx]
-        speaker_id = self.speaker_map[speaker_name]
-        data = torch.load(
-            self.preprocessed_path / "data" / speaker_name / f"{basename}.pt"
-        )
-        raw_text = data["raw_text"]
-        mel = data["mel"]
-        pitch = data["pitch"]
-        lang = data["lang"]
-        phone = torch.LongTensor(data["phones"])
-        attn_prior = self.beta_binomial_prior_distribution(
-            phone.shape[0], mel.shape[1]
-        ).T
 
-        if mel.shape[1] < 20:
+        # Retrive the dataset row
+        data = self.dataset[idx]
+
+        data = self.preprocess_libtts(data)
+
+        if data.mel.shape[1] < 20:
             print(
                 "Skipping small sample due to the mel-spectrogram containing less than 20 frames"
             )
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
-
-        sample = {
-            "id": basename,
-            "speaker_name": speaker_name,
-            "speaker": speaker_id,
-            "text": phone,
-            "raw_text": raw_text,
-            "mel": mel,
-            "pitch": pitch,
-            "lang": lang2id[lang],
-            "attn_prior": attn_prior,
-        }
-
-        if phone.shape[0] >= mel.shape[1]:
+        
+        if data.phone.shape[0] >= data.mel.shape[1]:
             print(
                 "Text is longer than mel, will be skipped due to monotonic alignment search ..."
             )
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
-
+        
         if self.is_eval:
-            data = torch.load(
-                self.preprocessed_path / "wav" / speaker_name / f"{basename}.pt"
-            )
-            sample["wav"] = data["wav"].unsqueeze(0)
+            data.wav = data.wav.unsqueeze(0)
+
+        sample = {
+            "id": data.utterance_id,
+            "speaker": data.speaker_id,
+            "text": data.phones,
+            "raw_text": data.raw_text,
+            "mel": data.mel,
+            "pitch": data.pitch,
+            # TODO: fix lang!
+            "lang": lang2id["en"],
+            "attn_prior": data.attn_prior,
+        }
 
         return sample
-
-    def process_meta(self, filename: str) -> Tuple[List[str], List[str]]:
-        r"""
-        Processes the metadata file and returns the basename and speaker lists.
-
-        Args:
-            filename (str): Name of the metadata file.
-
-        Returns:
-            Tuple[List[str], List[str]]: A tuple containing the basename and speaker lists.
-        """
-        with open(self.preprocessed_path / filename, encoding="utf-8") as f:
-            name = []
-            speaker = []
-            for line in f.readlines():
-                n, s = line.strip("\n").split("|")
-                name.append(n)
-                speaker.append(s)
-        return name, speaker
-
-    def beta_binomial_prior_distribution(
-        self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0
-    ) -> np.ndarray:
-        r"""
-        Computes the beta-binomial prior distribution for the attention mechanism.
-
-        Args:
-            phoneme_count (int): Number of phonemes in the input text.
-            mel_count (int): Number of mel frames in the input mel-spectrogram.
-            scaling_factor (float, optional): Scaling factor for the beta distribution. Defaults to 1.0.
-
-        Returns:
-            np.ndarray: A 2D numpy array containing the prior distribution.
-        """
-        P, M = phoneme_count, mel_count
-        x = np.arange(0, P)
-        mel_text_probs = []
-        for i in range(1, M + 1):
-            a, b = scaling_factor * i, scaling_factor * (M + 1 - i)
-            rv = betabinom(P, a, b)
-            mel_i_prob = rv.pmf(x)
-            mel_text_probs.append(mel_i_prob)
-        return np.array(mel_text_probs)
 
     def reprocess(self, data: List[Dict[str, Any]], idxs: List[int]) -> Tuple:
         r"""

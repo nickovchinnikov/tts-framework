@@ -12,7 +12,7 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.dataset import AcousticDataset
+from training.dataset import LibriTTSDataset
 from training.loss import LossesCriterion
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
@@ -135,7 +135,7 @@ class AcousticModule(LightningModule):
 
     def train_dataloader(self):
         # TODO: fix filename, data_path, assets_path
-        dataset = AcousticDataset(
+        dataset = LibriTTSDataset(
             filename="val.txt",
             batch_size=1,
             sort=True,

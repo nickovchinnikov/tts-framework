@@ -1,17 +1,21 @@
 import unittest
 
+from dp.phonemizer import Phonemizer
 import torch
 
 from model.config import PreprocessingConfig
-from training.preprocess import PreprocessAudio
+from training.preprocess import PreprocessLibriTTS
+from training.preprocess.preprocess_libritts import PreprocessAudioResult
 
 
-# FIXME: This test is broken
-class TestPreprocessAudio(unittest.TestCase):
+class TestPreprocessLibriTTS(unittest.TestCase):
     def setUp(self):
         torch.random.manual_seed(42)
         self.preprocess_config = PreprocessingConfig("english_only")
-        self.preprocess_audio = PreprocessAudio(self.preprocess_config)
+
+        self.phonemizer = Phonemizer.from_checkpoint("checkpoints/en_us_cmudict_ipa_forward.pt",)
+
+        self.preprocess_audio = PreprocessLibriTTS(self.phonemizer, "english_only")
 
     def test_forward(self):
         # Set the sampling rate and duration of the audio signal
@@ -30,52 +34,49 @@ class TestPreprocessAudio(unittest.TestCase):
         audio = audio.unsqueeze(0)
 
         raw_text = "Hello, world!"
-        output = self.preprocess_audio(audio, sr_actual, raw_text)
 
-        self.assertIsInstance(output, dict)
+        output = self.preprocess_audio((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
-        self.assertIn("wav", output)
-        self.assertIn("mel", output)
-        self.assertIn("pitch", output)
-        self.assertIn("phones", output)
-        self.assertIn("raw_text", output)
-        self.assertIn("pitch_is_normalized", output)
+        self.assertIsInstance(output, PreprocessAudioResult)
 
-        self.assertIsInstance(output["wav"], torch.FloatTensor)
-        self.assertIsInstance(output["mel"], torch.FloatTensor)
-        self.assertIsInstance(output["pitch"], torch.Tensor)
-        self.assertIsInstance(output["phones"], list)
-        self.assertIsInstance(output["raw_text"], str)
-        self.assertIsInstance(output["pitch_is_normalized"], bool)
+        self.assertIsInstance(output.wav, torch.Tensor)
+        self.assertIsInstance(output.mel, torch.Tensor)
+        self.assertIsInstance(output.pitch, torch.Tensor)
+        self.assertIsInstance(output.phones, torch.Tensor)
+        self.assertIsInstance(output.raw_text, str)
+        self.assertIsInstance(output.pitch_is_normalized, bool)
 
-        self.assertEqual(output["wav"].shape, torch.Size([22050]))
-        self.assertEqual(output["mel"].shape, torch.Size([100, 86]))
-        self.assertEqual(output["pitch"].shape, torch.Size([86]))
-        self.assertEqual(
-            output["phones"],
-            [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33],
+        self.assertEqual(output.wav.shape, torch.Size([22050]))
+        self.assertEqual(output.mel.shape, torch.Size([100, 86]))
+        self.assertEqual(output.pitch.shape, torch.Size([86]))
+
+        torch.testing.assert_close(
+            output.phones,
+            torch.tensor([ 2., 10., 37., 14., 17., 45., 24., 39., 50., 14.,  6.,  3.]),
         )
-        self.assertEqual(output["raw_text"], "Hello, world!")
-        self.assertFalse(output["pitch_is_normalized"])
+
+        self.assertEqual(output.raw_text, "Hello, world!")
+        self.assertFalse(output.pitch_is_normalized)
 
         # Load the expected output from file
-        expected_output = torch.load("./mocks/preprocess_audio_output.pt")
-        # Compare the loaded and output dictionaries
-        torch.testing.assert_allclose(expected_output["wav"], output["wav"])
-        torch.testing.assert_allclose(expected_output["mel"], output["mel"])
-        torch.testing.assert_allclose(expected_output["pitch"], output["pitch"])
+        expected_output: PreprocessAudioResult = torch.load("./mocks/preprocess_audio_output.pt")
 
-        self.assertEqual(expected_output["phones"], output["phones"])
-        self.assertEqual(expected_output["raw_text"], output["raw_text"])
+        # Compare the loaded and output dictionaries
+        torch.testing.assert_allclose(expected_output.wav, output.wav)
+        torch.testing.assert_allclose(expected_output.mel, output.mel)
+        torch.testing.assert_allclose(expected_output.pitch, output.pitch)
+        torch.testing.assert_close(expected_output.phones, output.phones)
+
+        self.assertEqual(expected_output.raw_text, output.raw_text)
         self.assertEqual(
-            expected_output["pitch_is_normalized"], output["pitch_is_normalized"]
+            expected_output.pitch_is_normalized, output.pitch_is_normalized
         )
 
     def test_forward_with_short_audio(self):
         audio = torch.randn(1, 22050)
         sr_actual = 22050
         raw_text = "Hello, world!"
-        output = self.preprocess_audio(audio, sr_actual, raw_text)
+        output = self.preprocess_audio((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsNone(output)
 
@@ -83,7 +84,7 @@ class TestPreprocessAudio(unittest.TestCase):
         audio = torch.randn(1, 88200)
         sr_actual = 44100
         raw_text = "Hello, world!"
-        output = self.preprocess_audio(audio, sr_actual, raw_text)
+        output = self.preprocess_audio((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsNone(output)
 

@@ -15,7 +15,7 @@ from .tacotron_stft import TacotronSTFT
 
 @dataclass
 class PreprocessAudioResult:
-    waw: torch.FloatTensor
+    wav: torch.FloatTensor
     mel: torch.FloatTensor
     pitch: torch.FloatTensor
     phones: torch.Tensor
@@ -110,14 +110,13 @@ class PreprocessLibriTTS:
 
     def __call__(
         self,
-        row: Tuple[torch.Tensor, int, str, str, int, int, str],
+        row: Tuple[torch.FloatTensor, int, str, str, int, int, str],
     ) -> Union[None, PreprocessAudioResult]:
         r"""
         Preprocesses audio and text data for use with a TacotronSTFT model.
 
         Args:
-            audio (torch.FloatTensor): The input audio waveform.
-            row (Tuple[torch.Tensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
+            row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
 
         Returns:
             dict: A dictionary containing the preprocessed audio and text data.
@@ -151,6 +150,7 @@ class PreprocessLibriTTS:
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
 
+        # TODO: add the land management!
         phones = self.phonemizer.predictor.phoneme_tokenizer(
             self.phonemizer(raw_text, lang="en_us"), language="en_us"
         )
@@ -175,7 +175,7 @@ class PreprocessLibriTTS:
 
         # TODO this shouldnt be necessary, currently pitch sometimes has 1 less frame than spectrogram,
         # We should find out why
-        mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
+        mel_spectrogram: torch.FloatTensor = mel_spectrogram[:, : pitch.shape[0]]
 
         attn_prior = self.beta_binomial_prior_distribution(
             phones.shape[0], mel_spectrogram.shape[1]
@@ -189,9 +189,9 @@ class PreprocessLibriTTS:
         )
 
         result = PreprocessAudioResult(
-            waw=wav,
+            wav=wav,
             mel=mel_spectrogram,
-            pitch=torch.from_numpy(pitch),
+            pitch=torch.from_numpy(pitch, dtype=torch.float32),
             attn_prior=attn_prior,
             phones=phones,
             raw_text=raw_text,
@@ -202,4 +202,4 @@ class PreprocessLibriTTS:
             # TODO: check the pitch normalization process
             pitch_is_normalized=False,
         )
-        return asdict(result)
+        return result

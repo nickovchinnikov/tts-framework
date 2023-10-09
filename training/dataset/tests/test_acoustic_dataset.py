@@ -4,10 +4,11 @@ import numpy as np
 import torch
 
 from model.config import lang2id
-from training.dataset.acoustic_dataset import AcousticDataset
+from training.dataset.libritts_dataset import LibriTTSDataset
 
 
-class TestAcousticDataset(unittest.TestCase):
+# TODO: fix this test
+class TestLibriTTSDataset(unittest.TestCase):
     def setUp(self):
         self.batch_size = 2
         self.data_path = "mocks"
@@ -16,7 +17,7 @@ class TestAcousticDataset(unittest.TestCase):
         self.sort = False
         self.drop_last = False
 
-        self.dataset = AcousticDataset(
+        self.dataset = LibriTTSDataset(
             "metadata.txt",
             self.batch_size,
             self.data_path,
