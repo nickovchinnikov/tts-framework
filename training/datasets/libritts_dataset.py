@@ -70,6 +70,7 @@ class LibriTTSDataset(Dataset):
 
         data = self.preprocess_libtts(data)
 
+        # TODO: bad way to do filtering, fix this!
         if data is None:
             print("Skipping due to preprocessing error")
             rand_idx = np.random.randint(0, self.__len__())
@@ -144,7 +145,8 @@ class LibriTTSDataset(Dataset):
         mel_lens = np.array(mel_lens)
 
         # NOTE: Instead of the pitches for the whole dataset, used stat for the batch
-        pitches_stat = self.normalize_pitch(pitches)
+        # Take only min and max values for pitch
+        pitches_stat = list(self.normalize_pitch(pitches)[:2])
 
         texts = pad_1D(texts)
         mels = pad_2D(mels)

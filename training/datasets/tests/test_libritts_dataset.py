@@ -82,24 +82,72 @@ class TestLibriTTSDataset(unittest.TestCase):
         torch.testing.assert_close(result[11], expected_output[11])
 
     def test_collate_fn(self):
-        # Mock the reprocess method
-        # self.dataset.reprocess = MagicMock(return_value=["batch"])
-
-        # Create some mock data
         data = [
-            {"text": torch.randn(10)},
-            {"text": torch.randn(20)},
-            {"text": torch.randn(30)},
-            {"text": torch.randn(40)},
+            self.dataset[0],
+            self.dataset[2],
         ]
 
         # Call the collate_fn method
         result = self.dataset.collate_fn(data)
 
         # Check the output
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0], ["batch"])
-        self.assertEqual(result[1], ["batch"])
+        self.assertEqual(len(result), 1)
+
+        # Check that all the batches are the same size
+        for batch in result[0]:
+            self.assertEqual(len(batch), 2)
+
+    def test_normalize_pitch(self):
+        pitches = [
+            torch.tensor([100.0, 200.0, 300.0]),
+            torch.tensor([150.0, 250.0, 350.0]),
+        ]
+
+        result = self.dataset.normalize_pitch(pitches)
+
+        expected_output = (100.0, 350.0, 225.0, 93.54143524169922)
+
+        self.assertEqual(result, expected_output)
+
+    def test_dataloader(self):
+        # Create a DataLoader from the dataset
+        dataloader = DataLoader(
+            self.dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            # collate_fn=self.dataset.collate_fn,
+        )
+
+        iter_dataloader = iter(dataloader)
+
+        # Iterate over the DataLoader and check the output
+        for i, batch in enumerate([next(iter_dataloader), next(iter_dataloader)]):
+            # Check the batch size
+            self.assertEqual(len(batch), 4)
+
+            # Check the shapes of the tensors in the batch
+            self.assertEqual(batch[0].shape[0], self.batch_size)
+            self.assertEqual(batch[1].shape[0], self.batch_size)
+            self.assertEqual(batch[2].shape[0], self.batch_size)
+            self.assertEqual(batch[3].shape[0], self.batch_size)
+
+            # Check the types of the tensors in the batch
+            self.assertIsInstance(batch[0], torch.LongTensor)
+            self.assertIsInstance(batch[1], torch.FloatTensor)
+            self.assertIsInstance(batch[2], torch.FloatTensor)
+            self.assertIsInstance(batch[3], torch.FloatTensor)
+
+            # Check the shapes of the tensors in the batch
+            self.assertEqual(batch[0].shape[1], 128)
+            self.assertEqual(batch[1].shape[1], 80)
+            self.assertEqual(batch[2].shape[1], 1)
+            self.assertEqual(batch[3].shape[1], 1)
+
+            # Check that the tensors are on the correct device
+            self.assertEqual(batch[0].device, torch.device("cpu"))
+            self.assertEqual(batch[1].device, torch.device("cpu"))
+            self.assertEqual(batch[2].device, torch.device("cpu"))
+            self.assertEqual(batch[3].device, torch.device("cpu"))
 
 if __name__ == "__main__":
     unittest.main()
