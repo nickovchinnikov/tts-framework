@@ -75,20 +75,6 @@ class LibriTTSDataset(Dataset):
             print("Skipping due to preprocessing error")
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
-
-        if data.mel.shape[1] < 20:
-            print(
-                "Skipping small sample due to the mel-spectrogram containing less than 20 frames"
-            )
-            rand_idx = np.random.randint(0, self.__len__())
-            return self.__getitem__(rand_idx)
-        
-        if data.phones.shape[0] >= data.mel.shape[1]:
-            print(
-                "Text is longer than mel, will be skipped due to monotonic alignment search ..."
-            )
-            rand_idx = np.random.randint(0, self.__len__())
-            return self.__getitem__(rand_idx)
         
         data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
 
@@ -109,7 +95,7 @@ class LibriTTSDataset(Dataset):
 
         return sample
 
-    def reprocess(self, data: List[Dict[str, Any]], idxs: List[int]) -> Tuple:
+    def collate_preprocess(self, data: List[Dict[str, Any]], idxs: List[int]) -> Tuple:
         r"""
         Reprocesses a batch of data samples.
 
@@ -203,7 +189,7 @@ class LibriTTSDataset(Dataset):
 
         output = list()
         for idx in idx_arr:
-            output.append(self.reprocess(data, idx))
+            output.append(self.collate_preprocess(data, idx))
         return output
     
     def normalize_pitch(self, pitches: list[torch.FloatTensor]) -> Tuple[float, float, float, float]:

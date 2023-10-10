@@ -61,7 +61,7 @@ class TestLibriTTSDataset(unittest.TestCase):
         idxs = [0, 1]
 
         # Call the reprocess method
-        result = self.dataset.reprocess(data, idxs)
+        result = self.dataset.collate_preprocess(data, idxs)
 
         # Load the expected output from file
         expected_output = torch.load("mocks/libritts_dataset_test_reprocess_result.pt")

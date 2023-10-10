@@ -37,6 +37,16 @@ result2 = phonemizer.predictor.phoneme_tokenizer(phonemes, language="en_us")
 # As the result - tokenized phonemes
 result2
 
+# %%
+libri_example = ['[SILENCE]', 'ð', 'ʌ', '[SILENCE]', 'd', 'eɪ', '[SILENCE]', 'æ', 'f', 't', 'ɜ˞', '[COMMA]', 'd', 'aɪ', 'æ', 'n', 'ʌ', '[SILENCE]', 'æ', 'n', 'd', '[SILENCE]', 'm', 'ɛ', 'ɹ', 'i', '[SILENCE]', 'k', 'w', 'ɪ', 't', 'ɪ', 'd', '[SILENCE]', 'ɪ', 't', '[SILENCE]', 'f', 'ɜ˞', '[SILENCE]', 'd', 'ɪ', 's', 't', 'ʌ', 'n', 't', '[SILENCE]', 'b', 'i', '[FULL STOP]']
+
+result3 = phonemizer.predictor.phoneme_tokenizer(libri_example, language="en_us")
+result3
+
+# %%
+# There is no tokenization for the special tokens! 
+phonemizer.predictor.phoneme_tokenizer([';'], language="en_us")
+
 # %% [markdown]
 # Originally, used the following code to get the phonemes:
 # word_tokenizer = WordTokenizer(lang=lang, remove_punct=False)

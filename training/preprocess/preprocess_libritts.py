@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Tuple, Union
 
 from dp.phonemizer import Phonemizer
@@ -16,8 +16,8 @@ from .tacotron_stft import TacotronSTFT
 @dataclass
 class PreprocessAudioResult:
     wav: torch.FloatTensor
-    mel: torch.FloatTensor
-    pitch: torch.FloatTensor
+    mel: torch. Tensor
+    pitch: torch.Tensor
     phones: torch.Tensor
     attn_prior: torch.Tensor
     raw_text: str
@@ -68,6 +68,7 @@ class PreprocessLibriTTS:
 
         self.filter_length = preprocess_config.stft.filter_length
         self.hop_length = preprocess_config.stft.hop_length
+        self.mel_fmin = preprocess_config.stft.mel_fmin
 
         self.tacotronSTFT = TacotronSTFT(
             filter_length=preprocess_config.stft.filter_length,
@@ -160,6 +161,14 @@ class PreprocessLibriTTS:
 
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
 
+        # Skipping small sample due to the mel-spectrogram containing less than self.mel_fmin frames
+        if mel_spectrogram.shape[1] < self.mel_fmin:
+            return None
+
+        # Text is longer than mel, will be skipped due to monotonic alignment search
+        if phones.shape[0] >= mel_spectrogram.shape[1]:
+            return None
+
         pitch, _, _, _ = compute_yin(
             wav,
             sr=sampling_rate,
@@ -170,26 +179,26 @@ class PreprocessLibriTTS:
             harmo_thresh=0.25,
         )
 
-        # TODO: check this, maybe you need to move it to some other place
+        # Skipping pitch that sum less or equal to 1
         if np.sum(pitch != 0) <= 1:
             return None
 
+        pitch, _ = norm_interp_f0(pitch)
+
+        pitch = torch.from_numpy(pitch)
+
         # TODO this shouldnt be necessary, currently pitch sometimes has 1 less frame than spectrogram,
         # We should find out why
-        mel_spectrogram: torch.FloatTensor = mel_spectrogram[:, : pitch.shape[0]]
+        mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
 
         attn_prior = self.beta_binomial_prior_distribution(
             phones.shape[0], mel_spectrogram.shape[1]
         ).T
 
-        pitch, _ = norm_interp_f0(pitch)
-
         assert pitch.shape[0] == mel_spectrogram.shape[1], (
             pitch.shape,
             mel_spectrogram.shape[1],
         )
-
-        pitch = torch.from_numpy(pitch)
 
         result = PreprocessAudioResult(
             wav=wav,
