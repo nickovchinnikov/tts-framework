@@ -44,3 +44,9 @@ mkdocs serve
 # build a static site from your Markdown files
 mkdocs build
 ```
+
+Test cases:
+
+```
+python -m unittest discover -v
+```
