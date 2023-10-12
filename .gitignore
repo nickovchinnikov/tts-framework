@@ -161,6 +161,7 @@ cython_debug/
 
 .lh
 .vscode
+.idea
 
 # Checkpoints ignore (too large for lfs)
 **/checkpoints/**/*.pt
@@ -169,4 +170,4 @@ cython_debug/
 **/checkpoints/**/*.txt
 
 # Mock datasets
-datasets/**/*
+datasets_cache/**/*
