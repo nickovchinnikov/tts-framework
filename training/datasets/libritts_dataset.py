@@ -11,6 +11,8 @@ from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
 
+# TODO: check this approach:
+# https://huggingface.co/datasets/cdminix/libritts-r-aligned/blob/main/libritts-r-aligned.py
 class LibriTTSDataset(Dataset):
     def __init__(
         self,
