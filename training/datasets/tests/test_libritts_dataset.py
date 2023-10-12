@@ -17,7 +17,7 @@ class TestLibriTTSDataset(unittest.TestCase):
         self.download = False
 
         self.dataset = LibriTTSDataset(
-            root="datasets/LIBRITTS",
+            root="datasets_cache/LIBRITTS",
             batch_size=self.batch_size,
             phonemizer=self.phonemizer,
             processing_lang_type=self.processing_lang_type,
