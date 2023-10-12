@@ -68,37 +68,37 @@ class TestTextPreprocess(unittest.TestCase):
         input_text = r"""It’s a beautiful day… Hello..... World!!!! Wow!!!!! This is amazing????? He said, “I don’t know…”. It’s a beautiful day… What????? I don't understand!!!!!"""
 
         expected_output = r"""It's a beautiful day. Hello. World! Wow! This is amazing? He said, "I don't know.". It's a beautiful day. What? I don't understand!"""
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 2: Test text normalization with multiple dots
         input_text = "Hello..... World!!!!"
         expected_output = "Hello. World!"
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 3: numbers
         input_text = "1234567890"
         expected_output = "one two three four five six seven eight nine zero"
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 4: Complicated case
         input_text = "Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk."
         expected_output = r"""mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk."""
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 5: Complicated case 2
         input_text = "St. Patrick’s Day, spend $123 for this desk."
         expected_output = r"""Saint Patrick's Day, spend one hundred and twenty three dollars for this desk."""
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 6: check Dunky bug
         input_text = "For example it normalizes 'medic' into 'm e d i c' or 'yeah' into 'y e a h'."
         expected_output = r"""For example it normalizes 'medic' into 'm e d i c' or 'yeah' into 'y e a h'."""
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 7: Time and currency
         input_text = "The alarm went off at 10:00a.m. \nI received $123. It's 12:30pm. I paid $123.45 for this desk."
         expected_output = r"""The alarm went off at ten AM I received one hundred and twenty three dollars. It's twelve thirty PM. I paid one hundred and twenty three dollars forty five cents for this desk."""
-        self.assertEqual(self.normalizer.normalize(input_text), expected_output)
+        self.assertEqual(self.normalizer(input_text), expected_output)
 
 
 if __name__ == '__main__':

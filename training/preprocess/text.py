@@ -71,7 +71,7 @@ class NormilizeText:
 
         return normalized_string
 
-    def normalize(self, text: str) -> str:
+    def __call__(self, text: str) -> str:
         r"""
         Normalize the input text with the `nemo_text_processing`.
 
