@@ -17,7 +17,7 @@ class TestWav2VecAligner(unittest.TestCase):
 
         expected_audio_input = torch.load(self.expected_wav_data_path)
 
-        # self.assertEqual(sample_rate, 24_000)
+        self.assertEqual(sample_rate, 24_000)
         torch.testing.assert_close(audio_input, expected_audio_input)
 
         with self.assertRaises(FileNotFoundError):
@@ -28,13 +28,15 @@ class TestWav2VecAligner(unittest.TestCase):
         emissions, tokens, transcript = self.model.align_single_sample(
             audio_input, self.text
         )
-        expected_emissions = torch.load("./mocks/wav2vec_aligner/emissions.pt")
+
+        self.assertEqual(emissions.shape, torch.Size([311, 32]))
         
+        expected_emissions = torch.load("./mocks/wav2vec_aligner/emissions.pt")
         torch.testing.assert_close(emissions, expected_emissions)
 
-        self.assertEqual(tokens, [26, 11, 16, 16, 6, 21, 9, 14, 7, 5, 14, 9, 13, 6, 5, 12, 8, 16, 21, 5, 8, 13, 12, 8, 18, 6, 15, 5, 9, 21, 5, 25, 6, 11, 10, 22, 5, 13, 17, 14, 24, 14, 11, 13, 6, 15, 5, 11, 10, 5, 13, 17, 20, 12, 5, 8, 5, 24, 8, 14, 9, 29, 23, 13, 18, 5, 9, 21, 5, 22, 14, 11, 6, 21])
+        self.assertEqual(tokens, [4, 25, 10, 15, 15, 5, 20, 8, 13, 6, 4, 13, 8, 12, 5, 4, 11, 7, 15, 20, 4, 7, 12, 11, 7, 17, 5, 14, 4, 8, 20, 4, 24, 5, 10, 9, 21, 4, 12, 16, 13, 23, 13, 10, 12, 5, 14, 4, 10, 9, 4, 12, 16, 19, 11, 4, 7, 4, 23, 7, 13, 8, 28, 22, 12, 17, 4, 8, 20, 4, 21, 13, 10, 5, 20, 4])
         
-        self.assertEqual(transcript, "VILLEFORT|ROSE,|HALF|ASHAMED|OF|BEING|SURPRISED|IN|SUCH|A|PAROXYSM|OF|GRIEF.")
+        self.assertEqual(transcript, "|VILLEFORT|ROSE|HALF|ASHAMED|OF|BEING|SURPRISED|IN|SUCH|A|PAROXYSM|OF|GRIEF|")
 
     def test_get_trellis(self):
         audio_input, _ = self.model.load_audio(self.wav_path)
@@ -43,7 +45,12 @@ class TestWav2VecAligner(unittest.TestCase):
 
         expected_trellis = torch.load("./mocks/wav2vec_aligner/trellis.pt")
 
+        self.assertEqual(emissions.shape, torch.Size([311, 32]))
+        self.assertEqual(len(tokens), 76)
+
         # Add assertions here based on the expected behavior of get_trellis
+        self.assertEqual(trellis.shape, torch.Size([311, 76]))
+
         self.assertIsInstance(trellis, torch.Tensor)
         torch.testing.assert_close(trellis, expected_trellis)
 
@@ -57,6 +64,8 @@ class TestWav2VecAligner(unittest.TestCase):
 
         # Add assertions here based on the expected behavior of backtrack
         self.assertIsInstance(path, list)
+        self.assertEqual(len(path), 311)
+
         self.assertEqual(path, expected_path)
 
     def test_merge_repeats(self):
@@ -70,6 +79,8 @@ class TestWav2VecAligner(unittest.TestCase):
 
         # Add assertions here based on the expected behavior of merge_repeats
         self.assertIsInstance(merged_path, list)
+        self.assertEqual(len(merged_path), 76)
+
         self.assertEqual(merged_path, expected_merged_path)
 
     def test_merge_words(self):
@@ -84,6 +95,8 @@ class TestWav2VecAligner(unittest.TestCase):
 
         # Add assertions here based on the expected behavior of merge_words
         self.assertIsInstance(merged_words, list)
+        self.assertEqual(len(merged_words), 13)
+        
         self.assertEqual(merged_words, expected_merged_words)
 
     def test_forward(self):
