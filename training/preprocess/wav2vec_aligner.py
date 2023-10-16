@@ -31,6 +31,8 @@ class Segment:
     label: str
     start: int
     end: int
+    # TODO: check that the scale of duration is correct...
+    duration: float
     score: float
 
     def __repr__(self):
@@ -246,11 +248,16 @@ class Wav2VecAligner(LightningModule):
             while i2 < len(path) and path[i1].token_index == path[i2].token_index:
                 i2 += 1
             score = sum(path[k].score for k in range(i1, i2)) / (i2 - i1)
+
+            x0, x1 = path[i1].time_index, path[i2 - 1].time_index + 1
+            duration = x1 - x0
+
             segments.append(
                 Segment(
                     transcript[path[i1].token_index],
-                    path[i1].time_index,
-                    path[i2 - 1].time_index + 1,
+                    x0,
+                    x1,
+                    duration,
                     score,
                 )
             )
@@ -278,7 +285,11 @@ class Wav2VecAligner(LightningModule):
                     segs = segments[i1:i2]
                     word = "".join([seg.label for seg in segs])
                     score = sum(seg.score * seg.length for seg in segs) / sum(seg.length for seg in segs)
-                    words.append(Segment(word, segments[i1].start, segments[i2 - 1].end, score))
+
+                    x0, x1 = segments[i1].start, segments[i2 - 1].end
+                    duration = x1 - x0
+
+                    words.append(Segment(word, x0, x1, duration, score))
                 i1 = i2 + 1
                 i2 = i1
             else:
