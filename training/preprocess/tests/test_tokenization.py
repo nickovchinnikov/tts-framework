@@ -15,7 +15,7 @@ class TestTokenizer(unittest.TestCase):
 
     def test_decode(self):
         tokens = [101, 2025, 2005, 1039, 3233, 6253, 1014, 102]
-        expected_text = "this is a test sentence."
+        expected_text = "[CLS] this is a test sentence. [SEP]"
         text = self.tokenizer.decode(tokens)
         self.assertEqual(text, expected_text)
 

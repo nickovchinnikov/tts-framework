@@ -12,7 +12,7 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.dataset import LibriTTSDataset
+from training.datasets import LibriTTSDataset
 from training.loss import LossesCriterion
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 

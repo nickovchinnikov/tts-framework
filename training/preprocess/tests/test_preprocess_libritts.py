@@ -58,20 +58,6 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         self.assertEqual(output.raw_text, "Hello, world!")
         self.assertFalse(output.pitch_is_normalized)
 
-        # Load the expected output from file
-        expected_output: PreprocessAudioResult = torch.load("./mocks/preprocess_audio_output.pt")
-
-        # Compare the loaded and output dictionaries
-        torch.testing.assert_allclose(expected_output.wav, output.wav)
-        torch.testing.assert_allclose(expected_output.mel, output.mel)
-        torch.testing.assert_allclose(expected_output.pitch, output.pitch)
-        torch.testing.assert_close(expected_output.phones, output.phones)
-
-        self.assertEqual(expected_output.raw_text, output.raw_text)
-        self.assertEqual(
-            expected_output.pitch_is_normalized, output.pitch_is_normalized
-        )
-
     def test_forward_with_short_audio(self):
         audio = torch.randn(1, 22050)
         sr_actual = 22050

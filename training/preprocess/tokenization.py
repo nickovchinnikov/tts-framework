@@ -15,7 +15,7 @@ class Tokenizer:
 
     """
     
-    def __init__(self, checkpoint: str = "bert-base-uncased", vocab_file:str = "config/vocab.txt") -> None:
+    def __init__(self, checkpoint: str = "bert-base-uncased", vocab_file: str = "config/vocab.txt") -> None:
         r"""
         Initializes the Tokenizer object with the specified checkpoint and vocabulary file.
 
