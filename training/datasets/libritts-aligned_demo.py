@@ -10,6 +10,9 @@ print(LIBRITTS_PATH)
 
 from datasets import load_dataset
 
+print("Starting to load the dataset...")
+
+# NOTE: can't download, error of the preprocessing...
 dataset = load_dataset('cdminix/libritts-r-aligned', data_dir="../../datasets_cache", split="train")
 
 # %%
