@@ -6,11 +6,13 @@ import numpy as np
 from scipy.stats import betabinom
 import torch
 
-from model.config import PreprocessingConfig, PreprocessLangType
+from model.config import PreprocessingConfig, PreprocessLangType, langs_map
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
+from .normilize_text import NormilizeText
 from .tacotron_stft import TacotronSTFT
+from .tokenization import Tokenizer
 
 
 @dataclass
@@ -33,8 +35,10 @@ class PreprocessLibriTTS:
     Preprocessing PreprocessLibriTTS audio and text data for use with a TacotronSTFT model.
 
     Args:
-        phonemizer (Phonemizer): The g2p phonemizer object.
-        processing_lang_type (PreprocessLangType): The preprocessing language type.
+        lang (str): The language of the input text.
+        processing_lang_type (PreprocessLangType): The preprocessing language type for lang processing.
+        phonemizer_checkpoint (str): The path to the phonemizer checkpoint.
+        tokenizer_checkpoint (str): The tokenizer checkpoint.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -49,12 +53,20 @@ class PreprocessLibriTTS:
 
     def __init__(
         self,
-        phonemizer: Phonemizer,
+        lang: str = "en",
         processing_lang_type: PreprocessLangType = "english_only",
+        phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
+        tokenizer_checkpoint: str = "bert-base-uncased",
     ):
         super().__init__()
 
-        self.phonemizer = phonemizer
+        self.phonemizer_lang = langs_map[lang]["phonemizer"]
+        self.normilize_text_lang = langs_map[lang]["nemo"]
+
+        self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
+        self.tokenizer = Tokenizer(checkpoint=tokenizer_checkpoint)
+
+        self.normilize_text = NormilizeText(self.normilize_text_lang)
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
 
@@ -151,13 +163,11 @@ class PreprocessLibriTTS:
 
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
+        
+        normalized_text = self.normilize_text(normalized_text)
 
-        # TODO: add the land management!
-        phones = self.phonemizer.predictor.phoneme_tokenizer(
-            self.phonemizer(raw_text, lang="en_us"), language="en_us"
-        )
-        # Convert to tensor
-        phones = torch.Tensor(phones)
+        phones = self.phonemizer(normalized_text, lang=self.phonemizer_lang)
+        phones = torch.Tensor(self.tokenizer(phones))
 
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
 

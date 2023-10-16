@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from training.preprocess.text import NormilizeText
+from training.preprocess.normilize_text import NormilizeText
 
 
 # Create a class to test the ComputePitch class

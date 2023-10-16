@@ -27,10 +27,16 @@ class TestTokenizer(unittest.TestCase):
         tokens = tokenizer(text)
         self.assertEqual(tokens, expected_tokens)
 
+    def test_decode_without_special_tokens(self):
+        tokens = [101, 2025, 2005, 1039, 3233, 6253, 1014, 102]
+        expected_text = "this is a test sentence."
+        text = self.tokenizer.decode(tokens)
+        self.assertEqual(text, expected_text)
+
     def test_decode_with_special_tokens(self):
         tokens = [101, 2025, 2005, 1039, 3233, 6253, 1014, 102]
         expected_text = "[CLS] this is a test sentence. [SEP]"
-        text = self.tokenizer.decode(tokens)
+        text = self.tokenizer.decode(tokens, False)
         self.assertEqual(text, expected_text)
 
     def test_encode_decode_phonemes(self):

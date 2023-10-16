@@ -2,7 +2,7 @@
 import torchaudio.datasets as datasets
 
 dataset = datasets.LIBRITTS(
-    root="/mnt/Data/Projects/TTS experiments/LIBRITTS", download=True
+    root="../datasets_cache/LIBRITTS", download=True
 )
 
 """
@@ -60,5 +60,13 @@ preprocess
 
 # %%
 preprocess(dataset[0])
+
+# %%
+from training.preprocess.normilize_text import NormilizeText
+
+normilize_text = NormilizeText()
+
+normilize_text(dataset[0][2])
+# %%
 
 # %%

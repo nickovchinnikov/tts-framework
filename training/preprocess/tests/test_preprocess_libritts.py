@@ -11,11 +11,7 @@ from training.preprocess.preprocess_libritts import PreprocessAudioResult
 class TestPreprocessLibriTTS(unittest.TestCase):
     def setUp(self):
         torch.random.manual_seed(42)
-        self.preprocess_config = PreprocessingConfig("english_only")
-
-        self.phonemizer = Phonemizer.from_checkpoint("checkpoints/en_us_cmudict_ipa_forward.pt",)
-
-        self.preprocess_audio = PreprocessLibriTTS(self.phonemizer, "english_only")
+        self.preprocess_libritts = PreprocessLibriTTS()
 
     def test_forward(self):
         # Set the sampling rate and duration of the audio signal
@@ -35,7 +31,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         raw_text = "Hello, world!"
 
-        output = self.preprocess_audio((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsInstance(output, PreprocessAudioResult)
 
@@ -62,7 +58,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         audio = torch.randn(1, 22050)
         sr_actual = 22050
         raw_text = "Hello, world!"
-        output = self.preprocess_audio((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsNone(output)
 
@@ -70,14 +66,14 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         audio = torch.randn(1, 88200)
         sr_actual = 44100
         raw_text = "Hello, world!"
-        output = self.preprocess_audio((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsNone(output)
     
     def test_beta_binomial_prior_distribution(self):
         phoneme_count = 10
         mel_count = 20
-        prior_dist = self.preprocess_audio.beta_binomial_prior_distribution(
+        prior_dist = self.preprocess_libritts.beta_binomial_prior_distribution(
             phoneme_count, mel_count
         )
         self.assertIsInstance(prior_dist, torch.Tensor)
