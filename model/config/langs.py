@@ -26,7 +26,7 @@ id2lang = {i: s for i, s in enumerate(SUPPORTED_LANGUAGES)}
 
 langs_map = {
     "en": {
-        "phonemizer": "en-us",
+        "phonemizer": "en_us",
         "nemo": "en",
     }
 }

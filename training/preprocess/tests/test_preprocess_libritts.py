@@ -3,7 +3,6 @@ import unittest
 from dp.phonemizer import Phonemizer
 import torch
 
-from model.config import PreprocessingConfig
 from training.preprocess import PreprocessLibriTTS
 from training.preprocess.preprocess_libritts import PreprocessAudioResult
 
@@ -48,7 +47,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         torch.testing.assert_close(
             output.phones,
-            torch.tensor([ 2., 10., 37., 14., 17., 45., 24., 39., 50., 14.,  6.,  3.]),
+            torch.tensor([  101.,  1046., 29683.,  4137., 29700.,  1012.,   100.,  1001.,   102.]),
         )
 
         self.assertEqual(output.raw_text, "Hello, world!")
@@ -61,6 +60,37 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsNone(output)
+
+    def test_forward_with_complicated_text(self):
+        # Set the sampling rate and duration of the audio signal
+        sr_actual = 44100
+        duration = 10.0
+
+        # Set the frequency of the pitch (in Hz)
+        pitch_freq = 440.0
+
+        # Generate a time vector for the audio signal
+        t = torch.linspace(0, duration, int(sr_actual * duration))
+
+        # Generate a sinusoidal waveform with the specified pitch frequency
+        audio = torch.sin(2 * torch.pi * pitch_freq * t).unsqueeze(0)
+
+        raw_text = r"""
+        Hello, world! Wow!!!!! This is amazing?????
+        It’s a beautiful day… 
+        Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk.
+        """
+
+        output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+
+        self.assertEqual(output.attn_prior.shape, torch.Size([117, 861]))
+        self.assertEqual(output.mel.shape, torch.Size([100, 861]))
+
+        self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
+
+        self.assertEqual(output.phones.shape, torch.Size([117]))
+
+        self.assertEqual(output.wav.shape, torch.Size([220500]))
 
     def test_forward_with_long_audio(self):
         audio = torch.randn(1, 88200)
