@@ -1,24 +1,20 @@
 from typing import Any, Dict, List, Tuple
 
-from dp.phonemizer import Phonemizer
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 import torchaudio.datasets as datasets
 
-from model.config import PreprocessingConfig, PreprocessLangType, lang2id
+from model.config import lang2id
 from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
 
-# TODO: check this approach:
-# https://huggingface.co/datasets/cdminix/libritts-r-aligned/blob/main/libritts-r-aligned.py
 class LibriTTSDataset(Dataset):
     def __init__(
         self,
         root: str,
         batch_size: int,
-        phonemizer: Phonemizer,
         lang: str,
         sort: bool = False,
         drop_last: bool = False,
@@ -30,7 +26,6 @@ class LibriTTSDataset(Dataset):
         Args:
             root (str): Path to the directory where the dataset is found or downloaded.
             batch_size (int): Batch size for the dataset.
-            phonemizer (Phonemizer): The g2p phonemizer.
             lang (str): The language of the dataset.
             sort (bool, optional): Whether to sort the data by text length. Defaults to False.
             drop_last (bool, optional): Whether to drop the last batch if it is smaller than the batch size. Defaults to False.
@@ -38,8 +33,6 @@ class LibriTTSDataset(Dataset):
         """
         self.dataset = datasets.LIBRITTS(root=root, download=download)
         self.batch_size = batch_size
-
-        self.phonemizer = phonemizer
 
         self.preprocess_libtts = PreprocessLibriTTS(lang)
 

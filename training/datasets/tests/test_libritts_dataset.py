@@ -1,6 +1,5 @@
 import unittest
 
-from dp.phonemizer import Phonemizer
 import torch
 from torch.utils.data import DataLoader
 
@@ -10,7 +9,6 @@ from training.datasets.libritts_dataset import LibriTTSDataset
 class TestLibriTTSDataset(unittest.TestCase):
     def setUp(self):
         self.batch_size = 2
-        self.phonemizer = Phonemizer.from_checkpoint("checkpoints/en_us_cmudict_ipa_forward.pt",)
         self.lang = "en"
         self.sort = False
         self.drop_last = False
@@ -19,7 +17,6 @@ class TestLibriTTSDataset(unittest.TestCase):
         self.dataset = LibriTTSDataset(
             root="datasets_cache/LIBRITTS",
             batch_size=self.batch_size,
-            phonemizer=self.phonemizer,
             lang=self.lang,
             sort=self.sort,
             drop_last=self.drop_last,
@@ -89,45 +86,27 @@ class TestLibriTTSDataset(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     # TODO: fix this test
-    # def test_dataloader(self):
-    #     # Create a DataLoader from the dataset
-    #     dataloader = DataLoader(
-    #         self.dataset,
-    #         batch_size=self.batch_size,
-    #         shuffle=False,
-    #         # collate_fn=self.dataset.collate_fn,
-    #     )
+    def test_dataloader(self):
+        # Create a DataLoader from the dataset
+        dataloader = DataLoader(
+            self.dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            collate_fn=self.dataset.collate_fn,
+        )
 
-    #     iter_dataloader = iter(dataloader)
+        iter_dataloader = iter(dataloader)
 
-    #     # Iterate over the DataLoader and check the output
-    #     for i, batch in enumerate([next(iter_dataloader), next(iter_dataloader)]):
-    #         # Check the batch size
-    #         self.assertEqual(len(batch), 4)
+        # Iterate over the DataLoader and check the output
+        for _, batch in enumerate([next(iter_dataloader), next(iter_dataloader)]):
+            items = batch[0]
 
-    #         # Check the shapes of the tensors in the batch
-    #         self.assertEqual(batch[0].shape[0], self.batch_size)
-    #         self.assertEqual(batch[1].shape[0], self.batch_size)
-    #         self.assertEqual(batch[2].shape[0], self.batch_size)
-    #         self.assertEqual(batch[3].shape[0], self.batch_size)
+            # Check the batch size
+            self.assertEqual(len(items), 12)
 
-    #         # Check the types of the tensors in the batch
-    #         self.assertIsInstance(batch[0], torch.LongTensor)
-    #         self.assertIsInstance(batch[1], torch.FloatTensor)
-    #         self.assertIsInstance(batch[2], torch.FloatTensor)
-    #         self.assertIsInstance(batch[3], torch.FloatTensor)
+            for it in items:
+                self.assertEqual(len(it), self.batch_size)
 
-    #         # Check the shapes of the tensors in the batch
-    #         self.assertEqual(batch[0].shape[1], 128)
-    #         self.assertEqual(batch[1].shape[1], 80)
-    #         self.assertEqual(batch[2].shape[1], 1)
-    #         self.assertEqual(batch[3].shape[1], 1)
-
-    #         # Check that the tensors are on the correct device
-    #         self.assertEqual(batch[0].device, torch.device("cpu"))
-    #         self.assertEqual(batch[1].device, torch.device("cpu"))
-    #         self.assertEqual(batch[2].device, torch.device("cpu"))
-    #         self.assertEqual(batch[3].device, torch.device("cpu"))
 
 if __name__ == "__main__":
     unittest.main()
