@@ -14,6 +14,18 @@ Export / import env
 
 ```
 conda env export > environment.yml
+
+```
+
+By default, conda will export your environment with builds, but builds can be platform-specific.
+A solution that worked for me is to use the `--no-build` flag:
+
+```
+conda env export --no-build > environment.yml
+```
+
+Create an env
+```
 conda env create -f environment.yml
 ```
 
@@ -43,4 +55,10 @@ mkdocs serve
 
 # build a static site from your Markdown files
 mkdocs build
+```
+
+Test cases:
+
+```
+python -m unittest discover -v
 ```

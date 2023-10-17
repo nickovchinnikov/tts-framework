@@ -160,12 +160,18 @@ cython_debug/
 #.idea/
 
 .lh
+.history
 .vscode
+.idea
 
 # Checkpoints ignore (too large for lfs)
-model/checkpoints/**/*.pt
-model/checkpoints/**/*.json
-model/checkpoints/**/*.bin
-model/checkpoints/**/*.txt
+**/checkpoints/**/*.pt
+**/checkpoints/**/*.json
+**/checkpoints/**/*.bin
+**/checkpoints/**/*.txt
 
-training/checkpoints/**/*.pt
+# Mock datasets
+datasets_cache/**/*
+
+# Mock audio
+mocks/wav2vec_aligner/audio
