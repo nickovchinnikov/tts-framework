@@ -1,6 +1,5 @@
 import unittest
 
-from dp.phonemizer import Phonemizer
 import torch
 
 from training.preprocess import PreprocessLibriTTS
@@ -12,7 +11,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         torch.random.manual_seed(42)
         self.preprocess_libritts = PreprocessLibriTTS()
 
-    def test_forward(self):
+    def test_call(self):
         # Set the sampling rate and duration of the audio signal
         sr_actual = 44100
         duration = 1.0
@@ -47,13 +46,13 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         torch.testing.assert_close(
             output.phones,
-            torch.tensor([  101.,  1046., 29683.,  4137., 29700.,  1012.,   100.,  1001.,   102.]),
+            torch.tensor([ 2., 10., 37., 14., 17., 45., 24., 39., 50., 14.,  6.,  3.]),
         )
 
         self.assertEqual(output.raw_text, "Hello, world!")
         self.assertFalse(output.pitch_is_normalized)
 
-    def test_forward_with_short_audio(self):
+    def test_call_with_short_audio(self):
         audio = torch.randn(1, 22050)
         sr_actual = 22050
         raw_text = "Hello, world!"
@@ -61,7 +60,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         self.assertIsNone(output)
 
-    def test_forward_with_complicated_text(self):
+    def test_call_with_complicated_text(self):
         # Set the sampling rate and duration of the audio signal
         sr_actual = 44100
         duration = 10.0
@@ -83,12 +82,13 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
-        self.assertEqual(output.attn_prior.shape, torch.Size([117, 861]))
+        self.assertEqual(output.attn_prior.shape, torch.Size([88, 861]))
         self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
         self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
 
-        self.assertEqual(output.phones.shape, torch.Size([117]))
+        self.assertEqual(output.phones.shape, torch.Size([88]))
+        self.assertEqual(len(output.phones_ipa), 160)
 
         self.assertEqual(output.wav.shape, torch.Size([220500]))
 

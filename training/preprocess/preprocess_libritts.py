@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 from dp.phonemizer import Phonemizer
 import numpy as np
@@ -12,7 +12,6 @@ from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
 from .normilize_text import NormilizeText
 from .tacotron_stft import TacotronSTFT
-from .tokenization import Tokenizer
 
 
 @dataclass
@@ -20,6 +19,7 @@ class PreprocessAudioResult:
     wav: torch.FloatTensor
     mel: torch. Tensor
     pitch: torch.Tensor
+    phones_ipa: List[str]
     phones: torch.Tensor
     attn_prior: torch.Tensor
     raw_text: str
@@ -63,7 +63,6 @@ class PreprocessLibriTTS:
         processing_lang_type = langs_map[lang]["processing_lang_type"]
 
         self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
-        self.tokenizer = Tokenizer(checkpoint=tokenizer_checkpoint)
 
         self.normilize_text = NormilizeText(normilize_text_lang)
 
@@ -165,8 +164,12 @@ class PreprocessLibriTTS:
         
         normalized_text = self.normilize_text(normalized_text)
 
-        phones = self.phonemizer(normalized_text, lang=self.phonemizer_lang)
-        phones = torch.Tensor(self.tokenizer(phones))
+        phones_ipa = self.phonemizer(raw_text, lang=self.phonemizer_lang)
+        phones = self.phonemizer.predictor.phoneme_tokenizer(
+           phones_ipa, language=self.phonemizer_lang
+        )
+        # Convert to tensor
+        phones = torch.Tensor(phones)
 
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
 
@@ -214,6 +217,7 @@ class PreprocessLibriTTS:
             mel=mel_spectrogram,
             pitch=pitch,
             attn_prior=attn_prior,
+            phones_ipa=phones_ipa,
             phones=phones,
             raw_text=raw_text,
             normalized_text=normalized_text,

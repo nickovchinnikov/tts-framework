@@ -35,9 +35,6 @@ class Segment:
     duration: float
     score: float
 
-    def __repr__(self):
-        return f"{self.label}\t{self.score:4.2f}\t{self.start*20:5d}\t{self.end*20:5d}"
-
     @property
     def length(self):
         return self.end - self.start
@@ -93,16 +90,30 @@ class Wav2VecAligner(LightningModule):
         return speech_array, sampling_rate
 
 
+    def encode(self, text: str) -> torch.Tensor:
+        # encode labels
+        with self.processor.as_target_processor():
+            tokens = self.processor(text, return_tensors="pt").input_ids
+
+        return tokens
+    
+    
+    def decode(self, tokens: list):
+        # Decode tokens
+        decoded = self.processor.batch_decode(tokens)
+        return decoded[0]
+
+
     def align_single_sample(
         self,
-        speech_array: torch.Tensor,
+        audio_input: torch.Tensor,
         text: str
     ) -> Tuple[torch.Tensor, list, str]:
         r"""
         Align a single sample of audio data with the corresponding text.
 
         Args:
-            speech_array (torch.Tensor): The audio data.
+            audio_input (torch.Tensor): The audio data.
             text (str): The corresponding text.
 
         Returns:
@@ -113,7 +124,7 @@ class Wav2VecAligner(LightningModule):
         transcript = f"|{transcript}|"
 
         with torch.inference_mode():
-            logits = self.model(speech_array).logits
+            logits = self.model(audio_input).logits
 
         # Get the emission probability at frame level
         # Compute the probability in log-domain to avoid numerical instability
@@ -121,8 +132,8 @@ class Wav2VecAligner(LightningModule):
         emissions = torch.log_softmax(logits, dim=-1)
         emissions = emissions[0]
 
-        dictionary = {c: i for i, c in enumerate(self.labels)}
-        tokens = [dictionary[c] for c in transcript if c in dictionary]
+        # TODO: Can we use this tokens for TTS? 
+        tokens = self.encode(transcript)
 
         return emissions, tokens, transcript
     

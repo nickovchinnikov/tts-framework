@@ -2,6 +2,7 @@ from transformers import BertTokenizer
 
 
 # NOTE: Tokenization is failed, because of some symbols in the text. I need to find out more sustanable way.
+# Can't be sure about tokens for IPA. Dict is not a good idea, because of the same reason.
 class Tokenizer:
     r"""
     A wrapper class for the BERT tokenizer from the Hugging Face Transformers library.
