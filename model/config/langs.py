@@ -28,5 +28,6 @@ langs_map = {
     "en": {
         "phonemizer": "en_us",
         "nemo": "en",
+        "processing_lang_type": "english_only",
     }
 }

@@ -11,7 +11,7 @@ class TestLibriTTSDataset(unittest.TestCase):
     def setUp(self):
         self.batch_size = 2
         self.phonemizer = Phonemizer.from_checkpoint("checkpoints/en_us_cmudict_ipa_forward.pt",)
-        self.processing_lang_type = "english_only"
+        self.lang = "en"
         self.sort = False
         self.drop_last = False
         self.download = False
@@ -20,7 +20,7 @@ class TestLibriTTSDataset(unittest.TestCase):
             root="datasets_cache/LIBRITTS",
             batch_size=self.batch_size,
             phonemizer=self.phonemizer,
-            processing_lang_type=self.processing_lang_type,
+            lang=self.lang,
             sort=self.sort,
             drop_last=self.drop_last,
             download=self.download,

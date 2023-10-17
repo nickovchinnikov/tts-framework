@@ -1,6 +1,7 @@
 from transformers import BertTokenizer
 
 
+# NOTE: Tokenization is failed, because of some symbols in the text. I need to find out more sustanable way.
 class Tokenizer:
     r"""
     A wrapper class for the BERT tokenizer from the Hugging Face Transformers library.

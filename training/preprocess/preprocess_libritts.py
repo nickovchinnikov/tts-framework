@@ -6,7 +6,7 @@ import numpy as np
 from scipy.stats import betabinom
 import torch
 
-from model.config import PreprocessingConfig, PreprocessLangType, langs_map
+from model.config import PreprocessingConfig, langs_map
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
@@ -36,7 +36,6 @@ class PreprocessLibriTTS:
 
     Args:
         lang (str): The language of the input text.
-        processing_lang_type (PreprocessLangType): The preprocessing language type for lang processing.
         phonemizer_checkpoint (str): The path to the phonemizer checkpoint.
         tokenizer_checkpoint (str): The tokenizer checkpoint.
 
@@ -54,19 +53,19 @@ class PreprocessLibriTTS:
     def __init__(
         self,
         lang: str = "en",
-        processing_lang_type: PreprocessLangType = "english_only",
         phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
         tokenizer_checkpoint: str = "bert-base-uncased",
     ):
         super().__init__()
 
         self.phonemizer_lang = langs_map[lang]["phonemizer"]
-        self.normilize_text_lang = langs_map[lang]["nemo"]
+        normilize_text_lang = langs_map[lang]["nemo"]
+        processing_lang_type = langs_map[lang]["processing_lang_type"]
 
         self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
         self.tokenizer = Tokenizer(checkpoint=tokenizer_checkpoint)
 
-        self.normilize_text = NormilizeText(self.normilize_text_lang)
+        self.normilize_text = NormilizeText(normilize_text_lang)
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
 

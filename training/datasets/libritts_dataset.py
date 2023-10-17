@@ -19,7 +19,7 @@ class LibriTTSDataset(Dataset):
         root: str,
         batch_size: int,
         phonemizer: Phonemizer,
-        processing_lang_type: PreprocessLangType = "english_only",
+        lang: str,
         sort: bool = False,
         drop_last: bool = False,
         download: bool = True,
@@ -31,7 +31,7 @@ class LibriTTSDataset(Dataset):
             root (str): Path to the directory where the dataset is found or downloaded.
             batch_size (int): Batch size for the dataset.
             phonemizer (Phonemizer): The g2p phonemizer.
-            processing_lang_type (PreprocessLangType, optional): The preprocessing language type. Defaults to "english_only".
+            lang (str): The language of the dataset.
             sort (bool, optional): Whether to sort the data by text length. Defaults to False.
             drop_last (bool, optional): Whether to drop the last batch if it is smaller than the batch size. Defaults to False.
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
@@ -41,8 +41,7 @@ class LibriTTSDataset(Dataset):
 
         self.phonemizer = phonemizer
 
-        self.preprocess_config = PreprocessingConfig(processing_lang_type)
-        self.preprocess_libtts = PreprocessLibriTTS(self.phonemizer, processing_lang_type)
+        self.preprocess_libtts = PreprocessLibriTTS(lang)
 
         self.sort = sort
         self.drop_last = drop_last
