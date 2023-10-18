@@ -36,17 +36,18 @@ class PitchAdaptor(LightningModule):
         self.n_bins = model_config.variance_adaptor.n_bins
         self.pitch_embedding = Embedding(self.n_bins, model_config.encoder.n_hidden)
 
-    def get_pitch_bins(self, pitch_min: float, pitch_max: float) -> torch.Tensor:
+    def get_pitch_bins(self, pitch_range: Tuple[float, float]) -> torch.Tensor:
         r"""
         Get the pitch bins.
 
         Args:
-            pitch_min (float): The minimum pitch value.
-            pitch_max (float): The maximum pitch value.
+            pitch_range (Tuple[float, float]): The pitch min/max range.
 
         Returns:
             torch.Tensor: The tensor containing pitch bins.
         """
+
+        pitch_min, pitch_max = pitch_range
         result = torch.linspace(
             pitch_min,
             pitch_max,
@@ -58,8 +59,7 @@ class PitchAdaptor(LightningModule):
     def get_pitch_embedding_train(
         self,
         x: torch.Tensor,
-        pitch_min: float,
-        pitch_max: float,
+        pitch_range: Tuple[float, float],
         target: torch.Tensor,
         mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -68,13 +68,15 @@ class PitchAdaptor(LightningModule):
 
         Args:
             x (torch.Tensor): The input tensor.
+            pitch_range (Tuple[float, float]): The pitch min/max range.
             target (torch.Tensor): The target or ground truth tensor for pitch values.
             mask (torch.Tensor): The mask tensor indicating valid values in the `target` tensor.
 
         Returns:
             Tuple of Tensors: The pitch prediction, true pitch embedding and predicted pitch embedding.
         """
-        pitch_bins = self.get_pitch_bins(pitch_min, pitch_max)
+
+        pitch_bins = self.get_pitch_bins(pitch_range)
 
         prediction = self.pitch_predictor(x, mask)
         embedding_true = self.pitch_embedding(torch.bucketize(target, pitch_bins))
@@ -84,8 +86,7 @@ class PitchAdaptor(LightningModule):
     def get_pitch_embedding(
         self,
         x: torch.Tensor,
-        pitch_min: float,
-        pitch_max: float,
+        pitch_range: Tuple[float, float],
         mask: torch.Tensor,
         control: float,
     ) -> torch.Tensor:
@@ -94,13 +95,15 @@ class PitchAdaptor(LightningModule):
 
         Args:
             x (torch.Tensor): The input tensor.
+            pitch_range (Tuple[float, float]): The pitch min/max range.
             mask (torch.Tensor): The mask tensor indicating the valid entries in input.
             control (float): Scaling factor to control the effects of pitch.
 
         Returns:
             torch.Tensor: The tensor containing pitch embeddings.
         """
-        pitch_bins = self.get_pitch_bins(pitch_min, pitch_max)
+
+        pitch_bins = self.get_pitch_bins(pitch_range)
 
         prediction = self.pitch_predictor(x, mask)
         prediction = prediction * control
@@ -110,8 +113,7 @@ class PitchAdaptor(LightningModule):
     def add_pitch_train(
         self,
         x: torch.Tensor,
-        pitch_min: float,
-        pitch_max: float,
+        pitch_range: Tuple[float, float],
         pitch_target: torch.Tensor,
         src_mask: torch.Tensor,
         use_ground_truth: bool,
@@ -121,8 +123,7 @@ class PitchAdaptor(LightningModule):
 
         Args:
             x (torch.Tensor): The input tensor.
-            pitch_min (float): The minimum pitch value.
-            pitch_max (float): The maximum pitch value.
+            pitch_range (Tuple[float, float]): The pitch min/max range.
             pitch_target (torch.Tensor): The target or ground truth tensor for pitch values.
             src_mask (torch.Tensor): The mask tensor indicating valid values in the `pitch_target`.
             use_ground_truth (bool): A flag indicating whether or not to use ground truth values for pitch.
@@ -130,13 +131,12 @@ class PitchAdaptor(LightningModule):
         Returns:
             Tuple of Tensors: The tensor resulting from addition of pitch embeddings and input tensor, pitch prediction, true pitch embedding and predicted pitch embedding.
         """
+
         (
             pitch_prediction,
             pitch_embedding_true,
             pitch_embedding_pred,
-        ) = self.get_pitch_embedding_train(
-            x, pitch_min, pitch_max, pitch_target, src_mask
-        )
+        ) = self.get_pitch_embedding_train(x, pitch_range, pitch_target, src_mask)
         if use_ground_truth:
             x = x + pitch_embedding_true
         else:
@@ -146,8 +146,7 @@ class PitchAdaptor(LightningModule):
     def add_pitch(
         self,
         x: torch.Tensor,
-        pitch_min: float,
-        pitch_max: float,
+        pitch_range: Tuple[float, float],
         src_mask: torch.Tensor,
         control: float,
     ) -> torch.Tensor:
@@ -156,16 +155,16 @@ class PitchAdaptor(LightningModule):
 
         Args:
             x (torch.Tensor): The input tensor.
-            pitch_min (float): The minimum pitch value.
-            pitch_max (float): The maximum pitch value.
+            pitch_range (Tuple[float, float]): The pitch min/max range.
             src_mask (torch.Tensor): The mask tensor indicating the valid entries in input.
             control (float): Scaling factor to control the effects of pitch.
 
         Returns:
             torch.Tensor: The tensor resulting from addition of pitch embeddings and input tensor.
         """
+
         pitch_embedding_pred = self.get_pitch_embedding(
-            x, pitch_min, pitch_max, src_mask, control=control
+            x, pitch_range, src_mask, control=control
         )
         x = x + pitch_embedding_pred
         return x

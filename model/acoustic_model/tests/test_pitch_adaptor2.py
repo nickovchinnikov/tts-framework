@@ -16,7 +16,7 @@ class TestPitchAdaptor(unittest.TestCase):
         self.pitch_adaptor = PitchAdaptor(self.model_config)
 
     def test_get_pitch_bins(self):
-        pitch_bins = self.pitch_adaptor.get_pitch_bins(0, 1)
+        pitch_bins = self.pitch_adaptor.get_pitch_bins((0, 1))
         self.assertEqual(pitch_bins.shape[0], self.pitch_adaptor.n_bins - 1)
 
     def test_get_pitch_embedding_train(self):
@@ -30,7 +30,7 @@ class TestPitchAdaptor(unittest.TestCase):
             prediction,
             embedding_true,
             embedding_pred,
-        ) = self.pitch_adaptor.get_pitch_embedding_train(x, 0, 1, target, mask)
+        ) = self.pitch_adaptor.get_pitch_embedding_train(x, (0, 1), target, mask)
 
         self.assertEqual(prediction.shape, target.shape)
         self.assertEqual(embedding_true.shape, x.shape)
@@ -42,7 +42,7 @@ class TestPitchAdaptor(unittest.TestCase):
         x = torch.randn(dim, dim, dim)
         mask = torch.ones(dim, dim, dtype=torch.bool)
 
-        embedding = self.pitch_adaptor.get_pitch_embedding(x, 0, 1, mask, 1)
+        embedding = self.pitch_adaptor.get_pitch_embedding(x, (0, 1), mask, 1)
         self.assertEqual(embedding.shape, x.shape)
 
     def test_add_pitch_train(self):
@@ -58,7 +58,7 @@ class TestPitchAdaptor(unittest.TestCase):
             pitch_prediction,
             pitch_embedding_true,
             pitch_embedding_pred,
-        ) = self.pitch_adaptor.add_pitch_train(x, 0, 1, pitch_target, src_mask, True)
+        ) = self.pitch_adaptor.add_pitch_train(x, (0, 1), pitch_target, src_mask, True)
 
         self.assertEqual(pitch_prediction.shape, pitch_target.shape)
         self.assertEqual(pitch_embedding_true.shape, x.shape)
@@ -70,7 +70,7 @@ class TestPitchAdaptor(unittest.TestCase):
         x = torch.randn(dim, dim, dim)
         src_mask = torch.ones(dim, dim, dtype=torch.bool)
 
-        x = self.pitch_adaptor.add_pitch(x, 0, 1, src_mask, 1)
+        x = self.pitch_adaptor.add_pitch(x, (0, 1), src_mask, 1)
 
         self.assertEqual(x.shape, (dim, dim, dim))
 

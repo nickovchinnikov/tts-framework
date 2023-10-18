@@ -37,7 +37,6 @@ class PreprocessLibriTTS:
     Args:
         lang (str): The language of the input text.
         phonemizer_checkpoint (str): The path to the phonemizer checkpoint.
-        tokenizer_checkpoint (str): The tokenizer checkpoint.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -54,7 +53,6 @@ class PreprocessLibriTTS:
         self,
         lang: str = "en",
         phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
-        tokenizer_checkpoint: str = "bert-base-uncased",
     ):
         super().__init__()
 
