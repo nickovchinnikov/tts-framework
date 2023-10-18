@@ -18,7 +18,7 @@ class Item:
     wav_path: str
     out_path: str
 
-    
+
 @dataclass
 class Point:
     token_index: int
@@ -42,9 +42,9 @@ class Segment:
 
 class Wav2VecAligner(LightningModule):
     def __init__(
-            self,
-            model_name: str = "facebook/wav2vec2-base-960h",
-        ):
+        self,
+        model_name: str = "facebook/wav2vec2-base-960h",
+    ):
         r"""
         Initialize a new instance of the Wav2VecAligner class.
 
@@ -71,7 +71,6 @@ class Wav2VecAligner(LightningModule):
 
         print("Blank Token id [PAD]/<pad>", self.blank_id)
 
-
     def load_audio(self, wav_path: str) -> Tuple[torch.Tensor, int]:
         r"""
         Load an audio file from the specified path.
@@ -89,25 +88,20 @@ class Wav2VecAligner(LightningModule):
         speech_array, sampling_rate = torchaudio.load(wav_path)
         return speech_array, sampling_rate
 
-
     def encode(self, text: str) -> torch.Tensor:
         # encode labels
         with self.processor.as_target_processor():
             tokens = self.processor(text, return_tensors="pt").input_ids
 
         return tokens
-    
-    
+
     def decode(self, tokens: list):
         # Decode tokens
         decoded = self.processor.batch_decode(tokens)
         return decoded[0]
 
-
     def align_single_sample(
-        self,
-        audio_input: torch.Tensor,
-        text: str
+        self, audio_input: torch.Tensor, text: str
     ) -> Tuple[torch.Tensor, list, str]:
         r"""
         Align a single sample of audio data with the corresponding text.
@@ -132,11 +126,9 @@ class Wav2VecAligner(LightningModule):
         emissions = torch.log_softmax(logits, dim=-1)
         emissions = emissions[0]
 
-        # TODO: Can we use this tokens for TTS? 
-        tokens = self.encode(transcript)
+        tokens = self.encode(transcript)[0]
 
         return emissions, tokens, transcript
-    
 
     def get_trellis(
         self,
@@ -178,7 +170,6 @@ class Wav2VecAligner(LightningModule):
                 trellis[t, :-1] + emission[t, tokens[1:]],
             )
         return trellis
-    
 
     def backtrack(
         self,
@@ -237,8 +228,7 @@ class Wav2VecAligner(LightningModule):
             t -= 1
 
         return path[::-1]
-    
-    
+
     def merge_repeats(self, path: list[Point], transcript: str) -> list[Segment]:
         r"""
         Merge repeated tokens into a single segment.
@@ -274,10 +264,11 @@ class Wav2VecAligner(LightningModule):
             )
             i1 = i2
         return segments
-    
 
     # Merge words
-    def merge_words(self, segments: list[Segment], separator: str = "|") -> list[Segment]:
+    def merge_words(
+        self, segments: list[Segment], separator: str = "|"
+    ) -> list[Segment]:
         r"""
         Merge words in the given path.
 
@@ -295,7 +286,9 @@ class Wav2VecAligner(LightningModule):
                 if i1 != i2:
                     segs = segments[i1:i2]
                     word = "".join([seg.label for seg in segs])
-                    score = sum(seg.score * seg.length for seg in segs) / sum(seg.length for seg in segs)
+                    score = sum(seg.score * seg.length for seg in segs) / sum(
+                        seg.length for seg in segs
+                    )
 
                     x0, x1 = segments[i1].start, segments[i2 - 1].end
                     duration = x1 - x0
@@ -306,7 +299,6 @@ class Wav2VecAligner(LightningModule):
             else:
                 i2 += 1
         return words
-
 
     def forward(self, wav_path: str, text: str) -> list[Segment]:
         r"""
@@ -322,7 +314,7 @@ class Wav2VecAligner(LightningModule):
         """
 
         audio_input, _ = self.load_audio(wav_path)
-        
+
         emissions, tokens, transcript = self.align_single_sample(audio_input, text)
 
         trellis = self.get_trellis(emissions, tokens)
@@ -334,7 +326,7 @@ class Wav2VecAligner(LightningModule):
         result = self.merge_words(merged_path)
 
         return result
-    
+
     def save_segments(self, wav_path: str, text: str, save_dir: str):
         r"""
         Perform the forward pass of the model to get the segments and save each segment to a file.
@@ -362,10 +354,14 @@ class Wav2VecAligner(LightningModule):
             x0 = int(ratio * word.start)
             x1 = int(ratio * word.end)
 
-            print(f"{word.label} ({word.score:.2f}): {x0 / sampling_rate:.3f} - {x1 / sampling_rate:.3f} sec")
+            print(
+                f"{word.label} ({word.score:.2f}): {x0 / sampling_rate:.3f} - {x1 / sampling_rate:.3f} sec"
+            )
 
             segment_waveform = waveform[:, x0:x1]
-            
+
             # Save the segment waveform to a file
             filename = f"{i}_{word.label}.wav"
-            torchaudio.save(os.path.join(save_dir, filename), segment_waveform, sampling_rate)
+            torchaudio.save(
+                os.path.join(save_dir, filename), segment_waveform, sampling_rate
+            )
