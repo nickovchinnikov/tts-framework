@@ -6,7 +6,6 @@ from lightning.pytorch import LightningModule
 import torch
 
 from model.config import AcousticModelConfigType
-from model.helpers import tools
 
 from .embedding import Embedding
 from .variance_predictor import VariancePredictor
@@ -41,6 +40,8 @@ class PitchAdaptor(LightningModule):
 
         n_bins = model_config.variance_adaptor.n_bins
 
+        # NOTE: I changed this logic to use the stats from the preprocessing data
+        # We have pitch info for the batch insted of the whole dataset
         # Always use stats from preprocessing data, even in fine-tuning
         with open(Path(data_path) / "stats.json") as f:
             stats = json.load(f)
@@ -48,6 +49,7 @@ class PitchAdaptor(LightningModule):
 
         print(f"Min pitch: {pitch_min} - Max pitch: {pitch_max}")
 
+        # TODO: change pitch_bins!
         self.register_buffer(
             "pitch_bins",
             torch.linspace(
