@@ -12,3 +12,14 @@ select = [
 [tool.ruff.isort]
 force-sort-within-sections = true
 # order-by-type = true
+
+[tool.pyright]
+include = ["model", "training"]
+exclude = []
+ignore = []
+
+defineConstant = { DEBUG = true }
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportMissingTypeStubsSeverity = "error"

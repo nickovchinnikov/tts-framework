@@ -13,6 +13,7 @@ dependencies:
   - ipykernel
   - mkdocs-material
   - mypy
+  - pyright
   - numba
   - lightning
   - pip
