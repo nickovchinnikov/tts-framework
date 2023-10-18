@@ -2,14 +2,14 @@ from typing import Any, Dict, Iterable
 
 import torch
 
-from model.config import AcousticFinetuningConfig
+from model.config import AcousticFinetuningConfig, AcousticTrainingConfig
 
 
 class ScheduledOptimFinetuning:
     def __init__(
         self,
         parameters: Iterable,
-        train_config: AcousticFinetuningConfig,
+        train_config: AcousticTrainingConfig,
         current_step: int,
     ):
         r"""

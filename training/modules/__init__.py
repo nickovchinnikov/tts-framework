@@ -1,1 +1,1 @@
-from .acoustic_module import AcousticModule
+from .acoustic_module import AcousticTrainer

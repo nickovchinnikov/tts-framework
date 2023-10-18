@@ -1,6 +1,7 @@
 from typing import Union
 
 from pytorch_lightning.core import LightningModule
+import torch
 from torch.utils.data import DataLoader
 
 from model.acoustic_model import AcousticModel
@@ -8,6 +9,7 @@ from model.config import (
     AcousticENModelConfig,
     AcousticFinetuningConfig,
     AcousticPretrainingConfig,
+    AcousticTrainingConfig,
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
@@ -16,14 +18,15 @@ from training.loss import LossesCriterion
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 
-class AcousticModule(LightningModule):
-    def __init__(self, fine_tuning: bool = False, lang: str = "en"):
+class AcousticTrainer(LightningModule):
+    def __init__(self, fine_tuning: bool = False, lang: str = "en", root: str = "datasets_cache/LIBRITTS"):
         super().__init__()
 
         self.lang = lang
+        self.root = root
         self.fine_tuning = fine_tuning
 
-        self.train_config: Union[AcousticFinetuningConfig, AcousticPretrainingConfig]
+        self.train_config: AcousticTrainingConfig
 
         if self.fine_tuning:
             self.train_config = AcousticFinetuningConfig()
@@ -39,19 +42,14 @@ class AcousticModule(LightningModule):
         self.model = AcousticModel(
             preprocess_config=self.preprocess_config,
             model_config=self.model_config,
-            fine_tuning=fine_tuning,
             n_speakers=5392,
-            # Setup the device, because .to() under the hood of lightning is not working
-            device=self.device,  # type: ignore
         )
 
-        self.loss = LossesCriterion(device=self.device)  # type: ignore
+        self.loss = LossesCriterion()
 
-        # print(self.model)
-
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         self.model
-        return True
+        return None
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -133,20 +131,15 @@ class AcousticModule(LightningModule):
         return scheduled_optim
 
     def train_dataloader(self):
-        # TODO: fix filename, data_path, assets_path
         dataset = LibriTTSDataset(
-            root="datasets_cache/LIBRITTS",
+            root=self.root,
             batch_size=self.train_config.batch_size,
             lang=self.lang,
-            sort=self.sort,
-            drop_last=self.drop_last,
-            download=self.download,
         )
         loader = DataLoader(
             dataset,
-            num_workers=4,
-            batch_size=1,
-            shuffle=True,
+            batch_size=self.train_config.batch_size,
+            shuffle=False,
             collate_fn=dataset.collate_fn,
         )
         return loader

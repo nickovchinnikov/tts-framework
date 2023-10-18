@@ -107,7 +107,6 @@ def init_conformer(
 class AcousticModelConfig:
     preprocess_config: PreprocessingConfig
     model_config: AcousticENModelConfig
-    fine_tuning: bool
     n_speakers: int
 
 
@@ -139,7 +138,6 @@ def init_acoustic_model(
     acoustic_model_config = AcousticModelConfig(
         preprocess_config=preprocess_config,
         model_config=model_config,
-        fine_tuning=True,
         n_speakers=n_speakers,
     )
 
@@ -324,7 +322,7 @@ def init_mask_input_embeddings_encoding_attn_mask(
     # Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]
     encoding = positional_encoding(
         model_config.encoder.n_hidden,
-        max(x.shape[1], max(forward_train_params.mel_lens)),
+        max(x.shape[1], int(forward_train_params.mel_lens.max().item())),
         device=x.device,
     )
 

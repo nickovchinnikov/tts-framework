@@ -210,12 +210,13 @@ class LibriTTSDataset(Dataset):
         Returns:
             Tuple: A tuple containing the normalized pitch values.
         """
-        pitches = torch.concatenate(pitches)
 
-        min_value = torch.min(pitches).item()
-        max_value = torch.max(pitches).item()
+        pitches_t = torch.concatenate(pitches)
 
-        mean = torch.mean(pitches).item()
-        std = torch.std(pitches).item()
+        min_value = torch.min(pitches_t).item()
+        max_value = torch.max(pitches_t).item()
+
+        mean = torch.mean(pitches_t).item()
+        std = torch.std(pitches_t).item()
 
         return min_value, max_value, mean, std

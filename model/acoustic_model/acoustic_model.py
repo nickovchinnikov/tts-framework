@@ -1,9 +1,9 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from lightning.pytorch import LightningModule
 from torch.nn.parameter import Parameter
 
 from model.attention import Conformer
@@ -292,7 +292,7 @@ class AcousticModel(LightningModule):
         pitches: torch.Tensor,
         pitches_range: Tuple[float, float],
         langs: torch.Tensor,
-        attn_priors: torch.Tensor,
+        attn_priors: Union[torch.Tensor, None],
         use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
         r"""
@@ -329,7 +329,7 @@ class AcousticModel(LightningModule):
 
         encoding = positional_encoding(
             self.emb_dim,
-            max(x.shape[1], max(mel_lens)),
+            max(x.shape[1], int(mel_lens.max().item())),
             device=self.device,
         )
 

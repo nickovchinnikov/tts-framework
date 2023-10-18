@@ -3,14 +3,18 @@ from typing import Any, Dict, Iterable
 import numpy as np
 import torch
 
-from model.config import AcousticModelConfigType, AcousticPretrainingConfig
+from model.config import (
+    AcousticModelConfigType,
+    AcousticPretrainingConfig,
+    AcousticTrainingConfig,
+)
 
 
 class ScheduledOptimPretraining:
     def __init__(
         self,
         parameters: Iterable,
-        train_config: AcousticPretrainingConfig,
+        train_config: AcousticTrainingConfig,
         model_config: AcousticModelConfigType,
         current_step: int,
     ):

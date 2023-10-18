@@ -90,6 +90,9 @@ class AcousticPretrainingConfig:
     )
 
 
+AcousticTrainingConfig = Union[AcousticFinetuningConfig, AcousticPretrainingConfig]
+
+
 @dataclass
 class ConformerConfig:
     n_layers: int
