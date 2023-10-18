@@ -1,9 +1,9 @@
 from typing import Dict, Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from lightning.pytorch import LightningModule
 from torch.nn.parameter import Parameter
 
 from model.attention import Conformer
@@ -37,10 +37,8 @@ class AcousticModel(LightningModule):
     Additionally, a pitch and length adaptor are instantiated.
 
     Args:
-        data_path (str): Path to the data directory
         preprocess_config (PreprocessingConfig): Object containing the configuration used for preprocessing the data
         model_config (AcousticModelConfigType): Configuration object containing various model parameters
-        fine_tuning (bool): Flag to indicate whether model is being fine-tuned
         n_speakers (int): Total number of speakers in the dataset
 
     Note:
@@ -49,11 +47,8 @@ class AcousticModel(LightningModule):
 
     def __init__(
         self,
-        # TODO: fix the argument data_path!
-        # data_path: str,
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
-        fine_tuning: bool,
         n_speakers: int,
     ):
         super().__init__()

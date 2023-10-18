@@ -21,12 +21,12 @@ dependencies:
   - tqdm
   - pynini
   - pip:
-    - datasets
-    - deep-phonemizer
-    - nemo-text-processing
-    - piq
-    - soundfile
-    - transformers
-    - unidecode
-    - ruff
+      - datasets
+      - deep-phonemizer
+      - nemo-text-processing
+      - piq
+      - soundfile
+      - transformers
+      - unidecode
+      - ruff
 prefix: D:\Program Files\anaconda3\envs\tts_framework

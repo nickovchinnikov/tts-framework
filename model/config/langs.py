@@ -1,3 +1,4 @@
+# TODO: now we only support english, but we need to support other languages!
 SUPPORTED_LANGUAGES = [
     "bg",
     "cs",

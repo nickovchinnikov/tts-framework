@@ -17,7 +17,7 @@ from .tacotron_stft import TacotronSTFT
 @dataclass
 class PreprocessAudioResult:
     wav: torch.FloatTensor
-    mel: torch. Tensor
+    mel: torch.Tensor
     pitch: torch.Tensor
     phones_ipa: List[str]
     phones: torch.Tensor
@@ -159,12 +159,12 @@ class PreprocessLibriTTS:
 
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
-        
+
         normalized_text = self.normilize_text(normalized_text)
 
         phones_ipa = self.phonemizer(raw_text, lang=self.phonemizer_lang)
         phones = self.phonemizer.predictor.phoneme_tokenizer(
-           phones_ipa, language=self.phonemizer_lang
+            phones_ipa, language=self.phonemizer_lang
         )
         # Convert to tensor
         phones = torch.Tensor(phones)

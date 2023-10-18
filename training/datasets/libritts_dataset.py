@@ -69,7 +69,7 @@ class LibriTTSDataset(Dataset):
             print("Skipping due to preprocessing error")
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
-        
+
         data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
 
         sample = {
@@ -101,8 +101,20 @@ class LibriTTSDataset(Dataset):
             Tuple: A tuple containing the reprocessed data.
         """
         # Initialize empty lists to store extracted values
-        empty_lists = [[] for _ in range(11)]
-        ids, speakers, texts, raw_texts, mels, pitches, attn_priors, langs, src_lens, mel_lens, wavs = empty_lists
+        empty_lists: List[List] = [[] for _ in range(11)]
+        (
+            ids,
+            speakers,
+            texts,
+            raw_texts,
+            mels,
+            pitches,
+            attn_priors,
+            langs,
+            src_lens,
+            mel_lens,
+            wavs,
+        ) = empty_lists
 
         # Extract fields from data dictionary and populate the lists
         for idx in idxs:
@@ -157,7 +169,7 @@ class LibriTTSDataset(Dataset):
             wavs,
         )
 
-    def collate_fn(self, data: list) -> list:
+    def collate_fn(self, data: List) -> List:
         r"""
         Collates a batch of data samples.
 
@@ -185,13 +197,15 @@ class LibriTTSDataset(Dataset):
         for idx in idx_arr:
             output.append(self.collate_preprocess(data, idx))
         return output
-    
-    def normalize_pitch(self, pitches: list[torch.FloatTensor]) -> Tuple[float, float, float, float]:
+
+    def normalize_pitch(
+        self, pitches: List[torch.Tensor]
+    ) -> Tuple[float, float, float, float]:
         r"""
         Normalizes the pitch values.
 
         Args:
-            pitches (List[torch.FloatTensor]): A list of pitch values.
+            pitches (List[torch.Tensor]): A list of pitch values.
 
         Returns:
             Tuple: A tuple containing the normalized pitch values.

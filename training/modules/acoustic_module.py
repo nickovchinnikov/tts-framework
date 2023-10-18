@@ -1,7 +1,6 @@
 from typing import Union
 
 from pytorch_lightning.core import LightningModule
-import torch
 from torch.utils.data import DataLoader
 
 from model.acoustic_model import AcousticModel
@@ -18,9 +17,10 @@ from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraini
 
 
 class AcousticModule(LightningModule):
-    def __init__(self, fine_tuning: bool = False):
+    def __init__(self, fine_tuning: bool = False, lang: str = "en"):
         super().__init__()
 
+        self.lang = lang
         self.fine_tuning = fine_tuning
 
         self.train_config: Union[AcousticFinetuningConfig, AcousticPretrainingConfig]
@@ -37,7 +37,6 @@ class AcousticModule(LightningModule):
 
         # TODO: fix the arguments!
         self.model = AcousticModel(
-            data_path="model/config/",
             preprocess_config=self.preprocess_config,
             model_config=self.model_config,
             fine_tuning=fine_tuning,
@@ -136,13 +135,12 @@ class AcousticModule(LightningModule):
     def train_dataloader(self):
         # TODO: fix filename, data_path, assets_path
         dataset = LibriTTSDataset(
-            filename="val.txt",
-            batch_size=1,
-            sort=True,
-            drop_last=False,
-            data_path="data",
-            assets_path="assets",
-            is_eval=True,
+            root="datasets_cache/LIBRITTS",
+            batch_size=self.train_config.batch_size,
+            lang=self.lang,
+            sort=self.sort,
+            drop_last=self.drop_last,
+            download=self.download,
         )
         loader = DataLoader(
             dataset,

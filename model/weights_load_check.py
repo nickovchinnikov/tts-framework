@@ -30,7 +30,6 @@ torch.cuda.is_available()
 # torch.cuda.get_device_name()
 
 
-
 # %%
 checkpoint_base = os.path.join(
     SCRIPT_DIR,
@@ -74,17 +73,21 @@ model
 
 # %%
 # Check the weights extending theory
-test_ten1 = torch.tensor([
-    [1, 2],
-    [4, 5],
-])
+test_ten1 = torch.tensor(
+    [
+        [1, 2],
+        [4, 5],
+    ]
+)
 test_ten1.shape
 
 # %%
-test_ten2 = torch.tensor([
-    [0, 0, 7],
-    [0, 0, 8],
-])
+test_ten2 = torch.tensor(
+    [
+        [0, 0, 7],
+        [0, 0, 8],
+    ]
+)
 
 test_ten2.shape
 
@@ -95,7 +98,9 @@ test_ten2
 
 # %%
 # Add the new weights to the existing ones works!
-existing_weights = ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
+existing_weights = ckpt_acoustic["gen"][
+    "decoder.layer_stack.0.conditioning.embedding_proj.weight"
+]
 
 existing_weights.shape
 
@@ -122,7 +127,9 @@ for i in range(6):
         f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
     ] = new_weights
 
-    print(f"Changed weights for decoder.layer_stack.{i}.conditioning.embedding_proj.weight: {new_weights.shape}")
+    print(
+        f"Changed weights for decoder.layer_stack.{i}.conditioning.embedding_proj.weight: {new_weights.shape}"
+    )
 
 # %%
 # Result is not so bad, it works, but the model is not the same
