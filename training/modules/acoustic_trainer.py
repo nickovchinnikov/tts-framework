@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Dict
 
 from pytorch_lightning.core import LightningModule
 import torch
@@ -47,6 +47,25 @@ class AcousticTrainer(LightningModule):
 
         self.loss = LossesCriterion()
 
+    def weights_prepare(self, checkpoint_path: str):
+        r"""
+        Prepares the weights for the model. This is required for the model to be loaded from the checkpoint.
+        """
+        ckpt_acoustic = torch.load(checkpoint_path)
+
+        for i in range(6):
+            new_weights = torch.randn(384, 385) * 0.17
+            existing_weights = ckpt_acoustic["gen"][
+                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
+            ]
+            # Copy the existing weights into the new tensor
+            new_weights[:, :-1] = existing_weights
+            ckpt_acoustic["gen"][
+                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
+            ] = new_weights
+
+        return ckpt_acoustic
+
     def forward(self, x: torch.Tensor):
         self.model
         return None
@@ -62,6 +81,7 @@ class AcousticTrainer(LightningModule):
 
         self.model.train()
 
+        # TODO: check what inside the batch
         (
             ids,
             raw_texts,
@@ -86,6 +106,8 @@ class AcousticTrainer(LightningModule):
             mels=mels,
             mel_lens=mel_lens,
             pitches=pitches,
+            # TODO: fix pitches_range!
+            pitches_range=(0.0, 1.0),
             langs=langs,
             attn_priors=attn_priors,
         )
@@ -113,8 +135,18 @@ class AcousticTrainer(LightningModule):
 
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
+    
+    def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        return super().on_load_checkpoint(checkpoint)
 
     def configure_optimizers(self):
+        r"""
+        Configures the optimizer used for training.
+        Depending on the training mode, either the finetuning or the pretraining optimizer is used.
+
+        Returns:
+            ScheduledOptimFinetuning or ScheduledOptimPretraining: The optimizer.
+        """
         if self.fine_tuning:
             scheduled_optim = ScheduledOptimFinetuning(
                 parameters=self.model.parameters(),
@@ -131,6 +163,13 @@ class AcousticTrainer(LightningModule):
         return scheduled_optim
 
     def train_dataloader(self):
+        r"""
+        Returns the training dataloader, that is using the LibriTTS dataset.
+
+        Returns:
+            DataLoader: The training dataloader.
+        """
+
         dataset = LibriTTSDataset(
             root=self.root,
             batch_size=self.train_config.batch_size,

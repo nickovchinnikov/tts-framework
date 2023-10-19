@@ -112,6 +112,17 @@ new_weights[:, :-1] = existing_weights
 new_weights.shape
 
 # %%
+new_w = torch.FloatTensor(384, 385)
+new_w
+
+# %%
+existing_weights.min(), existing_weights.max()
+
+# %%
+new_w = torch.randn(100000, 10000) * 0.17
+new_w.min(), new_w.max()
+
+# %%
 # add to the layer_stack random initialized layer
 # NOTE: IT WORKS!
 for i in range(6):
@@ -128,6 +139,9 @@ for i in range(6):
     print(
         f"Changed weights for decoder.layer_stack.{i}.conditioning.embedding_proj.weight: {new_weights.shape}"
     )
+
+# %%
+ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
 
 # %%
 # Result is not so bad, it works, but the model is not the same
