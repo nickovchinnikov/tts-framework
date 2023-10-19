@@ -16,7 +16,7 @@ print("Starting to load the dataset...")
 dataset = load_dataset('cdminix/libritts-r-aligned', data_dir="../../datasets_cache", split="train")
 
 # %%
-dataset[0]
+dataset[0] # type: ignore
 
 # %%
 

@@ -141,7 +141,7 @@ class TestWav2VecAligner(unittest.TestCase):
         self.assertEqual(emissions.shape, torch.Size([169, 32]))
 
         self.assertEqual(
-            len(tokens[0]),
+            len(tokens),
             47,
         )
 

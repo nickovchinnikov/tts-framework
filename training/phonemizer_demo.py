@@ -12,10 +12,11 @@ def decode_phonemes(
 ) -> str:
     """CTC-like decoding. First removes consecutive duplicates, then removes special tokens."""
     # removes consecutive duplicates
-    ids = [id_ for id_, _ in groupby(ids)]
+    ids = [id_ for id_, _ in groupby(ids)] # type: ignore
 
-    special_token_ids = processor.tokenizer.all_special_ids + [
-        processor.tokenizer.word_delimiter_token_id
+    
+    special_token_ids = processor.tokenizer.all_special_ids + [ # type: ignore
+        processor.tokenizer.word_delimiter_token_id # type: ignore
     ]
     # converts id to token, skipping special tokens
     phonemes = [processor.decode(id_) for id_ in ids if id_ not in special_token_ids]
@@ -37,7 +38,7 @@ sr = processor.feature_extractor.sampling_rate
 
 # load dummy dataset and read soundfiles
 ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", "clean", split="validation")
-audio_array = ds[0]["audio"]["array"]
+audio_array = ds[0]["audio"]["array"] # type: ignore
 
 # or, read a single audio file
 # audio_array, _ = librosa.load("myaudio.wav", sr=sr)

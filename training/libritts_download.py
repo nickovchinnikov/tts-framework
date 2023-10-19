@@ -55,7 +55,7 @@ phonemes
 # %%
 from training.preprocess import PreprocessLibriTTS
 
-preprocess = PreprocessLibriTTS(phonemizer, "english_only")
+preprocess = PreprocessLibriTTS()
 preprocess
 
 # %%

@@ -101,7 +101,7 @@ def getPitch(cmdf: np.ndarray, tau_min: int, tau_max: int, harmo_th=0.1) -> int:
 
 
 def compute_yin(
-    sig_torch: torch.FloatTensor,
+    sig_torch: torch.Tensor,
     sr: int,
     w_len: int = 512,
     w_step: int = 256,
@@ -147,16 +147,16 @@ def compute_yin(
         (int((w_len - w_step) / 2), int((w_len - w_step) / 2), 0, 0),
         mode="reflect",
     )
-    sig_torch = sig_torch.view(-1).numpy()
+    sig_torch_n: np.ndarray = sig_torch.view(-1).numpy()
 
     tau_min = int(sr / f0_max)
     tau_max = int(sr / f0_min)
 
     timeScale = range(
-        0, len(sig_torch) - w_len, w_step
+        0, len(sig_torch_n) - w_len, w_step
     )  # time values for each analysis window
     times = [t / float(sr) for t in timeScale]
-    frames = [sig_torch[t : t + w_len] for t in timeScale]
+    frames = [sig_torch_n[t : t + w_len] for t in timeScale]
 
     pitches = [0.0] * len(timeScale)
     harmonic_rates = [0.0] * len(timeScale)

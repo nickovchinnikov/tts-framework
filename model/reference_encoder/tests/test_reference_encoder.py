@@ -24,7 +24,7 @@ class TestReferenceEncoder(unittest.TestCase):
             128,
         )  # assuming the input sequence length is 128
         mel_lens = (
-            torch.ones(16).type(torch.LongTensor) * 128
+            torch.ones(16, dtype=torch.long) * 128
         )  # assuming all sequences are of equal length
 
         # Call the forward method
@@ -52,7 +52,8 @@ class TestReferenceEncoder(unittest.TestCase):
             mel_lens = (
                 torch.ones(
                     batch_size,
-                ).type(torch.LongTensor)
+                    dtype=torch.long,
+                )
                 * 128
             )
 

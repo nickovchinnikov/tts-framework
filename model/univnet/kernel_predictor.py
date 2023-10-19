@@ -152,5 +152,5 @@ class KernelPredictor(LightningModule):
         nn.utils.remove_weight_norm(self.bias_conv)
 
         for block in self.residual_convs:
-            nn.utils.remove_weight_norm(block[1])
-            nn.utils.remove_weight_norm(block[3])
+            nn.utils.remove_weight_norm(block[1]) # type: ignore
+            nn.utils.remove_weight_norm(block[3]) # type: ignore

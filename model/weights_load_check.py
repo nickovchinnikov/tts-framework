@@ -62,10 +62,8 @@ data_path = os.path.join(
 device = get_device()
 
 model = AcousticModel(
-    data_path,
     preprocess_config,
     model_config,
-    fine_tuning=True,
     # Import from the checkpoint
     n_speakers=5392,
 )

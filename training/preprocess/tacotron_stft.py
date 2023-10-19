@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import librosa
 import lightning.pytorch as pl
@@ -14,9 +14,9 @@ class TacotronSTFT(pl.LightningModule):
         win_length: int,
         n_mel_channels: int,
         sampling_rate: int,
-        mel_fmin: Union[int, None],
-        mel_fmax: Union[int, None],
         center: bool,
+        mel_fmax: Optional[int],
+        mel_fmin: float = 0.0,
     ):
         r"""
         TacotronSTFT module that computes mel-spectrograms from a batch of waves.
@@ -160,7 +160,7 @@ class TacotronSTFT(pl.LightningModule):
         return torch.log(torch.clamp(x, min=clip_val) * C)
 
     # NOTE: audio np.ndarray changed to torch.FloatTensor!
-    def get_mel_from_wav(self, audio: torch.FloatTensor) -> torch.FloatTensor:
+    def get_mel_from_wav(self, audio: torch.Tensor) -> torch.Tensor:
         audio_tensor = audio.unsqueeze(0)
         with torch.no_grad():
             _, melspec = self.forward(audio_tensor)

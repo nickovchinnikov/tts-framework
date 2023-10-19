@@ -88,7 +88,7 @@ class Wav2VecAligner(LightningModule):
         speech_array, sampling_rate = torchaudio.load(wav_path)
         return speech_array, sampling_rate
 
-    def encode(self, text: str) -> torch.Tensor:
+    def encode(self, text: str) -> list:
         # encode labels
         with self.processor.as_target_processor():
             tokens = self.processor(text, return_tensors="pt").input_ids

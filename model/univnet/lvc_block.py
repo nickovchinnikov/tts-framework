@@ -206,4 +206,4 @@ class LVCBlock(LightningModule):
         self.kernel_predictor.remove_weight_norm()
         nn.utils.remove_weight_norm(self.convt_pre[1])
         for block in self.conv_blocks:
-            nn.utils.remove_weight_norm(block[1])
+            nn.utils.remove_weight_norm(block[1]) # type: ignore

@@ -33,13 +33,16 @@ class TestBinLoss(unittest.TestCase):
         loss.backward()
 
         self.assertAlmostEqual(loss.item(), expected_loss.item())
-        self.assertTrue(
-            torch.allclose(
-                soft_attention.grad,
-                torch.tensor([-0.5556, 0.0000, -0.6250, 0.0000]),
-                atol=1e-4,
+        self.assertIsNotNone(soft_attention.grad)
+
+        if soft_attention.grad is not None:
+            self.assertTrue(
+                torch.allclose(
+                    soft_attention.grad,
+                    torch.tensor([-0.5556, 0.0000, -0.6250, 0.0000]),
+                    atol=1e-4,
+                )
             )
-        )
 
 
 if __name__ == "__main__":

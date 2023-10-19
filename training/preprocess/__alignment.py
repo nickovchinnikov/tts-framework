@@ -102,7 +102,7 @@ class Wav2Vec2Aligner:
             # Similarly, when referring to token index `J` in trellis,
             # the corresponding index in transcript is `J-1`.
             j = trellis.size(1) - 1
-            t_start = torch.argmax(trellis[:, j]).item()
+            t_start = int(torch.argmax(trellis[:, j]).item())
 
             path = []
             for t in range(t_start, 0, -1):
