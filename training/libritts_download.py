@@ -1,8 +1,8 @@
 # %%
-import torchaudio.datasets as datasets
+from torchaudio import datasets
 
 dataset = datasets.LIBRITTS(
-    root="../datasets_cache/LIBRITTS", download=True
+    root="../datasets_cache/LIBRITTS", download=True,
 )
 
 """
