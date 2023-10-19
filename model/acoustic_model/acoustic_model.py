@@ -66,7 +66,6 @@ class AcousticModel(LightningModule):
 
         self.pitch_adaptor = PitchAdaptor(
             model_config,
-            # data_path=data_path,
         )
 
         self.length_regulator = LengthAdaptor(model_config)
@@ -139,6 +138,9 @@ class AcousticModel(LightningModule):
         )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
+        # NOTE: flexibility of the model binded by the n_speaker parameter, maybe I can find another way?
+        # NOTE: in LIBRITTS there are 2477 speakers, we can add more, just extend the speaker_embed matrix
+        # Need to think about it more
         self.speaker_embed = Parameter(
             tools.initialize_embeddings(
                 (n_speakers, model_config.speaker_embed_dim), device=self.device
