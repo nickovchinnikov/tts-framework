@@ -7,9 +7,7 @@ from model.attention.conformer_conv_module import ConformerConvModule
 
 class TestConformerConvModule(unittest.TestCase):
     def test_forward_output_shape(self):
-        """
-        Test that the output shape from the forward method matches the expected shape.
-        """
+        """Test that the output shape from the forward method matches the expected shape."""
         d_model = 10
         kernel_size = 3
         dropout = 0.2

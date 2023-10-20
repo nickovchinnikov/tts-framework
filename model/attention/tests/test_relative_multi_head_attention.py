@@ -31,7 +31,7 @@ class TestRelativeMultiHeadAttention(unittest.TestCase):
         # Generate random tensors for query, key, value, pos_embedding, mask
         # Test the forward function
         context, attn = self.attention(
-            self.query, self.key, self.value, self.pos_embedding, self.mask
+            self.query, self.key, self.value, self.pos_embedding, self.mask,
         )
 
         # Assert output shapes
@@ -57,7 +57,7 @@ class TestRelativeMultiHeadAttention(unittest.TestCase):
     def test_attention_values(self):
         # Test the forward function
         context, attn = self.attention(
-            self.query, self.key, self.value, self.pos_embedding, self.mask
+            self.query, self.key, self.value, self.pos_embedding, self.mask,
         )
 
         # Check values of attention output are in range [0, 1]

@@ -40,13 +40,9 @@ class TestConformerBlock(unittest.TestCase):
             n_speakers,
         )
 
-        d_k = d_v = self.conformer_config.dim // self.conformer_config.n_heads
-
         self.model = ConformerBlock(
             d_model=self.conformer_config.dim,
             n_head=self.conformer_config.n_heads,
-            d_k=d_k,
-            d_v=d_v,
             kernel_size_conv_mod=self.conformer_config.kernel_size_conv_mod,
             embedding_dim=self.conformer_config.embedding_dim,
             dropout=self.conformer_config.p_dropout,
@@ -62,15 +58,11 @@ class TestConformerBlock(unittest.TestCase):
         )
 
     def test_initialization(self):
-        """
-        Test for successful creation of ConformerBlock instance.
-        """
+        """Test for successful creation of ConformerBlock instance."""
         self.assertIsInstance(self.model, ConformerBlock)
 
     def test_forward(self):
-        """
-        Test for successful forward pass.
-        """
+        """Test for successful forward pass."""
         (
             src_mask,
             x,
@@ -101,19 +93,15 @@ class TestConformerBlock(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
 
     def test_with_ff_flag(self):
-        """
-        Test for correct response based on `with_ff` flag during initialization.
-        """
+        """Test for correct response based on `with_ff` flag during initialization."""
         model = ConformerBlock(
             d_model=20,
             n_head=5,
-            d_k=16,
-            d_v=16,
             kernel_size_conv_mod=5,
             embedding_dim=20,
             dropout=0.4,
@@ -124,8 +112,6 @@ class TestConformerBlock(unittest.TestCase):
         model = ConformerBlock(
             d_model=12,
             n_head=6,
-            d_k=12,
-            d_v=12,
             kernel_size_conv_mod=3,
             embedding_dim=12,
             dropout=0.1,

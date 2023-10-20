@@ -1,12 +1,11 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 
 
 class StyleEmbedAttention(LightningModule):
-    r"""
-    This mechanism is being used to extract style features from audio data in the form of spectrograms.
+    r"""Mechanism is being used to extract style features from audio data in the form of spectrograms.
 
     Each style token (parameterized by an embedding vector) represents a unique style feature. The model applies the `StyleEmbedAttention` mechanism to combine these style tokens (style features) in a weighted manner. The output of the attention module is a sum of style tokens, with each token weighted by its relevance to the input.
 
@@ -47,12 +46,11 @@ class StyleEmbedAttention(LightningModule):
         )
         self.W_key = nn.Linear(in_features=key_dim, out_features=num_units, bias=False)
         self.W_value = nn.Linear(
-            in_features=key_dim, out_features=num_units, bias=False
+            in_features=key_dim, out_features=num_units, bias=False,
         )
 
     def forward(self, query: torch.Tensor, key_soft: torch.Tensor) -> torch.Tensor:
-        r"""
-        Forward pass of the StyleEmbedAttention module calculates the attention scores.
+        r"""Forward pass of the StyleEmbedAttention module calculates the attention scores.
 
         Args:
             query (torch.Tensor): The input tensor for queries of shape `[N, T_q, query_dim]`
@@ -83,8 +81,6 @@ class StyleEmbedAttention(LightningModule):
         # out = score * V
         # [h, N, T_q, num_units/h]
         out_soft = torch.matmul(scores_soft, values)
-        out_soft = torch.cat(torch.split(out_soft, 1, dim=0), dim=3).squeeze(
-            0
-        )  # [N, T_q, num_units]
-
-        return out_soft  # , scores_soft
+        return torch.cat(torch.split(out_soft, 1, dim=0), dim=3).squeeze(
+            0,
+        )  # [N, T_q, num_units] scores_soft

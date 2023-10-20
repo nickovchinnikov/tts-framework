@@ -33,7 +33,7 @@ class TestConformer(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers,
         )
 
         # Generate mock data for the forward pass
@@ -45,14 +45,11 @@ class TestConformer(unittest.TestCase):
         )
 
     def test_initialization(self):
-        """
-        Test that a Conformer instance is correctly initialized.
-        """
+        """Test that a Conformer instance is correctly initialized."""
         self.assertIsInstance(self.encoder, Conformer)
 
     def test_forward(self):
-        """
-        Test that a Conformer instance can correctly perform a forward pass.
+        """Test that a Conformer instance can correctly perform a forward pass.
         For this test case we use the code from AccousticModel.
         """
         (
@@ -75,7 +72,7 @@ class TestConformer(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
 
@@ -88,7 +85,7 @@ class TestConformer(unittest.TestCase):
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim
                     + self.model_config.lang_embed_dim,
-                ]
+                ],
             ),
         )
 
@@ -104,7 +101,7 @@ class TestConformer(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
 

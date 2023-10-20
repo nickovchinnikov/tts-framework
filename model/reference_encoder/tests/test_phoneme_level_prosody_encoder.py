@@ -1,7 +1,7 @@
 import unittest
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.attention.conformer_multi_headed_self_attention import (
     ConformerMultiHeadedSelfAttention,
@@ -41,7 +41,7 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers,
         )
 
         # Generate mock data for the forward pass
@@ -90,11 +90,6 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
         self.assertIsInstance(self.model.attention, ConformerMultiHeadedSelfAttention)
         self.assertIsInstance(self.model.encoder_bottleneck, nn.Linear)
 
-        # Test model's hidden dimensions
-        self.assertEqual(self.model.E, self.model_config.encoder.n_hidden)
-        self.assertEqual(self.model.E, self.model.d_q)
-        self.assertEqual(self.model.E, self.model.d_k)
-
     def test_forward(self):
         (
             src_mask,
@@ -120,7 +115,7 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
 
@@ -132,7 +127,7 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
             self.utterance_prosody_encoder(
                 mels=mels,
                 mel_lens=mel_lens,
-            )
+            ),
         )
 
         # Assert the shape of u_prosody_ref
@@ -143,14 +138,14 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.model_config.lang_embed_dim,
                     self.model_config.reference_encoder.bottleneck_size_u,
-                ]
+                ],
             ),
         )
 
         p_prosody_ref = self.p_norm(
             self.phoneme_prosody_encoder(
-                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding
-            )
+                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding,
+            ),
         )
 
         # Assert the shape of p_prosody_ref
@@ -161,7 +156,7 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.reference_encoder.bottleneck_size_p,
-                ]
+                ],
             ),
         )
 
