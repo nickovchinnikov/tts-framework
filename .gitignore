@@ -163,6 +163,7 @@ cython_debug/
 .history
 .vscode
 .idea
+.trunk
 
 # Checkpoints ignore (too large for lfs)
 **/checkpoints/**/*.pt
