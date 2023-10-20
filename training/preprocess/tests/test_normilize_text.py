@@ -49,7 +49,7 @@ class TestTextPreprocess(unittest.TestCase):
         self.assertEqual(self.normalizer.normalize_chars(input_text), expected_output)
 
         # Test case 5: Test character normalization with multiple quotes
-        input_text = 'He said, “I don’t know…”'
+        input_text = "He said, “I don’t know…”"
         expected_output = 'He said, "I don\'t know."'
         self.assertEqual(self.normalizer.normalize_chars(input_text), expected_output)
 
@@ -101,5 +101,5 @@ class TestTextPreprocess(unittest.TestCase):
         self.assertEqual(self.normalizer(input_text), expected_output)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

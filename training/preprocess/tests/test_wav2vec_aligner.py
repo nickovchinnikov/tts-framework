@@ -72,8 +72,8 @@ class TestWav2VecAligner(unittest.TestCase):
                         5,
                         9,
                         6,
-                    ]
-                ]
+                    ],
+                ],
             ),
         )
 
@@ -126,8 +126,8 @@ class TestWav2VecAligner(unittest.TestCase):
                     5,
                     9,
                     6,
-                ]
-            ]
+                ],
+            ],
         )
 
         self.assertEqual(transcript, self.text)
@@ -135,7 +135,7 @@ class TestWav2VecAligner(unittest.TestCase):
     def test_align_single_sample(self):
         audio_input, _ = self.model.load_audio(self.wav_path)
         emissions, tokens, transcript = self.model.align_single_sample(
-            audio_input, self.text
+            audio_input, self.text,
         )
 
         self.assertEqual(emissions.shape, torch.Size([169, 32]))
@@ -172,7 +172,7 @@ class TestWav2VecAligner(unittest.TestCase):
     def test_merge_repeats(self):
         audio_input, _ = self.model.load_audio(self.wav_path)
         emissions, tokens, transcript = self.model.align_single_sample(
-            audio_input, self.text
+            audio_input, self.text,
         )
         trellis = self.model.get_trellis(emissions, tokens)
         path = self.model.backtrack(trellis, emissions, tokens)
@@ -185,7 +185,7 @@ class TestWav2VecAligner(unittest.TestCase):
     def test_merge_words(self):
         audio_input, _ = self.model.load_audio(self.wav_path)
         emissions, tokens, transcript = self.model.align_single_sample(
-            audio_input, self.text
+            audio_input, self.text,
         )
         trellis = self.model.get_trellis(emissions, tokens)
         path = self.model.backtrack(trellis, emissions, tokens)

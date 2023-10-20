@@ -167,7 +167,7 @@ class Wav2VecAligner(LightningModule):
         r"""Build a trellis matrix of shape (num_frames + 1, num_tokens + 1)
         that represents the probabilities of each source token being at a certain time step.
 
-        Since we are looking for the most likely transitions, we take the more likely path for the value of $k_{(t+1,j+1)}$\u200b, that is:
+        Since we are looking for the most likely transitions, we take the more likely path for the value of $k_{(t+1,j+1)}$, that is:
 
         $k_{t+1, j+1} = \max(k_{t, j} p_{t+1, c_{j+1}}, k_{t, j+1} p_{t+1, \text{repeat}})$
 

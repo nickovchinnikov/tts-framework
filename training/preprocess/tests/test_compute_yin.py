@@ -17,7 +17,7 @@ class TestComputeYin(unittest.TestCase):
     def setUp(self):
         np.random.seed(0)
 
-    def test_differenceFunction(self):
+    def test_difference_function(self):
         # Test the differenceFunction function with a simple example
         x = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         N = len(x)
@@ -54,7 +54,7 @@ class TestComputeYin(unittest.TestCase):
         actual_output = differenceFunction(x, N, tau_max)
         np.testing.assert_allclose(actual_output, expected_output, rtol=1e-6, atol=1e-6)
 
-    def test_getPitch(self):
+    def test_get_pitch(self):
         # Test the getPitch function with a simple example
         cmdf = np.array([1.0, 0.5, 0.2, 0.1, 0.05])
         tau_min = 1
@@ -79,7 +79,7 @@ class TestComputeYin(unittest.TestCase):
         actual_output = getPitch(cmdf, tau_min, tau_max, harmo_th)
         self.assertEqual(actual_output, expected_output)
 
-    def test_cumulativeMeanNormalizedDifferenceFunction(self):
+    def test_cumulative_mean_normalized_difference_function(self):
         # Test the function with a simple example
         df = np.array([1, 2, 3, 4, 5])
         N = len(df)

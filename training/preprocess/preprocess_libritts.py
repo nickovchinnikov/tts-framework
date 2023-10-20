@@ -31,8 +31,7 @@ class PreprocessAudioResult:
 
 
 class PreprocessLibriTTS:
-    r"""
-    Preprocessing PreprocessLibriTTS audio and text data for use with a TacotronSTFT model.
+    r"""Preprocessing PreprocessLibriTTS audio and text data for use with a TacotronSTFT model.
 
     Args:
         lang (str): The language of the input text.
@@ -95,10 +94,9 @@ class PreprocessLibriTTS:
         self.max_samples = int(self.sampling_rate * self.max_seconds)
 
     def beta_binomial_prior_distribution(
-        self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0
+        self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0,
     ) -> torch.Tensor:
-        r"""
-        Computes the beta-binomial prior distribution for the attention mechanism.
+        r"""Computes the beta-binomial prior distribution for the attention mechanism.
 
         Args:
             phoneme_count (int): Number of phonemes in the input text.
@@ -123,8 +121,7 @@ class PreprocessLibriTTS:
         self,
         row: Tuple[torch.Tensor, int, str, str, int, int, str],
     ) -> Union[None, PreprocessAudioResult]:
-        r"""
-        Preprocesses audio and text data for use with a TacotronSTFT model.
+        r"""Preprocesses audio and text data for use with a TacotronSTFT model.
 
         Args:
             row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
@@ -141,7 +138,6 @@ class PreprocessLibriTTS:
             >>> output.keys()
             dict_keys(['wav', 'mel', 'pitch', 'phones', 'raw_text', 'normalized_text', 'speaker_id', 'chapter_id', 'utterance_id', 'pitch_is_normalized'])
         """
-
         (
             audio,
             sr_actual,
@@ -166,7 +162,7 @@ class PreprocessLibriTTS:
 
         phones_ipa: Any = self.phonemizer(raw_text, lang=self.phonemizer_lang)
         phones = self.phonemizer.predictor.phoneme_tokenizer(
-            phones_ipa, language=self.phonemizer_lang
+            phones_ipa, language=self.phonemizer_lang,
         )
         # Convert to tensor
         phones = torch.Tensor(phones)
@@ -204,7 +200,7 @@ class PreprocessLibriTTS:
         mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
 
         attn_prior = self.beta_binomial_prior_distribution(
-            phones.shape[0], mel_spectrogram.shape[1]
+            phones.shape[0], mel_spectrogram.shape[1],
         ).T
 
         assert pitch.shape[0] == mel_spectrogram.shape[1], (
@@ -212,7 +208,7 @@ class PreprocessLibriTTS:
             mel_spectrogram.shape[1],
         )
 
-        result = PreprocessAudioResult(
+        return PreprocessAudioResult(
             wav=wav,
             mel=mel_spectrogram,
             pitch=pitch,
@@ -227,4 +223,3 @@ class PreprocessLibriTTS:
             # TODO: check the pitch normalization process
             pitch_is_normalized=False,
         )
-        return result

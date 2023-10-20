@@ -1,6 +1,5 @@
 import unittest
 
-import numpy as np
 import torch
 
 from training.preprocess.tacotron_stft import TacotronSTFT
@@ -74,21 +73,21 @@ class TestTacotronSTFT(unittest.TestCase):
     def test_spectral_normalize_torch(self):
         # Test the spectral_normalize_torch method
         magnitudes = torch.randn(self.batch_size, self.n_mel_channels, self.seq_len).to(
-            self.device
+            self.device,
         )
         output = self.model.spectral_normalize_torch(magnitudes)
         self.assertEqual(
-            output.shape, (self.batch_size, self.n_mel_channels, self.seq_len)
+            output.shape, (self.batch_size, self.n_mel_channels, self.seq_len),
         )
 
     def test_dynamic_range_compression_torch(self):
         # Test the dynamic_range_compression_torch method
         x = torch.randn(self.batch_size, self.n_mel_channels, self.seq_len).to(
-            self.device
+            self.device,
         )
         output = self.model.dynamic_range_compression_torch(x)
         self.assertEqual(
-            output.shape, (self.batch_size, self.n_mel_channels, self.seq_len)
+            output.shape, (self.batch_size, self.n_mel_channels, self.seq_len),
         )
 
     def test_get_mel_from_wav(self):
