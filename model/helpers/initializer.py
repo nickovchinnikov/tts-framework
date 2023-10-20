@@ -13,7 +13,7 @@ from model.config import (
     AcousticPretrainingConfig,
     PreprocessingConfig,
 )
-import model.helpers.tools as tools
+from model.helpers import tools
 
 
 @dataclass
@@ -29,9 +29,8 @@ class ConformerConfig:
 
 def get_test_configs(
     srink_factor: int = 4,
-) -> Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig,]:
-    r"""
-    Returns a tuple of configuration objects for testing purposes.
+) -> Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig]:
+    r"""Returns a tuple of configuration objects for testing purposes.
 
     Args:
         srink_factor (int, optional): The shrink factor to apply to the model configuration. Defaults to 4.
@@ -65,8 +64,7 @@ def get_test_configs(
 def init_conformer(
     model_config: AcousticModelConfigType,
 ) -> Tuple[Conformer, ConformerConfig]:
-    r"""
-    Function to initialize a `Conformer` with a given `AcousticModelConfigType` configuration.
+    r"""Function to initialize a `Conformer` with a given `AcousticModelConfigType` configuration.
 
     Args:
         model_config (AcousticModelConfigType): The object that holds the configuration details.
@@ -115,8 +113,7 @@ def init_acoustic_model(
     model_config: AcousticENModelConfig,
     n_speakers: int = 10,
 ) -> Tuple[AcousticModel, AcousticModelConfig]:
-    r"""
-    Function to initialize an `AcousticModel` with given preprocessing and model configurations.
+    r"""Function to initialize an `AcousticModel` with given preprocessing and model configurations.
 
     Args:
         preprocess_config (PreprocessingConfig): Configuration object for pre-processing.
@@ -167,12 +164,12 @@ def init_forward_trains_params(
     preprocess_config: PreprocessingConfig,
     n_speakers: int = 10,
 ) -> ForwardTrainParams:
-    r"""
-    Function to initialize the parameters for forward propagation during training.
+    r"""Function to initialize the parameters for forward propagation during training.
 
     Args:
         model_config (AcousticENModelConfig): Configuration object for English Acoustic model.
         acoustic_pretraining_config (AcousticPretrainingConfig): Configuration object for acoustic pretraining.
+        preprocess_config (PreprocessingConfig): Configuration object for pre-processing.
         n_speakers (int, optional): Number of speakers. Defaults to 10.
 
     Returns:
@@ -284,8 +281,7 @@ def init_mask_input_embeddings_encoding_attn_mask(
     forward_train_params: ForwardTrainParams,
     model_config: AcousticENModelConfig,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    r"""
-    Function to initialize masks for padding positions, input sequences, embeddings, positional encoding and attention masks.
+    r"""Function to initialize masks for padding positions, input sequences, embeddings, positional encoding and attention masks.
 
     Args:
         acoustic_model (AcousticModel): Initialized Acoustic Model.

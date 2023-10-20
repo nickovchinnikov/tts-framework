@@ -1,14 +1,13 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.attention import StyleEmbedAttention
 from model.config import AcousticModelConfigType
 
 
 class STL(LightningModule):
-    r"""
-    Style Token Layer (STL).
+    r"""Style Token Layer (STL).
     This layer helps to encapsulate different speaking styles in token embeddings.
 
     Args:
@@ -34,7 +33,7 @@ class STL(LightningModule):
 
         # Define a learnable tensor for style tokens embedding
         self.embed = nn.Parameter(
-            torch.FloatTensor(self.token_num, n_hidden // num_heads)
+            torch.FloatTensor(self.token_num, n_hidden // num_heads),
         )
 
         # Dimension of query in attention
@@ -54,12 +53,11 @@ class STL(LightningModule):
         torch.nn.init.normal_(self.embed, mean=0, std=0.5)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        Forward pass of the Style Token Layer
+        r"""Forward pass of the Style Token Layer
         Args:
             x (torch.Tensor): The input tensor.
 
-        Returns:
+        Returns
             torch.Tensor: The emotion embedded tensor after applying attention mechanism.
         """
         N = x.size(0)
@@ -72,6 +70,4 @@ class STL(LightningModule):
         )  # [N, token_num, n_hidden // num_heads]
 
         # Apply attention mechanism to get weighted sum of style token embeddings
-        emotion_embed_soft = self.attention(query, keys_soft)
-
-        return emotion_embed_soft
+        return self.attention(query, keys_soft)

@@ -1,13 +1,12 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .bsconv import BSConv1d
 
 
 class Conv1dGLU(LightningModule):
-    r"""
-    `Conv1dGLU` implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
+    r"""`Conv1dGLU` implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
     It's based on the Deep Voice 3 project.
 
     Args:
@@ -49,8 +48,7 @@ class Conv1dGLU(LightningModule):
         self.softsign = torch.nn.Softsign()
 
     def forward(self, x: torch.Tensor, embeddings: torch.Tensor) -> torch.Tensor:
-        """
-        Forward propagation method for the Conv1dGLU layer.
+        """Forward propagation method for the Conv1dGLU layer.
 
         Args:
             x (torch.Tensor): input tensor
@@ -70,5 +68,4 @@ class Conv1dGLU(LightningModule):
         x = a * torch.sigmoid(b)
         x = x + residual
         x = x * self.sqrt
-        x = x.permute((0, 2, 1))
-        return x
+        return x.permute((0, 2, 1))

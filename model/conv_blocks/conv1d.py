@@ -1,11 +1,10 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class DepthWiseConv1d(LightningModule):
-    r"""
-    Implements Depthwise 1D convolution. This module will apply a spatial convolution over inputs
+    r"""Implements Depthwise 1D convolution. This module will apply a spatial convolution over inputs
     independently over each input channel in the style of depthwise convolutions.
 
     In a depthwise convolution, each input channel is convolved with its own set of filters, as opposed
@@ -61,10 +60,11 @@ class DepthWiseConv1d(LightningModule):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Defines the computation performed at every call.
+        """Defines the computation performed at every call.
+
         Args:
             x: input tensor of shape (batch_size, in_channels, signal_length)
+
         Returns:
             output tensor of shape (batch_size, out_channels, signal_length)
         """
@@ -72,8 +72,7 @@ class DepthWiseConv1d(LightningModule):
 
 
 class PointwiseConv1d(LightningModule):
-    r"""
-    Applies a 1D pointwise (aka 1x1) convolution over an input signal composed of several input
+    r"""Applies a 1D pointwise (aka 1x1) convolution over an input signal composed of several input
     planes, officially known as channels in this context.
 
     The operation implemented is also known as a "channel mixing" operation, as each output channel can be
@@ -161,8 +160,7 @@ class PointwiseConv1d(LightningModule):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        Defines the computation performed at every call.
+        r"""Defines the computation performed at every call.
 
         Args:
             x (torch.Tensor): input tensor of shape (batch_size, in_channels, signal_length)

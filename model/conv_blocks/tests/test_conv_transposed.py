@@ -8,9 +8,7 @@ from model.conv_blocks.conv_transposed import ConvTransposed
 
 class TestConvTransposed(unittest.TestCase):
     def test_initialization(self):
-        """
-        Test to check if the ConvTransposed instance is properly created.
-        """
+        """Test to check if the ConvTransposed instance is properly created."""
         C_in, C_out, kernel_size, padding = 4, 6, 3, 1
 
         # Initialize ConvTransposed with input channels, output channels, kernel size and padding.
@@ -55,9 +53,7 @@ class TestConvTransposed(unittest.TestCase):
         )
 
     def test_shape(self):
-        """
-        Test to check if the ConvTransposed instance is properly created and if the output shape is as expected.
-        """
+        """Test to check if the ConvTransposed instance is properly created and if the output shape is as expected."""
         N, C_in, C_out, kernel_size, padding, length = 5, 4, 6, 3, 1, 10
 
         # Initialize ConvTransposed with input channels, output channels, kernel size and padding.

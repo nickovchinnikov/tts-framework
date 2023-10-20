@@ -1,7 +1,7 @@
 import unittest
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.conv_blocks.bsconv import BSConv1d
 from model.conv_blocks.conv1d import DepthWiseConv1d, PointwiseConv1d
@@ -10,9 +10,7 @@ from model.conv_blocks.conv1d_glu import Conv1dGLU
 
 class TestConv1dGLU(unittest.TestCase):
     def test_initialization(self):
-        """
-        Test to check if the Conv1dGLU instance is properly created.
-        """
+        """Test to check if the Conv1dGLU instance is properly created."""
         d_model, kernel_size, padding, embedding_dim = 16, 3, 1, 32
         conv_glu = Conv1dGLU(
             d_model,
@@ -52,9 +50,7 @@ class TestConv1dGLU(unittest.TestCase):
         self.assertEqual(conv_glu.bsconv1d.depthwise.conv.padding[0], padding)
 
     def test_output_shape(self):
-        """
-        Test to ensure that the output tensor shape from the forward function is as expected.
-        """
+        """Test to ensure that the output tensor shape from the forward function is as expected."""
         batch_size, sequence_length, d_model, kernel_size, padding, embedding_dim = (
             64,
             50,

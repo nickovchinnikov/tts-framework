@@ -5,8 +5,7 @@ from .bsconv import BSConv1d
 
 
 class ConvTransposed(LightningModule):
-    r"""
-    `ConvTransposed` applies a 1D convolution operation, with the main difference that it transposes the
+    r"""`ConvTransposed` applies a 1D convolution operation, with the main difference that it transposes the
     last two dimensions of the input tensor before and after applying the `BSConv1d` convolution operation.
     This can be useful in certain architectures where the tensor dimensions are processed in a different order.
 
@@ -40,8 +39,7 @@ class ConvTransposed(LightningModule):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward propagation method for the ConvTransposed layer.
+        """Forward propagation method for the ConvTransposed layer.
 
         Args:
             x (torch.Tensor): input tensor
@@ -49,7 +47,6 @@ class ConvTransposed(LightningModule):
         Returns:
             x (torch.Tensor): output tensor after application of ConvTransposed
         """
-
         # Transpose the last two dimensions (dimension 1 and 2 here). Now the tensor has shape (N, W, C)
         x = x.contiguous().transpose(1, 2)
 
@@ -57,7 +54,6 @@ class ConvTransposed(LightningModule):
         x = self.conv(x)
 
         # Transpose the last two dimensions back to their original order. Now the tensor has shape (N, C, W)
-        x = x.contiguous().transpose(1, 2)
-
         # Return final output tensor
-        return x
+        return x.contiguous().transpose(1, 2)
+

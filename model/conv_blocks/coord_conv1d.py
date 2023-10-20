@@ -1,14 +1,13 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
-import torch.nn.modules.conv as conv
+from torch import nn
+from torch.nn.modules import conv
 
 from .add_coords import AddCoords
 
 
 class CoordConv1d(conv.Conv1d, LightningModule):
-    r"""
-    `CoordConv1d` is an extension of the standard 1D convolution layer (`conv.Conv1d`), with the addition of extra coordinate
+    r"""`CoordConv1d` is an extension of the standard 1D convolution layer (`conv.Conv1d`), with the addition of extra coordinate
     channels. These extra channels encode positional coordinates, and optionally, the radial distance from the origin.
     This is inspired by the paper:
     [An Intriguing Failing of Convolutional Neural Networks and the CoordConv Solution](https://arxiv.org/abs/1807.03247)
@@ -81,8 +80,7 @@ class CoordConv1d(conv.Conv1d, LightningModule):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        The forward pass of the `CoordConv1d` module. It adds the coordinate channels to the input tensor with the `AddCoords`
+        r"""The forward pass of the `CoordConv1d` module. It adds the coordinate channels to the input tensor with the `AddCoords`
         module, and then immediately passes the result through a 1D convolution.
 
         As a result, the subsequent Conv layers don't merely process sound characteristics of the speech signal, but are
@@ -99,5 +97,4 @@ class CoordConv1d(conv.Conv1d, LightningModule):
         x = self.addcoords(x).to(self.device)
 
         # Apply convolution
-        x = self.conv(x)
-        return x
+        return self.conv(x)
