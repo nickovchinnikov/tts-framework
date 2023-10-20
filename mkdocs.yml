@@ -85,6 +85,11 @@ nav:
       - TacotronSTFT: training/preprocess/tacotron_stft.md
       - Wav2Vec Aligner: training/preprocess/wav2vec_aligner.md
     - Tools: training/tools.md
+  - Experiments:
+    - References: experiments/readme.md
+    - MAS torch: experiments/mas_torch.md
+    - Conv Leaky ReLU: experiments/conv_leaky_relu.md
+    - Tokenization: experiments/tokenization.md
   - About mkdocs-material: readme.md
 theme:
   name: material
