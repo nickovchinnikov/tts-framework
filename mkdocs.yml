@@ -80,7 +80,7 @@ nav:
       - References: training/preprocess/readme.md
       - Audio: training/preprocess/audio.md
       - compute_yin: training/preprocess/compute_yin.md
-      - Normilize Text: training/preprocess/normalize_text.md
+      - Normalize Text: training/preprocess/normalize_text.md
       - Preprocess LibriTTS: training/preprocess/preprocess_libritts.md
       - TacotronSTFT: training/preprocess/tacotron_stft.md
       - Wav2Vec Aligner: training/preprocess/wav2vec_aligner.md

@@ -2,14 +2,14 @@ import unittest
 
 import numpy as np
 
-from training.preprocess.normilize_text import NormilizeText
+from training.preprocess.normalize_text import NormalizeText
 
 
 # Create a class to test the ComputePitch class
 class TestTextPreprocess(unittest.TestCase):
     def setUp(self):
         np.random.seed(0)
-        self.normalizer = NormilizeText()
+        self.normalizer = NormalizeText()
 
     def test_byte_encode(self):
         # Test with a simple word

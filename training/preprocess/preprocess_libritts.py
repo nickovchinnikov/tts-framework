@@ -10,7 +10,7 @@ from model.config import PreprocessingConfig, get_lang_map
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
-from .normilize_text import NormilizeText
+from .normalize_text import NormalizeText
 from .tacotron_stft import TacotronSTFT
 
 
@@ -63,7 +63,7 @@ class PreprocessLibriTTS:
 
         self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
 
-        self.normilize_text = NormilizeText(normilize_text_lang)
+        self.normilize_text = NormalizeText(normilize_text_lang)
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
 

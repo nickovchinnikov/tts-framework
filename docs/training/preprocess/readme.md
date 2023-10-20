@@ -10,7 +10,7 @@ Audio processing functions.
 
 [Original implementation](https://github.com/NVIDIA/mellotron/blob/master/yin.py)
 
-### [Normilize Text](./normilize_text.md)
+### [Normalize Text](./normalize_text.md)
 
 This class normalize the characters in the input text and normalize the input text with the `nemo_text_processing`.
 
