@@ -66,7 +66,7 @@ class TestPad(unittest.TestCase):
                 [[1, 2, 0], [3, 4, 0], [0, 0, 0]],
                 [[5, 6, 0], [7, 8, 0], [0, 0, 0]],
                 [[9, 10, 0], [11, 12, 0], [0, 0, 0]],
-            ]
+            ],
         )
         self.assertTrue(np.array_equal(pad_3D(inputs, B=3, T=3, L=3), expected_output))
 
@@ -77,7 +77,7 @@ class TestPad(unittest.TestCase):
                 [[1, 2], [3, 4]],
                 [[5, 6], [7, 8]],
                 [[9, 10], [11, 12]],
-            ]
+            ],
         )
         self.assertTrue(np.array_equal(pad_3D(inputs, B=3, T=2, L=2), expected_output))
 
