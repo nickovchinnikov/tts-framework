@@ -173,19 +173,9 @@ class LibriTTSDataset(Dataset):
         """
         data_size = len(data)
 
-        if self.sort:
-            len_arr = np.array([d["text"].shape[0] for d in data])
-            idx_arr = np.argsort(-len_arr)
-        else:
-            idx_arr = np.arange(data_size)
+        idx_arr = list(range(data_size))
 
-        tail = idx_arr[len(idx_arr) - (len(idx_arr) % self.batch_size) :]
-        idx_arr = idx_arr[: len(idx_arr) - (len(idx_arr) % self.batch_size)]
-        idx_arr = idx_arr.reshape((-1, self.batch_size)).tolist()
-        if not self.drop_last and len(tail) > 0:
-            idx_arr += [tail.tolist()]
-
-        return [self.collate_preprocess(data, idx) for idx in idx_arr]
+        return list(self.collate_preprocess(data, idx_arr))
 
     def normalize_pitch(
         self, pitches: List[torch.Tensor],
