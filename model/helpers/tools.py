@@ -7,18 +7,16 @@ import torch.nn.functional as F
 
 # TODO add env variable to set device for testing or any other specific purpose
 def get_device() -> torch.device:
-    r"""
-    This function returns the device where the model and tensors should be placed.
+    r"""Function returns the device where the model and tensors should be placed.
 
-    Returns:
+    Returns
         torch.device: The device where the model and tensors should be placed.
     """
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
-    r"""
-    Takes a list of 1D or 2D tensors and pads them to match the maximum length.
+    r"""Takes a list of 1D or 2D tensors and pads them to match the maximum length.
 
     Args:
         input_ele (List[torch.Tensor]): The list of tensors to be padded.
@@ -27,31 +25,28 @@ def pad(input_ele: List[torch.Tensor], max_len: int) -> torch.Tensor:
     Returns:
         torch.Tensor: A tensor containing all the padded input tensors.
     """
-
     # Create an empty list to store the padded tensors
     out_list = torch.jit.annotate(List[torch.Tensor], [])
     for batch in input_ele:
         if len(batch.shape) == 1:
             # Perform padding for 1D tensor
             one_batch_padded = F.pad(
-                batch, (0, max_len - batch.size(0)), "constant", 0.0
+                batch, (0, max_len - batch.size(0)), "constant", 0.0,
             )
         else:
             # Perform padding for 2D tensor
             one_batch_padded = F.pad(
-                batch, (0, 0, 0, max_len - batch.size(0)), "constant", 0.0
+                batch, (0, 0, 0, max_len - batch.size(0)), "constant", 0.0,
             )
         # Append the padded tensor to the list
         out_list.append(one_batch_padded)
 
     # Stack all the tensors in the list into a single tensor
-    out_padded = torch.stack(out_list)
-    return out_padded
+    return torch.stack(out_list)
 
 
 def get_mask_from_lengths(lengths: torch.Tensor) -> torch.Tensor:
-    r"""
-    Generate a mask tensor from a tensor of sequence lengths.
+    r"""Generate a mask tensor from a tensor of sequence lengths.
 
     Args:
         lengths (torch.Tensor): A tensor of sequence lengths of shape: (batch_size, )
@@ -87,13 +82,11 @@ def get_mask_from_lengths(lengths: torch.Tensor) -> torch.Tensor:
     # corresponding sequence length to generate a mask.
     # The mask will have True at positions where id >= sequence length,
     # indicating padding positions in the original sequences
-    mask = ids >= lengths.unsqueeze(1).type(torch.int64).expand(-1, max_len)
-    return mask
+    return ids >= lengths.unsqueeze(1).type(torch.int64).expand(-1, max_len)
 
 
 def stride_lens_downsampling(lens: torch.Tensor, stride: int = 2) -> torch.Tensor:
-    r"""
-    This function computes the lengths of 1D tensor when applying a stride for downsampling.
+    r"""Function computes the lengths of 1D tensor when applying a stride for downsampling.
 
     Args:
         lens (torch.Tensor): Tensor containing the lengths to be downsampled.
@@ -110,8 +103,7 @@ def stride_lens_downsampling(lens: torch.Tensor, stride: int = 2) -> torch.Tenso
 
 
 def calc_same_padding(kernel_size: int) -> Tuple[int, int]:
-    r"""
-    Calculates the necessary padding for 'same' padding in convolutional operations.
+    r"""Calculates the necessary padding for 'same' padding in convolutional operations.
 
     For 'same' padding, the output size is the same as the input size for `stride=1`. This function returns
     two integers, representing the padding to be added on either side of the input to achieve 'same' padding.
@@ -136,8 +128,7 @@ def calc_same_padding(kernel_size: int) -> Tuple[int, int]:
 
 
 def initialize_embeddings(shape: Tuple[int, ...], device: torch.device) -> torch.Tensor:
-    r"""
-    Initialize embeddings using Kaiming initialization (He initialization).
+    r"""Initialize embeddings using Kaiming initialization (He initialization).
 
     This method is specifically designed for 2D matrices and helps to avoid
     the vanishing/exploding gradient problem in deep neural networks.
