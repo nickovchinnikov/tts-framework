@@ -1,13 +1,12 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.constants import LEAKY_RELU_SLOPE
 
 
 class GLUActivation(LightningModule):
-    r"""
-    Implements the Gated Linear Unit (GLU) activation function.
+    r"""Implements the Gated Linear Unit (GLU) activation function.
 
     The GLU activation splits the input in half across the channel dimension.
     One half is passed through a nonlinear activation function (like sigmoid or leaky ReLU),
@@ -39,8 +38,7 @@ class GLUActivation(LightningModule):
         self.lrelu = nn.LeakyReLU(slope)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Defines the computation performed at every call.
+        """Defines the computation performed at every call.
 
         Args:
             x: The input tensor of shape (batch_size, 2*channels, signal_length)
@@ -53,5 +51,4 @@ class GLUActivation(LightningModule):
 
         # Perform element-wise multiplication of the first half (out)
         # with the result of applying LeakyReLU on the second half (gate)
-        x = out * self.lrelu(gate)
-        return x
+        return out * self.lrelu(gate)

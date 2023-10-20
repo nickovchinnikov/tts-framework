@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-import torchaudio.datasets as datasets
+from torchaudio import datasets
 
 from model.config import lang2id
 from training.preprocess import PreprocessLibriTTS
@@ -20,8 +20,7 @@ class LibriTTSDataset(Dataset):
         drop_last: bool = False,
         download: bool = True,
     ):
-        r"""
-        A PyTorch dataset for loading preprocessed acoustic data.
+        r"""A PyTorch dataset for loading preprocessed acoustic data.
 
         Args:
             root (str): Path to the directory where the dataset is found or downloaded.
@@ -40,17 +39,15 @@ class LibriTTSDataset(Dataset):
         self.drop_last = drop_last
 
     def __len__(self) -> int:
-        r"""
-        Returns the number of samples in the dataset.
+        r"""Returns the number of samples in the dataset.
 
-        Returns:
+        Returns
             int: Number of samples in the dataset.
         """
         return len(self.dataset)
 
     def __getitem__(self, idx: int) -> Dict[str, Any]:
-        r"""
-        Returns a sample from the dataset at the given index.
+        r"""Returns a sample from the dataset at the given index.
 
         Args:
             idx (int): Index of the sample to return.
@@ -58,7 +55,6 @@ class LibriTTSDataset(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing the sample data.
         """
-
         # Retrive the dataset row
         data = self.dataset[idx]
 
@@ -72,7 +68,7 @@ class LibriTTSDataset(Dataset):
 
         data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
 
-        sample = {
+        return {
             "id": data.utterance_id,
             "wav": data.wav,
             "mel": data.mel,
@@ -87,11 +83,8 @@ class LibriTTSDataset(Dataset):
             "lang": lang2id["en"],
         }
 
-        return sample
-
     def collate_preprocess(self, data: List[Dict[str, Any]], idxs: List[int]) -> Tuple:
-        r"""
-        Reprocesses a batch of data samples.
+        r"""Reprocesses a batch of data samples.
 
         Args:
             data (List[Dict[str, Any]]): A list of data samples.
@@ -146,10 +139,10 @@ class LibriTTSDataset(Dataset):
         attn_priors = pad_3D(attn_priors, len(idxs), max(src_lens), max(mel_lens))
 
         speakers = np.repeat(
-            np.expand_dims(np.array(speakers), axis=1), texts.shape[1], axis=1
+            np.expand_dims(np.array(speakers), axis=1), texts.shape[1], axis=1,
         )
         langs = np.repeat(
-            np.expand_dims(np.array(langs), axis=1), texts.shape[1], axis=1
+            np.expand_dims(np.array(langs), axis=1), texts.shape[1], axis=1,
         )
 
         wavs = pad_2D(wavs)
@@ -170,8 +163,7 @@ class LibriTTSDataset(Dataset):
         )
 
     def collate_fn(self, data: List) -> List:
-        r"""
-        Collates a batch of data samples.
+        r"""Collates a batch of data samples.
 
         Args:
             data (List): A list of data samples.
@@ -193,16 +185,12 @@ class LibriTTSDataset(Dataset):
         if not self.drop_last and len(tail) > 0:
             idx_arr += [tail.tolist()]
 
-        output = list()
-        for idx in idx_arr:
-            output.append(self.collate_preprocess(data, idx))
-        return output
+        return [self.collate_preprocess(data, idx) for idx in idx_arr]
 
     def normalize_pitch(
-        self, pitches: List[torch.Tensor]
+        self, pitches: List[torch.Tensor],
     ) -> Tuple[float, float, float, float]:
-        r"""
-        Normalizes the pitch values.
+        r"""Normalizes the pitch values.
 
         Args:
             pitches (List[torch.Tensor]): A list of pitch values.
@@ -210,7 +198,6 @@ class LibriTTSDataset(Dataset):
         Returns:
             Tuple: A tuple containing the normalized pitch values.
         """
-
         pitches_t = torch.concatenate(pitches)
 
         min_value = torch.min(pitches_t).item()

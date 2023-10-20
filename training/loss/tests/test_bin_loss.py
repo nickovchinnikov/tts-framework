@@ -41,7 +41,7 @@ class TestBinLoss(unittest.TestCase):
                     soft_attention.grad,
                     torch.tensor([-0.5556, 0.0000, -0.6250, 0.0000]),
                     atol=1e-4,
-                )
+                ),
             )
 
 

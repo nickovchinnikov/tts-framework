@@ -5,8 +5,7 @@ from .stft_loss import STFTLoss
 
 
 class MultiResolutionSTFTLoss(LightningModule):
-    r"""
-    Multi resolution STFT loss module.
+    r"""Multi resolution STFT loss module.
 
     The Multi resolution STFT loss module is a PyTorch module that computes the spectral convergence and log STFT magnitude losses for a predicted signal and a groundtruth signal at multiple resolutions. The module is designed for speech and audio signal processing tasks, such as speech enhancement and source separation.
 
@@ -21,8 +20,7 @@ class MultiResolutionSTFTLoss(LightningModule):
         self,
         resolutions: list[tuple[int, int, int]],
     ):
-        r"""
-        Initialize Multi resolution STFT loss module.
+        r"""Initialize Multi resolution STFT loss module.
 
         Args:
             resolutions (list): List of (FFT size, shift size, window length).
@@ -30,14 +28,13 @@ class MultiResolutionSTFTLoss(LightningModule):
         super().__init__()
 
         self.stft_losses = torch.nn.ModuleList(
-            [STFTLoss(fs, ss, wl) for fs, ss, wl in resolutions]
+            [STFTLoss(fs, ss, wl) for fs, ss, wl in resolutions],
         )
 
     def forward(
-        self, x: torch.Tensor, y: torch.Tensor
+        self, x: torch.Tensor, y: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Calculate forward propagation.
+        r"""Calculate forward propagation.
 
         Args:
             x (Tensor): Predicted signal (B, T).

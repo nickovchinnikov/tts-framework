@@ -20,7 +20,6 @@ class ScheduledOptimPretraining:
         r"""Initializes the ScheduledOptimPretraining optimizer.
 
         Args:
-        ----
             parameters (Iterable): The model parameters to optimize.
             train_config (AcousticPretrainingConfig): The training configuration.
             model_config (AcousticModelConfigType): The model configuration.
@@ -41,7 +40,6 @@ class ScheduledOptimPretraining:
         r"""Updates the learning rate and takes a step of the optimizer.
 
         Args:
-        ----
             step (int): The current training step.
         """
         self._update_learning_rate(step)
@@ -55,7 +53,6 @@ class ScheduledOptimPretraining:
         r"""Loads the optimizer state dictionary.
 
         Args:
-        ----
             state_dict (Dict[str, Any]): The optimizer state dictionary.
         """
         self._optimizer.load_state_dict(state_dict)
@@ -64,7 +61,6 @@ class ScheduledOptimPretraining:
         r"""Computes the learning rate scale factor.
 
         Returns
-        -------
             float: The learning rate scale factor.
         """
         lr_scale = np.min(
@@ -82,7 +78,6 @@ class ScheduledOptimPretraining:
         r"""Updates the learning rate based on the current step.
 
         Args:
-        ----
             step (int): The current training step.
         """
         self.current_step = step

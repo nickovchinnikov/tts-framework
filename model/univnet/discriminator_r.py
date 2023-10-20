@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any, Tuple
 
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm, weight_norm
 
@@ -10,17 +10,16 @@ from model.config import VocoderModelConfig
 
 
 class DiscriminatorR(LightningModule):
-    r"""
-    A class representing the Residual Discriminator network for a UnivNet vocoder.
+    r"""A class representing the Residual Discriminator network for a UnivNet vocoder.
 
     Args:
-        resolution (tuple): A tuple containing the number of FFT points, hop length, and window length.
+        resolution (Tuple): A tuple containing the number of FFT points, hop length, and window length.
         model_config (VocoderModelConfig): A configuration object for the UnivNet model.
     """
 
     def __init__(
         self,
-        resolution,
+        resolution: Tuple[int, int, int],
         model_config: VocoderModelConfig,
     ):
         super().__init__()
@@ -42,7 +41,7 @@ class DiscriminatorR(LightningModule):
                         32,
                         (3, 9),
                         padding=(1, 4),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -51,7 +50,7 @@ class DiscriminatorR(LightningModule):
                         (3, 9),
                         stride=(1, 2),
                         padding=(1, 4),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -60,7 +59,7 @@ class DiscriminatorR(LightningModule):
                         (3, 9),
                         stride=(1, 2),
                         padding=(1, 4),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -69,7 +68,7 @@ class DiscriminatorR(LightningModule):
                         (3, 9),
                         stride=(1, 2),
                         padding=(1, 4),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -77,9 +76,9 @@ class DiscriminatorR(LightningModule):
                         32,
                         (3, 3),
                         padding=(1, 1),
-                    )
+                    ),
                 ),
-            ]
+            ],
         )
         self.conv_post = norm_f(
             nn.Conv2d(
@@ -87,12 +86,11 @@ class DiscriminatorR(LightningModule):
                 1,
                 (3, 3),
                 padding=(1, 1),
-            )
+            ),
         )
 
     def forward(self, x: torch.Tensor) -> tuple[list[torch.Tensor], torch.Tensor]:
-        r"""
-        Forward pass of the DiscriminatorR class.
+        r"""Forward pass of the DiscriminatorR class.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -124,8 +122,7 @@ class DiscriminatorR(LightningModule):
         return fmap, x
 
     def spectrogram(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        Computes the magnitude spectrogram of the input waveform.
+        r"""Computes the magnitude spectrogram of the input waveform.
 
         Args:
             x (torch.Tensor): Input waveform tensor of shape [B, C, T].
@@ -157,6 +154,4 @@ class DiscriminatorR(LightningModule):
         )  # [B, F, TT, 2]
 
         # Compute the magnitude spectrogram from the complex spectrogram
-        mag = torch.norm(x, p=2, dim=-1)  # [B, F, TT]
-
-        return mag
+        return torch.norm(x, p=2, dim=-1)  # [B, F, TT]

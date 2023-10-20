@@ -10,22 +10,21 @@ import torch.nn.functional as F
 
 
 def differenceFunction(x: np.ndarray, N: int, tau_max: int) -> np.ndarray:
-    r"""
-    Compute the difference function of an audio signal.
+    r"""Compute the difference function of an audio signal.
 
     This function computes the difference function of an audio signal `x` using the algorithm described in equation (6) of [1]. The difference function is a measure of the similarity between the signal and a time-shifted version of itself, and is commonly used in pitch detection algorithms.
 
     This implementation uses the NumPy FFT functions to compute the difference function efficiently.
 
-    Parameters:
+    Parameters
         x (np.ndarray): The audio signal to compute the difference function for.
         N (int): The length of the audio signal.
         tau_max (int): The maximum integration window size to use.
 
-    Returns:
+    Returns
         np.ndarray: The difference function of the audio signal.
 
-    References:
+    References
         [1] A. de Cheveigné and H. Kawahara, "YIN, a fundamental frequency estimator for speech and music," The Journal of the Acoustical Society of America, vol. 111, no. 4, pp. 1917-1930, 2002.
     """
     x = np.array(x, np.float64)
@@ -42,8 +41,7 @@ def differenceFunction(x: np.ndarray, N: int, tau_max: int) -> np.ndarray:
 
 
 def cumulativeMeanNormalizedDifferenceFunction(df: np.ndarray, N: int) -> np.ndarray:
-    r"""
-    Compute the cumulative mean normalized difference function (CMND) of a difference function.
+    r"""Compute the cumulative mean normalized difference function (CMND) of a difference function.
 
     The CMND is defined as the element-wise product of the difference function with a range of values from 1 to N-1,
     divided by the cumulative sum of the difference function up to that point, plus a small epsilon value to avoid
@@ -66,9 +64,8 @@ def cumulativeMeanNormalizedDifferenceFunction(df: np.ndarray, N: int) -> np.nda
     return np.insert(cmndf, 0, 1)
 
 
-def getPitch(cmdf: np.ndarray, tau_min: int, tau_max: int, harmo_th=0.1) -> int:
-    r"""
-    Compute the fundamental period of a frame based on the Cumulative Mean Normalized Difference function (CMND).
+def getPitch(cmdf: np.ndarray, tau_min: int, tau_max: int, harmo_th: float=0.1) -> int:
+    r"""Compute the fundamental period of a frame based on the Cumulative Mean Normalized Difference function (CMND).
 
     The CMND is a measure of the periodicity of a signal, and is computed as the cumulative mean normalized difference
     function of the difference function of the signal. The fundamental period is the first value of the index `tau`
@@ -109,8 +106,7 @@ def compute_yin(
     f0_max: int = 500,
     harmo_thresh: float = 0.1,
 ) -> Tuple[np.ndarray, List[float], List[float], List[float]]:
-    r"""
-    Compute the Yin Algorithm for pitch detection on an audio signal.
+    r"""Compute the Yin Algorithm for pitch detection on an audio signal.
 
     The Yin Algorithm is a widely used method for pitch detection in speech and music signals. It works by computing the
     Cumulative Mean Normalized Difference function (CMND) of the difference function of the signal, and finding the first
@@ -118,7 +114,7 @@ def compute_yin(
     the lag corresponding to this minimum.
 
     Args:
-        sig (np.ndarray): The audio signal as a 1D numpy array of floats.
+        sig_torch (torch.Tensor): The audio signal as a 1D numpy array of floats.
         sr (int): The sampling rate of the signal.
         w_len (int, optional): The size of the analysis window in samples. Defaults to 512.
         w_step (int, optional): The size of the lag between two consecutive windows in samples. Defaults to 256.
@@ -153,7 +149,7 @@ def compute_yin(
     tau_max = int(sr / f0_min)
 
     timeScale = range(
-        0, len(sig_torch_n) - w_len, w_step
+        0, len(sig_torch_n) - w_len, w_step,
     )  # time values for each analysis window
     times = [t / float(sr) for t in timeScale]
     frames = [sig_torch_n[t : t + w_len] for t in timeScale]
@@ -181,8 +177,7 @@ def compute_yin(
 
 
 def norm_interp_f0(f0: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    r"""
-    Normalize and interpolate the fundamental frequency (f0) values.
+    r"""Normalize and interpolate the fundamental frequency (f0) values.
 
     Args:
         f0 (np.ndarray): The input f0 values.

@@ -1,7 +1,7 @@
 import torch
 
 
-def mas_width1(attn_map):
+def mas_width1(attn_map) -> torch.Tensor:
     # assumes mel x text
     # Create a placeholder for the output
     opt = torch.zeros_like(attn_map)
@@ -66,7 +66,7 @@ def mas_width1_(attn_map):
         # Compute the maximum log probability for each text dimension
         max_log_p = torch.max(log_p[i - 1, : attn_map.shape[1] - 1], log_p[i - 1, 1:])
         max_log_p = torch.cat(
-            [max_log_p[0].unsqueeze(0), max_log_p, max_log_p[-1].unsqueeze(0)], dim=0
+            [max_log_p[0].unsqueeze(0), max_log_p, max_log_p[-1].unsqueeze(0)], dim=0,
         )
 
         # Compute the indices of the maximum log probability for each text dimension

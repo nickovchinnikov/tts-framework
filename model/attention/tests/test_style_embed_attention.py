@@ -29,7 +29,7 @@ class TestStyleEmbedAttention(unittest.TestCase):
         self.assertEqual(output.shape, (5, 10, 32))
 
         # Check that the values in the output tensor are within a valid range after softmax and matmul (i.e., [-1, 1]).
-        self.assertTrue(torch.all((-1 < output) & (output < 1)))
+        self.assertTrue(torch.all((output > -1) & (output < 1)))
 
 
 # Run the tests

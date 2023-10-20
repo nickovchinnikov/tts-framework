@@ -1,13 +1,12 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .conformer_block import ConformerBlock
 
 
 class Conformer(LightningModule):
-    r"""
-    `Conformer` class represents the `Conformer` model which is a sequence-to-sequence model
+    r"""`Conformer` class represents the `Conformer` model which is a sequence-to-sequence model
     used in some modern automated speech recognition systems. It is composed of several `ConformerBlocks`.
 
     Args:
@@ -31,21 +30,18 @@ class Conformer(LightningModule):
         with_ff: bool,
     ):
         super().__init__()
-        d_k = d_v = dim // n_heads
         self.layer_stack = nn.ModuleList(
             [
                 ConformerBlock(
                     dim,
                     n_heads,
-                    d_k,
-                    d_v,
                     kernel_size_conv_mod=kernel_size_conv_mod,
                     dropout=p_dropout,
                     embedding_dim=embedding_dim,
                     with_ff=with_ff,
                 )
                 for _ in range(n_layers)
-            ]
+            ],
         )
 
     def forward(
@@ -55,8 +51,7 @@ class Conformer(LightningModule):
         embeddings: torch.Tensor,
         encoding: torch.Tensor,
     ) -> torch.Tensor:
-        r"""
-        Forward Pass of the Conformer block.
+        r"""Forward Pass of the Conformer block.
 
         Args:
             x (Tensor): Input tensor of shape (batch_size, seq_len, num_features).

@@ -1,13 +1,12 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.constants import LEAKY_RELU_SLOPE
 
 
 class FeedForward(LightningModule):
-    r"""
-    Creates a feed-forward neural network.
+    r"""Creates a feed-forward neural network.
     The network includes a layer normalization, an activation function (LeakyReLU), and dropout layers.
 
     Args:
@@ -39,8 +38,7 @@ class FeedForward(LightningModule):
         self.conv_2 = nn.Conv1d(d_model * expansion_factor, d_model, kernel_size=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        Forward pass of the feed-forward neural network.
+        r"""Forward pass of the feed-forward neural network.
 
         Args:
             x (Tensor): Input tensor of shape (batch_size, seq_len, num_features).
@@ -65,5 +63,4 @@ class FeedForward(LightningModule):
         x = self.dropout(x)
 
         # Scale the output by 0.5 (this helps with training stability)
-        x = 0.5 * x
-        return x
+        return 0.5 * x

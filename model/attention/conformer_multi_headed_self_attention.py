@@ -8,8 +8,7 @@ from .relative_multi_head_attention import RelativeMultiHeadAttention
 
 
 class ConformerMultiHeadedSelfAttention(LightningModule):
-    """
-    Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
+    """Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
     the relative sinusoidal positional encoding scheme. The relative positional encoding allows the self-attention
     module to generalize better on different input length and the resulting encoder is more robust to the variance of
     the utterance length. Conformer use `prenorm` residual units with dropout which helps training
@@ -38,7 +37,7 @@ class ConformerMultiHeadedSelfAttention(LightningModule):
 
         # Initialize the RelativeMultiHeadAttention module passing the model dimension and number of attention heads
         self.attention = RelativeMultiHeadAttention(
-            d_model=d_model, num_heads=num_heads
+            d_model=d_model, num_heads=num_heads,
         )
         self.dropout = nn.Dropout(p=dropout_p)
 
@@ -50,7 +49,7 @@ class ConformerMultiHeadedSelfAttention(LightningModule):
         mask: torch.Tensor,
         encoding: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        batch_size, seq_length, _ = key.size()
+        batch_size, _, _ = key.size()
 
         # Trim or extend the "encoding" to match the size of key, and repeat this for each input in the batch
         encoding = encoding[:, : key.shape[1]]
@@ -58,7 +57,7 @@ class ConformerMultiHeadedSelfAttention(LightningModule):
 
         # Pass inputs through the RelativeMultiHeadAttention layer, dropout the resulting outputs
         outputs, attn = self.attention(
-            query, key, value, pos_embedding=encoding, mask=mask
+            query, key, value, pos_embedding=encoding, mask=mask,
         )
 
         # Apply dropout to the attention outputs

@@ -87,7 +87,7 @@ class TestLengthAdaptor(unittest.TestCase):
         )
 
         x, log_duration_prediction, new_embeddings = self.length_adaptor.upsample_train(
-            self.x, self.x_res, duration_target, embeddings, self.src_mask
+            self.x, self.x_res, duration_target, embeddings, self.src_mask,
         )
 
         self.assertTrue(torch.is_tensor(x))
@@ -115,7 +115,7 @@ class TestLengthAdaptor(unittest.TestCase):
         embeddings = torch.rand(self.batch_size, self.seq_length, self.n_hidden)
         control = 0.5
         x, duration_rounded, new_embeddings = self.length_adaptor.upsample(
-            self.x, self.x_res, self.src_mask, embeddings, control
+            self.x, self.x_res, self.src_mask, embeddings, control,
         )
 
         self.assertTrue(torch.is_tensor(x))

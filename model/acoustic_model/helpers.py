@@ -4,10 +4,9 @@ import torch
 
 
 def positional_encoding(
-    d_model: int, length: int, device: torch.device
+    d_model: int, length: int, device: torch.device,
 ) -> torch.Tensor:
-    r"""
-    Function to calculate positional encoding for transformer model.
+    r"""Function to calculate positional encoding for transformer model.
 
     Args:
         d_model (int): Dimension of the model (often corresponds to embedding size).
@@ -26,7 +25,7 @@ def positional_encoding(
     # Calculate term for division
     div_term = torch.exp(
         torch.arange(0, d_model, 2, device=device).float()
-        * -(math.log(10000.0) / d_model)
+        * -(math.log(10000.0) / d_model),
     )
 
     # Assign sin of position * div_term to even indices in the encoding matrix
@@ -36,13 +35,14 @@ def positional_encoding(
     pe[:, 1::2] = torch.cos(position * div_term)
 
     # Add an extra dimension to match expected output shape
-    pe = pe.unsqueeze(0)
-    return pe
+    return pe.unsqueeze(0)
 
 
-def pitch_phoneme_averaging(durations, pitches, max_phoneme_len):
-    r"""
-    Function to compute the average pitch values over the duration of each phoneme.
+def pitch_phoneme_averaging(
+        durations: torch.Tensor,
+        pitches: torch.Tensor,
+        max_phoneme_len: int) -> torch.Tensor:
+    r"""Function to compute the average pitch values over the duration of each phoneme.
 
     Args:
         durations (torch.Tensor): Duration of each phoneme for each sample in a batch.
@@ -57,7 +57,7 @@ def pitch_phoneme_averaging(durations, pitches, max_phoneme_len):
     """
     # Initialize placeholder for averaged pitch values, filling with zeros
     pitches_averaged = torch.zeros(
-        (pitches.shape[0], max_phoneme_len), device=pitches.device
+        (pitches.shape[0], max_phoneme_len), device=pitches.device,
     )
     # Loop over each sample in the batch
     for batch_idx in range(durations.shape[0]):

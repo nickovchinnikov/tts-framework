@@ -4,7 +4,6 @@ from torch import nn
 
 from model.attention import ConformerMultiHeadedSelfAttention
 from model.config import AcousticModelConfigType, PreprocessingConfig
-from model.helpers import tools
 
 from .reference_encoder import ReferenceEncoder
 
@@ -29,10 +28,6 @@ class PhonemeLevelProsodyEncoder(LightningModule):
     ):
         super().__init__()
 
-        # Hidden dimensions are assigned to instance variables.
-        self.E = model_config.encoder.n_hidden
-        self.d_q = self.d_k = model_config.encoder.n_hidden
-
         # Obtain the bottleneck size and reference encoder gru size from the model config.
         bottleneck_size = model_config.reference_encoder.bottleneck_size_p
         ref_enc_gru_size = model_config.reference_encoder.ref_enc_gru_size
@@ -48,7 +43,7 @@ class PhonemeLevelProsodyEncoder(LightningModule):
 
         # Bottleneck layer to transform the output of the attention mechanism.
         self.encoder_bottleneck = nn.Linear(
-            model_config.encoder.n_hidden, bottleneck_size
+            model_config.encoder.n_hidden, bottleneck_size,
         )
 
     def forward(
@@ -59,8 +54,7 @@ class PhonemeLevelProsodyEncoder(LightningModule):
         mel_lens: torch.Tensor,
         encoding: torch.Tensor,
     ) -> torch.Tensor:
-        r"""
-        The forward pass of the PhonemeLevelProsodyEncoder. Input tensors are passed through the reference encoder,
+        r"""The forward pass of the PhonemeLevelProsodyEncoder. Input tensors are passed through the reference encoder,
         attention mechanism, and a bottleneck.
 
         Args:
@@ -73,7 +67,6 @@ class PhonemeLevelProsodyEncoder(LightningModule):
         Returns:
             torch.Tensor: Output tensor of shape [N, seq_len, bottleneck_size].
         """
-
         # Use the reference encoder to embed prosody representation
         embedded_prosody, _, mel_masks = self.encoder(mels, mel_lens)
 
@@ -92,5 +85,4 @@ class PhonemeLevelProsodyEncoder(LightningModule):
 
         # Apply the bottleneck to the output and mask out irrelevant parts
         x = self.encoder_bottleneck(x)
-        x = x.masked_fill(src_mask.unsqueeze(-1), 0.0)
-        return x
+        return x.masked_fill(src_mask.unsqueeze(-1), 0.0)

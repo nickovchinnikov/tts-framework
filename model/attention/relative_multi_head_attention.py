@@ -3,13 +3,12 @@ from typing import Tuple
 
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 
 
 class RelativeMultiHeadAttention(LightningModule):
-    r"""
-    Multi-head attention with relative positional encoding.
+    r"""Multi-head attention with relative positional encoding.
     This concept was proposed in the
     [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](https://arxiv.org/abs/1901.02860)
 
@@ -62,8 +61,7 @@ class RelativeMultiHeadAttention(LightningModule):
         pos_embedding: torch.Tensor,
         mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        This function applies multi-head attention along with relative positional encoding to the inputs. It restructures the input queries, keys, and values according to individual attention heads, applies biases, calculates content and position scores, and combines these to get the final score. A softmax activation is applied over the final score, followed by the calculation of context (contextual representation of input).
+        r"""Function applies multi-head attention along with relative positional encoding to the inputs. It restructures the input queries, keys, and values according to individual attention heads, applies biases, calculates content and position scores, and combines these to get the final score. A softmax activation is applied over the final score, followed by the calculation of context (contextual representation of input).
 
         Performs the forward pass on the queries, keys, values, and positional embeddings with a mask.
 
@@ -91,7 +89,7 @@ class RelativeMultiHeadAttention(LightningModule):
             .permute(0, 2, 1, 3)
         )
         pos_embedding = self.pos_proj(pos_embedding).view(
-            batch_size, -1, self.num_heads, self.d_head
+            batch_size, -1, self.num_heads, self.d_head,
         )
         u_bias = self.u_bias.expand_as(query)
         v_bias = self.v_bias.expand_as(query)
@@ -114,8 +112,7 @@ class RelativeMultiHeadAttention(LightningModule):
         return self.out_proj(context), attn
 
     def _relative_shift(self, pos_score: torch.Tensor) -> torch.Tensor:
-        r"""
-        The main idea of relative positional encoding is that the attention score doesn't only depend on the query and the key, but also on the relative position of the key with respect to the query. This becomes particularly useful when working with sequences of tokens, like in NLP tasks, as it helps the model to be aware of the position of the words (or tokens) in the sentence.
+        r"""The main idea of relative positional encoding is that the attention score doesn't only depend on the query and the key, but also on the relative position of the key with respect to the query. This becomes particularly useful when working with sequences of tokens, like in NLP tasks, as it helps the model to be aware of the position of the words (or tokens) in the sentence.
 
         Performs the relative shift operation on the positional scores.
 
@@ -127,11 +124,10 @@ class RelativeMultiHeadAttention(LightningModule):
         """
         batch_size, num_heads, seq_length1, seq_length2 = pos_score.size()
         zeros = torch.zeros(
-            (batch_size, num_heads, seq_length1, 1), device=pos_score.device
+            (batch_size, num_heads, seq_length1, 1), device=pos_score.device,
         )
         padded_pos_score = torch.cat([zeros, pos_score], dim=-1)
         padded_pos_score = padded_pos_score.view(
-            batch_size, num_heads, seq_length2 + 1, seq_length1
+            batch_size, num_heads, seq_length2 + 1, seq_length1,
         )
-        pos_score = padded_pos_score[:, :, 1:].view_as(pos_score)
-        return pos_score
+        return padded_pos_score[:, :, 1:].view_as(pos_score)

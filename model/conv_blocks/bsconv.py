@@ -5,8 +5,7 @@ from .conv1d import DepthWiseConv1d, PointwiseConv1d
 
 
 class BSConv1d(LightningModule):
-    r"""
-    `BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv:
+    r"""`BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv:
     Binarized Separated Convolutional Neural Networks](https://arxiv.org/pdf/2003.13549.pdf).
 
     `BSConv` is an amalgamation of depthwise separable convolution and pointwise convolution.
@@ -54,7 +53,5 @@ class BSConv1d(LightningModule):
         x1 = self.pointwise(x)
 
         # Propagate the result of the previous pointwise convolution through the depthwise convolution.
-        x2 = self.depthwise(x1)
-
         # Return final output of the sequence of pointwise and depthwise convolutions
-        return x2
+        return self.depthwise(x1)

@@ -29,7 +29,7 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
                 torch.Size([self.batch_size, 256, 2, self.model_config.mpd.periods[0]]),
                 torch.Size([self.batch_size, 512, 1, self.model_config.mpd.periods[0]]),
                 torch.Size(
-                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[0]]
+                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[0]],
                 ),
             ],
             [
@@ -38,7 +38,7 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
                 torch.Size([self.batch_size, 256, 2, self.model_config.mpd.periods[1]]),
                 torch.Size([self.batch_size, 512, 1, self.model_config.mpd.periods[1]]),
                 torch.Size(
-                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[1]]
+                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[1]],
                 ),
             ],
             [
@@ -47,7 +47,7 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
                 torch.Size([self.batch_size, 256, 1, self.model_config.mpd.periods[2]]),
                 torch.Size([self.batch_size, 512, 1, self.model_config.mpd.periods[2]]),
                 torch.Size(
-                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[2]]
+                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[2]],
                 ),
             ],
             [
@@ -56,7 +56,7 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
                 torch.Size([self.batch_size, 256, 1, self.model_config.mpd.periods[3]]),
                 torch.Size([self.batch_size, 512, 1, self.model_config.mpd.periods[3]]),
                 torch.Size(
-                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[3]]
+                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[3]],
                 ),
             ],
             [
@@ -65,7 +65,7 @@ class TestMultiPeriodDiscriminator(unittest.TestCase):
                 torch.Size([self.batch_size, 256, 1, self.model_config.mpd.periods[4]]),
                 torch.Size([self.batch_size, 512, 1, self.model_config.mpd.periods[4]]),
                 torch.Size(
-                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[4]]
+                    [self.batch_size, 1024, 1, self.model_config.mpd.periods[4]],
                 ),
             ],
         ]

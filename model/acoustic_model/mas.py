@@ -1,4 +1,4 @@
-from numba import jit, njit, prange
+from numba import njit, prange
 import numpy as np
 
 # TODO:
@@ -9,8 +9,7 @@ import numpy as np
 # TODO: Don't see any performance improvement with numba
 @njit(fastmath=True)
 def mas_width1(attn_map: np.ndarray) -> np.ndarray:
-    r"""
-    Applies a Monotonic Alignments Shrink (MAS) operation with a hard-coded width of 1 to an attention map.
+    r"""Applies a Monotonic Alignments Shrink (MAS) operation with a hard-coded width of 1 to an attention map.
     Mas with hardcoded width=1
     Essentially, it produces optimal alignments based on previous attention distribution.
 
@@ -65,9 +64,12 @@ def mas_width1(attn_map: np.ndarray) -> np.ndarray:
 
 
 @njit(parallel=True)
-def b_mas(b_attn_map, in_lens, out_lens, width=1):
-    r"""
-    Applies Monotonic Alignments Shrink (MAS) operation in parallel to the batches of an attention map.
+def b_mas(
+    b_attn_map: np.ndarray,
+    in_lens: np.ndarray,
+    out_lens: np.ndarray,
+    width: int=1) -> np.ndarray:
+    r"""Applies Monotonic Alignments Shrink (MAS) operation in parallel to the batches of an attention map.
     It uses the `mas_width1` function internally to perform MAS operation.
 
     Args:

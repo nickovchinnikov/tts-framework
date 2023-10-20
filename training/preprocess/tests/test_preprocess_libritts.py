@@ -79,7 +79,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         raw_text = r"""
         Hello, world! Wow!!!!! This is amazing?????
-        It’s a beautiful day… 
+        It’s a beautiful day…
         Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk.
         """
 
@@ -105,12 +105,12 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
         self.assertIsNone(output)
-    
+
     def test_beta_binomial_prior_distribution(self):
         phoneme_count = 10
         mel_count = 20
         prior_dist = self.preprocess_libritts.beta_binomial_prior_distribution(
-            phoneme_count, mel_count
+            phoneme_count, mel_count,
         )
         self.assertIsInstance(prior_dist, torch.Tensor)
         self.assertEqual(prior_dist.shape, (mel_count, phoneme_count))

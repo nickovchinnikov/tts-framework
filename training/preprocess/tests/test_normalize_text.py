@@ -2,14 +2,14 @@ import unittest
 
 import numpy as np
 
-from training.preprocess.normilize_text import NormilizeText
+from training.preprocess.normalize_text import NormalizeText
 
 
 # Create a class to test the ComputePitch class
 class TestTextPreprocess(unittest.TestCase):
     def setUp(self):
         np.random.seed(0)
-        self.normalizer = NormilizeText()
+        self.normalizer = NormalizeText()
 
     def test_byte_encode(self):
         # Test with a simple word
@@ -49,7 +49,7 @@ class TestTextPreprocess(unittest.TestCase):
         self.assertEqual(self.normalizer.normalize_chars(input_text), expected_output)
 
         # Test case 5: Test character normalization with multiple quotes
-        input_text = 'He said, “I don’t know…”'
+        input_text = "He said, “I don’t know…”"
         expected_output = 'He said, "I don\'t know."'
         self.assertEqual(self.normalizer.normalize_chars(input_text), expected_output)
 
@@ -101,5 +101,5 @@ class TestTextPreprocess(unittest.TestCase):
         self.assertEqual(self.normalizer(input_text), expected_output)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

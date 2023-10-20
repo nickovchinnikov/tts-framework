@@ -77,9 +77,9 @@ class TestDiscriminator(unittest.TestCase):
             fmap_dims = fmap_mrd_dims[key]
 
             # Assert the shape of the feature maps
-            for i, fmap in enumerate(fmap):
+            for i, fmap_ in enumerate(fmap):
                 # Assert the feature map shape explicitly
-                self.assertEqual(fmap.shape, fmap_dims[i])
+                self.assertEqual(fmap_.shape, fmap_dims[i])
 
         # Test MPD output
         output_mpd = output[1]

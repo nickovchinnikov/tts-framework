@@ -41,12 +41,12 @@ class TestDiscriminatorR(unittest.TestCase):
             return max(2**p + 1, 2**6 + 1)
 
         # Assert the shape of the feature maps
-        for i, fmap in enumerate(fmap[:-1]):
+        for i, fmap_ in enumerate(fmap[:-1]):
             self.assertEqual(
-                fmap.shape, torch.Size([first_dim, second_dim, dim_3rd(init_p - i)])
+                fmap_.shape, torch.Size([first_dim, second_dim, dim_3rd(init_p - i)]),
             )
 
-        self.assertEqual(fmap[-1].shape, torch.Size([second_dim, 65]))
+        self.assertEqual(fmap[-1].shape, torch.Size([second_dim, second_dim, 65]))
 
         self.assertEqual(output.shape, (1, 65))
 

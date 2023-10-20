@@ -1,6 +1,6 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.constants import LEAKY_RELU_SLOPE
 from model.conv_blocks import DepthWiseConv1d, GLUActivation, PointwiseConv1d
@@ -8,8 +8,7 @@ from model.helpers import tools
 
 
 class ConformerConvModule(LightningModule):
-    r"""
-    Conformer Convolution Module class represents a module in the Conformer model architecture.
+    r"""Conformer Convolution Module class represents a module in the Conformer model architecture.
     The module includes a layer normalization, pointwise and depthwise convolutional layers,
     Gated Linear Units (GLU) activation, and dropout layer.
 
@@ -55,8 +54,7 @@ class ConformerConvModule(LightningModule):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        Forward pass of the Conformer conv module.
+        r"""Forward pass of the Conformer conv module.
 
         Args:
             x (Tensor): Input tensor of shape (batch_size, seq_len, num_features).
@@ -74,5 +72,4 @@ class ConformerConvModule(LightningModule):
         x = self.activation(x)
         x = self.conv_2(x)
         x = x.permute(0, 2, 1)
-        x = self.dropout(x)
-        return x
+        return self.dropout(x)

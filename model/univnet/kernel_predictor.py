@@ -1,6 +1,6 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class KernelPredictor(LightningModule):
@@ -16,8 +16,7 @@ class KernelPredictor(LightningModule):
         kpnet_dropout: float = 0.0,
         lReLU_slope: float = 0.1,
     ):
-        r"""
-        Initializes a KernelPredictor object.
+        r"""Initializes a KernelPredictor object.
         KernelPredictor is a class that predicts the kernel size for the convolutional layers in the UnivNet model.
         The kernels of the LVC layers are predicted using a kernel predictor that takes the log-mel-spectrogram as the input.
 
@@ -32,7 +31,6 @@ class KernelPredictor(LightningModule):
             kpnet_dropout (float, optional): The dropout rate for the kernel predictor network. Defaults to 0.0.
             lReLU_slope (float, optional): The slope for the leaky ReLU activation function. Defaults to 0.1.
         """
-
         super().__init__()
 
         self.conv_in_channels = conv_in_channels
@@ -56,7 +54,7 @@ class KernelPredictor(LightningModule):
                     5,
                     padding=2,
                     bias=True,
-                )
+                ),
             ),
             nn.LeakyReLU(lReLU_slope),
         )
@@ -72,7 +70,7 @@ class KernelPredictor(LightningModule):
                             kpnet_conv_size,
                             padding=padding,
                             bias=True,
-                        )
+                        ),
                     ),
                     nn.LeakyReLU(lReLU_slope),
                     nn.utils.weight_norm(
@@ -82,12 +80,12 @@ class KernelPredictor(LightningModule):
                             kpnet_conv_size,
                             padding=padding,
                             bias=True,
-                        )
+                        ),
                     ),
                     nn.LeakyReLU(lReLU_slope),
                 )
                 for _ in range(3)
-            ]
+            ],
         )
 
         self.kernel_conv = nn.utils.weight_norm(
@@ -97,7 +95,7 @@ class KernelPredictor(LightningModule):
                 kpnet_conv_size,
                 padding=padding,
                 bias=True,
-            )
+            ),
         )
         self.bias_conv = nn.utils.weight_norm(
             nn.Conv1d(
@@ -106,12 +104,11 @@ class KernelPredictor(LightningModule):
                 kpnet_conv_size,
                 padding=padding,
                 bias=True,
-            )
+            ),
         )
 
     def forward(self, c: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Computes the forward pass of the model.
+        r"""Computes the forward pass of the model.
 
         Args:
             c (Tensor): The conditioning sequence (batch, cond_channels, cond_length).
@@ -144,9 +141,7 @@ class KernelPredictor(LightningModule):
         return kernels, bias
 
     def remove_weight_norm(self):
-        r"""
-        Removes weight normalization from the input, kernel, bias, and residual convolutional layers.
-        """
+        r"""Removes weight normalization from the input, kernel, bias, and residual convolutional layers."""
         nn.utils.remove_weight_norm(self.input_conv[0])
         nn.utils.remove_weight_norm(self.kernel_conv)
         nn.utils.remove_weight_norm(self.bias_conv)

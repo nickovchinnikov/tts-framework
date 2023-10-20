@@ -1,6 +1,6 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.config import AcousticModelConfigType, PreprocessingConfig
 
@@ -30,7 +30,6 @@ class UtteranceLevelProsodyEncoder(LightningModule):
         super().__init__()
 
         self.E = model_config.encoder.n_hidden
-        self.d_q = self.d_k = model_config.encoder.n_hidden
         ref_enc_gru_size = model_config.reference_encoder.ref_enc_gru_size
         ref_attention_dropout = model_config.reference_encoder.ref_attention_dropout
         bottleneck_size = model_config.reference_encoder.bottleneck_size_u
@@ -52,7 +51,6 @@ class UtteranceLevelProsodyEncoder(LightningModule):
         Returns:
             torch.Tensor: A 3-dimensional tensor sized `[N, seq_len, E]`.
         """
-
         # Use the reference encoder to get prosody embeddings
         _, embedded_prosody, _ = self.encoder(mels, mel_lens)
 
@@ -67,5 +65,4 @@ class UtteranceLevelProsodyEncoder(LightningModule):
         out = self.dropout(out)
 
         # Reshape the output tensor before returning
-        out = out.view((-1, 1, out.shape[3]))
-        return out
+        return out.view((-1, 1, out.shape[3]))

@@ -9,7 +9,7 @@ class TestMultiHeadAttention(unittest.TestCase):
     def setUp(self):
         # Initialize an instance of MultiHeadAttention
         self.attention = MultiHeadAttention(
-            query_dim=512, key_dim=512, num_units=512, num_heads=8
+            query_dim=512, key_dim=512, num_units=512, num_heads=8,
         )
         # Assuming batch=3, seq_length=10, dim=512
         self.dim_params = (3, 10, 512)

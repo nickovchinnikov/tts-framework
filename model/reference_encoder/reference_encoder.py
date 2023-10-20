@@ -2,7 +2,7 @@ from typing import Tuple
 
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 
 from model.config import AcousticModelConfigType, PreprocessingConfig
@@ -48,8 +48,8 @@ class ReferenceEncoder(LightningModule):
 
         self.n_mel_channels = n_mel_channels
         K = len(ref_enc_filters)
-        filters = [self.n_mel_channels] + ref_enc_filters
-        strides = [1] + ref_enc_strides
+        filters = [self.n_mel_channels, *ref_enc_filters]
+        strides = [1, *ref_enc_strides]
 
         # Use CoordConv1d at the first layer to better preserve positional information: https://arxiv.org/pdf/1811.02122.pdf
         convs = [
@@ -79,7 +79,7 @@ class ReferenceEncoder(LightningModule):
             [
                 nn.InstanceNorm1d(num_features=ref_enc_filters[i], affine=True)
                 for i in range(K)
-            ]
+            ],
         )
 
         # Define GRU layer
@@ -95,12 +95,12 @@ class ReferenceEncoder(LightningModule):
         mel_lens: torch.Tensor,
         leaky_relu_slope: float = LEAKY_RELU_SLOPE,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        r"""
-        Forward pass of the ReferenceEncoder.
+        r"""Forward pass of the ReferenceEncoder.
 
         Args:
             x (torch.Tensor): A 3-dimensional tensor containing the input sequences, its size is [N, n_mels, timesteps].
             mel_lens (torch.Tensor): A 1-dimensional tensor containing the lengths of each sequence in x. Its length is N.
+            leaky_relu_slope (float): The slope of the leaky relu function.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing three tensors. _First_: The sequence tensor
@@ -124,7 +124,7 @@ class ReferenceEncoder(LightningModule):
         x = x.permute((0, 2, 1))
 
         packed_sequence = torch.nn.utils.rnn.pack_padded_sequence(
-            x, lengths=mel_lens.cpu().int(), batch_first=True, enforce_sorted=False
+            x, lengths=mel_lens.cpu().int(), batch_first=True, enforce_sorted=False,
         )
 
         self.gru.flatten_parameters()
@@ -135,7 +135,7 @@ class ReferenceEncoder(LightningModule):
         return out, memory, mel_masks
 
     def calculate_channels(
-        self, L: int, kernel_size: int, stride: int, pad: int, n_convs: int
+        self, L: int, kernel_size: int, stride: int, pad: int, n_convs: int,
     ) -> int:
         r"""Calculate the number of channels after applying convolutions.
 
@@ -149,7 +149,6 @@ class ReferenceEncoder(LightningModule):
         Returns:
             int: The size after the convolutions.
         """
-
         # Loop through each convolution
         for _ in range(n_convs):
             # Calculate the size after each convolution

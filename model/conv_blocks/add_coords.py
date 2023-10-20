@@ -3,8 +3,7 @@ import torch
 
 
 class AddCoords(LightningModule):
-    r"""
-    AddCoords is a PyTorch module that adds additional channels to the input tensor containing the relative
+    r"""AddCoords is a PyTorch module that adds additional channels to the input tensor containing the relative
     (normalized to `[-1, 1]`) coordinates of each input element along the specified number of dimensions (`rank`).
     Essentially, it adds spatial context information to the tensor.
 
@@ -31,8 +30,7 @@ class AddCoords(LightningModule):
         self.with_r = with_r
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        r"""
-        Forward pass of the AddCoords module. Depending on the rank of the tensor, it adds one or more new channels
+        r"""Forward pass of the AddCoords module. Depending on the rank of the tensor, it adds one or more new channels
         with relative coordinate values. If `with_r` is True, an extra radial channel is included.
 
         For example, for an image (`rank=2`), two channels would be added which contain the normalized x and y
@@ -47,7 +45,7 @@ class AddCoords(LightningModule):
             out (torch.Tensor): The input tensor with added coordinate and possibly radial channels.
         """
         if self.rank == 1:
-            batch_size_shape, channel_in_shape, dim_x = x.shape
+            batch_size_shape, _, dim_x = x.shape
             xx_range = torch.arange(dim_x, dtype=torch.int32)
             xx_channel = xx_range[None, None, :]
 
@@ -63,7 +61,7 @@ class AddCoords(LightningModule):
                 out = torch.cat([out, rr], dim=1)
 
         elif self.rank == 2:
-            batch_size_shape, channel_in_shape, dim_y, dim_x = x.shape
+            batch_size_shape, _, dim_y, dim_x = x.shape
             xx_ones = torch.ones([1, 1, 1, dim_x], dtype=torch.int32)
             yy_ones = torch.ones([1, 1, 1, dim_y], dtype=torch.int32)
 
@@ -94,12 +92,12 @@ class AddCoords(LightningModule):
 
             if self.with_r:
                 rr = torch.sqrt(
-                    torch.pow(xx_channel - 0.5, 2) + torch.pow(yy_channel - 0.5, 2)
+                    torch.pow(xx_channel - 0.5, 2) + torch.pow(yy_channel - 0.5, 2),
                 )
                 out = torch.cat([out, rr], dim=1)
 
         elif self.rank == 3:
-            batch_size_shape, channel_in_shape, dim_z, dim_y, dim_x = x.shape
+            batch_size_shape, _, dim_z, dim_y, dim_x = x.shape
             xx_ones = torch.ones([1, 1, 1, 1, dim_x], dtype=torch.int32)
             yy_ones = torch.ones([1, 1, 1, 1, dim_y], dtype=torch.int32)
             zz_ones = torch.ones([1, 1, 1, 1, dim_z], dtype=torch.int32)
@@ -133,7 +131,7 @@ class AddCoords(LightningModule):
                 rr = torch.sqrt(
                     torch.pow(xx_channel - 0.5, 2)
                     + torch.pow(yy_channel - 0.5, 2)
-                    + torch.pow(zz_channel - 0.5, 2)
+                    + torch.pow(zz_channel - 0.5, 2),
                 )
                 out = torch.cat([out, rr], dim=1)
         else:

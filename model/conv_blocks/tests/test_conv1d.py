@@ -78,7 +78,7 @@ class TestPointwiseConv1d(unittest.TestCase):
         )
 
         self.pointwise_conv = PointwiseConv1d(
-            self.in_channels, self.out_channels, self.stride, self.padding, self.bias
+            self.in_channels, self.out_channels, self.stride, self.padding, self.bias,
         )
 
         # Generate an input data

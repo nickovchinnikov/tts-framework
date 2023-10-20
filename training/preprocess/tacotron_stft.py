@@ -1,8 +1,7 @@
-from typing import Optional, Union
+from typing import Optional
 
 import librosa
 import lightning.pytorch as pl
-import numpy as np
 import torch
 
 
@@ -18,8 +17,7 @@ class TacotronSTFT(pl.LightningModule):
         mel_fmax: Optional[int],
         mel_fmin: float = 0.0,
     ):
-        r"""
-        TacotronSTFT module that computes mel-spectrograms from a batch of waves.
+        r"""TacotronSTFT module that computes mel-spectrograms from a batch of waves.
 
         Args:
             filter_length (int): Length of the filter window.
@@ -60,8 +58,7 @@ class TacotronSTFT(pl.LightningModule):
         self.register_buffer("hann_window", hann_window)
 
     def _spectrogram(self, y: torch.Tensor) -> torch.Tensor:
-        r"""
-        Computes the linear spectrogram of a batch of waves.
+        r"""Computes the linear spectrogram of a batch of waves.
 
         Args:
             y (torch.Tensor): Input waveforms.
@@ -81,7 +78,7 @@ class TacotronSTFT(pl.LightningModule):
             mode="reflect",
         )
         y = y.squeeze(1)
-        spec = torch.stft(
+        return torch.stft(
             y,
             self.n_fft,
             hop_length=self.hop_size,
@@ -93,11 +90,9 @@ class TacotronSTFT(pl.LightningModule):
             onesided=True,
             return_complex=False,
         )
-        return spec
 
     def linear_spectrogram(self, y: torch.Tensor) -> torch.Tensor:
-        r"""
-        Computes the linear spectrogram of a batch of waves.
+        r"""Computes the linear spectrogram of a batch of waves.
 
         Args:
             y (torch.Tensor): Input waveforms.
@@ -106,13 +101,10 @@ class TacotronSTFT(pl.LightningModule):
             torch.Tensor: Linear spectrogram.
         """
         spec = self._spectrogram(y)
-        spec = torch.norm(spec, p=2, dim=-1)
-
-        return spec
+        return torch.norm(spec, p=2, dim=-1)
 
     def forward(self, y: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Computes mel-spectrograms from a batch of waves.
+        r"""Computes mel-spectrograms from a batch of waves.
 
         Args:
             y (torch.FloatTensor): Input waveforms with shape (B, T) in range [-1, 1]
@@ -131,8 +123,7 @@ class TacotronSTFT(pl.LightningModule):
         return spec, mel
 
     def spectral_normalize_torch(self, magnitudes: torch.Tensor) -> torch.Tensor:
-        r"""
-        Applies dynamic range compression to magnitudes.
+        r"""Applies dynamic range compression to magnitudes.
 
         Args:
             magnitudes (torch.Tensor): Input magnitudes.
@@ -140,14 +131,12 @@ class TacotronSTFT(pl.LightningModule):
         Returns:
             torch.Tensor: Output magnitudes.
         """
-        output = self.dynamic_range_compression_torch(magnitudes)
-        return output
+        return self.dynamic_range_compression_torch(magnitudes)
 
     def dynamic_range_compression_torch(
-        self, x: torch.Tensor, C: int = 1, clip_val: float = 1e-5
+        self, x: torch.Tensor, C: int = 1, clip_val: float = 1e-5,
     ) -> torch.Tensor:
-        r"""
-        Applies dynamic range compression to x.
+        r"""Applies dynamic range compression to x.
 
         Args:
             x (torch.Tensor): Input tensor.
@@ -164,5 +153,4 @@ class TacotronSTFT(pl.LightningModule):
         audio_tensor = audio.unsqueeze(0)
         with torch.no_grad():
             _, melspec = self.forward(audio_tensor)
-        melspec = melspec.squeeze(0)
-        return melspec
+        return melspec.squeeze(0)

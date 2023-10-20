@@ -1,6 +1,6 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.conv_blocks import Conv1dGLU
 
@@ -10,16 +10,13 @@ from .feed_forward import FeedForward
 
 
 class ConformerBlock(LightningModule):
-    r"""
-    ConformerBlock class represents a block in the Conformer model architecture.
+    r"""ConformerBlock class represents a block in the Conformer model architecture.
     The block includes a pointwise convolution followed by Gated Linear Units (`GLU`) activation layer (`Conv1dGLU`),
     a Conformer self attention layer (`ConformerMultiHeadedSelfAttention`), and optional feed-forward layer (`FeedForward`).
 
     Args:
         d_model (int): The number of expected features in the input.
         n_head (int): The number of heads for the multiheaded attention mechanism.
-        d_k (int): The dimension of the key vectors for the attention mechanism.
-        d_v (int): The dimension of the value vectors for the attention mechanism.
         kernel_size_conv_mod (int): The size of the convolving kernel for the convolution module.
         embedding_dim (int): The dimension of the embeddings.
         dropout (float): The dropout probability.
@@ -30,8 +27,6 @@ class ConformerBlock(LightningModule):
         self,
         d_model: int,
         n_head: int,
-        d_k: int,
-        d_v: int,
         kernel_size_conv_mod: int,
         embedding_dim: int,
         dropout: float,
@@ -78,8 +73,7 @@ class ConformerBlock(LightningModule):
         slf_attn_mask: torch.Tensor,
         encoding: torch.Tensor,
     ) -> torch.Tensor:
-        r"""
-        Forward pass of the Conformer block.
+        r"""Forward pass of the Conformer block.
 
         Args:
             x (Tensor): Input tensor of shape (batch_size, seq_len, num_features).
@@ -98,9 +92,8 @@ class ConformerBlock(LightningModule):
         res = x
         x = self.ln(x)
         x, _ = self.slf_attn(
-            query=x, key=x, value=x, mask=slf_attn_mask, encoding=encoding
+            query=x, key=x, value=x, mask=slf_attn_mask, encoding=encoding,
         )
         x = x + res
         x = x.masked_fill(mask.unsqueeze(-1), 0)
-        x = self.conformer_conv_2(x) + x
-        return x
+        return self.conformer_conv_2(x) + x

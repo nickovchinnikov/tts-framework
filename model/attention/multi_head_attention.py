@@ -1,12 +1,11 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 
 
 class MultiHeadAttention(LightningModule):
-    r"""
-    A class that implements a Multi-head Attention mechanism.
+    r"""A class that implements a Multi-head Attention mechanism.
     Multi-head attention allows the model to focus on different positions,
     capturing various aspects of the input.
 
@@ -43,12 +42,11 @@ class MultiHeadAttention(LightningModule):
         )
         self.W_key = nn.Linear(in_features=key_dim, out_features=num_units, bias=False)
         self.W_value = nn.Linear(
-            in_features=key_dim, out_features=num_units, bias=False
+            in_features=key_dim, out_features=num_units, bias=False,
         )
 
     def forward(self, query: torch.Tensor, key: torch.Tensor) -> torch.Tensor:
-        r"""
-        Performs the forward pass over input tensors.
+        r"""Performs the forward pass over input tensors.
 
         Args:
             query (torch.Tensor): The input tensor containing query vectors.
@@ -72,13 +70,13 @@ class MultiHeadAttention(LightningModule):
         split_size = self.num_units // self.num_heads
 
         querys = torch.stack(
-            torch.split(querys, split_size, dim=2), dim=0
+            torch.split(querys, split_size, dim=2), dim=0,
         )  # [h, N, T_q, num_units/h]
         keys = torch.stack(
-            torch.split(keys, split_size, dim=2), dim=0
+            torch.split(keys, split_size, dim=2), dim=0,
         )  # [h, N, T_k, num_units/h]
         values = torch.stack(
-            torch.split(values, split_size, dim=2), dim=0
+            torch.split(values, split_size, dim=2), dim=0,
         )  # [h, N, T_k, num_units/h]
         # score = softmax(QK^T / (d_k ** 0.5))
 
@@ -87,7 +85,6 @@ class MultiHeadAttention(LightningModule):
         scores = F.softmax(scores, dim=3)
         # out = score * V
         out = torch.matmul(scores, values)  # [h, N, T_q, num_units/h]
-        out = torch.cat(torch.split(out, 1, dim=0), dim=3).squeeze(
-            0
+        return torch.cat(torch.split(out, 1, dim=0), dim=3).squeeze(
+            0,
         )  # [N, T_q, num_units]
-        return out

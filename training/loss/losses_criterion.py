@@ -8,9 +8,7 @@ from training.loss import FastSpeech2LossGen
 
 class LossesCriterion(pl.LightningModule):
     def __init__(self):
-        r"""
-        Initializes the LossesCriterion module.
-        """
+        r"""Initializes the LossesCriterion module."""
         super().__init__()
 
         # Init the loss
@@ -42,8 +40,7 @@ class LossesCriterion(pl.LightningModule):
         outputs: Dict[str, torch.Tensor],
         step: int,
     ) -> float:
-        r"""
-        Computes the total loss and individual losses for each component of the model.
+        r"""Computes the total loss and individual losses for each component of the model.
 
         Args:
             src_mask (torch.Tensor): The source mask tensor of shape (batch_size, src_len).

@@ -58,7 +58,7 @@ class TestMultiResolutionSTFTLoss(unittest.TestCase):
             0.7007,
         )
         self.assertTrue(
-            torch.allclose(mag_loss, expected_mag_loss, rtol=1e-4, atol=1e-4)
+            torch.allclose(mag_loss, expected_mag_loss, rtol=1e-4, atol=1e-4),
         )
 
 

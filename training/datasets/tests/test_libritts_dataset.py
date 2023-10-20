@@ -28,7 +28,7 @@ class TestLibriTTSDataset(unittest.TestCase):
 
     def test_getitem(self):
         sample = self.dataset[0]
-        self.assertEqual(sample["id"], '1034_121119_000001_000001')
+        self.assertEqual(sample["id"], "1034_121119_000001_000001")
         self.assertEqual(sample["speaker"], 1034)
 
         self.assertEqual(sample["text"].shape, torch.Size([6]))

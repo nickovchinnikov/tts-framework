@@ -88,13 +88,13 @@ class TestFastSpeech2LossGen(unittest.TestCase):
                         pitch_loss,
                         ctc_loss,
                         bin_loss,
-                    ]
+                    ],
                 ),
                 torch.tensor(
-                    [7.0773, 1.0965, 0.7479, 1.6295, 0.6886, 0.603, 1.9893, 0.3224, 0.0]
+                    [7.0773, 1.0965, 0.7479, 1.6295, 0.6886, 0.603, 1.9893, 0.3224, 0.0],
                 ),
                 atol=1e-4,
-            )
+            ),
         )
 
 

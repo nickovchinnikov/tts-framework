@@ -24,12 +24,17 @@ nav:
       - References: model/acoustic_model/readme.md
       - Accoustic Model: model/acoustic_model/acoustic_model.md
       - Embedding: model/acoustic_model/embedding.md
+      - Helpers: model/acoustic_model/helpers.md
       - Variance Predictor: model/acoustic_model/variance_predictor.md
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
+      - Pitch Adaptor2: model/acoustic_model/pitch_adaptor2.md
       - Length Adaptor: model/acoustic_model/length_adaptor.md
       - Phoneme Prosody Predictor: model/acoustic_model/phoneme_prosody_predictor.md
       - Aligner:
         - Monotonic Alignments Shrink: model/acoustic_model/mas.md
+    - Config:
+      - References: model/config/readme.md
+      - Langs: model/config/langs.md
     - Reference Encoder:
       - References: model/reference_encoder/readme.md
       - Style Token Layer (STL): model/reference_encoder/STL.md
@@ -73,12 +78,18 @@ nav:
       - Scheduled Optim Finetuning: training/optimizer/scheduled_optim_finetuning.md
     - Preprocess:
       - References: training/preprocess/readme.md
-      - TacotronSTFT: training/preprocess/tacotron_stft.md
-      - Preprocess Audio: training/preprocess/preprocess_audio.md
-      - compute_yin: training/preprocess/compute_yin.md
-      - Text: training/preprocess/text.md
       - Audio: training/preprocess/audio.md
+      - compute_yin: training/preprocess/compute_yin.md
+      - Normalize Text: training/preprocess/normalize_text.md
+      - Preprocess LibriTTS: training/preprocess/preprocess_libritts.md
+      - TacotronSTFT: training/preprocess/tacotron_stft.md
+      - Wav2Vec Aligner: training/preprocess/wav2vec_aligner.md
     - Tools: training/tools.md
+  - Experiments:
+    - References: experiments/readme.md
+    - MAS torch: experiments/mas_torch.md
+    - Conv Leaky ReLU: experiments/conv_leaky_relu.md
+    - Tokenization: experiments/tokenization.md
   - About mkdocs-material: readme.md
 theme:
   name: material

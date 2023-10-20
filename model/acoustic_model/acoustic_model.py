@@ -2,7 +2,7 @@ from typing import Dict, Tuple, Union
 
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
@@ -29,8 +29,7 @@ from .pitch_adaptor2 import PitchAdaptor
 
 
 class AcousticModel(LightningModule):
-    r"""
-    The DelightfulTTS AcousticModel class represents a PyTorch module for an acoustic model in text-to-speech (TTS).
+    r"""The DelightfulTTS AcousticModel class represents a PyTorch module for an acoustic model in text-to-speech (TTS).
     The acoustic model is responsible for predicting speech signals from phoneme sequences.
 
     The model comprises multiple sub-modules including encoder, decoder and various prosody encoders and predictors.
@@ -128,8 +127,8 @@ class AcousticModel(LightningModule):
 
         self.src_word_emb = Parameter(
             tools.initialize_embeddings(
-                (len(symbols), model_config.encoder.n_hidden), device=self.device
-            )
+                (len(symbols), model_config.encoder.n_hidden), device=self.device,
+            ),
         )
 
         self.to_mel = nn.Linear(
@@ -143,15 +142,15 @@ class AcousticModel(LightningModule):
         # Need to think about it more
         self.speaker_embed = Parameter(
             tools.initialize_embeddings(
-                (n_speakers, model_config.speaker_embed_dim), device=self.device
-            )
+                (n_speakers, model_config.speaker_embed_dim), device=self.device,
+            ),
         )
 
         self.lang_embed = Parameter(
             tools.initialize_embeddings(
                 (len(SUPPORTED_LANGUAGES), model_config.lang_embed_dim),
                 device=self.device,
-            )
+            ),
         )
 
     def get_embeddings(
@@ -161,8 +160,7 @@ class AcousticModel(LightningModule):
         src_mask: torch.Tensor,
         lang_idx: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Given the tokens, speakers, source mask, and language indices, compute
+        r"""Given the tokens, speakers, source mask, and language indices, compute
         the embeddings for tokens, speakers and languages and return the
         token_embeddings and combined speaker and language embeddings
 
@@ -191,8 +189,7 @@ class AcousticModel(LightningModule):
         return token_embeddings, embeddings
 
     def prepare_for_export(self) -> None:
-        r"""
-        Prepare the model for export.
+        r"""Prepare the model for export.
 
         This method is called when the model is about to be exported, such as for deployment
         or serializing for later use. The method removes unnecessary components that are
@@ -200,7 +197,7 @@ class AcousticModel(LightningModule):
         prosody encoders for this acoustic model. These components are typically used during
         training and are not needed when the model is used for making predictions.
 
-        Returns:
+        Returns
             None
         """
         del self.phoneme_prosody_encoder
@@ -208,15 +205,14 @@ class AcousticModel(LightningModule):
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
-        r"""
-        Freeze the trainable parameters in the model.
+        r"""Freeze the trainable parameters in the model.
 
         By freezing, the parameters are no longer updated by gradient descent.
         This is typically done when you want to keep parts of your model fixed while training other parts.
         For this model, it freezes all parameters and then selectively unfreezes the
         speaker embeddings and the pitch adaptor's pitch embeddings to allow these components to update during training.
 
-        Returns:
+        Returns
             None
         """
         for par in self.parameters():
@@ -227,8 +223,7 @@ class AcousticModel(LightningModule):
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
-        r"""
-        Unfreeze the trainable parameters in the model, allowing them to be updated during training.
+        r"""Unfreeze the trainable parameters in the model, allowing them to be updated during training.
 
         This method is typically used to 'unfreeze' previously 'frozen' parameters, making them trainable again.
         For this model, it unfreezes all parameters and then selectively freezes the
@@ -256,10 +251,9 @@ class AcousticModel(LightningModule):
             self.lang_embed.requires_grad = False
 
     def average_utterance_prosody(
-        self, u_prosody_pred: torch.Tensor, src_mask: torch.Tensor
+        self, u_prosody_pred: torch.Tensor, src_mask: torch.Tensor,
     ) -> torch.Tensor:
-        r"""
-        Compute the average utterance prosody over the length of non-masked elements.
+        r"""Compute the average utterance prosody over the length of non-masked elements.
 
         This method averages the output of the utterance prosody predictor over
         the sequence lengths (non-masked elements). This function will return
@@ -272,17 +266,14 @@ class AcousticModel(LightningModule):
         Returns:
             torch.Tensor: Tensor of dimension (batch_size, 1, n_features) containing average utterance prosody over non-masked sequence length.
         """
-
         # Compute the real sequence lengths by negating the mask and summing along the sequence dimension
         lengths = ((~src_mask) * 1.0).sum(1)
 
         # Compute the sum of u_prosody_pred across the sequence length dimension,
         #  then divide by the sequence lengths tensor to calculate the average.
         #  This performs a broadcasting operation to account for the third dimension (n_features).
-        u_prosody_pred = u_prosody_pred.sum(1, keepdim=True) / lengths.view(-1, 1, 1)
-
         # Return the averaged prosody prediction
-        return u_prosody_pred
+        return u_prosody_pred.sum(1, keepdim=True) / lengths.view(-1, 1, 1)
 
     def forward_train(
         self,
@@ -297,8 +288,7 @@ class AcousticModel(LightningModule):
         attn_priors: Union[torch.Tensor, None],
         use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
-        r"""
-        Forward pass during training phase.
+        r"""Forward pass during training phase.
 
         For a given phoneme sequence, speaker identities, sequence lengths, mels,
         mel lengths, pitches, language, and attention priors, the forward pass
@@ -320,13 +310,12 @@ class AcousticModel(LightningModule):
         Returns:
             Dict[str, torch.Tensor]: Returns the prediction outputs as a dictionary.
         """
-
         # Generate masks for padding positions in the source sequences and mel sequences
         src_mask = tools.get_mask_from_lengths(src_lens)
         mel_mask = tools.get_mask_from_lengths(mel_lens)
 
         x, embeddings = self.get_embeddings(
-            token_idx=x, speaker_idx=speakers, src_mask=src_mask, lang_idx=langs
+            token_idx=x, speaker_idx=speakers, src_mask=src_mask, lang_idx=langs,
         )
 
         encoding = positional_encoding(
@@ -338,25 +327,25 @@ class AcousticModel(LightningModule):
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
 
         u_prosody_ref = self.u_norm(
-            self.utterance_prosody_encoder(mels=mels, mel_lens=mel_lens)
+            self.utterance_prosody_encoder(mels=mels, mel_lens=mel_lens),
         )
         u_prosody_pred = self.u_norm(
             self.average_utterance_prosody(
                 u_prosody_pred=self.utterance_prosody_predictor(x=x, mask=src_mask),
                 src_mask=src_mask,
-            )
+            ),
         )
 
         p_prosody_ref = self.p_norm(
             self.phoneme_prosody_encoder(
-                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding
-            )
+                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding,
+            ),
         )
         p_prosody_pred = self.p_norm(
             self.phoneme_prosody_predictor(
                 x=x,
                 mask=src_mask,
-            )
+            ),
         )
         if use_ground_truth:
             x = x + self.u_bottle_out(u_prosody_ref)
@@ -374,7 +363,7 @@ class AcousticModel(LightningModule):
             attn_prior=attn_priors,
         )
         pitches = pitch_phoneme_averaging(
-            durations=attn_hard_dur, pitches=pitches, max_phoneme_len=x.shape[1]
+            durations=attn_hard_dur, pitches=pitches, max_phoneme_len=x.shape[1],
         )
         x, pitch_prediction, _, _ = self.pitch_adaptor.add_pitch_train(
             x=x,
@@ -423,8 +412,7 @@ class AcousticModel(LightningModule):
         p_control: float,
         d_control: float,
     ) -> torch.Tensor:
-        r"""
-        Forward pass during model inference.
+        r"""Forward pass during model inference.
 
         The forward pass receives phoneme sequence, speaker identities, languages, pitch control and
         duration control, conducts a series of operations on these inputs and returns the predicted mel
@@ -441,15 +429,14 @@ class AcousticModel(LightningModule):
         Returns:
             torch.Tensor: Predicted mel spectrogram.
         """
-
         # Generate masks for padding positions in the source sequences
         src_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device)
+            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device),
         )
 
         # Obtain the embeddings for the input
         x, embeddings = self.get_embeddings(
-            token_idx=x, speaker_idx=speakers, src_mask=src_mask, lang_idx=langs
+            token_idx=x, speaker_idx=speakers, src_mask=src_mask, lang_idx=langs,
         )
 
         # Generate positional encodings
@@ -463,19 +450,19 @@ class AcousticModel(LightningModule):
             self.average_utterance_prosody(
                 u_prosody_pred=self.utterance_prosody_predictor(x=x, mask=src_mask),
                 src_mask=src_mask,
-            )
+            ),
         )
         p_prosody_pred = self.p_norm(
             self.phoneme_prosody_predictor(
                 x=x,
                 mask=src_mask,
-            )
+            ),
         )
         x = x + self.u_bottle_out(u_prosody_pred).expand_as(x)
         x = x + self.p_bottle_out(p_prosody_pred).expand_as(x)
         x_res = x
         x = self.pitch_adaptor.add_pitch(
-            x=x, pitch_range=pitches_range, src_mask=src_mask, control=p_control
+            x=x, pitch_range=pitches_range, src_mask=src_mask, control=p_control,
         )
         x, duration_rounded, embeddings = self.length_regulator.upsample(
             x=x,
@@ -485,12 +472,11 @@ class AcousticModel(LightningModule):
             embeddings=embeddings,
         )
         mel_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device)
+            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device),
         )
         if x.shape[1] > encoding.shape[1]:
             encoding = positional_encoding(self.emb_dim, x.shape[1], device=self.device)
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
-        x = x.permute((0, 2, 1))
-        return x
+        return x.permute((0, 2, 1))

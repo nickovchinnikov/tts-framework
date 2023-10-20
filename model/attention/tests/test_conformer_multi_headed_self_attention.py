@@ -10,7 +10,7 @@ class TestConformerMultiHeadedSelfAttention(unittest.TestCase):
     def test_forward(self):
         # Create an instance of ConformerMultiHeadedSelfAttention
         model = ConformerMultiHeadedSelfAttention(
-            512, 2, 0.1
+            512, 2, 0.1,
         )  # 512 dim, 2 heads, 10% dropout
 
         # Generate some random data for input

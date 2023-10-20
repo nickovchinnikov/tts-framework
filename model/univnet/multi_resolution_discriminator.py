@@ -1,6 +1,6 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.config import VocoderModelConfig
 
@@ -8,8 +8,7 @@ from .discriminator_r import DiscriminatorR
 
 
 class MultiResolutionDiscriminator(LightningModule):
-    r"""
-    Multi-resolution discriminator for the UnivNet vocoder.
+    r"""Multi-resolution discriminator for the UnivNet vocoder.
 
     This class implements a multi-resolution discriminator that consists of multiple DiscriminatorR instances, each operating at a different resolution.
 
@@ -36,12 +35,11 @@ class MultiResolutionDiscriminator(LightningModule):
             [
                 DiscriminatorR(resolution, model_config=model_config)
                 for resolution in self.resolutions
-            ]
+            ],
         )
 
     def forward(self, x: torch.Tensor) -> list[tuple[torch.Tensor, torch.Tensor]]:
-        r"""
-        Computes the forward pass of the multi-resolution discriminator.
+        r"""Computes the forward pass of the multi-resolution discriminator.
 
         Args:
             x (torch.Tensor): Input tensor of shape [B, C, T].
@@ -49,8 +47,4 @@ class MultiResolutionDiscriminator(LightningModule):
         Returns:
             list: List of tuples containing the intermediate feature maps and the output scores for each `DiscriminatorR` instance.
         """
-        ret = list()
-        for disc in self.discriminators:
-            ret.append(disc(x))
-
-        return ret  # [(feat, score), (feat, score), (feat, score)]
+        return [disc(x) for disc in self.discriminators] # [(feat, score), (feat, score), (feat, score)]

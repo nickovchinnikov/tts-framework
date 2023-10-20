@@ -10,8 +10,7 @@ from .variance_predictor import VariancePredictor
 
 
 class LengthAdaptor(LightningModule):
-    r"""
-    The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
+    r"""The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
     It contains a dedicated duration predictor and methods to upsample the input features to match predicted durations.
 
     Args:
@@ -33,10 +32,9 @@ class LengthAdaptor(LightningModule):
         )
 
     def length_regulate(
-        self, x: torch.Tensor, duration: torch.Tensor
+        self, x: torch.Tensor, duration: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Regulates the length of the input tensor using the duration tensor.
+        r"""Regulates the length of the input tensor using the duration tensor.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -58,8 +56,7 @@ class LengthAdaptor(LightningModule):
         return output, torch.tensor(mel_len, dtype=torch.int64, device=self.device)
 
     def expand(self, batch: torch.Tensor, predicted: torch.Tensor) -> torch.Tensor:
-        r"""
-        Expands the input tensor based on the predicted values.
+        r"""Expands the input tensor based on the predicted values.
 
         Args:
             batch (torch.Tensor): The input tensor.
@@ -72,8 +69,7 @@ class LengthAdaptor(LightningModule):
         for i, vec in enumerate(batch):
             expand_size = predicted[i].item()
             out.append(vec.expand(max(int(expand_size), 0), -1))
-        out = torch.cat(out, 0).to(self.device)
-        return out
+        return torch.cat(out, 0).to(self.device)
 
     def upsample_train(
         self,
@@ -83,8 +79,7 @@ class LengthAdaptor(LightningModule):
         embeddings: torch.Tensor,
         src_mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        r"""
-        Upsamples the input tensor during training using ground truth durations.
+        r"""Upsamples the input tensor during training using ground truth durations.
 
         Args:
             x (torch.Tensor): The input tensor.
@@ -98,7 +93,7 @@ class LengthAdaptor(LightningModule):
         """
         x_res = x_res.detach()
         log_duration_prediction = self.duration_predictor(
-            x_res, src_mask
+            x_res, src_mask,
         )  # type: torch.Tensor
         x, _ = self.length_regulate(x, duration_target)
         embeddings, _ = self.length_regulate(embeddings, duration_target)
@@ -112,8 +107,7 @@ class LengthAdaptor(LightningModule):
         embeddings: torch.Tensor,
         control: float,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        r"""
-        Upsamples the input tensor during inference.
+        r"""Upsamples the input tensor during inference.
 
         Args:
             x (torch.Tensor): The input tensor.

@@ -7,8 +7,7 @@ from .stft import stft
 
 
 class STFTLoss(LightningModule):
-    r"""
-    STFT loss module.
+    r"""STFT loss module.
 
     STFT loss is a combination of two loss functions: the spectral convergence loss and the log STFT magnitude loss.
 
@@ -41,10 +40,9 @@ class STFTLoss(LightningModule):
         self.log_stft_magnitude_loss = LogSTFTMagnitudeLoss()
 
     def forward(
-        self, x: torch.Tensor, y: torch.Tensor
+        self, x: torch.Tensor, y: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Calculate forward propagation.
+        r"""Calculate forward propagation.
 
         Args:
             x (Tensor): Predicted signal (B, T).
