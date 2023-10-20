@@ -12,6 +12,10 @@ Additionally, a pitch and length adaptor are instantiated.
 
 This class represents a simple embedding layer but without any learning of the embeddings.
 
+### [Helpers](helpers.md)
+
+Acoustic model helpers methods
+
 ### [Variance Predictor](variance_predictor.md)
 
 This is a Duration and Pitch predictor neural network module in PyTorch.

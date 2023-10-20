@@ -12,8 +12,8 @@ class TestPitchPhonemeAveraging(unittest.TestCase):
         # Initialize inputs
         durations = torch.tensor([[5, 1, 3, 0], [2, 4, 0, 0]], dtype=torch.float32)
         num_phonemes = durations.shape[-1]
-        max_length = torch.sum(durations, axis=1).int().max().item()
-        pitches = torch.rand((2, max_length))
+        max_length = int(torch.sum(durations, dim=1).int().max().item())
+        pitches = torch.rand(2, max_length)
 
         max_phoneme_len = num_phonemes
 

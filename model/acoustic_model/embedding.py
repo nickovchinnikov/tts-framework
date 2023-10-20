@@ -1,14 +1,11 @@
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
-
-from model.helpers import tools
 
 
 class Embedding(LightningModule):
-    r"""
-    This class represents a simple embedding layer but without any learning of the embeddings.
+    r"""Class represents a simple embedding layer but without any learning of the embeddings.
     The embeddings are initialized with random values and kept static throughout training (They are parameters, not model's state).
 
     Args:
@@ -28,8 +25,7 @@ class Embedding(LightningModule):
         self.embeddings = nn.Parameter(torch.randn(num_embeddings, embedding_dim))
 
     def forward(self, idx: torch.Tensor) -> torch.Tensor:
-        r"""
-        Forward propagation for the Embedding implementation.
+        r"""Forward propagation for the Embedding implementation.
 
         Args:
             idx (torch.Tensor): A tensor containing the indices of the embeddings to be accessed.
@@ -37,5 +33,4 @@ class Embedding(LightningModule):
         Returns:
             torch.Tensor: An output tensor resulting from the lookup operation.
         """
-        x = F.embedding(idx, self.embeddings)
-        return x
+        return F.embedding(idx, self.embeddings)

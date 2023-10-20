@@ -16,7 +16,7 @@ class TestPitchAdaptor(unittest.TestCase):
         model_config.variance_adaptor.p_dropout = 0.3
         model_config.variance_adaptor.n_bins = 10
         self.pitch_adaptor = PitchAdaptor(
-            model_config, "./model/acoustic_model/tests/mocks"
+            model_config, "./model/acoustic_model/tests/mocks",
         )
 
         # Create a mock tensor for the inputs
@@ -33,7 +33,7 @@ class TestPitchAdaptor(unittest.TestCase):
             pitch_embedding_true,
             pitch_embedding_pred,
         ) = self.pitch_adaptor.add_pitch_train(
-            self.x, self.pitch_target, self.src_mask_empty, use_ground_truth=True
+            self.x, self.pitch_target, self.src_mask_empty, use_ground_truth=True,
         )
 
         # Validate shapes

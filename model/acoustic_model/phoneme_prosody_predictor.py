@@ -69,7 +69,7 @@ class PhonemeProsodyPredictor(LightningModule):
                     self.d_model,
                 ),
                 nn.Dropout(dropout),
-            ]
+            ],
         )
 
         # Output bottleneck layer
@@ -88,7 +88,6 @@ class PhonemeProsodyPredictor(LightningModule):
         Returns:
             torch.Tensor: A 3-dimensional tensor `[B, src_len, 2 * d_model]`.
         """
-
         # Expand the mask tensor's dimensions from [B, src_len] to [B, src_len, 1]
         mask = mask.unsqueeze(2)
 
@@ -100,5 +99,4 @@ class PhonemeProsodyPredictor(LightningModule):
         x = x.masked_fill(mask, 0.0)
 
         # Final linear transformation
-        x = self.predictor_bottleneck(x)
-        return x
+        return self.predictor_bottleneck(x)

@@ -1,7 +1,7 @@
 import unittest
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.acoustic_model.aligner import Aligner
 from model.config import (
@@ -38,7 +38,7 @@ class TestAligner(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers,
         )
 
         # Generate mock data for the forward pass
@@ -113,7 +113,7 @@ class TestAligner(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
 
@@ -126,13 +126,13 @@ class TestAligner(unittest.TestCase):
             self.utterance_prosody_encoder(
                 mels=mels,
                 mel_lens=mel_lens,
-            )
+            ),
         )
 
         p_prosody_ref = self.p_norm(
             self.phoneme_prosody_encoder(
-                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding
-            )
+                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding,
+            ),
         )
 
         x = x + self.u_bottle_out(u_prosody_ref)
@@ -158,7 +158,7 @@ class TestAligner(unittest.TestCase):
                     self.model_config.lang_embed_dim,
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
-                ]
+                ],
             ),
         )
 
@@ -181,7 +181,7 @@ class TestAligner(unittest.TestCase):
                 [
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
-                ]
+                ],
             ),
         )
 
@@ -213,7 +213,7 @@ class TestAligner(unittest.TestCase):
         )
 
         binarized_attention = aligner.binarize_attention_parallel(
-            attn, in_lens, out_lens
+            attn, in_lens, out_lens,
         )
 
         self.assertIsInstance(binarized_attention, torch.Tensor)
@@ -227,7 +227,7 @@ class TestAligner(unittest.TestCase):
                     1,
                     max_mel_len,
                     max_text_len,
-                ]
+                ],
             ),
         )
         self.assertEqual(binarized_attention.shape, attn.shape)

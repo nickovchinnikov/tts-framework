@@ -29,7 +29,7 @@ class TestVariancePredictor(unittest.TestCase):
 
         # Validate output shape
         self.assertEqual(
-            output.shape, self.mask_dim
+            output.shape, self.mask_dim,
         )  # Expected shape is (N, T) where N=batch size and T=sequence length
 
     def test_zero_mask(self):

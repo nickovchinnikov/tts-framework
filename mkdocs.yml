@@ -24,6 +24,7 @@ nav:
       - References: model/acoustic_model/readme.md
       - Accoustic Model: model/acoustic_model/acoustic_model.md
       - Embedding: model/acoustic_model/embedding.md
+      - Helpers: model/acoustic_model/helpers.md
       - Variance Predictor: model/acoustic_model/variance_predictor.md
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
       - Pitch Adaptor2: model/acoustic_model/pitch_adaptor2.md

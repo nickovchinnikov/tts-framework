@@ -2,15 +2,14 @@ import unittest
 
 import torch
 
+# TODO: profile deeply the memory usage
+# from torch.profiler import profile, record_function, ProfilerActivity
+from model.helpers import tools
 from model.helpers.initializer import (
     get_test_configs,
     init_acoustic_model,
     init_forward_trains_params,
 )
-
-# TODO: profile deeply the memory usage
-# from torch.profiler import profile, record_function, ProfilerActivity
-import model.helpers.tools as tools
 
 
 # AcousticModel test
@@ -33,7 +32,7 @@ class TestAcousticModel(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers
+            self.preprocess_config, self.model_config, n_speakers,
         )
 
         # Generate mock data for the forward pass
@@ -65,7 +64,7 @@ class TestAcousticModel(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
         self.assertEqual(
@@ -76,7 +75,7 @@ class TestAcousticModel(unittest.TestCase):
                     self.acoustic_pretraining_config.batch_size,
                     self.model_config.speaker_embed_dim
                     + self.model_config.lang_embed_dim,
-                ]
+                ],
             ),
         )
 
@@ -109,7 +108,7 @@ class TestAcousticModel(unittest.TestCase):
                     self.model_config.speaker_embed_dim,
                     self.preprocess_config.stft.n_mel_channels,
                     self.model_config.speaker_embed_dim,
-                ]
+                ],
             ),
         )
 
@@ -117,7 +116,7 @@ class TestAcousticModel(unittest.TestCase):
             [
                 self.model_config.speaker_embed_dim,
                 self.acoustic_pretraining_config.batch_size,
-            ]
+            ],
         )
 
         self.assertEqual(
@@ -132,7 +131,7 @@ class TestAcousticModel(unittest.TestCase):
                 self.model_config.speaker_embed_dim,
                 self.model_config.lang_embed_dim,
                 self.model_config.reference_encoder.bottleneck_size_u,
-            ]
+            ],
         )
 
         self.assertEqual(result["u_prosody_pred"].shape, prosody_shape)
@@ -143,7 +142,7 @@ class TestAcousticModel(unittest.TestCase):
                 self.model_config.speaker_embed_dim,
                 self.acoustic_pretraining_config.batch_size,
                 self.model_config.reference_encoder.bottleneck_size_p,
-            ]
+            ],
         )
 
         self.assertEqual(result["p_prosody_pred"].shape, bottle_shape)
@@ -155,7 +154,7 @@ class TestAcousticModel(unittest.TestCase):
                 1,
                 self.model_config.speaker_embed_dim,
                 self.acoustic_pretraining_config.batch_size,
-            ]
+            ],
         )
 
         self.assertEqual(result["attn_logprob"].shape, attn_shape)
@@ -171,7 +170,7 @@ class TestAcousticModel(unittest.TestCase):
         )
 
         averaged_prosody_pred = self.acoustic_model.average_utterance_prosody(
-            u_prosody_pred=u_prosody_pred, src_mask=src_mask
+            u_prosody_pred=u_prosody_pred, src_mask=src_mask,
         )
 
         self.assertEqual(
