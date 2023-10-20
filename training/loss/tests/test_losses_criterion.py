@@ -70,7 +70,7 @@ class TestLossesCriterion(TestCase):
                         self.criterion.pitch_loss.item(),
                         self.criterion.ctc_loss.item(),
                         self.criterion.bin_loss.item(),
-                    ]
+                    ],
                 ),
                 torch.tensor(
                     [
@@ -84,8 +84,8 @@ class TestLossesCriterion(TestCase):
                         1.7354,
                         0.2195,
                         0.0,
-                    ]
+                    ],
                 ),
                 atol=1e-4,
-            )
+            ),
         )

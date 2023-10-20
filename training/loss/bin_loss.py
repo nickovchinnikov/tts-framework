@@ -3,13 +3,12 @@ import torch
 
 
 class BinLoss(pl.LightningModule):
-    r"""
-    Binary cross-entropy loss for hard and soft attention.
+    r"""Binary cross-entropy loss for hard and soft attention.
 
-    Attributes:
+    Attributes
         None
 
-    Methods:
+    Methods
         forward: Computes the binary cross-entropy loss for hard and soft attention.
 
     """
@@ -18,10 +17,9 @@ class BinLoss(pl.LightningModule):
         super().__init__()
 
     def forward(
-        self, hard_attention: torch.Tensor, soft_attention: torch.Tensor
+        self, hard_attention: torch.Tensor, soft_attention: torch.Tensor,
     ) -> torch.Tensor:
-        r"""
-        Computes the binary cross-entropy loss for hard and soft attention.
+        r"""Computes the binary cross-entropy loss for hard and soft attention.
 
         Args:
             hard_attention (torch.Tensor): A binary tensor indicating the hard attention.
@@ -31,8 +29,7 @@ class BinLoss(pl.LightningModule):
             torch.Tensor: The binary cross-entropy loss.
 
         """
-
         log_sum = torch.log(
-            torch.clamp(soft_attention[hard_attention == 1], min=1e-12)
+            torch.clamp(soft_attention[hard_attention == 1], min=1e-12),
         ).sum()
         return -log_sum / hard_attention.sum()

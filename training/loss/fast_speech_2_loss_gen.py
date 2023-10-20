@@ -3,15 +3,14 @@ from typing import Tuple
 import lightning.pytorch as pl
 from piq import SSIMLoss
 import torch
-import torch.nn as nn
+from torch import nn
 
 from training.loss.bin_loss import BinLoss
 from training.loss.forward_sum_loss import ForwardSumLoss
 
 
 def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:
-    r"""
-    Applies sample-wise min-max normalization to a tensor.
+    r"""Applies sample-wise min-max normalization to a tensor.
 
     Args:
         x (torch.Tensor): Input tensor of shape (batch_size, num_samples, num_features).
@@ -19,21 +18,17 @@ def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:
     Returns:
         torch.Tensor: Normalized tensor of the same shape as the input tensor.
     """
-
     # Compute the maximum and minimum values of each sample in the batch
     maximum = torch.amax(x, dim=(1, 2), keepdim=True)
     minimum = torch.amin(x, dim=(1, 2), keepdim=True)
 
     # Apply sample-wise min-max normalization to the input tensor
-    normalized = (x - minimum) / (maximum - minimum)
-
-    return normalized
+    return (x - minimum) / (maximum - minimum)
 
 
 class FastSpeech2LossGen(pl.LightningModule):
     def __init__(self, fine_tuning: bool):
-        r"""
-        Initializes the FastSpeech2LossGen module.
+        r"""Initializes the FastSpeech2LossGen module.
 
         Args:
             fine_tuning (bool): Whether the module is used for fine-tuning.
@@ -78,8 +73,7 @@ class FastSpeech2LossGen(pl.LightningModule):
         torch.Tensor,
         torch.Tensor,
     ]:
-        r"""
-        Computes the loss for the FastSpeech2 model.
+        r"""Computes the loss for the FastSpeech2 model.
 
         Args:
             src_masks (torch.Tensor): Mask for the source sequence.
@@ -119,12 +113,12 @@ class FastSpeech2LossGen(pl.LightningModule):
         mel_targets_normalized = sample_wise_min_max(mel_targets)
 
         ssim_loss: torch.Tensor = self.ssim_loss(
-            mel_predictions_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1)
+            mel_predictions_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
         )
 
         if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
             print(
-                f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0"
+                f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
             )
             ssim_loss = torch.FloatTensor([1.0]).to(self.device)
 
@@ -149,11 +143,11 @@ class FastSpeech2LossGen(pl.LightningModule):
 
         u_prosody_ref = u_prosody_ref.detach()
         u_prosody_loss: torch.Tensor = 0.5 * self.mae_loss(
-            u_prosody_ref, u_prosody_pred
+            u_prosody_ref, u_prosody_pred,
         )
 
         duration_loss: torch.Tensor = self.mse_loss(
-            log_duration_predictions, log_duration_targets
+            log_duration_predictions, log_duration_targets,
         )
 
         pitch_predictions = pitch_predictions.masked_select(~src_masks)
@@ -162,7 +156,7 @@ class FastSpeech2LossGen(pl.LightningModule):
         pitch_loss: torch.Tensor = self.mse_loss(pitch_predictions, p_targets)
 
         ctc_loss: torch.Tensor = self.sum_loss(
-            attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens
+            attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens,
         )
 
         binarization_loss_enable_steps = 18000
