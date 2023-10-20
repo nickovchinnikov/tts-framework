@@ -15,7 +15,6 @@ class ScheduledOptimFinetuning:
         r"""Initializes a ScheduledOptimFinetuning optimizer.
 
         Args:
-        ----
             parameters (Iterable): Iterable of model parameters to optimize.
             train_config (AcousticTrainingConfig): Configuration object for the optimizer.
             current_step (int): Current training step.
@@ -33,7 +32,6 @@ class ScheduledOptimFinetuning:
         r"""Updates the learning rate and takes a step of the optimizer.
 
         Args:
-        ----
             step (int): Current training step.
         """
         self._update_learning_rate(step)
@@ -47,7 +45,6 @@ class ScheduledOptimFinetuning:
         r"""Loads the optimizer state dictionary.
 
         Args:
-        ----
             state_dict (Dict[str, Any]): State dictionary to load.
         """
         self._optimizer.load_state_dict(state_dict)
@@ -56,7 +53,6 @@ class ScheduledOptimFinetuning:
         r"""Computes the learning rate scale factor.
 
         Returns
-        -------
             float: Learning rate scale factor.
         """
         return self.lr_decay**self.current_step
@@ -65,7 +61,6 @@ class ScheduledOptimFinetuning:
         r"""Updates the learning rate based on the current step.
 
         Args:
-        ----
             step (int): Current training step.
         """
         self.current_step = step
