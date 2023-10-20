@@ -2,10 +2,6 @@
 
 Here you can find preprocessing code.
 
-### [TacotronSTFT](./tacotron_stft.md)
-
-`TacotronSTFT` module that computes mel-spectrograms from a batch of waves.
-
 ### [Audio](audio.md)
 
 Audio processing functions.
@@ -14,10 +10,15 @@ Audio processing functions.
 
 [Original implementation](https://github.com/NVIDIA/mellotron/blob/master/yin.py)
 
-### [Text](./text.md)
+### [Normilize Text](./normilize_text.md)
 
-Text processing functions.
+This class normalize the characters in the input text and normalize the input text with the `nemo_text_processing`.
 
-### [Preprocess Audio](./preprocess_audio.md)
+### [TacotronSTFT](./tacotron_stft.md)
 
-A PyTorch Lightning module for preprocessing audio and text data for use with a TacotronSTFT model.
+`TacotronSTFT` module that computes mel-spectrograms from a batch of waves.
+
+### [wav2vec aligner](./wav2vec_aligner.md)
+
+The Wav2VecAligner model is designed for aligning audio data with text data.
+This class handles the training and validation of the Wav2VecAligner model.

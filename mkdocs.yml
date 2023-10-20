@@ -26,6 +26,7 @@ nav:
       - Embedding: model/acoustic_model/embedding.md
       - Variance Predictor: model/acoustic_model/variance_predictor.md
       - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
+      - Pitch Adaptor2: model/acoustic_model/pitch_adaptor2.md
       - Length Adaptor: model/acoustic_model/length_adaptor.md
       - Phoneme Prosody Predictor: model/acoustic_model/phoneme_prosody_predictor.md
       - Aligner:
@@ -73,11 +74,12 @@ nav:
       - Scheduled Optim Finetuning: training/optimizer/scheduled_optim_finetuning.md
     - Preprocess:
       - References: training/preprocess/readme.md
-      - TacotronSTFT: training/preprocess/tacotron_stft.md
-      - Preprocess Audio: training/preprocess/preprocess_audio.md
-      - compute_yin: training/preprocess/compute_yin.md
-      - Text: training/preprocess/text.md
       - Audio: training/preprocess/audio.md
+      - compute_yin: training/preprocess/compute_yin.md
+      - Normilize Text: training/preprocess/normalize_text.md
+      - Preprocess LibriTTS: training/preprocess/preprocess_libritts.md
+      - TacotronSTFT: training/preprocess/tacotron_stft.md
+      - Wav2Vec Aligner: training/preprocess/wav2vec_aligner.md
     - Tools: training/tools.md
   - About mkdocs-material: readme.md
 theme:
