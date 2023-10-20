@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 from lightning.pytorch import LightningModule
 import torch
@@ -23,7 +23,9 @@ from .aligner import Aligner
 from .helpers import pitch_phoneme_averaging, positional_encoding
 from .length_adaptor import LengthAdaptor
 from .phoneme_prosody_predictor import PhonemeProsodyPredictor
-from .pitch_adaptor import PitchAdaptor
+
+# from .pitch_adaptor import PitchAdaptor
+from .pitch_adaptor2 import PitchAdaptor
 
 
 class AcousticModel(LightningModule):
@@ -35,10 +37,8 @@ class AcousticModel(LightningModule):
     Additionally, a pitch and length adaptor are instantiated.
 
     Args:
-        data_path (str): Path to the data directory
         preprocess_config (PreprocessingConfig): Object containing the configuration used for preprocessing the data
         model_config (AcousticModelConfigType): Configuration object containing various model parameters
-        fine_tuning (bool): Flag to indicate whether model is being fine-tuned
         n_speakers (int): Total number of speakers in the dataset
 
     Note:
@@ -47,10 +47,8 @@ class AcousticModel(LightningModule):
 
     def __init__(
         self,
-        data_path: str,
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
-        fine_tuning: bool,
         n_speakers: int,
     ):
         super().__init__()
@@ -68,7 +66,6 @@ class AcousticModel(LightningModule):
 
         self.pitch_adaptor = PitchAdaptor(
             model_config,
-            data_path=data_path,
         )
 
         self.length_regulator = LengthAdaptor(model_config)
@@ -141,6 +138,9 @@ class AcousticModel(LightningModule):
         )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
+        # NOTE: flexibility of the model binded by the n_speaker parameter, maybe I can find another way?
+        # NOTE: in LIBRITTS there are 2477 speakers, we can add more, just extend the speaker_embed matrix
+        # Need to think about it more
         self.speaker_embed = Parameter(
             tools.initialize_embeddings(
                 (n_speakers, model_config.speaker_embed_dim), device=self.device
@@ -222,7 +222,7 @@ class AcousticModel(LightningModule):
         for par in self.parameters():
             par.requires_grad = False
         self.speaker_embed.requires_grad = True
-        # @fixed requires_grad prop
+        # NOTE: requires_grad prop
         self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
@@ -292,8 +292,9 @@ class AcousticModel(LightningModule):
         mels: torch.Tensor,
         mel_lens: torch.Tensor,
         pitches: torch.Tensor,
+        pitches_range: Tuple[float, float],
         langs: torch.Tensor,
-        attn_priors: torch.Tensor,
+        attn_priors: Union[torch.Tensor, None],
         use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
         r"""
@@ -310,6 +311,7 @@ class AcousticModel(LightningModule):
             mels (torch.Tensor): Tensor of mel spectrograms.
             mel_lens (torch.Tensor): Long tensor representing the lengths of mel sequences.
             pitches (torch.Tensor): Tensor of pitch values.
+            pitches_range (Tuple[float, float]): The pitch min/max range.
             langs (torch.Tensor): Tensor of language identities.
             attn_priors (torch.Tensor): Prior attention values.
             use_ground_truth (bool, optional): Flag indicating whether ground truth should be used.
@@ -329,7 +331,7 @@ class AcousticModel(LightningModule):
 
         encoding = positional_encoding(
             self.emb_dim,
-            max(x.shape[1], max(mel_lens)),
+            max(x.shape[1], int(mel_lens.max().item())),
             device=self.device,
         )
 
@@ -376,6 +378,7 @@ class AcousticModel(LightningModule):
         )
         x, pitch_prediction, _, _ = self.pitch_adaptor.add_pitch_train(
             x=x,
+            pitch_range=pitches_range,
             pitch_target=pitches,
             src_mask=src_mask,
             use_ground_truth=use_ground_truth,
@@ -414,6 +417,7 @@ class AcousticModel(LightningModule):
     def forward(
         self,
         x: torch.Tensor,
+        pitches_range: Tuple[float, float],
         speakers: torch.Tensor,
         langs: torch.Tensor,
         p_control: float,
@@ -428,6 +432,7 @@ class AcousticModel(LightningModule):
 
         Args:
             x (torch.Tensor): Tensor of phoneme sequences.
+            pitches_range (Tuple[float, float]): The pitch min/max range.
             speakers (torch.Tensor): Tensor of speaker identities.
             langs (torch.Tensor): Tensor of language identities.
             p_control (float): Pitch control parameter.
@@ -469,7 +474,9 @@ class AcousticModel(LightningModule):
         x = x + self.u_bottle_out(u_prosody_pred).expand_as(x)
         x = x + self.p_bottle_out(p_prosody_pred).expand_as(x)
         x_res = x
-        x = self.pitch_adaptor.add_pitch(x=x, src_mask=src_mask, control=p_control)
+        x = self.pitch_adaptor.add_pitch(
+            x=x, pitch_range=pitches_range, src_mask=src_mask, control=p_control
+        )
         x, duration_rounded, embeddings = self.length_regulator.upsample(
             x=x,
             x_res=x_res,

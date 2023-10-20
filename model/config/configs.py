@@ -33,7 +33,7 @@ class PreprocessingConfig:
             n_mel_channels=100,
             mel_fmin=20,
             mel_fmax=11025,
-        )
+        ),
     )
     forced_alignment_batch_size: int = 200000
     skip_on_error: bool = True
@@ -66,8 +66,8 @@ class AcousticFinetuningConfig:
     only_train_speaker_until = 5000
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.1, lr_decay=0.99999
-        )
+            learning_rate=0.0002, weight_decay=0.1, lr_decay=0.99999,
+        ),
     )
 
 
@@ -85,9 +85,12 @@ class AcousticPretrainingConfig:
     only_train_speaker_until = 0
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.0, lr_decay=1.0
-        )
+            learning_rate=0.0002, weight_decay=0.0, lr_decay=1.0,
+        ),
     )
+
+
+AcousticTrainingConfig = Union[AcousticFinetuningConfig, AcousticPretrainingConfig]
 
 
 @dataclass
@@ -136,7 +139,7 @@ class AcousticENModelConfig:
             kernel_size_conv_mod=7,
             kernel_size_depthwise=7,
             with_ff=False,
-        )
+        ),
     )
     decoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
@@ -147,7 +150,7 @@ class AcousticENModelConfig:
             kernel_size_conv_mod=11,
             kernel_size_depthwise=11,
             with_ff=False,
-        )
+        ),
     )
     reference_encoder: ReferenceEncoderConfig = field(
         default_factory=lambda: ReferenceEncoderConfig(
@@ -161,12 +164,12 @@ class AcousticENModelConfig:
             ref_attention_dropout=0.2,
             token_num=32,
             predictor_kernel_size=5,
-        )
+        ),
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=384, kernel_size=5, p_dropout=0.5, n_bins=256
-        )
+            n_hidden=384, kernel_size=5, p_dropout=0.5, n_bins=256,
+        ),
     )
 
 
@@ -183,7 +186,7 @@ class AcousticMultilingualModelConfig:
             kernel_size_conv_mod=7,
             kernel_size_depthwise=7,
             with_ff=True,
-        )
+        ),
     )
     decoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
@@ -194,7 +197,7 @@ class AcousticMultilingualModelConfig:
             kernel_size_conv_mod=11,
             kernel_size_depthwise=11,
             with_ff=True,
-        )
+        ),
     )
     reference_encoder: ReferenceEncoderConfig = field(
         default_factory=lambda: ReferenceEncoderConfig(
@@ -208,12 +211,12 @@ class AcousticMultilingualModelConfig:
             ref_attention_dropout=0.2,
             token_num=32,
             predictor_kernel_size=5,
-        )
+        ),
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=512, kernel_size=5, p_dropout=0.5, n_bins=256
-        )
+            n_hidden=512, kernel_size=5, p_dropout=0.5, n_bins=256,
+        ),
     )
 
 
@@ -290,7 +293,7 @@ class VocoderModelConfig:
             strides=[8, 8, 4],
             lReLU_slope=0.2,
             kpnet_conv_size=3,
-        )
+        ),
     )
     mpd: VocoderMPDConfig = field(
         default_factory=lambda: VocoderMPDConfig(
@@ -299,14 +302,14 @@ class VocoderModelConfig:
             stride=3,
             use_spectral_norm=False,
             lReLU_slope=0.2,
-        )
+        ),
     )
     mrd: VocoderMRDConfig = field(
         default_factory=lambda: VocoderMRDConfig(
             resolutions=[(1024, 120, 600), (2048, 240, 1200), (512, 50, 240)],
             use_spectral_norm=False,
             lReLU_slope=0.2,
-        )
+        ),
     )
 
 

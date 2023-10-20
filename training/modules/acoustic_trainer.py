@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Dict
 
 from pytorch_lightning.core import LightningModule
 import torch
@@ -9,6 +9,7 @@ from model.config import (
     AcousticENModelConfig,
     AcousticFinetuningConfig,
     AcousticPretrainingConfig,
+    AcousticTrainingConfig,
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
@@ -17,13 +18,15 @@ from training.loss import LossesCriterion
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 
-class AcousticModule(LightningModule):
-    def __init__(self, fine_tuning: bool = False):
+class AcousticTrainer(LightningModule):
+    def __init__(self, fine_tuning: bool = False, lang: str = "en", root: str = "datasets_cache/LIBRITTS"):
         super().__init__()
 
+        self.lang = lang
+        self.root = root
         self.fine_tuning = fine_tuning
 
-        self.train_config: Union[AcousticFinetuningConfig, AcousticPretrainingConfig]
+        self.train_config: AcousticTrainingConfig
 
         if self.fine_tuning:
             self.train_config = AcousticFinetuningConfig()
@@ -37,22 +40,35 @@ class AcousticModule(LightningModule):
 
         # TODO: fix the arguments!
         self.model = AcousticModel(
-            data_path="model/config/",
             preprocess_config=self.preprocess_config,
             model_config=self.model_config,
-            fine_tuning=fine_tuning,
             n_speakers=5392,
-            # Setup the device, because .to() under the hood of lightning is not working
-            device=self.device,  # type: ignore
         )
 
-        self.loss = LossesCriterion(device=self.device)  # type: ignore
+        self.loss = LossesCriterion()
 
-        # print(self.model)
+    def weights_prepare(self, checkpoint_path: str):
+        r"""
+        Prepares the weights for the model. This is required for the model to be loaded from the checkpoint.
+        """
+        ckpt_acoustic = torch.load(checkpoint_path)
 
-    def forward(self, x):
+        for i in range(6):
+            new_weights = torch.randn(384, 385) * 0.17
+            existing_weights = ckpt_acoustic["gen"][
+                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
+            ]
+            # Copy the existing weights into the new tensor
+            new_weights[:, :-1] = existing_weights
+            ckpt_acoustic["gen"][
+                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
+            ] = new_weights
+
+        return ckpt_acoustic
+
+    def forward(self, x: torch.Tensor):
         self.model
-        return True
+        return None
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -65,6 +81,7 @@ class AcousticModule(LightningModule):
 
         self.model.train()
 
+        # TODO: check what inside the batch
         (
             ids,
             raw_texts,
@@ -89,6 +106,8 @@ class AcousticModule(LightningModule):
             mels=mels,
             mel_lens=mel_lens,
             pitches=pitches,
+            # TODO: fix pitches_range!
+            pitches_range=(0.0, 1.0),
             langs=langs,
             attn_priors=attn_priors,
         )
@@ -116,8 +135,18 @@ class AcousticModule(LightningModule):
 
         tensorboard_logs = {"train_loss": loss}
         return {"loss": loss, "log": tensorboard_logs}
+    
+    def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        return super().on_load_checkpoint(checkpoint)
 
     def configure_optimizers(self):
+        r"""
+        Configures the optimizer used for training.
+        Depending on the training mode, either the finetuning or the pretraining optimizer is used.
+
+        Returns:
+            ScheduledOptimFinetuning or ScheduledOptimPretraining: The optimizer.
+        """
         if self.fine_tuning:
             scheduled_optim = ScheduledOptimFinetuning(
                 parameters=self.model.parameters(),
@@ -134,21 +163,22 @@ class AcousticModule(LightningModule):
         return scheduled_optim
 
     def train_dataloader(self):
-        # TODO: fix filename, data_path, assets_path
+        r"""
+        Returns the training dataloader, that is using the LibriTTS dataset.
+
+        Returns:
+            DataLoader: The training dataloader.
+        """
+
         dataset = LibriTTSDataset(
-            filename="val.txt",
-            batch_size=1,
-            sort=True,
-            drop_last=False,
-            data_path="data",
-            assets_path="assets",
-            is_eval=True,
+            root=self.root,
+            batch_size=self.train_config.batch_size,
+            lang=self.lang,
         )
         loader = DataLoader(
             dataset,
-            num_workers=4,
-            batch_size=1,
-            shuffle=True,
+            batch_size=self.train_config.batch_size,
+            shuffle=False,
             collate_fn=dataset.collate_fn,
         )
         return loader

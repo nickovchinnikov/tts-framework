@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 from dp.phonemizer import Phonemizer
 import numpy as np
 from scipy.stats import betabinom
 import torch
 
-from model.config import PreprocessingConfig, langs_map
+from model.config import PreprocessingConfig, get_lang_map
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
@@ -16,8 +16,8 @@ from .tacotron_stft import TacotronSTFT
 
 @dataclass
 class PreprocessAudioResult:
-    wav: torch.FloatTensor
-    mel: torch. Tensor
+    wav: torch.Tensor
+    mel: torch.Tensor
     pitch: torch.Tensor
     phones_ipa: List[str]
     phones: torch.Tensor
@@ -37,7 +37,6 @@ class PreprocessLibriTTS:
     Args:
         lang (str): The language of the input text.
         phonemizer_checkpoint (str): The path to the phonemizer checkpoint.
-        tokenizer_checkpoint (str): The tokenizer checkpoint.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -54,13 +53,14 @@ class PreprocessLibriTTS:
         self,
         lang: str = "en",
         phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
-        tokenizer_checkpoint: str = "bert-base-uncased",
     ):
         super().__init__()
 
-        self.phonemizer_lang = langs_map[lang]["phonemizer"]
-        normilize_text_lang = langs_map[lang]["nemo"]
-        processing_lang_type = langs_map[lang]["processing_lang_type"]
+        lang_map = get_lang_map(lang)
+
+        self.phonemizer_lang = lang_map.phonemizer
+        normilize_text_lang = lang_map.nemo
+        processing_lang_type = lang_map.processing_lang_type
 
         self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
 
@@ -113,7 +113,7 @@ class PreprocessLibriTTS:
         mel_text_probs = []
         for i in range(1, M + 1):
             a, b = scaling_factor * i, scaling_factor * (M + 1 - i)
-            rv = betabinom(P, a, b)
+            rv: Any = betabinom(P, a, b)
             mel_i_prob = rv.pmf(x)
             mel_text_probs.append(mel_i_prob)
         result = torch.from_numpy(np.array(mel_text_probs))
@@ -121,7 +121,7 @@ class PreprocessLibriTTS:
 
     def __call__(
         self,
-        row: Tuple[torch.FloatTensor, int, str, str, int, int, str],
+        row: Tuple[torch.Tensor, int, str, str, int, int, str],
     ) -> Union[None, PreprocessAudioResult]:
         r"""
         Preprocesses audio and text data for use with a TacotronSTFT model.
@@ -161,12 +161,12 @@ class PreprocessLibriTTS:
 
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
-        
+
         normalized_text = self.normilize_text(normalized_text)
 
-        phones_ipa = self.phonemizer(raw_text, lang=self.phonemizer_lang)
+        phones_ipa: Any = self.phonemizer(raw_text, lang=self.phonemizer_lang)
         phones = self.phonemizer.predictor.phoneme_tokenizer(
-           phones_ipa, language=self.phonemizer_lang
+            phones_ipa, language=self.phonemizer_lang
         )
         # Convert to tensor
         phones = torch.Tensor(phones)

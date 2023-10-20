@@ -25,7 +25,7 @@ class TestUtteranceLevelProsodyEncoder(unittest.TestCase):
             128,
         )  # assuming the input sequence length is 128 and n_mel_channels=100
         mel_lens = (
-            torch.ones(16).type(torch.LongTensor) * 128
+            torch.ones(16, dtype=torch.long) * 128
         )  # assuming all sequences are of equal length
 
         # Make a forward pass through the model

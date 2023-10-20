@@ -15,17 +15,17 @@ librispeech_samples_ds = load_dataset("patrickvonplaten/librispeech_asr_dummy", 
 librispeech_samples_ds
 
 # %%
-librispeech_samples_ds[1]["file"]
+librispeech_samples_ds[1]["file"] # type: ignore
 
 # %%
 # load audio
-audio_input, sample_rate = sf.read(librispeech_samples_ds[1]["file"])
+audio_input, sample_rate = sf.read(librispeech_samples_ds[1]["file"]) # type: ignore
 
 audio_input, sample_rate
 
 # %%
 
-IPython.display.Audio(audio_input, rate=sample_rate)
+IPython.display.Audio(audio_input, rate=sample_rate) # type: ignore
 
 # %%
 # pad input values and return pt tensor
@@ -37,7 +37,7 @@ input_values
 # INFERENCE
 
 # retrieve logits & take argmax
-logits = model(input_values).logits
+logits = model(input_values).logits # type: ignore
 predicted_ids = torch.argmax(logits, dim=-1)
 
 logits, predicted_ids
@@ -70,7 +70,7 @@ with processor.as_target_processor():
   labels = processor(target_transcription, return_tensors="pt").input_ids
 
 # compute loss by passing labels
-loss = model(input_values, labels=labels).loss
+loss = model(input_values, labels=labels).loss  # type: ignore
 loss.backward()
 
 # %%

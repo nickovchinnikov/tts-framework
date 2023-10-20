@@ -31,26 +31,29 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
-        self.assertIsInstance(output, PreprocessAudioResult)
+        self.assertIsNotNone(output)
 
-        self.assertIsInstance(output.wav, torch.Tensor)
-        self.assertIsInstance(output.mel, torch.Tensor)
-        self.assertIsInstance(output.pitch, torch.Tensor)
-        self.assertIsInstance(output.phones, torch.Tensor)
-        self.assertIsInstance(output.raw_text, str)
-        self.assertIsInstance(output.pitch_is_normalized, bool)
+        if output is not None:
+            self.assertIsInstance(output, PreprocessAudioResult)
 
-        self.assertEqual(output.wav.shape, torch.Size([22050]))
-        self.assertEqual(output.mel.shape, torch.Size([100, 86]))
-        self.assertEqual(output.pitch.shape, torch.Size([86]))
+            self.assertIsInstance(output.wav, torch.Tensor)
+            self.assertIsInstance(output.mel, torch.Tensor)
+            self.assertIsInstance(output.pitch, torch.Tensor)
+            self.assertIsInstance(output.phones, torch.Tensor)
+            self.assertIsInstance(output.raw_text, str)
+            self.assertIsInstance(output.pitch_is_normalized, bool)
 
-        torch.testing.assert_close(
-            output.phones,
-            torch.tensor([ 2., 10., 37., 14., 17., 45., 24., 39., 50., 14.,  6.,  3.]),
-        )
+            self.assertEqual(output.wav.shape, torch.Size([22050]))
+            self.assertEqual(output.mel.shape, torch.Size([100, 86]))
+            self.assertEqual(output.pitch.shape, torch.Size([86]))
 
-        self.assertEqual(output.raw_text, "Hello, world!")
-        self.assertFalse(output.pitch_is_normalized)
+            torch.testing.assert_close(
+                output.phones,
+                torch.tensor([ 2., 10., 37., 14., 17., 45., 24., 39., 50., 14.,  6.,  3.]),
+            )
+
+            self.assertEqual(output.raw_text, "Hello, world!")
+            self.assertFalse(output.pitch_is_normalized)
 
     def test_call_with_short_audio(self):
         audio = torch.randn(1, 22050)
@@ -82,15 +85,18 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         output = self.preprocess_libritts((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
 
-        self.assertEqual(output.attn_prior.shape, torch.Size([88, 861]))
-        self.assertEqual(output.mel.shape, torch.Size([100, 861]))
+        self.assertIsNotNone(output)
 
-        self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
+        if output is not None:
+            self.assertEqual(output.attn_prior.shape, torch.Size([88, 861]))
+            self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
-        self.assertEqual(output.phones.shape, torch.Size([88]))
-        self.assertEqual(len(output.phones_ipa), 160)
+            self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
 
-        self.assertEqual(output.wav.shape, torch.Size([220500]))
+            self.assertEqual(output.phones.shape, torch.Size([88]))
+            self.assertEqual(len(output.phones_ipa), 160)
+
+            self.assertEqual(output.wav.shape, torch.Size([220500]))
 
     def test_forward_with_long_audio(self):
         audio = torch.randn(1, 88200)

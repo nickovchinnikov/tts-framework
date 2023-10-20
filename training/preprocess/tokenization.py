@@ -1,3 +1,5 @@
+from typing import List, Union
+
 from transformers import BertTokenizer
 
 
@@ -32,7 +34,7 @@ class Tokenizer:
 
         self.tokenizer = BertTokenizer.from_pretrained(checkpoint, vocab_file=vocab_file)
 
-    def __call__(self, text: str, add_special_tokens: bool = True) -> list[int]:
+    def __call__(self, text: Union[str, List[str]], add_special_tokens: bool = True) -> list[int]:
         r"""
         Tokenizes the input text using the BERT tokenizer.
 

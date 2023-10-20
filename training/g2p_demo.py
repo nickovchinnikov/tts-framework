@@ -22,8 +22,9 @@ phonemes = phonemizer("Phonemizing an English text is imposimpable!", lang="en_u
 phonemes
 
 # %%
+text = ["Phonemizing an English text is imposimpable!"]
 result = phonemizer.phonemise_list(
-    "Phonemizing an English text is imposimpable!", lang="en_us"
+    text, lang="en_us"
 )
 result
 

@@ -27,7 +27,7 @@ class TestAudio(unittest.TestCase):
 
         # Test the stereo_to_mono function with a larger example
         audio = torch.randn(2, 44100)
-        expected_output = torch.mean(audio, axis=0, keepdims=True)
+        expected_output = torch.mean(audio, 0, True)
         actual_output = stereo_to_mono(audio)
         self.assertTrue(torch.allclose(actual_output, expected_output))
 
@@ -45,7 +45,7 @@ class TestAudio(unittest.TestCase):
 
         # Test the stereo_to_mono function with a three-dimensional tensor
         audio = torch.randn(2, 3, 44100)
-        expected_output = torch.mean(audio, axis=0, keepdims=True)
+        expected_output = torch.mean(audio, 0, True)
         actual_output = stereo_to_mono(audio)
         self.assertTrue(torch.allclose(actual_output, expected_output))
 

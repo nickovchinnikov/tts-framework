@@ -36,7 +36,7 @@ emission = emissions[0].cpu().detach()
 print(labels)
 
 # %%
-def plot():
+def plot_emission() -> None:
     fig, ax = plt.subplots()
     img = ax.imshow(emission.T)
     ax.set_title("Frame-wise class probability")
@@ -46,7 +46,7 @@ def plot():
     fig.tight_layout()
 
 
-plot()
+plot_emission()
 
 # %%
 # We enclose the transcript with space tokens, which represent SOS and EOS.

@@ -77,7 +77,7 @@ def pad_2D(
     return output
 
 
-def pad_3D(inputs: List[np.ndarray], B: int, T: int, L: int) -> np.ndarray:
+def pad_3D(inputs: Union[np.ndarray, List[np.ndarray]], B: int, T: int, L: int) -> np.ndarray:
     r"""
     Pad a 3D numpy array to a specified shape.
 

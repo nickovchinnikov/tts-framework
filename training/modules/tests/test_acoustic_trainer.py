@@ -2,12 +2,12 @@ import unittest
 
 import torch
 
-from training.modules.acoustic_module import AcousticModule
+from training.modules.acoustic_trainer import AcousticTrainer
 
 
 class TestTrainAcousticModule(unittest.TestCase):
     def setUp(self):
-        self.model = AcousticModule()
+        self.model = AcousticTrainer()
         pass
 
     def test_forward(self):

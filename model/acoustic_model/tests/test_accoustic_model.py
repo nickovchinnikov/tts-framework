@@ -93,6 +93,7 @@ class TestAcousticModel(unittest.TestCase):
             mels=self.forward_train_params.mels,
             mel_lens=self.forward_train_params.mel_lens,
             pitches=self.forward_train_params.pitches,
+            pitches_range=self.forward_train_params.pitches_range,
             langs=self.forward_train_params.langs,
             # TODO: add attn_priors check
             attn_priors=None,
@@ -181,6 +182,7 @@ class TestAcousticModel(unittest.TestCase):
     def test_forward(self):
         x = self.acoustic_model.forward(
             x=self.forward_train_params.x,
+            pitches_range=self.forward_train_params.pitches_range,
             speakers=self.forward_train_params.speakers,
             langs=self.forward_train_params.langs,
             p_control=0.5,

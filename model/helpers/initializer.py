@@ -105,10 +105,8 @@ def init_conformer(
 
 @dataclass
 class AcousticModelConfig:
-    data_path: str
     preprocess_config: PreprocessingConfig
     model_config: AcousticENModelConfig
-    fine_tuning: bool
     n_speakers: int
 
 
@@ -116,7 +114,6 @@ def init_acoustic_model(
     preprocess_config: PreprocessingConfig,
     model_config: AcousticENModelConfig,
     n_speakers: int = 10,
-    data_path: str = "./model/acoustic_model/tests/mocks",
 ) -> Tuple[AcousticModel, AcousticModelConfig]:
     r"""
     Function to initialize an `AcousticModel` with given preprocessing and model configurations.
@@ -125,14 +122,12 @@ def init_acoustic_model(
         preprocess_config (PreprocessingConfig): Configuration object for pre-processing.
         model_config (AcousticENModelConfig): Configuration object for English Acoustic model.
         n_speakers (int, optional): Number of speakers. Defaults to 10.
-        data_path (str, optional): Path to the data for the model. Defaults to "./model/acoustic_model/tests/mocks".
 
     Returns:
         AcousticModel: Initialized Acoustic Model.
 
     The function creates an `AcousticModelConfig` instance which is then used to initialize the `AcousticModel`.
     The `AcousticModelConfig` is configured as follows:
-    - data_path: Path to the data for the model.
     - preprocess_config: Pre-processing configuration.
     - model_config: English Acoustic model configuration.
     - fine_tuning: Boolean flag set to True indicating the model is for fine-tuning.
@@ -141,10 +136,8 @@ def init_acoustic_model(
     """
     # Create an AcousticModelConfig instance
     acoustic_model_config = AcousticModelConfig(
-        data_path=data_path,
         preprocess_config=preprocess_config,
         model_config=model_config,
-        fine_tuning=True,
         n_speakers=n_speakers,
     )
 
@@ -162,6 +155,7 @@ class ForwardTrainParams:
     mel_lens: torch.Tensor
     enc_len: torch.Tensor
     pitches: torch.Tensor
+    pitches_range: Tuple[float, float]
     langs: torch.Tensor
     attn_priors: torch.Tensor
     use_ground_truth: bool = True
@@ -207,6 +201,7 @@ def init_forward_trains_params(
                 acoustic_pretraining_config.batch_size,
             ),
         ),
+        pitches_range=(0.0, 1.0),
         # speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]
         speakers=torch.randint(
             1,
@@ -327,7 +322,7 @@ def init_mask_input_embeddings_encoding_attn_mask(
     # Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]
     encoding = positional_encoding(
         model_config.encoder.n_hidden,
-        max(x.shape[1], max(forward_train_params.mel_lens)),
+        max(x.shape[1], int(forward_train_params.mel_lens.max().item())),
         device=x.device,
     )
 

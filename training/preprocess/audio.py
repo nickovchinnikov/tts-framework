@@ -4,21 +4,21 @@ from typing import Tuple, Union
 import librosa
 import numpy as np
 import torch
-import torch.nn.functional as F
 import torchaudio
 
 
-def stereo_to_mono(audio: torch.FloatTensor) -> torch.FloatTensor:
+def stereo_to_mono(audio: torch.Tensor) -> torch.Tensor:
     r"""
     Converts a stereo audio tensor to mono by taking the mean across channels.
 
     Args:
-        audio (torch.FloatTensor): Input audio tensor of shape (channels, samples).
+        audio (torch.Tensor): Input audio tensor of shape (channels, samples).
 
     Returns:
-        torch.FloatTensor: Mono audio tensor of shape (1, samples).
+        torch.Tensor: Mono audio tensor of shape (1, samples).
     """
-    return torch.mean(audio, axis=0, keepdims=True)
+
+    return torch.mean(audio, 0, True)
 
 
 def resample(wav: np.ndarray, orig_sr: int, target_sr: int) -> np.ndarray:
@@ -67,27 +67,27 @@ def safe_load(path: str, sr: Union[int, None]) -> Tuple[np.ndarray, int]:
 
 
 def preprocess_audio(
-    audio: torch.FloatTensor, sr_actual: int, sr: Union[int, None]
-) -> Tuple[torch.FloatTensor, int]:
+    audio: torch.Tensor, sr_actual: int, sr: Union[int, None]
+) -> Tuple[torch.Tensor, int]:
     r"""
     Preprocesses audio by converting stereo to mono, resampling if necessary, and returning the audio tensor and sample rate.
 
     Args:
-        audio (torch.FloatTensor): The audio tensor to preprocess.
+        audio (torch.Tensor): The audio tensor to preprocess.
         sr_actual (int): The actual sample rate of the audio.
         sr (Union[int, None]): The target sample rate to resample the audio to, if necessary.
 
     Returns:
-        Tuple[torch.FloatTensor, int]: The preprocessed audio tensor and sample rate.
+        Tuple[torch.Tensor, int]: The preprocessed audio tensor and sample rate.
     """
     try:
         if audio.shape[0] > 0:
             audio = stereo_to_mono(audio)
         audio = audio.squeeze(0)
         if sr_actual != sr and sr is not None:
-            audio = resample(audio.numpy(), orig_sr=sr_actual, target_sr=sr)
+            audio_np = resample(audio.numpy(), orig_sr=sr_actual, target_sr=sr)
             # Convert back to torch tensor
-            audio = torch.from_numpy(audio)
+            audio = torch.from_numpy(audio_np)
             sr_actual = sr
     except Exception as e:
         raise type(e)(
@@ -97,15 +97,15 @@ def preprocess_audio(
     return audio, sr_actual
 
 
-def normalize_loudness(wav: torch.FloatTensor) -> torch.FloatTensor:
+def normalize_loudness(wav: torch.Tensor) -> torch.Tensor:
     r"""
     Normalize the loudness of an audio waveform.
 
     Args:
-        wav (torch.FloatTensor): The input waveform.
+        wav (torch.Tensor): The input waveform.
 
     Returns:
-        torch.FloatTensor: The normalized waveform.
+        torch.Tensor: The normalized waveform.
 
     Examples:
         >>> wav = np.array([1.0, 2.0, 3.0])

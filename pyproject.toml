@@ -1,14 +1,30 @@
 [tool.ruff]
-ignore = ["F403", "E501", "F401"]
+fixable = ["ALL"]
+
+ignore = ["T201", "B006", "PT009", "F403", "E501", "F401", "FA100", "ANN101", "ANN204", "ANN201", "FIX002", "FBT002", "FBT001", "TD003", "TD002", "TCH001", "D100", "D101", "D102", "D107", "D401", "D205", "PLR0913", "ERA001", "RET505", "D407"]
 ignore-init-module-imports = true
 
-select = [
-  "E",   # pycodestyle
-  "F",   # pyflakes
-  "UP",  # pyupgrade,
-  "I",   # isort
-]
+select = ["ALL"]
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
 
 [tool.ruff.isort]
 force-sort-within-sections = true
 # order-by-type = true
+
+[tool.pyright]
+typeCheckingMode = "basic"
+include = ["model", "training"]
+exclude = []
+ignore = []
+
+defineConstant = { DEBUG = true }
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportMissingTypeStubsSeverity = "error"
+
+[tool.ruff.flake8-type-checking]
+strict = true
+

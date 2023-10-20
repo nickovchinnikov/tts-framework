@@ -1,7 +1,7 @@
 import unittest
 
 import torch
-from torch.autograd import gradcheck
+from torch.autograd.gradcheck import gradcheck
 
 from model.conv_blocks.activation import GLUActivation
 
@@ -35,7 +35,7 @@ class TestGLUActivation(unittest.TestCase):
         x = torch.tensor([[-0.5, -0.5], [0.5, 0.5]], dtype=torch.float32)
         x_after_glu = self.glu(x)
         expected_values = torch.tensor([[0.075], [0.25]], dtype=torch.float32)
-        torch.testing.assert_allclose(
+        torch.testing.assert_close(
             x_after_glu, expected_values, rtol=1e-4, atol=1e-8
         )
 

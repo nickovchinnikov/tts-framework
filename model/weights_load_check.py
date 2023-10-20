@@ -11,6 +11,10 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 # %%
 # ruff: noqa: E402
 from acoustic_model import AcousticModel
+
+# %%
+# ruff: noqa: E402
+# %%
 import torch
 from univnet import Generator as UnivNet
 
@@ -21,6 +25,10 @@ from model.config import (
     VocoderModelConfig,
 )
 from model.helpers import get_device
+
+torch.cuda.is_available()
+# torch.cuda.get_device_name()
+
 
 # %%
 checkpoint_base = os.path.join(
@@ -42,9 +50,6 @@ ckpt_acoustic
 
 # %%
 
-
-# %%
-
 model_config = AcousticENModelConfig()
 preprocess_config = PreprocessingConfig("english_only")
 acoustic_pretraining_config = AcousticPretrainingConfig()
@@ -57,14 +62,86 @@ data_path = os.path.join(
 device = get_device()
 
 model = AcousticModel(
-    data_path,
     preprocess_config,
     model_config,
-    fine_tuning=True,
     # Import from the checkpoint
     n_speakers=5392,
 )
 model
+
+# %%
+# Check the weights extending theory
+test_ten1 = torch.tensor(
+    [
+        [1, 2],
+        [4, 5],
+    ]
+)
+test_ten1.shape
+
+# %%
+test_ten2 = torch.tensor(
+    [
+        [0, 0, 7],
+        [0, 0, 8],
+    ]
+)
+
+test_ten2.shape
+
+# %%
+# Add the new weights to the existing ones works!
+test_ten2[:, :-1] = test_ten1
+test_ten2
+
+# %%
+# Add the new weights to the existing ones works!
+existing_weights = ckpt_acoustic["gen"][
+    "decoder.layer_stack.0.conditioning.embedding_proj.weight"
+]
+
+existing_weights.shape
+
+# %%
+# Create a new tensor with the desired shape
+new_weights = torch.randn(384, 385)
+
+# Copy the existing weights into the new tensor
+new_weights[:, :-1] = existing_weights
+
+new_weights.shape
+
+# %%
+new_w = torch.FloatTensor(384, 385)
+new_w
+
+# %%
+existing_weights.min(), existing_weights.max()
+
+# %%
+new_w = torch.randn(100000, 10000) * 0.17
+new_w.min(), new_w.max()
+
+# %%
+# add to the layer_stack random initialized layer
+# NOTE: IT WORKS!
+for i in range(6):
+    new_weights = torch.randn(384, 385)
+    existing_weights = ckpt_acoustic["gen"][
+        f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
+    ]
+    # Copy the existing weights into the new tensor
+    new_weights[:, :-1] = existing_weights
+    ckpt_acoustic["gen"][
+        f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
+    ] = new_weights
+
+    print(
+        f"Changed weights for decoder.layer_stack.{i}.conditioning.embedding_proj.weight: {new_weights.shape}"
+    )
+
+# %%
+ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
 
 # %%
 # Result is not so bad, it works, but the model is not the same
@@ -87,13 +164,13 @@ model
 # https://stackoverflow.com/a/65065854/10828885
 # Or you can del the broken weight, example: ckpt["gen"]["speaker_embed"]
 
-# NOTE: It works, but I don't know if it's the right way to do it
-del ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
-del ckpt_acoustic["gen"]["decoder.layer_stack.1.conditioning.embedding_proj.weight"]
-del ckpt_acoustic["gen"]["decoder.layer_stack.2.conditioning.embedding_proj.weight"]
-del ckpt_acoustic["gen"]["decoder.layer_stack.3.conditioning.embedding_proj.weight"]
-del ckpt_acoustic["gen"]["decoder.layer_stack.4.conditioning.embedding_proj.weight"]
-del ckpt_acoustic["gen"]["decoder.layer_stack.5.conditioning.embedding_proj.weight"]
+# NOTE: It works, but I don't know if it's the right way to do it...
+# del ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
+# del ckpt_acoustic["gen"]["decoder.layer_stack.1.conditioning.embedding_proj.weight"]
+# del ckpt_acoustic["gen"]["decoder.layer_stack.2.conditioning.embedding_proj.weight"]
+# del ckpt_acoustic["gen"]["decoder.layer_stack.3.conditioning.embedding_proj.weight"]
+# del ckpt_acoustic["gen"]["decoder.layer_stack.4.conditioning.embedding_proj.weight"]
+# del ckpt_acoustic["gen"]["decoder.layer_stack.5.conditioning.embedding_proj.weight"]
 
 # %%
 model.load_state_dict(ckpt_acoustic["gen"], strict=False)
