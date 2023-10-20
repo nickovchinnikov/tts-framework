@@ -12,6 +12,7 @@ dependencies:
   - pytorch-cuda=12.1
   - ipykernel
   - mkdocs-material
+  - mkdocstrings
   - mypy
   - pyright
   - numba
@@ -30,4 +31,5 @@ dependencies:
       - transformers
       - unidecode
       - ruff
+      - mkdocstrings-python
 prefix: D:\Program Files\anaconda3\envs\tts_framework

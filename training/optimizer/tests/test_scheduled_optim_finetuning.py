@@ -9,45 +9,66 @@ from training.optimizer import ScheduledOptimFinetuning
 
 class TestScheduledOptimFinetuning(unittest.TestCase):
     def setUp(self):
-        self.device = torch.device("cpu")
+        self.train_config = AcousticFinetuningConfig()
+        self.learning_rate = self.train_config.optimizer_config.learning_rate
+        self.lr_decay = self.train_config.optimizer_config.lr_decay
 
         self.parameters = nn.ParameterList(
-            [nn.Parameter(torch.randn((10, 10), device=self.device))]
+            [nn.Parameter(torch.randn((10, 10)))],
         )
 
-        self.train_config = AcousticFinetuningConfig()
-
-        self.current_step = 10
         self.optimizer = ScheduledOptimFinetuning(
             parameters=self.parameters,
             train_config=self.train_config,
-            current_step=self.current_step,
         )
 
-    def test_get_lr_scale(self):
-        # Call the _get_lr_scale method
-        lr_scale = self.optimizer._get_lr_scale()
+    def test_initial_lr(self):
+        lr = self.optimizer.get_lr()
 
-        self.assertAlmostEqual(lr_scale, 0.9999000044998805, places=10)
+        self.assertEqual(lr, self.learning_rate)
 
-    def test_update_learning_rate(self):
-        # Call the _update_learning_rate method
-        self.optimizer._update_learning_rate(step=1000)
+    def test_step(self):
+        lr = self.optimizer.get_lr()
+
+        self.assertEqual(lr, self.learning_rate)
+
+        self.optimizer.step()
+        lr = self.optimizer.get_lr()
+        expected_lr = self.learning_rate * self.lr_decay
 
         self.assertAlmostEqual(
-            self.optimizer._optimizer.param_groups[0]["lr"],
-            0.00019800995684927854,
+            lr,
+            expected_lr,
             places=10,
         )
 
-    def test_step_and_update_lr(self):
-        # Call the step_and_update_lr method
-        self.optimizer.step_and_update_lr(step=1000)
+    def test_initial_step_prop_and_step_action(self):
+        # Create a new optimizer with a step of 1000
+        initial_step = 1000
+        optimizer = ScheduledOptimFinetuning(
+            parameters=self.parameters,
+            train_config=self.train_config,
+            step=initial_step,
+        )
+
+        lr = optimizer.get_lr()
+        expected_lr = self.learning_rate * (self.lr_decay ** initial_step)
 
         # Check that the learning rate was updated correctly
         self.assertAlmostEqual(
-            self.optimizer._optimizer.param_groups[0]["lr"],
-            0.00019800995684927854,
+            lr,
+            expected_lr,
+            places=10,
+        )
+
+        optimizer.step()
+        lr = optimizer.get_lr()
+
+        expected_lr = expected_lr * self.lr_decay
+
+        self.assertAlmostEqual(
+            lr,
+            expected_lr,
             places=10,
         )
 
@@ -71,12 +92,12 @@ class TestScheduledOptimFinetuning(unittest.TestCase):
                     "weight_decay": 1,
                     "amsgrad": True,
                     "params": [0],
-                }
+                },
             ],
         }
 
         # Call the load_state_dict method
-        self.optimizer._optimizer.load_state_dict(state_dict)
+        self.optimizer.load_state_dict(state_dict)
 
         # Get the actual state dictionary
         actual_state_dict = self.optimizer._optimizer.state_dict()

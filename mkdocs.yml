@@ -2,7 +2,6 @@ site_name: TTS-Framework
 nav:
   - Home: index.md
   - Model:
-    - BaseNN: model/basenn.md
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
       - Activation: model/conv_blocks/activation.md
@@ -59,9 +58,9 @@ nav:
       - Tools: model/helpers/tools.md
   - Training:
     - References: training/readme.md
-    - Dataset:
+    - Datasets:
       - References: training/dataset/readme.md
-      - Acoustic Dataset: training/dataset/acoustic_dataset.md
+      - Libri TTS dataset: training/dataset/libritts_dataset.md
     - Loss:
       - References: training/loss/readme.md
       - Binary Cross Entropy Loss: training/loss/bin_loss.md

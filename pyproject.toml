@@ -1,7 +1,7 @@
 [tool.ruff]
 fixable = ["ALL"]
 
-ignore = ["F403", "E501", "F401", "FA100", "ANN101", "ANN204", "ANN201", "FIX002", "FBT002", "FBT001", "TD003", "TD002", "TCH001", "D100", "D101", "D102", "D107", "D401", "D205", "PLR0913", "ERA001", "RET505"]
+ignore = ["T201", "B006", "PT009", "F403", "E501", "F401", "FA100", "ANN101", "ANN204", "ANN201", "FIX002", "FBT002", "FBT001", "TD003", "TD002", "TCH001", "D100", "D101", "D102", "D107", "D401", "D205", "PLR0913", "ERA001", "RET505", "D407"]
 ignore-init-module-imports = true
 
 select = ["ALL"]

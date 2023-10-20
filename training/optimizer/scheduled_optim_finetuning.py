@@ -1,74 +1,65 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Optional
 
 import torch
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import ExponentialLR
 
 from model.config import AcousticTrainingConfig
 
 
-class ScheduledOptimFinetuning:
+class ScheduledOptimFinetuning(Optimizer):
+    r"""A custom optimizer that uses `AdamW` for optimization and an `ExponentialLR` for learning rate scheduling.
+
+    Args:
+        train_config (AcousticTrainingConfig): Training configuration with optimizer and scheduler parameters.
+        parameters (Iterable): Iterable of parameters to optimize.
+        defaults (Dict[str, Any]): Default optimization options. Defaults to an empty dictionary.
+        step (Optional[int]): The current training step. Defaults to None.
+    """
+
     def __init__(
         self,
-        parameters: Iterable,
         train_config: AcousticTrainingConfig,
-        current_step: int,
+        parameters: Iterable,
+        defaults: Dict[str, Any] = {},
+        step: Optional[int] = None,
     ):
-        r"""Initializes a ScheduledOptimFinetuning optimizer.
+        super().__init__(params=parameters, defaults=defaults)
 
-        Args:
-        ----
-            parameters (Iterable): Iterable of model parameters to optimize.
-            train_config (AcousticTrainingConfig): Configuration object for the optimizer.
-            current_step (int): Current training step.
-        """
+        # Compute the gamma and initial learning rate based on the current step
+        lr_decay = train_config.optimizer_config.lr_decay
+        default_lr = train_config.optimizer_config.learning_rate
+
+        init_lr = default_lr if step is None else default_lr * (lr_decay ** step)
+
         self._optimizer = torch.optim.AdamW(
             parameters,
             betas=train_config.optimizer_config.betas,
             eps=train_config.optimizer_config.eps,
+            lr=init_lr,
         )
-        self.current_step = current_step
-        self.init_lr = train_config.optimizer_config.learning_rate
-        self.lr_decay = train_config.optimizer_config.lr_decay
 
-    def step_and_update_lr(self, step: int) -> None:
-        r"""Updates the learning rate and takes a step of the optimizer.
+        self._scheduler = ExponentialLR(self._optimizer, gamma=lr_decay)
 
-        Args:
-        ----
-            step (int): Current training step.
-        """
-        self._update_learning_rate(step)
+    def step(self):
+        r"""Performs a single optimization step."""
         self._optimizer.step()
+        self._scheduler.step()
 
     def zero_grad(self) -> None:
-        r"""Zeroes the gradients of all optimized parameters."""
+        r"""Clears the gradients of all optimized parameters.
+        This should be called before the backward pass in PyTorch.
+        """
         self._optimizer.zero_grad()
 
+    def get_lr(self) -> float:
+        r"""Returns the current learning rate."""
+        return self._optimizer.param_groups[0]["lr"]
+
     def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
-        r"""Loads the optimizer state dictionary.
+        r"""Loads the optimizer state.
 
         Args:
-        ----
-            state_dict (Dict[str, Any]): State dictionary to load.
+        state_dict (Dict[str, Any]): A dictionary containing a whole state of the optimizer.
         """
         self._optimizer.load_state_dict(state_dict)
-
-    def _get_lr_scale(self) -> float:
-        r"""Computes the learning rate scale factor.
-
-        Returns
-        -------
-            float: Learning rate scale factor.
-        """
-        return self.lr_decay**self.current_step
-
-    def _update_learning_rate(self, step: int) -> None:
-        r"""Updates the learning rate based on the current step.
-
-        Args:
-        ----
-            step (int): Current training step.
-        """
-        self.current_step = step
-        lr = self.init_lr * self._get_lr_scale()
-        for param_group in self._optimizer.param_groups:
-            param_group["lr"] = lr
