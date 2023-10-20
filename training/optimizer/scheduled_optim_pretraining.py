@@ -87,9 +87,9 @@ class ScheduledOptimPretraining(Optimizer):
 
         self._scheduler = LambdaLR(self._optimizer, lr_lambda)
 
-    def step(self):
+    def step(self, closure):
         r"""Performs a single optimization step."""
-        self._optimizer.step()
+        self._optimizer.step(closure)
         self._scheduler.step()
 
     def zero_grad(self) -> None:

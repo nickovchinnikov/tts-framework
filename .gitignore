@@ -164,6 +164,7 @@ cython_debug/
 .vscode
 .idea
 .trunk
+lightning_logs
 
 # Checkpoints ignore (too large for lfs)
 **/checkpoints/**/*.pt
