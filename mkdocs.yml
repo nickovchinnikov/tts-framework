@@ -32,6 +32,9 @@ nav:
       - Phoneme Prosody Predictor: model/acoustic_model/phoneme_prosody_predictor.md
       - Aligner:
         - Monotonic Alignments Shrink: model/acoustic_model/mas.md
+    - Config:
+      - References: model/config/readme.md
+      - Langs: model/config/langs.md
     - Reference Encoder:
       - References: model/reference_encoder/readme.md
       - Style Token Layer (STL): model/reference_encoder/STL.md

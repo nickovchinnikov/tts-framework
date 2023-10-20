@@ -3,8 +3,7 @@ from typing import List, Literal, Tuple, Union
 
 import torch
 
-PreprocessLangType = Union[Literal["english_only"], Literal["multilingual"]]
-
+PreprocessLangType = Literal["english_only", "multilingual"]
 
 @dataclass
 class STFTConfig:

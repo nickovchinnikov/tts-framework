@@ -28,32 +28,32 @@ SUPPORTED_LANGUAGES = [
 
 # Mappings from symbol to numeric ID and vice versa:
 lang2id = {s: i for i, s in enumerate(SUPPORTED_LANGUAGES)}
-id2lang = {i: s for i, s in enumerate(SUPPORTED_LANGUAGES)}
+id2lang = dict(enumerate(SUPPORTED_LANGUAGES))
 
 @dataclass
 class LangItem:
+    r"""A class for storing language information."""
+
     phonemizer: str
     nemo: str
     processing_lang_type: PreprocessLangType
 
 langs_map: Dict[str, LangItem] = {
-    "en": LangItem(phonemizer="en_us", nemo="en", processing_lang_type="english_only") 
+    "en": LangItem(phonemizer="en_us", nemo="en", processing_lang_type="english_only"),
 }
 
 def get_lang_map(lang: str) -> LangItem:
-    r"""
-    Returns a LangItem object for the given language.
+    r"""Returns a LangItem object for the given language.
 
     Args:
         lang (str): The language to get the LangItem for.
 
     Raises:
         ValueError: If the language is not supported.
-    
+
     Returns:
         LangItem: The LangItem object for the given language.
     """
-    
     if lang not in langs_map:
         raise ValueError(f"Language {lang} is not supported!")
     return langs_map[lang]
