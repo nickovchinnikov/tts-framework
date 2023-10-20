@@ -49,7 +49,7 @@ class TestKernelPredictor(unittest.TestCase):
 
         self.assertIsInstance(bias, torch.Tensor)
         self.assertEqual(
-            bias.shape, (self.batch_size, self.conv_layers, self.conv_out_channels, 10)
+            bias.shape, (self.batch_size, self.conv_layers, self.conv_out_channels, 10),
         )
 
     def test_remove_weight_norm(self):

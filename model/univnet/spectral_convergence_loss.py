@@ -2,8 +2,7 @@ import torch
 
 
 class SpectralConvergengeLoss(torch.nn.Module):
-    r"""
-    Spectral convergence loss module.
+    r"""Spectral convergence loss module.
     Spectral convergence loss is a measure of the similarity between two magnitude spectrograms.
 
     The spectral convergence loss is calculated as the Frobenius norm of the difference between the predicted and groundtruth magnitude spectrograms, divided by the Frobenius norm of the groundtruth magnitude spectrogram. The Frobenius norm is a matrix norm that is equivalent to the square root of the sum of the squared elements of a matrix.

@@ -17,7 +17,7 @@ class TestSTFT(unittest.TestCase):
         self.assertEqual(output.shape[0], 4)
         self.assertEqual(output.shape[2], fft_size // 2 + 1)
         self.assertEqual(
-            output.shape[1], (16384 - win_length) // hop_size + x.shape[0] + 1
+            output.shape[1], (16384 - win_length) // hop_size + x.shape[0] + 1,
         )
 
 

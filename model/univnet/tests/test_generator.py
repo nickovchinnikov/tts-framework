@@ -1,7 +1,7 @@
 import unittest
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.config import PreprocessingConfig, VocoderModelConfig
 from model.univnet.generator import Generator

@@ -26,7 +26,7 @@ class TestTracedGenerator(unittest.TestCase):
             ),
         )
 
-        self.traced_generator = TracedGenerator(self.generator, self.example_inputs)
+        self.traced_generator = TracedGenerator(self.generator) # , self.example_inputs)
 
         self.c = torch.randn(
             self.batch_size,

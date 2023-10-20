@@ -1,7 +1,7 @@
 import unittest
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from model.univnet.lvc_block import LVCBlock
 
@@ -49,7 +49,7 @@ class TestLVCBlock(unittest.TestCase):
         self.lvc_block.remove_weight_norm()
 
         for _, module in self.lvc_block.named_modules():
-            if isinstance(module, nn.Conv1d) or isinstance(module, nn.ConvTranspose1d):
+            if isinstance(module, (nn.Conv1d, nn.ConvTranspose1d)):
                 self.assertFalse(hasattr(module, "weight_g"))
                 self.assertFalse(hasattr(module, "weight_v"))
 
@@ -72,7 +72,7 @@ class TestLVCBlock(unittest.TestCase):
         )
 
         self.assertEqual(
-            output.shape, (self.batch_size, 2 * self.in_channels, self.in_length)
+            output.shape, (self.batch_size, 2 * self.in_channels, self.in_length),
         )
 
     def test_forward(self):
@@ -85,5 +85,5 @@ class TestLVCBlock(unittest.TestCase):
         output = self.lvc_block(x, self.kernel)
 
         self.assertEqual(
-            output.shape, (self.batch_size, self.in_channels, self.in_length)
+            output.shape, (self.batch_size, self.in_channels, self.in_length),
         )

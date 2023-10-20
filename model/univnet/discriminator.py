@@ -8,8 +8,7 @@ from .multi_resolution_discriminator import MultiResolutionDiscriminator
 
 
 class Discriminator(LightningModule):
-    r"""
-    Discriminator for the UnuvNet vocoder.
+    r"""Discriminator for the UnuvNet vocoder.
 
     This class implements a discriminator that consists of a `MultiResolutionDiscriminator` and a `MultiPeriodDiscriminator`.
 
@@ -31,8 +30,7 @@ class Discriminator(LightningModule):
         self.MPD = MultiPeriodDiscriminator(model_config=model_config)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        r"""
-        Computes the forward pass of the discriminator.
+        r"""Computes the forward pass of the discriminator.
 
         Args:
             x (torch.Tensor): Input tensor of shape [B, C, T].

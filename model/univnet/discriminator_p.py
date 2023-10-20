@@ -2,7 +2,7 @@ from typing import Any, Tuple
 
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm, weight_norm
 
@@ -10,8 +10,7 @@ from model.config import VocoderModelConfig
 
 
 class DiscriminatorP(LightningModule):
-    r"""
-    DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.
+    r"""DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.
 
     Args:
         period (int): The period of the Mel spectrogram.
@@ -44,7 +43,7 @@ class DiscriminatorP(LightningModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -53,7 +52,7 @@ class DiscriminatorP(LightningModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -62,7 +61,7 @@ class DiscriminatorP(LightningModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -71,7 +70,7 @@ class DiscriminatorP(LightningModule):
                         (kernel_size, 1),
                         (stride, 1),
                         padding=(kernel_size // 2, 0),
-                    )
+                    ),
                 ),
                 norm_f(
                     nn.Conv2d(
@@ -80,9 +79,9 @@ class DiscriminatorP(LightningModule):
                         (kernel_size, 1),
                         1,
                         padding=(kernel_size // 2, 0),
-                    )
+                    ),
                 ),
-            ]
+            ],
         )
         self.conv_post = norm_f(
             nn.Conv2d(
@@ -91,12 +90,11 @@ class DiscriminatorP(LightningModule):
                 (3, 1),
                 1,
                 padding=(1, 0),
-            )
+            ),
         )
 
     def forward(self, x: torch.Tensor) -> Tuple[list, torch.Tensor]:
-        r"""
-        Forward pass of the discriminator network.
+        r"""Forward pass of the discriminator network.
 
         Args:
             x (torch.Tensor): The input tensor of shape (batch_size, channels, time_steps).

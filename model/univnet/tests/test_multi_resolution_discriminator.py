@@ -61,15 +61,15 @@ class TestMultiResolutionDiscriminator(unittest.TestCase):
             fmap_dim = fmap_dims[key]
 
             # Assert the shape of the feature maps
-            for i, fmap in enumerate(fmap[:-1]):
+            for i, fmap_ in enumerate(fmap[:-1]):
                 # Assert the feature map shape explicitly
-                self.assertEqual(fmap.shape, fmap_dim[i])
+                self.assertEqual(fmap_.shape, fmap_dim[i])
 
                 self.assertEqual(
-                    fmap.shape, torch.Size([first_dim, second_dim, dim_3rd(p_max - i)])
+                    fmap_.shape, torch.Size([first_dim, second_dim, dim_3rd(p_max - i)]),
                 )
 
-            self.assertEqual(fmap[-1].shape, torch.Size([second_dim, 2**p_min + 1]))
+            self.assertEqual(fmap[-1].shape, torch.Size([second_dim, second_dim, 2**p_min + 1]))
 
 
 if __name__ == "__main__":

@@ -2,15 +2,14 @@ from typing import List
 
 from lightning.pytorch import LightningModule
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.nn import functional as F
 
 from .kernel_predictor import KernelPredictor
 
 
 class LVCBlock(LightningModule):
-    r"""
-    The location-variable convolutions block.
+    r"""The location-variable convolutions block.
 
     To efficiently capture the local information of the condition, location-variable convolution (LVC)
     obtained better sound quality and speed while maintaining the model size.
@@ -81,7 +80,7 @@ class LVCBlock(LightningModule):
                     stride=stride,
                     padding=stride // 2 + stride % 2,
                     output_padding=stride % 2,
-                )
+                ),
             ),
         )
 
@@ -96,12 +95,12 @@ class LVCBlock(LightningModule):
                             conv_kernel_size,
                             padding=dilation * (conv_kernel_size - 1) // 2,
                             dilation=dilation,
-                        )
+                        ),
                     ),
                     nn.LeakyReLU(lReLU_slope),
                 )
                 for dilation in dilations
-            ]
+            ],
         )
 
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
@@ -126,10 +125,10 @@ class LVCBlock(LightningModule):
             b = bias[:, i, :, :]  # (B, 2 * c_g, cond_length)
 
             output = self.location_variable_convolution(
-                output, k, b, hop_size=self.cond_hop_length
+                output, k, b, hop_size=self.cond_hop_length,
             )  # (B, 2 * c_g, stride * L'): LVC
             x = x + torch.sigmoid(output[:, :in_channels, :]) * torch.tanh(
-                output[:, in_channels:, :]
+                output[:, in_channels:, :],
             )  # (B, c_g, stride * L'): GAU
 
         return x
@@ -142,8 +141,7 @@ class LVCBlock(LightningModule):
         dilation: int = 1,
         hop_size: int = 256,
     ) -> torch.Tensor:
-        r"""
-        Perform location-variable convolution operation on the input sequence (x) using the local convolution kernel.
+        r"""Perform location-variable convolution operation on the input sequence (x) using the local convolution kernel.
         Time: 414 μs ± 309 ns per loop (mean ± std. dev. of 7 runs, 1000 loops each), test on NVIDIA V100.
 
         Args:
@@ -164,23 +162,23 @@ class LVCBlock(LightningModule):
 
         padding = dilation * int((kernel_size - 1) / 2)
         x = F.pad(
-            x, (padding, padding), "constant", 0
+            x, (padding, padding), "constant", 0,
         )  # (batch, in_channels, in_length + 2*padding)
         x = x.unfold(
-            2, hop_size + 2 * padding, hop_size
+            2, hop_size + 2 * padding, hop_size,
         )  # (batch, in_channels, kernel_length, hop_size + 2*padding)
 
         if hop_size < dilation:
             x = F.pad(x, (0, dilation), "constant", 0)
         x = x.unfold(
-            3, dilation, dilation
+            3, dilation, dilation,
         )  # (batch, in_channels, kernel_length, (hop_size + 2*padding)/dilation, dilation)
         x = x[:, :, :, :, :hop_size]
         x = x.transpose(
-            3, 4
+            3, 4,
         )  # (batch, in_channels, kernel_length, dilation, (hop_size + 2*padding)/dilation)
         x = x.unfold(
-            4, kernel_size, 1
+            4, kernel_size, 1,
         )  # (batch, in_channels, kernel_length, dilation, _, kernel_size)
 
         o = torch.einsum("bildsk,biokl->bolsd", x, kernel)
@@ -193,13 +191,10 @@ class LVCBlock(LightningModule):
         )
 
         o = o + bias
-        o = o.contiguous().view(batch, out_channels, -1)
-
-        return o
+        return o.contiguous().view(batch, out_channels, -1)
 
     def remove_weight_norm(self) -> None:
-        r"""
-        Remove weight normalization from the convolutional layers in the LVCBlock.
+        r"""Remove weight normalization from the convolutional layers in the LVCBlock.
 
         This method removes weight normalization from the kernel predictor and all convolutional layers in the LVCBlock.
         """
