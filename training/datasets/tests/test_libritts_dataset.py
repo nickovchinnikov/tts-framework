@@ -67,10 +67,10 @@ class TestLibriTTSDataset(unittest.TestCase):
         result = self.dataset.collate_fn(data)
 
         # Check the output
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(result), 12)
 
         # Check that all the batches are the same size
-        for batch in result[0]:
+        for batch in result:
             self.assertEqual(len(batch), 2)
 
     def test_normalize_pitch(self):
@@ -85,7 +85,6 @@ class TestLibriTTSDataset(unittest.TestCase):
 
         self.assertEqual(result, expected_output)
 
-    # TODO: fix this test
     def test_dataloader(self):
         # Create a DataLoader from the dataset
         dataloader = DataLoader(
@@ -98,8 +97,8 @@ class TestLibriTTSDataset(unittest.TestCase):
         iter_dataloader = iter(dataloader)
 
         # Iterate over the DataLoader and check the output
-        for _, batch in enumerate([next(iter_dataloader), next(iter_dataloader)]):
-            items = batch[0]
+        for _, items in enumerate([next(iter_dataloader), next(iter_dataloader)]):
+            # items = batch[0]
 
             # Check the batch size
             self.assertEqual(len(items), 12)

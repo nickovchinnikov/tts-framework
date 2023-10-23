@@ -45,7 +45,6 @@ class RelativeMultiHeadAttention(Module):
         self.value_proj = nn.Linear(d_model, d_model, bias=False)
         self.pos_proj = nn.Linear(d_model, d_model, bias=False)
 
-        # TODO: Check the device here!
         self.u_bias = nn.Parameter(torch.Tensor(self.num_heads, self.d_head))
         self.v_bias = nn.Parameter(torch.Tensor(self.num_heads, self.d_head))
 

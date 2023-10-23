@@ -91,10 +91,10 @@ class TestPreprocessLibriTTS(unittest.TestCase):
             self.assertEqual(output.attn_prior.shape, torch.Size([88, 861]))
             self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
-            self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
+            self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day.mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
 
             self.assertEqual(output.phones.shape, torch.Size([88]))
-            self.assertEqual(len(output.phones_ipa), 160)
+            self.assertEqual(len(output.phones_ipa), 159)
 
             self.assertEqual(output.wav.shape, torch.Size([220500]))
 

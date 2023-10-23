@@ -31,11 +31,9 @@ class TestTacotronSTFT(unittest.TestCase):
             center=self.center,
         )
 
-        self.device = self.model.device
-
     def test_spectrogram(self):
         # Test the _spectrogram method
-        y = torch.randn(self.batch_size, self.filter_length // 2).to(self.device)
+        y = torch.randn(self.batch_size, self.filter_length // 2)
         y = y / torch.max(torch.abs(y))
 
         spec = self.model._spectrogram(y)
@@ -47,7 +45,7 @@ class TestTacotronSTFT(unittest.TestCase):
 
     def test_linear_spectrogram(self):
         # Test the linear_spectrogram method
-        y = torch.randn(self.batch_size, self.filter_length // 2).to(self.device)
+        y = torch.randn(self.batch_size, self.filter_length // 2)
         y = y / torch.max(torch.abs(y))
 
         spec = self.model.linear_spectrogram(y)
@@ -56,7 +54,7 @@ class TestTacotronSTFT(unittest.TestCase):
 
     def test_forward(self):
         # Test the forward method
-        y = torch.randn(self.n_mel_channels, self.filter_length // 2).to(self.device)
+        y = torch.randn(self.n_mel_channels, self.filter_length // 2)
         y = y / torch.max(torch.abs(y))
 
         spec, mel = self.model(y)
@@ -72,9 +70,7 @@ class TestTacotronSTFT(unittest.TestCase):
 
     def test_spectral_normalize_torch(self):
         # Test the spectral_normalize_torch method
-        magnitudes = torch.randn(self.batch_size, self.n_mel_channels, self.seq_len).to(
-            self.device,
-        )
+        magnitudes = torch.randn(self.batch_size, self.n_mel_channels, self.seq_len)
         output = self.model.spectral_normalize_torch(magnitudes)
         self.assertEqual(
             output.shape, (self.batch_size, self.n_mel_channels, self.seq_len),
@@ -82,9 +78,7 @@ class TestTacotronSTFT(unittest.TestCase):
 
     def test_dynamic_range_compression_torch(self):
         # Test the dynamic_range_compression_torch method
-        x = torch.randn(self.batch_size, self.n_mel_channels, self.seq_len).to(
-            self.device,
-        )
+        x = torch.randn(self.batch_size, self.n_mel_channels, self.seq_len)
         output = self.model.dynamic_range_compression_torch(x)
         self.assertEqual(
             output.shape, (self.batch_size, self.n_mel_channels, self.seq_len),

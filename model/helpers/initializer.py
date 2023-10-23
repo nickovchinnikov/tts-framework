@@ -319,7 +319,6 @@ def init_mask_input_embeddings_encoding_attn_mask(
     encoding = positional_encoding(
         model_config.encoder.n_hidden,
         max(x.shape[1], int(forward_train_params.mel_lens.max().item())),
-        device=x.device,
     )
 
     attn_mask = src_mask.view((src_mask.shape[0], 1, 1, src_mask.shape[1]))

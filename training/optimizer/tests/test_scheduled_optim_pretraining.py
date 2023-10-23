@@ -12,10 +12,8 @@ from training.optimizer.scheduled_optim_pretraining import (
 
 class TestScheduledOptimPretraining(unittest.TestCase):
     def setUp(self):
-        self.device = torch.device("cpu")
-
         self.parameters = nn.ParameterList(
-            [nn.Parameter(torch.randn((10, 10), device=self.device))],
+            [nn.Parameter(torch.randn((10, 10)))],
         )
 
         self.train_config = AcousticPretrainingConfig()
@@ -61,7 +59,7 @@ class TestScheduledOptimPretraining(unittest.TestCase):
         self.assertAlmostEqual(lr, 1.0293872591693944e-08, places=10)
 
         for _ in range(100):
-            self.optimizer.step()
+            self.optimizer.step(None)
 
         lr = self.optimizer.get_lr()
         expected_lr = 1.0293872591693944e-06
@@ -73,7 +71,7 @@ class TestScheduledOptimPretraining(unittest.TestCase):
         )
 
         for _ in range(1000):
-            self.optimizer.step()
+            self.optimizer.step(None)
 
         lr = self.optimizer.get_lr()
         expected_lr = 1.1323259850863337e-05

@@ -5,7 +5,6 @@ import torch
 import torch.nn.functional as F
 
 
-# TODO add env variable to set device for testing or any other specific purpose
 def get_device() -> torch.device:
     r"""Function returns the device where the model and tensors should be placed.
 
@@ -138,7 +137,6 @@ def initialize_embeddings(shape: Tuple[int, ...]) -> torch.Tensor:
     Args:
         shape (Tuple[int, ...]): The shape of the embedding matrix to create, denoted as a tuple of integers.
                                  The shape should comprise 2 dimensions, i.e., (embedding_dim, num_embeddings).
-        device (torch.device): The device to which the model should be moved. Defaults `get_device()`
 
     Raises:
         AssertionError: if the provided shape is not 2D.
