@@ -1,6 +1,5 @@
 from typing import List, Union
 
-import numpy as np
 from pytorch_lightning.core import LightningModule
 import torch
 from torch.utils.data import DataLoader

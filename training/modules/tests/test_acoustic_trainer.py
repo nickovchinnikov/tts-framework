@@ -12,9 +12,16 @@ class TestTrainAcousticModule(unittest.TestCase):
         pass
 
     def test_forward(self):
-        trainer = Trainer(limit_train_batches=2, max_epochs=1, accelerator="cuda")
+        trainer = Trainer(
+            default_root_dir="checkpoints/acoustic",
+            limit_train_batches=2,
+            max_epochs=1,
+            accelerator="cuda",
+        )
 
         model = AcousticTrainer()
+        model.eval()
+
         train_dataloader = model.train_dataloader()
 
         # Load the pretrained weights
@@ -27,3 +34,12 @@ class TestTrainAcousticModule(unittest.TestCase):
         # self.model.train()
         result = trainer.fit(model=model, train_dataloaders=train_dataloader)
         self.assertIsNone(result)
+
+    def test_load_from_checkpoint(self):
+        try:
+            AcousticTrainer.load_from_checkpoint(
+                "./checkpoints/acoustic/lightning_logs/version_1/checkpoints/epoch=0-step=2.ckpt",
+            )
+        except Exception as e:
+            self.fail(f"Loading from checkpoint raised an exception: {e}")
+
