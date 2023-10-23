@@ -1,15 +1,15 @@
 from typing import Any, Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm, weight_norm
 
 from model.config import VocoderModelConfig
 
 
-class DiscriminatorR(LightningModule):
+class DiscriminatorR(Module):
     r"""A class representing the Residual Discriminator network for a UnivNet vocoder.
 
     Args:

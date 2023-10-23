@@ -4,7 +4,7 @@ import torch
 
 
 def positional_encoding(
-    d_model: int, length: int, device: torch.device,
+    d_model: int, length: int,
 ) -> torch.Tensor:
     r"""Function to calculate positional encoding for transformer model.
 
@@ -17,14 +17,14 @@ def positional_encoding(
         torch.Tensor: Tensor having positional encodings.
     """
     # Initialize placeholder for positional encoding
-    pe = torch.zeros(length, d_model, device=device)
+    pe = torch.zeros(length, d_model)
 
     # Generate position indices and reshape to have shape (length, 1)
-    position = torch.arange(0, length, dtype=torch.float, device=device).unsqueeze(1)
+    position = torch.arange(0, length, dtype=torch.float).unsqueeze(1)
 
     # Calculate term for division
     div_term = torch.exp(
-        torch.arange(0, d_model, 2, device=device).float()
+        torch.arange(0, d_model, 2).float()
         * -(math.log(10000.0) / d_model),
     )
 

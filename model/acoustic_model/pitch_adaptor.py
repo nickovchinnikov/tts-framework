@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from typing import Tuple
 
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from model.config import AcousticModelConfigType
 
@@ -11,7 +11,7 @@ from .embedding import Embedding
 from .variance_predictor import VariancePredictor
 
 
-class PitchAdaptor(LightningModule):
+class PitchAdaptor(Module):
     r"""The PitchAdaptor class is a pitch adaptor network in the model.
 
     It has methods to get the pitch embeddings for train and test,
@@ -73,7 +73,7 @@ class PitchAdaptor(LightningModule):
             Tuple of Tensors: The pitch prediction, true pitch embedding and predicted pitch embedding.
         """
         # Explicitly convert self.pitch_bins to a Tensor if it's not already
-        pitch_bins = torch.Tensor(self.pitch_bins).to(self.device)
+        pitch_bins = torch.Tensor(self.pitch_bins)
 
         prediction = self.pitch_predictor(x, mask)
         embedding_true = self.pitch_embedding(torch.bucketize(target, pitch_bins))
@@ -94,7 +94,7 @@ class PitchAdaptor(LightningModule):
             torch.Tensor: The tensor containing pitch embeddings.
         """
         # Explicitly convert self.pitch_bins to a Tensor if it's not already
-        pitch_bins = torch.Tensor(self.pitch_bins).to(self.device)
+        pitch_bins = torch.Tensor(self.pitch_bins)
 
         prediction = self.pitch_predictor(x, mask)
         prediction = prediction * control

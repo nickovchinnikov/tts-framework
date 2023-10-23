@@ -1,12 +1,12 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.attention import StyleEmbedAttention
 from model.config import AcousticModelConfigType
 
 
-class STL(LightningModule):
+class STL(Module):
     r"""Style Token Layer (STL).
     This layer helps to encapsulate different speaking styles in token embeddings.
 

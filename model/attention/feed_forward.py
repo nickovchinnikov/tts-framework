@@ -1,11 +1,11 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.constants import LEAKY_RELU_SLOPE
 
 
-class FeedForward(LightningModule):
+class FeedForward(Module):
     r"""Creates a feed-forward neural network.
     The network includes a layer normalization, an activation function (LeakyReLU), and dropout layers.
 

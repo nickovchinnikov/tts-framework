@@ -1,9 +1,9 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 
-class DepthWiseConv1d(LightningModule):
+class DepthWiseConv1d(Module):
     r"""Implements Depthwise 1D convolution. This module will apply a spatial convolution over inputs
     independently over each input channel in the style of depthwise convolutions.
 
@@ -71,7 +71,7 @@ class DepthWiseConv1d(LightningModule):
         return self.conv(x)
 
 
-class PointwiseConv1d(LightningModule):
+class PointwiseConv1d(Module):
     r"""Applies a 1D pointwise (aka 1x1) convolution over an input signal composed of several input
     planes, officially known as channels in this context.
 

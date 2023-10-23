@@ -1,6 +1,6 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.conv_blocks import Conv1dGLU
 
@@ -9,7 +9,7 @@ from .conformer_multi_headed_self_attention import ConformerMultiHeadedSelfAtten
 from .feed_forward import FeedForward
 
 
-class ConformerBlock(LightningModule):
+class ConformerBlock(Module):
     r"""ConformerBlock class represents a block in the Conformer model architecture.
     The block includes a pointwise convolution followed by Gated Linear Units (`GLU`) activation layer (`Conv1dGLU`),
     a Conformer self attention layer (`ConformerMultiHeadedSelfAttention`), and optional feed-forward layer (`FeedForward`).

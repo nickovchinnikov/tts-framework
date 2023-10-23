@@ -1,8 +1,8 @@
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 
-class AddCoords(LightningModule):
+class AddCoords(Module):
     r"""AddCoords is a PyTorch module that adds additional channels to the input tensor containing the relative
     (normalized to `[-1, 1]`) coordinates of each input element along the specified number of dimensions (`rank`).
     Essentially, it adds spatial context information to the tensor.
@@ -46,14 +46,13 @@ class AddCoords(LightningModule):
         """
         if self.rank == 1:
             batch_size_shape, _, dim_x = x.shape
-            xx_range = torch.arange(dim_x, dtype=torch.int32)
+            xx_range = torch.arange(dim_x, dtype=torch.int32, device=x.device)
             xx_channel = xx_range[None, None, :]
 
             xx_channel = xx_channel.float() / (dim_x - 1)
             xx_channel = xx_channel * 2 - 1
             xx_channel = xx_channel.repeat(batch_size_shape, 1, 1)
 
-            xx_channel = xx_channel.to(self.device)
             out = torch.cat([x, xx_channel], dim=1)
 
             if self.with_r:
@@ -62,11 +61,11 @@ class AddCoords(LightningModule):
 
         elif self.rank == 2:
             batch_size_shape, _, dim_y, dim_x = x.shape
-            xx_ones = torch.ones([1, 1, 1, dim_x], dtype=torch.int32)
-            yy_ones = torch.ones([1, 1, 1, dim_y], dtype=torch.int32)
+            xx_ones = torch.ones([1, 1, 1, dim_x], dtype=torch.int32, device=x.device)
+            yy_ones = torch.ones([1, 1, 1, dim_y], dtype=torch.int32, device=x.device)
 
-            xx_range = torch.arange(dim_y, dtype=torch.int32)
-            yy_range = torch.arange(dim_x, dtype=torch.int32)
+            xx_range = torch.arange(dim_y, dtype=torch.int32, device=x.device)
+            yy_range = torch.arange(dim_x, dtype=torch.int32, device=x.device)
             xx_range = xx_range[None, None, :, None]
             yy_range = yy_range[None, None, :, None]
 
@@ -85,9 +84,6 @@ class AddCoords(LightningModule):
             xx_channel = xx_channel.repeat(batch_size_shape, 1, 1, 1)
             yy_channel = yy_channel.repeat(batch_size_shape, 1, 1, 1)
 
-            xx_channel = xx_channel.to(self.device)
-            yy_channel = yy_channel.to(self.device)
-
             out = torch.cat([x, xx_channel, yy_channel], dim=1)
 
             if self.with_r:
@@ -98,17 +94,17 @@ class AddCoords(LightningModule):
 
         elif self.rank == 3:
             batch_size_shape, _, dim_z, dim_y, dim_x = x.shape
-            xx_ones = torch.ones([1, 1, 1, 1, dim_x], dtype=torch.int32)
-            yy_ones = torch.ones([1, 1, 1, 1, dim_y], dtype=torch.int32)
-            zz_ones = torch.ones([1, 1, 1, 1, dim_z], dtype=torch.int32)
+            xx_ones = torch.ones([1, 1, 1, 1, dim_x], dtype=torch.int32, device=x.device)
+            yy_ones = torch.ones([1, 1, 1, 1, dim_y], dtype=torch.int32, device=x.device)
+            zz_ones = torch.ones([1, 1, 1, 1, dim_z], dtype=torch.int32, device=x.device)
 
-            xy_range = torch.arange(dim_y, dtype=torch.int32)
+            xy_range = torch.arange(dim_y, dtype=torch.int32, device=x.device)
             xy_range = xy_range[None, None, None, :, None]
 
-            yz_range = torch.arange(dim_z, dtype=torch.int32)
+            yz_range = torch.arange(dim_z, dtype=torch.int32, device=x.device)
             yz_range = yz_range[None, None, None, :, None]
 
-            zx_range = torch.arange(dim_x, dtype=torch.int32)
+            zx_range = torch.arange(dim_x, dtype=torch.int32, device=x.device)
             zx_range = zx_range[None, None, None, :, None]
 
             xy_channel = torch.matmul(xy_range, xx_ones)
@@ -122,9 +118,6 @@ class AddCoords(LightningModule):
             zx_channel = zx_channel.permute(0, 1, 4, 2, 3)
             zz_channel = torch.cat([zx_channel + i for i in range(dim_y)], dim=3)
 
-            xx_channel = xx_channel.to(self.device)
-            yy_channel = yy_channel.to(self.device)
-            zz_channel = zz_channel.to(self.device)
             out = torch.cat([x, xx_channel, yy_channel, zz_channel], dim=1)
 
             if self.with_r:

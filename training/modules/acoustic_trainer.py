@@ -97,25 +97,23 @@ class AcousticTrainer(LightningModule):
     # Use `torch.no_grad` instead
     # trainer = Trainer(inference_mode=False)
     def training_step(self, batch: List, batch_idx: int):
-        self.model.train()
-
         (
             ids,
             raw_texts,
             speakers,
-            speaker_names,
             texts,
             src_lens,
             mels,
             pitches,
-            pitches_range,
+            pitches_stat,
             mel_lens,
             langs,
             attn_priors,
+            wavs,
         ) = batch
 
-        src_mask = get_mask_from_lengths(torch.from_numpy(src_lens))
-        mel_mask = get_mask_from_lengths(torch.from_numpy(mel_lens))
+        src_mask = get_mask_from_lengths(src_lens)
+        mel_mask = get_mask_from_lengths(mel_lens)
 
         outputs = self.model.forward_train(
             x=texts,
@@ -124,7 +122,7 @@ class AcousticTrainer(LightningModule):
             mels=mels,
             mel_lens=mel_lens,
             pitches=pitches,
-            pitches_range=pitches_range,
+            pitches_range=pitches_stat,
             langs=langs,
             attn_priors=attn_priors,
         )
@@ -160,15 +158,16 @@ class AcousticTrainer(LightningModule):
         Returns
             ScheduledOptimFinetuning or ScheduledOptimPretraining: The optimizer.
         """
+        parameters = list(self.model.parameters())
         if self.fine_tuning:
             return ScheduledOptimFinetuning(
-                parameters=list(self.model.parameters()),
+                parameters=parameters,
                 train_config=self.train_config,
                 step=self.step,
             )
         else:
             return ScheduledOptimPretraining(
-                parameters=list(self.model.parameters()),
+                parameters=parameters,
                 train_config=self.train_config,
                 model_config=self.model_config,
                 step=self.step,

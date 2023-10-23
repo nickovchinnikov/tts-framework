@@ -1,10 +1,10 @@
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from .conv1d import DepthWiseConv1d, PointwiseConv1d
 
 
-class BSConv1d(LightningModule):
+class BSConv1d(Module):
     r"""`BSConv1d` implements the `BSConv` concept which is based on the paper [BSConv:
     Binarized Separated Convolutional Neural Networks](https://arxiv.org/pdf/2003.13549.pdf).
 

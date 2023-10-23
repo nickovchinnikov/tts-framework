@@ -98,7 +98,7 @@ class FastSpeech2LossGen(pl.LightningModule):
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The total loss and its components.
         """
-        log_duration_targets = torch.log(durations.float() + 1)
+        log_duration_targets = torch.log(durations.float() + 1).to(src_masks.device)
 
         log_duration_targets.requires_grad = False
         mel_targets.requires_grad = False
@@ -109,8 +109,8 @@ class FastSpeech2LossGen(pl.LightningModule):
 
         mel_masks_expanded = mel_masks.unsqueeze(1)
 
-        mel_predictions_normalized = sample_wise_min_max(mel_predictions)
-        mel_targets_normalized = sample_wise_min_max(mel_targets)
+        mel_predictions_normalized = sample_wise_min_max(mel_predictions).float().to(mel_predictions.device)
+        mel_targets_normalized = sample_wise_min_max(mel_targets).float().to(mel_predictions.device)
 
         ssim_loss: torch.Tensor = self.ssim_loss(
             mel_predictions_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
@@ -120,7 +120,7 @@ class FastSpeech2LossGen(pl.LightningModule):
             print(
                 f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
             )
-            ssim_loss = torch.FloatTensor([1.0]).to(self.device)
+            ssim_loss = torch.FloatTensor([1.0], device=mel_predictions.device)
 
         masked_mel_predictions = mel_predictions.masked_select(~mel_masks_expanded)
 

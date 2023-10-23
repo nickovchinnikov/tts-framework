@@ -1,10 +1,10 @@
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from .bsconv import BSConv1d
 
 
-class ConvTransposed(LightningModule):
+class ConvTransposed(Module):
     r"""`ConvTransposed` applies a 1D convolution operation, with the main difference that it transposes the
     last two dimensions of the input tensor before and after applying the `BSConv1d` convolution operation.
     This can be useful in certain architectures where the tensor dimensions are processed in a different order.

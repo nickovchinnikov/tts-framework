@@ -1,6 +1,6 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.config import PreprocessingConfig, VocoderModelConfig
 from model.helpers.tools import get_mask_from_lengths
@@ -8,7 +8,7 @@ from model.helpers.tools import get_mask_from_lengths
 from .lvc_block import LVCBlock
 
 
-class Generator(LightningModule):
+class Generator(Module):
     """UnivNet Generator"""
 
     def __init__(
@@ -84,7 +84,7 @@ class Generator(LightningModule):
         Returns:
             Tensor: the generated audio waveform (batch, 1, out_length)
         """
-        z = torch.randn(c.shape[0], self.noise_dim, c.shape[2], device=self.device)
+        z = torch.randn(c.shape[0], self.noise_dim, c.shape[2], device=c.device)
         z = self.conv_pre(z)  # (B, c_g, L)
 
         for res_block in self.res_stack:
@@ -126,10 +126,10 @@ class Generator(LightningModule):
         Returns:
             Tensor: the generated audio waveform (batch, 1, out_length)
         """
-        mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1)
+        mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1).to(c.device)
         c = c.masked_fill(mel_mask, self.mel_mask_value)
         zero = torch.full(
-            (c.shape[0], self.mel_channel, 10), self.mel_mask_value, device=self.device,
+            (c.shape[0], self.mel_channel, 10), self.mel_mask_value, device=c.device,
         )
         mel = torch.cat((c, zero), dim=2)
         audio = self(mel)

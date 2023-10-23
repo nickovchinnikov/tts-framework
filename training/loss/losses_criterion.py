@@ -15,15 +15,15 @@ class LossesCriterion(pl.LightningModule):
         self.loss = FastSpeech2LossGen(fine_tuning=True)
 
         # Initialize the losses to 0
-        self.reconstruction_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.mel_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.ssim_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.duration_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.u_prosody_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.p_prosody_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.pitch_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.ctc_loss = torch.tensor([0.0], dtype=torch.float32)
-        self.bin_loss = torch.tensor([0.0], dtype=torch.float32)
+        self.register_buffer("reconstruction_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("mel_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("ssim_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("duration_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("u_prosody_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("p_prosody_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("pitch_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("ctc_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("bin_loss", torch.tensor([0.0], dtype=torch.float32))
 
     def forward(
         self,

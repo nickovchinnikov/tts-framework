@@ -1,13 +1,13 @@
 import math
 from typing import Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 
 
-class RelativeMultiHeadAttention(LightningModule):
+class RelativeMultiHeadAttention(Module):
     r"""Multi-head attention with relative positional encoding.
     This concept was proposed in the
     [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](https://arxiv.org/abs/1901.02860)

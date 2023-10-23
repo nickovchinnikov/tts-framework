@@ -1,14 +1,12 @@
-from typing import Any, Tuple
-
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from model.helpers.tools import get_mask_from_lengths
 
 from .generator import Generator
 
 
-class TracedGenerator(LightningModule):
+class TracedGenerator(Module):
     def __init__(
         self,
         generator: Generator,
@@ -42,10 +40,10 @@ class TracedGenerator(LightningModule):
         Returns:
             torch.Tensor: The generated audio tensor.
         """
-        mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1)
+        mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1).to(c.device)
         c = c.masked_fill(mel_mask, self.mel_mask_value)
         zero = torch.full(
-            (c.shape[0], c.shape[1], 10), self.mel_mask_value, device=self.device,
+            (c.shape[0], c.shape[1], 10), self.mel_mask_value, device=c.device,
         )
         mel = torch.cat((c, zero), dim=2)
         audio = self.generator(mel)

@@ -1,11 +1,11 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from .bsconv import BSConv1d
 
 
-class Conv1dGLU(LightningModule):
+class Conv1dGLU(Module):
     r"""`Conv1dGLU` implements a variant of Convolutional Layer with a Gated Linear Unit (GLU).
     It's based on the Deep Voice 3 project.
 

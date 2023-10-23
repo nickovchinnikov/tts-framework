@@ -150,16 +150,16 @@ class LibriTTSDataset(Dataset):
         return (
             ids,
             raw_texts,
-            speakers,
-            texts,
-            src_lens,
-            mels,
-            pitches,
+            torch.from_numpy(speakers),
+            torch.from_numpy(texts).int(),
+            torch.from_numpy(src_lens),
+            torch.from_numpy(mels),
+            torch.from_numpy(pitches),
             pitches_stat,
-            mel_lens,
-            langs,
-            attn_priors,
-            wavs,
+            torch.from_numpy(mel_lens),
+            torch.from_numpy(langs),
+            torch.from_numpy(attn_priors),
+            torch.from_numpy(wavs),
         )
 
     def collate_fn(self, data: List) -> List:

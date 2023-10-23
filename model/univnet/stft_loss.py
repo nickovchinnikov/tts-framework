@@ -1,12 +1,12 @@
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from .log_stft_magnitude_loss import LogSTFTMagnitudeLoss
 from .spectral_convergence_loss import SpectralConvergengeLoss
 from .stft import stft
 
 
-class STFTLoss(LightningModule):
+class STFTLoss(Module):
     r"""STFT loss module.
 
     STFT loss is a combination of two loss functions: the spectral convergence loss and the log STFT magnitude loss.
@@ -34,7 +34,7 @@ class STFTLoss(LightningModule):
         self.shift_size = shift_size
         self.win_length = win_length
 
-        self.window = torch.hann_window(win_length)
+        self.register_buffer("window", torch.hann_window(win_length))
 
         self.spectral_convergenge_loss = SpectralConvergengeLoss()
         self.log_stft_magnitude_loss = LogSTFTMagnitudeLoss()

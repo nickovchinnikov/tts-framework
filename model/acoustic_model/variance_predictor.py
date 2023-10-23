@@ -1,12 +1,12 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.constants import LEAKY_RELU_SLOPE
 from model.conv_blocks import ConvTransposed
 
 
-class VariancePredictor(LightningModule):
+class VariancePredictor(Module):
     r"""Duration and Pitch predictor neural network module in PyTorch.
 
     It consists of multiple layers, including `ConvTransposed` layers (custom convolution transpose layers from

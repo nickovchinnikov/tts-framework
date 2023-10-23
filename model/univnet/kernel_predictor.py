@@ -1,9 +1,9 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 
-class KernelPredictor(LightningModule):
+class KernelPredictor(Module):
     def __init__(
         self,
         cond_channels: int,
@@ -119,7 +119,6 @@ class KernelPredictor(LightningModule):
         batch, _, cond_length = c.shape
         c = self.input_conv(c)
         for residual_conv in self.residual_convs:
-            residual_conv.to(self.device)
             c = c + residual_conv(c)
         k = self.kernel_conv(c)
         b = self.bias_conv(c)

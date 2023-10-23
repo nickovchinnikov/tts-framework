@@ -1,15 +1,15 @@
 from typing import Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.constants import LEAKY_RELU_SLOPE
 
 from .mas import b_mas
 
 
-class Aligner(LightningModule):
+class Aligner(Module):
     r"""Aligner class represents a PyTorch module responsible for alignment tasks
     in a sequence-to-sequence model. It uses convolutional layers combined with
     LeakyReLU activation functions to project inputs to a hidden representation.
@@ -113,7 +113,7 @@ class Aligner(LightningModule):
             attn_out = b_mas(
                 attn_cpu, in_lens.cpu().numpy(), out_lens.cpu().numpy(), width=1,
             )
-        return torch.from_numpy(attn_out).to(self.device)
+        return torch.from_numpy(attn_out)
 
     def forward(
         self,
@@ -142,8 +142,8 @@ class Aligner(LightningModule):
         Returns:
             Tuple[Tensor, Tensor, Tensor, Tensor]: Returns a tuple of Tensors representing the log-probability, soft attention, hard attention, and hard attention duration.
         """
-        queries = dec_in
-        keys = enc_in
+        queries = dec_in.float()
+        keys = enc_in.float()
         keys_enc = self.key_proj(keys)  # B x n_attn_dims x T2
         queries_enc = self.query_proj(queries)
 

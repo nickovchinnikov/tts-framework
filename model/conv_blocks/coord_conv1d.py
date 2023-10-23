@@ -1,12 +1,12 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 from torch.nn.modules import conv
 
 from .add_coords import AddCoords
 
 
-class CoordConv1d(conv.Conv1d, LightningModule):
+class CoordConv1d(conv.Conv1d, Module):
     r"""`CoordConv1d` is an extension of the standard 1D convolution layer (`conv.Conv1d`), with the addition of extra coordinate
     channels. These extra channels encode positional coordinates, and optionally, the radial distance from the origin.
     This is inspired by the paper:
@@ -94,7 +94,7 @@ class CoordConv1d(conv.Conv1d, LightningModule):
             torch.Tensor: The output tensor of shape (batch_size, out_channels, length).
         """
         # Apply AddCoords layer to add coordinate channels to the input tensor
-        x = self.addcoords(x).to(self.device)
+        x = self.addcoords(x)
 
         # Apply convolution
         return self.conv(x)

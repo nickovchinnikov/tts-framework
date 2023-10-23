@@ -1,10 +1,10 @@
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from .stft_loss import STFTLoss
 
 
-class MultiResolutionSTFTLoss(LightningModule):
+class MultiResolutionSTFTLoss(Module):
     r"""Multi resolution STFT loss module.
 
     The Multi resolution STFT loss module is a PyTorch module that computes the spectral convergence and log STFT magnitude losses for a predicted signal and a groundtruth signal at multiple resolutions. The module is designed for speech and audio signal processing tasks, such as speech enhancement and source separation.
@@ -44,8 +44,8 @@ class MultiResolutionSTFTLoss(LightningModule):
             Tensor: Multi resolution spectral convergence loss value.
             Tensor: Multi resolution log STFT magnitude loss value.
         """
-        sc_loss = torch.tensor(0.0, device=self.device)
-        mag_loss = torch.tensor(0.0, device=self.device)
+        sc_loss = torch.tensor(0.0, device=x.device)
+        mag_loss = torch.tensor(0.0, device=x.device)
 
         # Compute the spectral convergence and log STFT magnitude losses for each resolution
         for f in self.stft_losses:

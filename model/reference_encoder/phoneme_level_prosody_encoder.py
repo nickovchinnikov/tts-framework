@@ -1,6 +1,6 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.attention import ConformerMultiHeadedSelfAttention
 from model.config import AcousticModelConfigType, PreprocessingConfig
@@ -8,7 +8,7 @@ from model.config import AcousticModelConfigType, PreprocessingConfig
 from .reference_encoder import ReferenceEncoder
 
 
-class PhonemeLevelProsodyEncoder(LightningModule):
+class PhonemeLevelProsodyEncoder(Module):
     r"""Phoneme Level Prosody Encoder Module
 
     This Class is used to encode the phoneme level prosody in the speech synthesis pipeline.

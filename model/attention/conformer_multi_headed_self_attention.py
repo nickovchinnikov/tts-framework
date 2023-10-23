@@ -1,13 +1,13 @@
 from typing import Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from .relative_multi_head_attention import RelativeMultiHeadAttention
 
 
-class ConformerMultiHeadedSelfAttention(LightningModule):
+class ConformerMultiHeadedSelfAttention(Module):
     """Conformer employ multi-headed self-attention (MHSA) while integrating an important technique from Transformer-XL,
     the relative sinusoidal positional encoding scheme. The relative positional encoding allows the self-attention
     module to generalize better on different input length and the resulting encoder is more robust to the variance of

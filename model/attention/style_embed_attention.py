@@ -1,10 +1,10 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 
 
-class StyleEmbedAttention(LightningModule):
+class StyleEmbedAttention(Module):
     r"""Mechanism is being used to extract style features from audio data in the form of spectrograms.
 
     Each style token (parameterized by an embedding vector) represents a unique style feature. The model applies the `StyleEmbedAttention` mechanism to combine these style tokens (style features) in a weighted manner. The output of the attention module is a sum of style tokens, with each token weighted by its relevance to the input.

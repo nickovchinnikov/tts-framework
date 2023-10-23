@@ -1,13 +1,13 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.config import VocoderModelConfig
 
 from .discriminator_r import DiscriminatorR
 
 
-class MultiResolutionDiscriminator(LightningModule):
+class MultiResolutionDiscriminator(Module):
     r"""Multi-resolution discriminator for the UnivNet vocoder.
 
     This class implements a multi-resolution discriminator that consists of multiple DiscriminatorR instances, each operating at a different resolution.
