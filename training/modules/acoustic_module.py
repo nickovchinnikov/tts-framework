@@ -68,17 +68,6 @@ class AcousticModule(LightningModule):
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
-        # Acoustic losses initialization to 0 (for logging)
-        self.register_buffer("total_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("mel_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("ssim_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("duration_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("u_prosody_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("p_prosody_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("pitch_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("ctc_loss", torch.tensor([0.0], dtype=torch.float32))
-        self.register_buffer("bin_loss", torch.tensor([0.0], dtype=torch.float32))
-
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
         if checkpoint_path_v1 is not None:
@@ -184,16 +173,6 @@ class AcousticModule(LightningModule):
             mel_lens=mel_lens,
             step=batch_idx + self.initial_step,
         )
-
-        self.total_loss += total_loss
-        self.mel_loss += mel_loss
-        self.ssim_loss += ssim_loss
-        self.duration_loss += duration_loss
-        self.u_prosody_loss += u_prosody_loss
-        self.p_prosody_loss += p_prosody_loss
-        self.pitch_loss += pitch_loss
-        self.ctc_loss += ctc_loss
-        self.bin_loss += bin_loss
 
         tensorboard_logs = {
             "total_loss": total_loss.detach(),
