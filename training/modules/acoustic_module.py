@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 from pytorch_lightning.core import LightningModule
 import torch
@@ -27,6 +27,7 @@ class AcousticModule(LightningModule):
         root (str): Root directory of the dataset.
         step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.
+        checkpoint_path_v1 (Optional[str]): Path to the checkpoint to load the weights from. Note: this parameter is used only for the v0.1.0 checkpoint. In the future, this parameter will be removed!
     """
 
     def __init__(
@@ -36,6 +37,7 @@ class AcousticModule(LightningModule):
             root: str = "datasets_cache/LIBRITTS",
             step: int = 0,
             n_speakers: int = 5392,
+            checkpoint_path_v1: Optional[str] = None,
         ):
         super().__init__()
 
@@ -65,27 +67,35 @@ class AcousticModule(LightningModule):
 
         self.loss = LossesCriterion()
 
-    def weights_prepare_v1(self, checkpoint_path: str):
-        r"""Prepares the weights for the model.
+        # NOTE: this code is used only for the v0.1.0 checkpoint.
+        # In the future, this code will be removed!
+        if checkpoint_path_v1 is not None:
+            self.checkpoint = self._load_weights_v1(checkpoint_path_v1)
+            self.model.load_state_dict(self.checkpoint["gen"], strict=False)
+
+    def _load_weights_v1(self, checkpoint_path: str) -> dict:
+        r"""NOTE: this method is used only for the v0.1.0 checkpoint.
+        In the future, this method will be removed!
+        Prepares the weights for the model.
         This is required for the model to be loaded from the checkpoint.
         """
-        ckpt_acoustic = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path)
 
         # Fix the weights for the embedding projection
         for i in range(6):
             # 0.17 is the coff of standard deviation of the truncated normal distribution
             # Makes the range of distribution to be ~(-1, 1)
             new_weights = torch.randn(384, 385) * 0.17
-            existing_weights = ckpt_acoustic["gen"][
+            existing_weights = checkpoint["gen"][
                 f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
             ]
             # Copy the existing weights into the new tensor
             new_weights[:, :-1] = existing_weights
-            ckpt_acoustic["gen"][
+            checkpoint["gen"][
                 f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
             ] = new_weights
 
-        return ckpt_acoustic
+        return checkpoint
 
     def forward(self, x: torch.Tensor):
         self.model
@@ -97,8 +107,8 @@ class AcousticModule(LightningModule):
     # trainer = Trainer(inference_mode=False)
     def training_step(self, batch: List, batch_idx: int):
         (
-            ids,
-            raw_texts,
+            _,
+            _,
             speakers,
             texts,
             src_lens,
@@ -108,7 +118,7 @@ class AcousticModule(LightningModule):
             mel_lens,
             langs,
             attn_priors,
-            wavs,
+            _,
         ) = batch
 
         src_mask = get_mask_from_lengths(src_lens)
@@ -158,19 +168,23 @@ class AcousticModule(LightningModule):
             ScheduledOptimFinetuning or ScheduledOptimPretraining: The optimizer.
         """
         parameters = list(self.model.parameters())
+        optimizer: Union[ScheduledOptimFinetuning, ScheduledOptimPretraining]
+
         if self.fine_tuning:
-            return ScheduledOptimFinetuning(
+            optimizer = ScheduledOptimFinetuning(
                 parameters=parameters,
                 train_config=self.train_config,
                 step=self.step,
             )
         else:
-            return ScheduledOptimPretraining(
+            optimizer = ScheduledOptimPretraining(
                 parameters=parameters,
                 train_config=self.train_config,
                 model_config=self.model_config,
                 step=self.step,
             )
+
+        return optimizer
 
     def train_dataloader(self):
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
