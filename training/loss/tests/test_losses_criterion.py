@@ -2,12 +2,12 @@ from unittest import TestCase
 
 import torch
 
-from training.loss import LossesCriterion
+from training.loss import LossesCriterionAcoustic
 
 
-class TestLossesCriterion(TestCase):
+class TestLossesCriterionAcoustic(TestCase):
     def setUp(self):
-        self.criterion = LossesCriterion()
+        self.criterion = LossesCriterionAcoustic()
 
     def test_forward(self):
         torch.random.manual_seed(0)
