@@ -17,7 +17,6 @@ from model.config import (
 from model.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDataset
 from training.loss import FastSpeech2LossGen
-from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 
 class AcousticModule(LightningModule):
