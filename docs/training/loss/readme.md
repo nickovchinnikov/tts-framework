@@ -49,3 +49,7 @@ The STFT loss is a useful metric for evaluating the quality of a predicted signa
 ### [Multi Resolution STFT Loss](multi_resolution_stft_loss.md)
 
 The Multi resolution STFT loss module is a PyTorch module that computes the spectral convergence and log STFT magnitude losses for a predicted signal and a groundtruth signal at multiple resolutions. The module is designed for speech and audio signal processing tasks, such as speech enhancement and source separation.
+
+### [Univnet loss](univnet_loss.md)
+
+`UnivnetLoss` is a PyTorch Module that calculates the generator and `Discriminator` losses for `Univnet`.
