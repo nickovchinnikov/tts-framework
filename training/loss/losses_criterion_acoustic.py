@@ -6,9 +6,9 @@ import torch
 from training.loss import FastSpeech2LossGen
 
 
-class LossesCriterion(pl.LightningModule):
+class LossesCriterionAcoustic(pl.LightningModule):
     def __init__(self):
-        r"""Initializes the LossesCriterion module."""
+        r"""Initializes the LossesCriterionAcoustic module."""
         super().__init__()
 
         # Init the loss

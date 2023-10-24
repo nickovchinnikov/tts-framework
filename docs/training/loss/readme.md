@@ -16,9 +16,9 @@ Computes the forward sum loss for sequence-to-sequence models with attention.
 
 FastSpeech 2 Loss module
 
-### [Losses Criterion](./losses_criterion.md)
+### [Losses Criterion Acoustic](./losses_criterion_acoustic.md)
 
-LossesCriterion module
+LossesCriterionAcoustic
 
 ## Voicoder Univnet loss
 
