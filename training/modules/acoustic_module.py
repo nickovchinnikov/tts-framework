@@ -70,8 +70,8 @@ class AcousticModule(LightningModule):
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
         if checkpoint_path_v1 is not None:
-            self.checkpoint = self._load_weights_v1(checkpoint_path_v1)
-            self.model.load_state_dict(self.checkpoint["gen"], strict=False)
+            checkpoint = self._load_weights_v1(checkpoint_path_v1)
+            self.model.load_state_dict(checkpoint, strict=False)
 
     def _load_weights_v1(self, checkpoint_path: str) -> dict:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
@@ -95,7 +95,7 @@ class AcousticModule(LightningModule):
                 f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
             ] = new_weights
 
-        return checkpoint
+        return checkpoint["gen"]
 
     def forward(self, x: torch.Tensor):
         self.model
