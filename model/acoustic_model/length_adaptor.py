@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from model.config import AcousticModelConfigType
 from model.helpers import tools
@@ -9,7 +9,7 @@ from model.helpers import tools
 from .variance_predictor import VariancePredictor
 
 
-class LengthAdaptor(LightningModule):
+class LengthAdaptor(Module):
     r"""The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
     It contains a dedicated duration predictor and methods to upsample the input features to match predicted durations.
 
@@ -53,7 +53,7 @@ class LengthAdaptor(LightningModule):
             output.append(expanded)
             mel_len.append(expanded.shape[0])
         output = tools.pad(output, max_len)
-        return output, torch.tensor(mel_len, dtype=torch.int64, device=self.device)
+        return output, torch.tensor(mel_len, dtype=torch.int64)
 
     def expand(self, batch: torch.Tensor, predicted: torch.Tensor) -> torch.Tensor:
         r"""Expands the input tensor based on the predicted values.
@@ -69,7 +69,7 @@ class LengthAdaptor(LightningModule):
         for i, vec in enumerate(batch):
             expand_size = predicted[i].item()
             out.append(vec.expand(max(int(expand_size), 0), -1))
-        return torch.cat(out, 0).to(self.device)
+        return torch.cat(out, 0)
 
     def upsample_train(
         self,

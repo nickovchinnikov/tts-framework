@@ -75,7 +75,7 @@ test_ten1 = torch.tensor(
     [
         [1, 2],
         [4, 5],
-    ]
+    ],
 )
 test_ten1.shape
 
@@ -84,7 +84,7 @@ test_ten2 = torch.tensor(
     [
         [0, 0, 7],
         [0, 0, 8],
-    ]
+    ],
 )
 
 test_ten2.shape
@@ -137,7 +137,7 @@ for i in range(6):
     ] = new_weights
 
     print(
-        f"Changed weights for decoder.layer_stack.{i}.conditioning.embedding_proj.weight: {new_weights.shape}"
+        f"Changed weights for decoder.layer_stack.{i}.conditioning.embedding_proj.weight: {new_weights.shape}",
     )
 
 # %%
@@ -158,7 +158,6 @@ ckpt_acoustic["gen"]["decoder.layer_stack.0.conditioning.embedding_proj.weight"]
 #     p_dropout=model_config.decoder.p_dropout,
 #     kernel_size_conv_mod=model_config.decoder.kernel_size_conv_mod,
 #     with_ff=model_config.decoder.with_ff,
-#     device=self.device,
 # )
 # TODO: check this out: https://discuss.pytorch.org/t/how-to-load-part-of-pre-trained-model/1113/13
 # https://stackoverflow.com/a/65065854/10828885

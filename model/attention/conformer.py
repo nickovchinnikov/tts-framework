@@ -1,11 +1,11 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from .conformer_block import ConformerBlock
 
 
-class Conformer(LightningModule):
+class Conformer(Module):
     r"""`Conformer` class represents the `Conformer` model which is a sequence-to-sequence model
     used in some modern automated speech recognition systems. It is composed of several `ConformerBlocks`.
 
@@ -63,6 +63,7 @@ class Conformer(LightningModule):
             Tensor: The output tensor of shape (batch_size, seq_len, num_features).
         """
         attn_mask = mask.view((mask.shape[0], 1, 1, mask.shape[1]))
+        attn_mask.to(x.device)
         for enc_layer in self.layer_stack:
             x = enc_layer(
                 x,

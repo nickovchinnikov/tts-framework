@@ -1,5 +1,5 @@
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from model.config import VocoderModelConfig
 
@@ -7,7 +7,7 @@ from .multi_period_discriminator import MultiPeriodDiscriminator
 from .multi_resolution_discriminator import MultiResolutionDiscriminator
 
 
-class Discriminator(LightningModule):
+class Discriminator(Module):
     r"""Discriminator for the UnuvNet vocoder.
 
     This class implements a discriminator that consists of a `MultiResolutionDiscriminator` and a `MultiPeriodDiscriminator`.

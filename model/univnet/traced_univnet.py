@@ -1,23 +1,21 @@
-from typing import Any, Tuple
-
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 
 from model.helpers.tools import get_mask_from_lengths
 
-from .generator import Generator
+from .univnet import UnivNet
 
 
-class TracedGenerator(LightningModule):
+class TracedUnivNet(Module):
     def __init__(
         self,
-        generator: Generator,
+        generator: UnivNet,
         # example_inputs: Tuple[Any], example_inputs (Tuple[Any]): Example inputs to use for tracing.
     ):
-        r"""A traced version of the Generator class that can be used for faster inference.
+        r"""A traced version of the UnivNet class that can be used for faster inference.
 
         Args:
-            generator (Generator): The Generator instance to trace.
+            generator (UnivNet): The UnivNet instance to trace.
         """
         super().__init__()
 
@@ -33,7 +31,7 @@ class TracedGenerator(LightningModule):
         self.generator = generator
 
     def forward(self, c: torch.Tensor, mel_lens: torch.Tensor) -> torch.Tensor:
-        r"""Forward pass of the traced Generator.
+        r"""Forward pass of the traced UnivNet.
 
         Args:
             c (torch.Tensor): The input mel-spectrogram tensor.
@@ -42,10 +40,10 @@ class TracedGenerator(LightningModule):
         Returns:
             torch.Tensor: The generated audio tensor.
         """
-        mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1)
+        mel_mask = get_mask_from_lengths(mel_lens).unsqueeze(1).to(c.device)
         c = c.masked_fill(mel_mask, self.mel_mask_value)
         zero = torch.full(
-            (c.shape[0], c.shape[1], 10), self.mel_mask_value, device=self.device,
+            (c.shape[0], c.shape[1], 10), self.mel_mask_value, device=c.device,
         )
         mel = torch.cat((c, zero), dim=2)
         audio = self.generator(mel)

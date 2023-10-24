@@ -1,57 +1,84 @@
 import unittest
 
-import numpy as np
 import torch
 from torch import nn
 
 from model.config import AcousticENModelConfig, AcousticPretrainingConfig
-from training.optimizer import ScheduledOptimPretraining
+from training.optimizer.scheduled_optim_pretraining import (
+    ScheduledOptimPretraining,
+    get_lr_lambda,
+)
 
 
 class TestScheduledOptimPretraining(unittest.TestCase):
     def setUp(self):
-        self.device = torch.device("cpu")
-
         self.parameters = nn.ParameterList(
-            [nn.Parameter(torch.randn((10, 10), device=self.device))]
+            [nn.Parameter(torch.randn((10, 10)))],
         )
 
         self.train_config = AcousticPretrainingConfig()
 
         self.model_config = AcousticENModelConfig()
 
+        self.init_lr = self.model_config.encoder.n_hidden ** -0.5
+
         self.current_step = 10
         self.optimizer = ScheduledOptimPretraining(
             parameters=self.parameters,
             train_config=self.train_config,
             model_config=self.model_config,
-            current_step=self.current_step,
+            step=self.current_step,
         )
 
-    def test_get_lr_scale(self):
-        # Call the _get_lr_scale method
-        lr_scale = self.optimizer._get_lr_scale()
+    def test_get_lr_lambda(self):
+        current_step = 5000
 
-        self.assertAlmostEqual(lr_scale, 3.952847075210474e-05, places=10)
+        init_lr, lr_lambda = get_lr_lambda(
+            self.model_config,
+            self.train_config,
+            current_step,
+        )
 
-    def test_update_learning_rate(self):
-        # Call the _update_learning_rate method
-        self.optimizer._update_learning_rate(step=1000)
+        # Test the returned function
+        self.assertEqual(init_lr, self.init_lr)
+        self.assertAlmostEqual(lr_lambda(0), 2.0171788261496964e-07, places=10)
+        self.assertAlmostEqual(lr_lambda(10), 2.0171788261496965e-06, places=10)
+        self.assertAlmostEqual(lr_lambda(100), 2.0171788261496963e-05, places=10)
+        self.assertAlmostEqual(lr_lambda(1000), 0.00020171788261496966, places=10)
+        self.assertAlmostEqual(lr_lambda(current_step), 0.0007216878364870322, places=10)
+
+
+    def test_initial_lr(self):
+        lr = self.optimizer.get_lr()
+
+        self.assertAlmostEqual(lr, 1.0293872591693944e-08, places=10)
+
+    def test_step_and_update_lr(self):
+        lr = self.optimizer.get_lr()
+
+        self.assertAlmostEqual(lr, 1.0293872591693944e-08, places=10)
+
+        for _ in range(100):
+            self.optimizer.step(None)
+
+        lr = self.optimizer.get_lr()
+        expected_lr = 1.0293872591693944e-06
 
         self.assertAlmostEqual(
-            self.optimizer._optimizer.param_groups[0]["lr"],
-            0.00020171788261496966,
+            lr,
+            expected_lr,
             places=10,
         )
 
-    def test_step_and_update_lr(self):
-        # Call the step_and_update_lr method
-        self.optimizer.step_and_update_lr(step=1000)
+        for _ in range(1000):
+            self.optimizer.step(None)
 
-        # Check that the learning rate was updated correctly
+        lr = self.optimizer.get_lr()
+        expected_lr = 1.1323259850863337e-05
+
         self.assertAlmostEqual(
-            self.optimizer._optimizer.param_groups[0]["lr"],
-            0.00020171788261496966,
+            lr,
+            expected_lr,
             places=10,
         )
 
@@ -80,12 +107,12 @@ class TestScheduledOptimPretraining(unittest.TestCase):
                     "differentiable": True,
                     "fused": None,
                     "params": [0],
-                }
+                },
             ],
         }
 
         # Call the load_state_dict method
-        self.optimizer._optimizer.load_state_dict(state_dict)
+        self.optimizer.load_state_dict(state_dict)
 
         # Get the actual state dictionary
         actual_state_dict = self.optimizer._optimizer.state_dict()

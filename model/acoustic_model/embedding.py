@@ -1,10 +1,10 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 
 
-class Embedding(LightningModule):
+class Embedding(Module):
     r"""Class represents a simple embedding layer but without any learning of the embeddings.
     The embeddings are initialized with random values and kept static throughout training (They are parameters, not model's state).
 

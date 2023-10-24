@@ -1,13 +1,13 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.config import VocoderModelConfig
 
 from .discriminator_p import DiscriminatorP
 
 
-class MultiPeriodDiscriminator(LightningModule):
+class MultiPeriodDiscriminator(Module):
     r"""MultiPeriodDiscriminator is a class that implements a multi-period discriminator network for the UnivNet vocoder.
 
     Args:

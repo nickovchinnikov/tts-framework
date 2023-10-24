@@ -1,8 +1,8 @@
 from typing import Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 
 from model.config import AcousticModelConfigType, PreprocessingConfig
@@ -11,7 +11,7 @@ from model.conv_blocks import CoordConv1d
 from model.helpers import tools
 
 
-class ReferenceEncoder(LightningModule):
+class ReferenceEncoder(Module):
     r"""A class to define the reference encoder.
     Similar to Tacotron model, the reference encoder is used to extract the high-level features from the reference
 
@@ -109,8 +109,11 @@ class ReferenceEncoder(LightningModule):
                 has been masked.
         """
         mel_masks = tools.get_mask_from_lengths(mel_lens).unsqueeze(1)
+        mel_masks = mel_masks.to(x.device)
+
         x = x.masked_fill(mel_masks, 0)
         for conv, norm in zip(self.convs, self.norms):
+            x = x.float()
             x = conv(x)
             x = F.leaky_relu(x, leaky_relu_slope)  # [N, 128, Ty//2^K, n_mels//2^K]
             x = norm(x)

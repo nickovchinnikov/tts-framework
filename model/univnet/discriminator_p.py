@@ -1,15 +1,15 @@
 from typing import Any, Tuple
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm, weight_norm
 
 from model.config import VocoderModelConfig
 
 
-class DiscriminatorP(LightningModule):
+class DiscriminatorP(Module):
     r"""DiscriminatorP is a class that implements a discriminator network for the UnivNet vocoder.
 
     Args:

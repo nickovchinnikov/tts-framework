@@ -32,7 +32,7 @@ class TestScheduledOptimFinetuning(unittest.TestCase):
 
         self.assertEqual(lr, self.learning_rate)
 
-        self.optimizer.step()
+        self.optimizer.step(None)
         lr = self.optimizer.get_lr()
         expected_lr = self.learning_rate * self.lr_decay
 
@@ -61,7 +61,7 @@ class TestScheduledOptimFinetuning(unittest.TestCase):
             places=10,
         )
 
-        optimizer.step()
+        optimizer.step(None)
         lr = optimizer.get_lr()
 
         expected_lr = expected_lr * self.lr_decay

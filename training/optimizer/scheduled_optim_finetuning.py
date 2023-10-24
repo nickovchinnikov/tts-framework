@@ -41,9 +41,9 @@ class ScheduledOptimFinetuning(Optimizer):
 
         self._scheduler = ExponentialLR(self._optimizer, gamma=lr_decay)
 
-    def step(self):
+    def step(self, closure):
         r"""Performs a single optimization step."""
-        self._optimizer.step()
+        self._optimizer.step(closure)
         self._scheduler.step()
 
     def zero_grad(self) -> None:

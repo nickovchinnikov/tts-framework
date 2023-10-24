@@ -1,10 +1,10 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 
 
-class MultiHeadAttention(LightningModule):
+class MultiHeadAttention(Module):
     r"""A class that implements a Multi-head Attention mechanism.
     Multi-head attention allows the model to focus on different positions,
     capturing various aspects of the input.

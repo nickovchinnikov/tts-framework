@@ -1,6 +1,6 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.config import AcousticModelConfigType, PreprocessingConfig
 
@@ -8,7 +8,7 @@ from .reference_encoder import ReferenceEncoder
 from .STL import STL
 
 
-class UtteranceLevelProsodyEncoder(LightningModule):
+class UtteranceLevelProsodyEncoder(Module):
     r"""A class to define the utterance level prosody encoder.
 
     The encoder uses a Reference encoder class to convert input sequences into high-level features,

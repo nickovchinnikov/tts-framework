@@ -1,14 +1,14 @@
 from typing import List
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 from torch.nn import functional as F
 
 from .kernel_predictor import KernelPredictor
 
 
-class LVCBlock(LightningModule):
+class LVCBlock(Module):
     r"""The location-variable convolutions block.
 
     To efficiently capture the local information of the condition, location-variable convolution (LVC)

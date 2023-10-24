@@ -1,8 +1,8 @@
 from typing import Dict, Tuple, Union
 
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
@@ -28,7 +28,7 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 from .pitch_adaptor2 import PitchAdaptor
 
 
-class AcousticModel(LightningModule):
+class AcousticModel(Module):
     r"""The DelightfulTTS AcousticModel class represents a PyTorch module for an acoustic model in text-to-speech (TTS).
     The acoustic model is responsible for predicting speech signals from phoneme sequences.
 
@@ -127,7 +127,7 @@ class AcousticModel(LightningModule):
 
         self.src_word_emb = Parameter(
             tools.initialize_embeddings(
-                (len(symbols), model_config.encoder.n_hidden), device=self.device,
+                (len(symbols), model_config.encoder.n_hidden),
             ),
         )
 
@@ -142,14 +142,13 @@ class AcousticModel(LightningModule):
         # Need to think about it more
         self.speaker_embed = Parameter(
             tools.initialize_embeddings(
-                (n_speakers, model_config.speaker_embed_dim), device=self.device,
+                (n_speakers, model_config.speaker_embed_dim),
             ),
         )
 
         self.lang_embed = Parameter(
             tools.initialize_embeddings(
                 (len(SUPPORTED_LANGUAGES), model_config.lang_embed_dim),
-                device=self.device,
             ),
         )
 
@@ -321,8 +320,10 @@ class AcousticModel(LightningModule):
         encoding = positional_encoding(
             self.emb_dim,
             max(x.shape[1], int(mel_lens.max().item())),
-            device=self.device,
         )
+        x = x.to(src_mask.device)
+        encoding = encoding.to(src_mask.device)
+        embeddings = embeddings.to(src_mask.device)
 
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
 
@@ -431,7 +432,7 @@ class AcousticModel(LightningModule):
         """
         # Generate masks for padding positions in the source sequences
         src_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device),
+            torch.tensor([x.shape[1]], dtype=torch.int64),
         )
 
         # Obtain the embeddings for the input
@@ -440,7 +441,7 @@ class AcousticModel(LightningModule):
         )
 
         # Generate positional encodings
-        encoding = positional_encoding(self.emb_dim, x.shape[1], device=self.device)
+        encoding = positional_encoding(self.emb_dim, x.shape[1])
 
         # Process the embeddings through the encoder
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
@@ -472,10 +473,10 @@ class AcousticModel(LightningModule):
             embeddings=embeddings,
         )
         mel_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64, device=self.device),
+            torch.tensor([x.shape[1]], dtype=torch.int64),
         )
         if x.shape[1] > encoding.shape[1]:
-            encoding = positional_encoding(self.emb_dim, x.shape[1], device=self.device)
+            encoding = positional_encoding(self.emb_dim, x.shape[1])
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)

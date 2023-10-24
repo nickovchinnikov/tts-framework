@@ -1,7 +1,8 @@
 import torch
+from torch.nn import Module
 
 
-class SpectralConvergengeLoss(torch.nn.Module):
+class SpectralConvergengeLoss(Module):
     r"""Spectral convergence loss module.
     Spectral convergence loss is a measure of the similarity between two magnitude spectrograms.
 

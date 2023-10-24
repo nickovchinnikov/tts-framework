@@ -1,8 +1,9 @@
 import torch
+from torch.nn import Module
 import torch.nn.functional as F
 
 
-class LogSTFTMagnitudeLoss(torch.nn.Module):
+class LogSTFTMagnitudeLoss(Module):
     r"""Log STFT magnitude loss module.
     Log STFT magnitude loss is a loss function that is commonly used in speech and audio signal processing tasks, such as speech enhancement and source separation. It is a modification of the spectral convergence loss, which measures the similarity between two magnitude spectrograms.
 

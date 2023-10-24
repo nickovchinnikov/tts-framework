@@ -1,13 +1,13 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.config import AcousticModelConfigType
 from model.constants import LEAKY_RELU_SLOPE
 from model.conv_blocks import ConvTransposed
 
 
-class PhonemeProsodyPredictor(LightningModule):
+class PhonemeProsodyPredictor(Module):
     r"""A class to define the Phoneme Prosody Predictor.
 
     In linguistics, prosody (/ˈprɒsədi, ˈprɒzədi/) is the study of elements of speech that are not individual phonetic segments (vowels and consonants) but which are properties of syllables and larger units of speech, including linguistic functions such as intonation, stress, and rhythm. Such elements are known as suprasegmentals.
