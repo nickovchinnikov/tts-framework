@@ -18,7 +18,7 @@ from training.loss import LossesCriterion
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 
-class AcousticTrainer(LightningModule):
+class AcousticModule(LightningModule):
     r"""Trainer for the acoustic model.
 
     Args:

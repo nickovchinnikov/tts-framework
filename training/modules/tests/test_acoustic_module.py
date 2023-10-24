@@ -3,7 +3,7 @@ import unittest
 
 from pytorch_lightning import Trainer
 
-from training.modules.acoustic_trainer import AcousticTrainer
+from training.modules.acoustic_module import AcousticModule
 
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
@@ -19,7 +19,7 @@ class TestTrainAcousticModule(unittest.TestCase):
             accelerator="cuda",
         )
 
-        model = AcousticTrainer()
+        model = AcousticModule()
         model.eval()
 
         train_dataloader = model.train_dataloader()
@@ -37,7 +37,7 @@ class TestTrainAcousticModule(unittest.TestCase):
 
     def test_load_from_checkpoint(self):
         try:
-            AcousticTrainer.load_from_checkpoint(
+            AcousticModule.load_from_checkpoint(
                 "./checkpoints/acoustic/lightning_logs/version_1/checkpoints/epoch=0-step=2.ckpt",
             )
         except Exception as e:
