@@ -10,14 +10,10 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 # %%
 # ruff: noqa: E402
-from acoustic_model import AcousticModel
-
-# %%
-# ruff: noqa: E402
 # %%
 import torch
-from univnet import Generator as UnivNet
 
+from model.acoustic_model import AcousticModel
 from model.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
@@ -25,6 +21,8 @@ from model.config import (
     VocoderModelConfig,
 )
 from model.helpers import get_device
+from model.univnet import UnivNet
+from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 torch.cuda.is_available()
 # torch.cuda.get_device_name()
@@ -32,7 +30,8 @@ torch.cuda.is_available()
 
 # %%
 checkpoint_base = os.path.join(
-    SCRIPT_DIR,
+    "..",
+    "model",
     "checkpoints",
     "assets",
     "v0.1.0",
@@ -46,7 +45,6 @@ checkpoint_acoustic_path = os.path.join(
     "acoustic_pretrained.pt",
 )
 ckpt_acoustic = torch.load(checkpoint_acoustic_path)
-ckpt_acoustic
 
 # %%
 
@@ -68,6 +66,15 @@ model = AcousticModel(
     n_speakers=5392,
 )
 model
+
+# %%
+train_config = AcousticPretrainingConfig()
+optimizer = ScheduledOptimFinetuning(
+    parameters=list(model.parameters()),
+    train_config=train_config,
+)
+# NOTE: Failed to load the optimizer state, but it's not a big problem
+optimizer._optimizer.load_state_dict(ckpt_acoustic["optim"])
 
 # %%
 # Check the weights extending theory
@@ -101,6 +108,9 @@ existing_weights = ckpt_acoustic["gen"][
 ]
 
 existing_weights.shape
+
+# %%
+ckpt_acoustic["gen"]
 
 # %%
 # Create a new tensor with the desired shape
