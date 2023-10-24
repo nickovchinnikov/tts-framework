@@ -14,7 +14,7 @@ from model.config import (
 )
 from model.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDataset
-from training.loss import AcousticLoss
+from training.loss import FastSpeech2LossGen
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 
@@ -35,7 +35,7 @@ class AcousticModule(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             root: str = "datasets_cache/LIBRITTS",
-            step: int = 0,
+            initial_step: int = 0,
             n_speakers: int = 5392,
             checkpoint_path_v1: Optional[str] = None,
         ):
@@ -52,7 +52,8 @@ class AcousticModule(LightningModule):
         else:
             self.train_config = AcousticPretrainingConfig()
 
-        self.step = step
+        # TODO: check this argument!
+        self.initial_step = initial_step
 
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
@@ -65,7 +66,18 @@ class AcousticModule(LightningModule):
             n_speakers=n_speakers,
         )
 
-        self.loss = AcousticLoss()
+        self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
+
+        # Acoustic losses initialization to 0 (for logging)
+        self.register_buffer("total_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("mel_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("ssim_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("duration_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("u_prosody_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("p_prosody_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("pitch_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("ctc_loss", torch.tensor([0.0], dtype=torch.float32))
+        self.register_buffer("bin_loss", torch.tensor([0.0], dtype=torch.float32))
 
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
@@ -142,23 +154,60 @@ class AcousticModule(LightningModule):
         p_prosody_pred = outputs["p_prosody_pred"]
         pitch_prediction = outputs["pitch_prediction"]
 
-        loss: float = self.loss.forward(
-            src_mask=src_mask,
-            src_lens=src_lens,
-            mel_mask=mel_mask,
-            mel_lens=mel_lens,
-            mels=mels,
-            y_pred=y_pred,
-            log_duration_prediction=log_duration_prediction,
+        (
+            total_loss,
+            mel_loss,
+            ssim_loss,
+            duration_loss,
+            u_prosody_loss,
+            p_prosody_loss,
+            pitch_loss,
+            ctc_loss,
+            bin_loss,
+        ) = self.loss.forward(
+            src_masks=src_mask,
+            mel_masks=mel_mask,
+            mel_targets=mels,
+            mel_predictions=y_pred,
+            log_duration_predictions=log_duration_prediction,
+            u_prosody_ref=outputs["u_prosody_ref"],
+            u_prosody_pred=outputs["u_prosody_pred"],
             p_prosody_ref=p_prosody_ref,
             p_prosody_pred=p_prosody_pred,
-            pitch_prediction=pitch_prediction,
-            outputs=outputs,
-            step=batch_idx + self.step,
+            pitch_predictions=pitch_prediction,
+            p_targets=outputs["pitch_target"],
+            durations=outputs["attn_hard_dur"],
+            attn_logprob=outputs["attn_logprob"],
+            attn_soft=outputs["attn_soft"],
+            attn_hard=outputs["attn_hard"],
+            src_lens=src_lens,
+            mel_lens=mel_lens,
+            step=batch_idx + self.initial_step,
         )
 
-        tensorboard_logs = {"train_loss": loss}
-        return {"loss": loss, "log": tensorboard_logs}
+        self.total_loss += total_loss
+        self.mel_loss += mel_loss
+        self.ssim_loss += ssim_loss
+        self.duration_loss += duration_loss
+        self.u_prosody_loss += u_prosody_loss
+        self.p_prosody_loss += p_prosody_loss
+        self.pitch_loss += pitch_loss
+        self.ctc_loss += ctc_loss
+        self.bin_loss += bin_loss
+
+        tensorboard_logs = {
+            "total_loss": total_loss.detach(),
+            "mel_loss": mel_loss.detach(),
+            "ssim_loss": ssim_loss.detach(),
+            "duration_loss": duration_loss.detach(),
+            "u_prosody_loss": u_prosody_loss.detach(),
+            "p_prosody_loss": p_prosody_loss.detach(),
+            "pitch_loss": pitch_loss.detach(),
+            "ctc_loss": ctc_loss.detach(),
+            "bin_loss": bin_loss.detach(),
+        }
+
+        return {"loss": total_loss, "log": tensorboard_logs}
 
     def configure_optimizers(self)-> Union[ScheduledOptimFinetuning, ScheduledOptimPretraining]:
         r"""Configures the optimizer used for training.
@@ -174,14 +223,14 @@ class AcousticModule(LightningModule):
             optimizer = ScheduledOptimFinetuning(
                 parameters=parameters,
                 train_config=self.train_config,
-                step=self.step,
+                step=self.initial_step,
             )
         else:
             optimizer = ScheduledOptimPretraining(
                 parameters=parameters,
                 train_config=self.train_config,
                 model_config=self.model_config,
-                step=self.step,
+                step=self.initial_step,
             )
 
         return optimizer

@@ -67,7 +67,6 @@ nav:
         - Binary Cross Entropy Loss: training/loss/bin_loss.md
         - Forward Sum Loss: training/loss/forward_sum_loss.md
         - FastSpeech 2 Loss: training/loss/fast_speech_2_loss_gen.md
-        - Acoustic Loss: training/loss/acoustic_loss.md
       - Voicoder Losses:
         - STFT: training/loss/stft.md
         - STFT Loss: training/loss/stft_loss.md
