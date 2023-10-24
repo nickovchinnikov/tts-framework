@@ -8,7 +8,8 @@ from model.config import AcousticTrainingConfig
 
 
 class ScheduledOptimFinetuning(Optimizer):
-    r"""A custom optimizer that uses `AdamW` for optimization and an `ExponentialLR` for learning rate scheduling.
+    r"""DEPRECATED: moved to AcousticModule.
+    A custom optimizer that uses `AdamW` for optimization and an `ExponentialLR` for learning rate scheduling.
 
     Args:
         train_config (AcousticTrainingConfig): Training configuration with optimizer and scheduler parameters.

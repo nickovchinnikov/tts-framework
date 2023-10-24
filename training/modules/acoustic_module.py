@@ -1,7 +1,9 @@
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Tuple
 
 from pytorch_lightning.core import LightningModule
 import torch
+from torch.optim import Adam, AdamW
+from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
 
 from model.acoustic_model import AcousticModel
@@ -188,31 +190,82 @@ class AcousticModule(LightningModule):
 
         return {"loss": total_loss, "log": tensorboard_logs}
 
-    def configure_optimizers(self)-> Union[ScheduledOptimFinetuning, ScheduledOptimPretraining]:
+    def configure_optimizers(self):
         r"""Configures the optimizer used for training.
         Depending on the training mode, either the finetuning or the pretraining optimizer is used.
 
         Returns
-            ScheduledOptimFinetuning or ScheduledOptimPretraining: The optimizer.
+            dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
-        parameters = list(self.model.parameters())
-        optimizer: Union[ScheduledOptimFinetuning, ScheduledOptimPretraining]
+        parameters = self.model.parameters()
 
         if self.fine_tuning:
-            optimizer = ScheduledOptimFinetuning(
-                parameters=parameters,
-                train_config=self.train_config,
-                step=self.initial_step,
-            )
-        else:
-            optimizer = ScheduledOptimPretraining(
-                parameters=parameters,
-                train_config=self.train_config,
-                model_config=self.model_config,
-                step=self.initial_step,
+            # Compute the gamma and initial learning rate based on the current step
+            lr_decay = self.train_config.optimizer_config.lr_decay
+            default_lr = self.train_config.optimizer_config.learning_rate
+
+            init_lr = default_lr if self.initial_step is None \
+            else default_lr * (lr_decay ** self.initial_step)
+
+            optimizer = AdamW(
+                parameters,
+                betas=self.train_config.optimizer_config.betas,
+                eps=self.train_config.optimizer_config.eps,
+                lr=init_lr,
             )
 
-        return optimizer
+            scheduler = ExponentialLR(optimizer, gamma=lr_decay)
+
+            return {"optimizer": optimizer, "lr_scheduler": scheduler}
+        else:
+            init_lr, lr_lambda = self.get_lr_lambda()
+
+            optimizer = Adam(
+                parameters,
+                betas=self.train_config.optimizer_config.betas,
+                eps=self.train_config.optimizer_config.eps,
+                lr=init_lr,
+            )
+            scheduler = LambdaLR(optimizer, lr_lambda)
+
+            return {"optimizer": optimizer, "lr_scheduler": scheduler}
+
+    def get_lr_lambda(self) -> Tuple[float, Callable[[int], float]]:
+        r"""Returns the custom lambda function for the learning rate schedule.
+
+        Returns
+            function: The custom lambda function for the learning rate schedule.
+        """
+        init_lr = self.model_config.encoder.n_hidden ** -0.5
+
+        def lr_lambda(step: int = self.initial_step) -> float:
+            r"""Computes the learning rate scale factor.
+
+            Args:
+                step (int): The current training step.
+
+            Returns:
+                float: The learning rate scale factor.
+            """
+            step = 1 if step == 0 else step
+
+            warmup = self.train_config.optimizer_config.warm_up_step
+            anneal_steps = self.train_config.optimizer_config.anneal_steps
+            anneal_rate = self.train_config.optimizer_config.anneal_rate
+
+            lr_scale = min(
+                step ** -0.5,
+                step * warmup ** -1.5,
+            )
+
+            for s in anneal_steps:
+                if step > s:
+                    lr_scale *= anneal_rate
+
+            return init_lr * lr_scale
+
+        # Function that returns the learning rate scale factor
+        return init_lr, lr_lambda
 
     def train_dataloader(self):
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
