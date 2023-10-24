@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from model.univnet.multi_resolution_stft_loss import MultiResolutionSTFTLoss
+from training.loss import MultiResolutionSTFTLoss
 
 
 class TestMultiResolutionSTFTLoss(unittest.TestCase):

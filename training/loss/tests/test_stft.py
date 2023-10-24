@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from model.univnet.stft import stft
+from training.loss.stft import stft
 
 
 class TestSTFT(unittest.TestCase):
