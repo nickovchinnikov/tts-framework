@@ -1,9 +1,9 @@
 from typing import Tuple
 
-import lightning.pytorch as pl
 from piq import SSIMLoss
 import torch
 from torch import nn
+from torch.nn import Module
 
 from training.loss.bin_loss import BinLoss
 from training.loss.forward_sum_loss import ForwardSumLoss
@@ -26,7 +26,7 @@ def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:
     return (x - minimum) / (maximum - minimum)
 
 
-class FastSpeech2LossGen(pl.LightningModule):
+class FastSpeech2LossGen(Module):
     def __init__(self, fine_tuning: bool):
         r"""Initializes the FastSpeech2LossGen module.
 

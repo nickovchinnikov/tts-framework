@@ -2,8 +2,8 @@ from dataclasses import dataclass
 import os
 from typing import Tuple
 
-from lightning.pytorch import LightningModule
 import torch
+from torch.nn import Module
 import torchaudio
 from transformers import (
     AutoConfig,
@@ -52,8 +52,8 @@ class Segment:
         return self.end - self.start
 
 
-class Wav2VecAligner(LightningModule):
-    r"""A LightningModule for the Wav2VecAligner model.
+class Wav2VecAligner(Module):
+    r"""Wav2VecAligner model.
 
     The Wav2VecAligner model is designed for aligning audio data with text data.
     This class handles the training and validation of the Wav2VecAligner model.

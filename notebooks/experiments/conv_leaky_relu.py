@@ -1,12 +1,12 @@
-from lightning.pytorch import LightningModule
 import torch
 from torch import nn
+from torch.nn import Module
 
 from model.constants import LEAKY_RELU_SLOPE
 
 
 # TODO: prepared for the refactoring of Aligner
-class ConvLeakyReLU(LightningModule):
+class ConvLeakyReLU(Module):
     r"""Class implements a Convolution followed by a Leaky ReLU activation layer.
 
     Attributes

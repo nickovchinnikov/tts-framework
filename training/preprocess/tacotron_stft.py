@@ -1,11 +1,11 @@
 from typing import Optional
 
 import librosa
-import lightning.pytorch as pl
 import torch
+from torch.nn import Module
 
 
-class TacotronSTFT(pl.LightningModule):
+class TacotronSTFT(Module):
     def __init__(
         self,
         filter_length: int,

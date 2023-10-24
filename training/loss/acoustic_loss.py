@@ -1,12 +1,12 @@
 from typing import Dict
 
-import lightning.pytorch as pl
 import torch
+from torch.nn import Module
 
 from training.loss import FastSpeech2LossGen
 
 
-class AcousticLoss(pl.LightningModule):
+class AcousticLoss(Module):
     r"""Module that calculates the loss for the Acoustic Model.
     It uses the FastSpeech2LossGen loss function, which is designed for the FastSpeech 2 model.
     This loss function calculates several different types of loss, including reconstruction loss,
