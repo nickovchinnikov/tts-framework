@@ -1,10 +1,10 @@
-import lightning.pytorch as pl
 import torch
 from torch import nn
+from torch.nn import Module
 from torch.nn import functional as F
 
 
-class ForwardSumLoss(pl.LightningModule):
+class ForwardSumLoss(Module):
     r"""Computes the forward sum loss for sequence-to-sequence models with attention.
 
     Args:

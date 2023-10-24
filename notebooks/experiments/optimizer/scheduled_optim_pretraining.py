@@ -15,7 +15,8 @@ def get_lr_lambda(
     train_config: AcousticTrainingConfig,
     current_step: int = 0,
 ) -> Tuple[float, Callable[[int], float]]:
-    r"""Returns the custom lambda function for the learning rate schedule.
+    r"""DEPRECATED: moved to AcousticModule.
+    Returns the custom lambda function for the learning rate schedule.
 
     Returns
         function: The custom lambda function for the learning rate schedule.
@@ -51,7 +52,9 @@ def get_lr_lambda(
     return init_lr, lr_lambda
 
 class ScheduledOptimPretraining(Optimizer):
-    r"""A custom optimizer that uses `AdamW` for optimization and an `LambdaLR` for learning rate scheduling."""
+    r"""DEPRECATED: moved to AcousticModule.
+    A custom optimizer that uses `AdamW` for optimization and an `LambdaLR` for learning rate scheduling.
+    """
 
     def __init__(
         self,

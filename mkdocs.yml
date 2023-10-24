@@ -16,11 +16,13 @@ nav:
       - Conformer: model/attention/conformer.md
       - Feed Forward: model/attention/feed_forward.md
       - Style Embed Attention: model/attention/style_embed_attention.md
+      - Multi-Head Attention: model/attention/multi_head_attention.md
       - Relative Multi-Head Attention: model/attention/relative_multi_head_attention.md
       - Conformer Multi-Headed Self Attention: model/attention/conformer_multi_headed_self_attention.md
       - Conformer Convolution Module: model/attention/conformer_conv_module.md
       - Conformer Block: model/attention/conformer_block.md
     - Acoustic Model:
+      - Aligner: model/acoustic_model/aligner.md
       - References: model/acoustic_model/readme.md
       - Accoustic Model: model/acoustic_model/acoustic_model.md
       - Embedding: model/acoustic_model/embedding.md
@@ -43,8 +45,8 @@ nav:
       - Phoneme Level Prosody Encoder: model/reference_encoder/phoneme_level_prosody_encoder.md
     - Univnet:
       - References: model/univnet/readme.md
-      - Univnet: model/univnet/generator.md
-      - Traced Generator: model/univnet/traced_generator.md
+      - Univnet: model/univnet/univnet.md
+      - Traced Univnet: model/univnet/traced_univnet.md
       - Kernel Predictor: model/univnet/kernel_predictor.md
       - LVC Block: model/univnet/lvc_block.md
       - Discriminator: model/univnet/discriminator.md
@@ -67,17 +69,13 @@ nav:
         - Binary Cross Entropy Loss: training/loss/bin_loss.md
         - Forward Sum Loss: training/loss/forward_sum_loss.md
         - FastSpeech 2 Loss: training/loss/fast_speech_2_loss_gen.md
-        - Losses Criterion: training/loss/losses_criterion.md
       - Voicoder Losses:
         - STFT: training/loss/stft.md
         - STFT Loss: training/loss/stft_loss.md
         - Log STFT Magnitude Loss: training/loss/log_stft_magnitude_loss.md
         - Spectral Convergence Loss: training/loss/spectral_convergence_loss.md
         - Multi Resolution STFT Loss: training/loss/multi_resolution_stft_loss.md
-    - Optimizer:
-      - References: training/optimizer/readme.md
-      - Scheduled Optim Pretraining: training/optimizer/scheduled_optim_pretraining.md
-      - Scheduled Optim Finetuning: training/optimizer/scheduled_optim_finetuning.md
+        - Univnet loss: training/loss/univnet_loss.md
     - Preprocess:
       - References: training/preprocess/readme.md
       - Audio: training/preprocess/audio.md
@@ -92,6 +90,10 @@ nav:
     - MAS torch: experiments/mas_torch.md
     - Conv Leaky ReLU: experiments/conv_leaky_relu.md
     - Tokenization: experiments/tokenization.md
+    - Optimizer:
+      - References: experiments/optimizer/readme.md
+      - Scheduled Optim Pretraining: experiments/optimizer/scheduled_optim_pretraining.md
+      - Scheduled Optim Finetuning: experiments/optimizer/scheduled_optim_finetuning.md
   - About mkdocs-material: readme.md
 theme:
   name: material
