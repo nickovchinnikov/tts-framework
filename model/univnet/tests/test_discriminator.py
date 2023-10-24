@@ -3,7 +3,7 @@ import unittest
 import torch
 
 from model.config import PreprocessingConfig, VocoderModelConfig
-from model.univnet import Discriminator, Generator
+from model.univnet import Discriminator, UnivNet
 
 
 # One of the most important test case for univnet
@@ -13,7 +13,7 @@ class TestDiscriminator(unittest.TestCase):
         self.model_config = VocoderModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
 
-        self.generator = Generator(self.model_config, self.preprocess_config)
+        self.generator = UnivNet(self.model_config, self.preprocess_config)
 
         self.model = Discriminator(self.model_config)
 

@@ -8,7 +8,7 @@ from model.helpers.tools import get_mask_from_lengths
 from .lvc_block import LVCBlock
 
 
-class Generator(Module):
+class UnivNet(Module):
     """UnivNet Generator"""
 
     def __init__(
@@ -17,7 +17,7 @@ class Generator(Module):
         preprocess_config: PreprocessingConfig,
     ):
         r"""UnivNet Generator.
-        Initializes the Generator module.
+        Initializes the UnivNet module.
 
         Args:
             model_config (VocoderModelConfig): the model configuration.

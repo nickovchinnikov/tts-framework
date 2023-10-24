@@ -3,19 +3,19 @@ from torch.nn import Module
 
 from model.helpers.tools import get_mask_from_lengths
 
-from .generator import Generator
+from .univnet import UnivNet
 
 
-class TracedGenerator(Module):
+class TracedUnivNet(Module):
     def __init__(
         self,
-        generator: Generator,
+        generator: UnivNet,
         # example_inputs: Tuple[Any], example_inputs (Tuple[Any]): Example inputs to use for tracing.
     ):
-        r"""A traced version of the Generator class that can be used for faster inference.
+        r"""A traced version of the UnivNet class that can be used for faster inference.
 
         Args:
-            generator (Generator): The Generator instance to trace.
+            generator (UnivNet): The UnivNet instance to trace.
         """
         super().__init__()
 
@@ -31,7 +31,7 @@ class TracedGenerator(Module):
         self.generator = generator
 
     def forward(self, c: torch.Tensor, mel_lens: torch.Tensor) -> torch.Tensor:
-        r"""Forward pass of the traced Generator.
+        r"""Forward pass of the traced UnivNet.
 
         Args:
             c (torch.Tensor): The input mel-spectrogram tensor.

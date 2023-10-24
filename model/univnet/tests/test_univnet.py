@@ -4,10 +4,10 @@ import torch
 from torch import nn
 
 from model.config import PreprocessingConfig, VocoderModelConfig
-from model.univnet.generator import Generator
+from model.univnet.univnet import UnivNet
 
 
-class TestGenerator(unittest.TestCase):
+class TestUnivNet(unittest.TestCase):
     def setUp(self):
         self.batch_size = 3
         self.in_length = 100
@@ -15,7 +15,7 @@ class TestGenerator(unittest.TestCase):
         self.model_config = VocoderModelConfig()
         self.preprocess_config = PreprocessingConfig("english_only")
 
-        self.generator = Generator(self.model_config, self.preprocess_config)
+        self.generator = UnivNet(self.model_config, self.preprocess_config)
 
         self.c = torch.randn(
             self.batch_size,
@@ -44,7 +44,7 @@ class TestGenerator(unittest.TestCase):
         self.assertEqual(output.shape, expected_shape)
 
     def test_eval(self):
-        generator = Generator(
+        generator = UnivNet(
             self.model_config,
             self.preprocess_config,
         )
@@ -56,7 +56,7 @@ class TestGenerator(unittest.TestCase):
                 self.assertFalse(hasattr(module, "weight_v"))
 
     def test_remove_weight_norm(self):
-        generator = Generator(
+        generator = UnivNet(
             self.model_config,
             self.preprocess_config,
         )
