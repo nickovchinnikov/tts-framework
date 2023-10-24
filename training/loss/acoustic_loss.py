@@ -6,9 +6,18 @@ import torch
 from training.loss import FastSpeech2LossGen
 
 
-class LossesCriterionAcoustic(pl.LightningModule):
+class AcousticLoss(pl.LightningModule):
+    r"""Module that calculates the loss for the Acoustic Model.
+    It uses the FastSpeech2LossGen loss function, which is designed for the FastSpeech 2 model.
+    This loss function calculates several different types of loss, including reconstruction loss,
+    mel loss, SSIM loss, duration loss, utterance prosody loss, phoneme prosody loss, pitch loss,
+    CTC loss, and binary classification loss.
+    """
+
     def __init__(self):
-        r"""Initializes the LossesCriterionAcoustic module."""
+        r"""Initializes the AcousticLoss module.
+        It initializes the FastSpeech2LossGen loss function and registers buffers for each type of loss.
+        """
         super().__init__()
 
         # Init the loss

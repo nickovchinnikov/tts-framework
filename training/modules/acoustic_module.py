@@ -14,7 +14,7 @@ from model.config import (
 )
 from model.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDataset
-from training.loss import LossesCriterionAcoustic
+from training.loss import AcousticLoss
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 
@@ -65,7 +65,7 @@ class AcousticModule(LightningModule):
             n_speakers=n_speakers,
         )
 
-        self.loss = LossesCriterionAcoustic()
+        self.loss = AcousticLoss()
 
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
