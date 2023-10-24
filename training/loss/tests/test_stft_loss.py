@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from model.univnet.stft_loss import STFTLoss
+from training.loss import STFTLoss
 
 
 class TestSTFTLoss(unittest.TestCase):

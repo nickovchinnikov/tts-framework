@@ -1,0 +1,1 @@
+::: training.loss.log_stft_magnitude_loss

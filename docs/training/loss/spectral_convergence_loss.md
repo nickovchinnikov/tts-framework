@@ -1,0 +1,1 @@
+::: training.loss.spectral_convergence_loss

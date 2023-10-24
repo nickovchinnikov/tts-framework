@@ -256,6 +256,9 @@ class VocoderFinetuningConfig:
     stft_lamb: float = 2.5
 
 
+VoicoderTrainingConfig = Union[VocoderPretrainingConfig, VocoderFinetuningConfig]
+
+
 @dataclass
 class VocoderGeneratorConfig:
     noise_dim: int

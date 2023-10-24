@@ -52,11 +52,6 @@ nav:
       - DiscriminatorR: model/univnet/discriminator_r.md
       - Multi Period Discriminator: model/univnet/multi_period_discriminator.md
       - Multi Resolution Discriminator: model/univnet/multi_resolution_discriminator.md
-      - STFT: model/univnet/stft.md
-      - Spectral Convergence Loss: model/univnet/spectral_convergence_loss.md
-      - Log STFT Magnitude Loss: model/univnet/log_stft_magnitude_loss.md
-      - STFT Loss: model/univnet/stft_loss.md
-      - Multi Resolution STFT Loss: model/univnet/multi_resolution_stft_loss.md
     - Helpers:
       - References: model/helpers/readme.md
       - Initializer: model/helpers/initializer.md
@@ -68,10 +63,17 @@ nav:
       - Libri TTS dataset: training/dataset/libritts_dataset.md
     - Loss:
       - References: training/loss/readme.md
-      - Binary Cross Entropy Loss: training/loss/bin_loss.md
-      - Forward Sum Loss: training/loss/forward_sum_loss.md
-      - FastSpeech 2 Loss: training/loss/fast_speech_2_loss_gen.md
-      - Losses Criterion: training/loss/losses_criterion.md
+      - Acoustic Losses:
+        - Binary Cross Entropy Loss: training/loss/bin_loss.md
+        - Forward Sum Loss: training/loss/forward_sum_loss.md
+        - FastSpeech 2 Loss: training/loss/fast_speech_2_loss_gen.md
+        - Losses Criterion: training/loss/losses_criterion.md
+      - Voicoder Losses:
+        - STFT: training/loss/stft.md
+        - STFT Loss: training/loss/stft_loss.md
+        - Log STFT Magnitude Loss: training/loss/log_stft_magnitude_loss.md
+        - Spectral Convergence Loss: training/loss/spectral_convergence_loss.md
+        - Multi Resolution STFT Loss: training/loss/multi_resolution_stft_loss.md
     - Optimizer:
       - References: training/optimizer/readme.md
       - Scheduled Optim Pretraining: training/optimizer/scheduled_optim_pretraining.md
