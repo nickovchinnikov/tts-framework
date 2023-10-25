@@ -265,10 +265,10 @@ class PreprocessLibriTTS:
 
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
 
-        if audio.shape[0] < segment_size:
-            audio = F.pad(
-                audio,
-                (0, segment_size - audio.shape[0]),
+        if wav.shape[0] < segment_size:
+            wav = F.pad(
+                wav,
+                (0, segment_size - wav.shape[0]),
                 "constant",
             )
 
@@ -288,6 +288,6 @@ class PreprocessLibriTTS:
         till_frame = from_frame + frames_per_seg
 
         mel_spectrogram = mel_spectrogram[:, from_frame:till_frame]
-        audio = audio[from_frame * self.hop_length : till_frame * self.hop_length]
+        wav = wav[from_frame * self.hop_length : till_frame * self.hop_length]
 
-        return mel_spectrogram, audio, speaker_id
+        return mel_spectrogram, wav, speaker_id
