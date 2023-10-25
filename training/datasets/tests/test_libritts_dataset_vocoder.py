@@ -17,9 +17,6 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
         self.dataset = LibriTTSDatasetVocoder(
             root="datasets_cache/LIBRITTS",
             batch_size=self.batch_size,
-            lang=self.lang,
-            sort=self.sort,
-            drop_last=self.drop_last,
             download=self.download,
         )
 
@@ -29,7 +26,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
     def test_getitem(self):
         sample = self.dataset[0]
         self.assertEqual(sample["mel"].shape, torch.Size([100, 64]))
-        self.assertEqual(sample["audio"].shape, torch.Size([1, 32703]))
+        self.assertEqual(sample["audio"].shape, torch.Size([16384]))
         self.assertEqual(sample["speaker_id"], 1034)
 
     def test_collate_fn(self):

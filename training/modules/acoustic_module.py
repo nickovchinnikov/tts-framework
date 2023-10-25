@@ -108,6 +108,29 @@ class AcousticModule(LightningModule):
     # Use `torch.no_grad` instead
     # trainer = Trainer(inference_mode=False)
     def training_step(self, batch: List, batch_idx: int):
+        r"""Performs a training step for the model.
+
+        Args:
+        batch (List): The batch of data for training. The batch should contain:
+            - ids: List of indexes.
+            - raw_texts: Raw text inputs.
+            - speakers: Speaker identities.
+            - texts: Text inputs.
+            - src_lens: Lengths of the source sequences.
+            - mels: Mel spectrogram targets.
+            - pitches: Pitch targets.
+            - pitches_stat: Statistics of the pitches.
+            - mel_lens: Lengths of the mel spectrograms.
+            - langs: Language identities.
+            - attn_priors: Prior attention weights.
+            - wavs: Waveform targets.
+        batch_idx (int): Index of the batch.
+
+        Returns:
+        dict: A dictionary containing:
+            - 'loss': The total loss for the training step.
+            - 'log': A dictionary of tensorboard logs.
+        """
         (
             _,
             _,
@@ -154,7 +177,7 @@ class AcousticModule(LightningModule):
             pitch_loss,
             ctc_loss,
             bin_loss,
-        ) = self.loss.forward(
+        ) = self.loss(
             src_masks=src_mask,
             mel_masks=mel_mask,
             mel_targets=mels,

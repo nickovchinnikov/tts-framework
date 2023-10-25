@@ -16,10 +16,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
 
         self.dataset = LibriTTSDatasetAcoustic(
             root="datasets_cache/LIBRITTS",
-            batch_size=self.batch_size,
             lang=self.lang,
-            sort=self.sort,
-            drop_last=self.drop_last,
             download=self.download,
         )
 

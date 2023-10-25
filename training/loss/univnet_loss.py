@@ -1,7 +1,7 @@
 import torch
 from torch.nn import Module
 
-from model.config import VocoderModelConfig, VoicoderTrainingConfig
+from model.config import VocoderBasicConfig, VocoderModelConfig
 
 from .multi_resolution_stft_loss import MultiResolutionSTFTLoss
 
@@ -9,13 +9,11 @@ from .multi_resolution_stft_loss import MultiResolutionSTFTLoss
 class UnivnetLoss(Module):
     r"""UnivnetLoss is a PyTorch Module that calculates the generator and discriminator losses for Univnet."""
 
-    def __init__(self, train_config: VoicoderTrainingConfig):
-        r"""Initializes the UnivnetLoss module.
-
-        Args:
-            train_config (VoicoderTrainingConfig): The training configuration containing the stft_lamb parameter.
-        """
+    def __init__(self):
+        r"""Initializes the UnivnetLoss module."""
         super().__init__()
+
+        train_config = VocoderBasicConfig()
 
         self.stft_lamb = train_config.stft_lamb
         self.model_config = VocoderModelConfig()
@@ -24,7 +22,8 @@ class UnivnetLoss(Module):
 
     def forward(
         self,
-        audio: torch.Tensor,fake_audio: torch.Tensor,
+        audio: torch.Tensor,
+        fake_audio: torch.Tensor,
         res_fake: torch.Tensor,
         period_fake: torch.Tensor,
         res_real: torch.Tensor,
@@ -41,7 +40,7 @@ class UnivnetLoss(Module):
             period_real (torch.Tensor): The discriminator's output for the real audio in the period.
 
         Returns:
-            dict: A dictionary containing the total generator loss, total discriminator loss, mel loss, and score loss.
+            tuple: A tuple containing the univnet loss, discriminator loss, STFT loss, and score loss.
         """
         # Calculate the STFT loss
         sc_loss, mag_loss = self.stft_criterion(fake_audio.squeeze(1), audio.squeeze(1))
@@ -66,9 +65,9 @@ class UnivnetLoss(Module):
 
         total_loss_disc = total_loss_disc / len(res_fake + period_fake)
 
-        return {
-            "total_loss_gen": total_loss_gen.item(),
-            "total_loss_disc": total_loss_disc,
-            "mel_loss": stft_loss.item(),
-            "score_loss": score_loss,
-        }
+        return (
+            total_loss_gen.item(),
+            total_loss_disc,
+            stft_loss.item(),
+            score_loss,
+        )

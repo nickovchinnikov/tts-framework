@@ -4,7 +4,9 @@ import torch
 from torch import nn
 
 from model.config import AcousticFinetuningConfig
-from training.optimizer import ScheduledOptimFinetuning
+from notebooks.experiments.optimizer.scheduled_optim_finetuning import (
+    ScheduledOptimFinetuning,
+)
 
 
 class TestScheduledOptimFinetuning(unittest.TestCase):
