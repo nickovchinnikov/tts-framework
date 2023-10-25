@@ -10,7 +10,7 @@ from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
 
-class LibriTTSDataset(Dataset):
+class LibriTTSDatasetAcoustic(Dataset):
     def __init__(
         self,
         root: str,
@@ -58,7 +58,7 @@ class LibriTTSDataset(Dataset):
         # Retrive the dataset row
         data = self.dataset[idx]
 
-        data = self.preprocess_libtts(data)
+        data = self.preprocess_libtts.acoustic(data)
 
         # TODO: bad way to do filtering, fix this!
         if data is None:
@@ -83,7 +83,7 @@ class LibriTTSDataset(Dataset):
             "lang": lang2id["en"],
         }
 
-    def collate_fn_acoustic(self, data: List) -> List:
+    def collate_fn(self, data: List) -> List:
         r"""Collates a batch of data samples.
 
         Args:

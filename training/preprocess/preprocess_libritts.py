@@ -1,12 +1,15 @@
 from dataclasses import dataclass
+import math
+import random
 from typing import Any, List, Tuple, Union
 
 from dp.phonemizer import Phonemizer
 import numpy as np
 from scipy.stats import betabinom
 import torch
+import torch.nn.functional as F
 
-from model.config import PreprocessingConfig, get_lang_map
+from model.config import PreprocessingConfig, VocoderBasicConfig, get_lang_map
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
@@ -15,7 +18,7 @@ from .tacotron_stft import TacotronSTFT
 
 
 @dataclass
-class PreprocessAudioResult:
+class PreprocessForAcousticResult:
     wav: torch.Tensor
     mel: torch.Tensor
     pitch: torch.Tensor
@@ -62,36 +65,36 @@ class PreprocessLibriTTS:
         processing_lang_type = lang_map.processing_lang_type
 
         self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
-
         self.normilize_text = NormalizeText(normilize_text_lang)
+        self.train_config = VocoderBasicConfig()
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
 
-        self.min_seconds = preprocess_config.min_seconds
-        self.max_seconds = preprocess_config.max_seconds
-
-        self.hop_length = preprocess_config.stft.hop_length
         self.sampling_rate = preprocess_config.sampling_rate
-
         self.use_audio_normalization = preprocess_config.use_audio_normalization
 
-        self.filter_length = preprocess_config.stft.filter_length
         self.hop_length = preprocess_config.stft.hop_length
+        self.filter_length = preprocess_config.stft.filter_length
         self.mel_fmin = preprocess_config.stft.mel_fmin
 
         self.tacotronSTFT = TacotronSTFT(
-            filter_length=preprocess_config.stft.filter_length,
-            hop_length=preprocess_config.stft.hop_length,
+            filter_length=self.filter_length,
+            hop_length=self.hop_length,
             win_length=preprocess_config.stft.win_length,
             n_mel_channels=preprocess_config.stft.n_mel_channels,
             sampling_rate=self.sampling_rate,
-            mel_fmin=preprocess_config.stft.mel_fmin,
+            mel_fmin=self.mel_fmin,
             mel_fmax=preprocess_config.stft.mel_fmax,
             center=False,
         )
 
-        self.min_samples = int(self.sampling_rate * self.min_seconds)
-        self.max_samples = int(self.sampling_rate * self.max_seconds)
+        min_seconds, max_seconds = (
+            preprocess_config.min_seconds,
+            preprocess_config.max_seconds,
+        )
+
+        self.min_samples = int(self.sampling_rate * min_seconds)
+        self.max_samples = int(self.sampling_rate * max_seconds)
 
     def beta_binomial_prior_distribution(
         self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0,
@@ -114,13 +117,12 @@ class PreprocessLibriTTS:
             rv: Any = betabinom(P, a, b)
             mel_i_prob = rv.pmf(x)
             mel_text_probs.append(mel_i_prob)
-        result = torch.from_numpy(np.array(mel_text_probs))
-        return result
+        return torch.from_numpy(np.array(mel_text_probs))
 
-    def __call__(
+    def acoustic(
         self,
         row: Tuple[torch.Tensor, int, str, str, int, int, str],
-    ) -> Union[None, PreprocessAudioResult]:
+    ) -> Union[None, PreprocessForAcousticResult]:
         r"""Preprocesses audio and text data for use with a TacotronSTFT model.
 
         Args:
@@ -208,7 +210,7 @@ class PreprocessLibriTTS:
             mel_spectrogram.shape[1],
         )
 
-        return PreprocessAudioResult(
+        return PreprocessForAcousticResult(
             wav=wav,
             mel=mel_spectrogram,
             pitch=pitch,
@@ -223,3 +225,69 @@ class PreprocessLibriTTS:
             # TODO: check the pitch normalization process
             pitch_is_normalized=False,
         )
+
+    def univnet(self, row: Tuple[torch.Tensor, int, str, str, int, int, str]):
+        r"""Preprocesses audio data for use with a UnivNet model.
+
+        This method takes a row of data, extracts the audio and preprocesses it.
+        It then selects a random segment from the preprocessed audio and its corresponding mel spectrogram.
+
+        Args:
+            row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor, int]: A tuple containing the selected segment of the mel spectrogram, the corresponding audio segment, and the speaker ID.
+
+        Examples:
+            >>> preprocess = PreprocessLibriTTS()
+            >>> audio = torch.randn(1, 44100)
+            >>> sr_actual = 44100
+            >>> speaker_id = 0
+            >>> mel, audio_segment, speaker_id = preprocess.preprocess_univnet((audio, sr_actual, "", "", speaker_id, 0, ""))
+        """
+        (
+            audio,
+            sr_actual,
+            _,
+            _,
+            speaker_id,
+            _,
+            _,
+        ) = row
+
+        segment_size = self.train_config.segment_size
+        frames_per_seg = math.ceil(segment_size / self.hop_length)
+
+        wav, _ = preprocess_audio(audio, sr_actual, self.sampling_rate)
+
+        if self.use_audio_normalization:
+            wav = normalize_loudness(wav)
+
+        mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
+
+        if audio.shape[0] < segment_size:
+            audio = F.pad(
+                audio,
+                (0, segment_size - audio.shape[0]),
+                "constant",
+            )
+
+        if mel_spectrogram.shape[1] < frames_per_seg:
+            mel_spectrogram = F.pad(
+                mel_spectrogram,
+                (0, frames_per_seg - mel_spectrogram.shape[1]),
+                "constant",
+            )
+
+        from_frame = random.randint(0, mel_spectrogram.shape[1] - frames_per_seg)
+
+        # Skip last frame, otherwise errors are thrown, find out why
+        if from_frame > 0:
+            from_frame -= 1
+
+        till_frame = from_frame + frames_per_seg
+
+        mel_spectrogram = mel_spectrogram[:, from_frame:till_frame]
+        audio = audio[from_frame * self.hop_length : till_frame * self.hop_length]
+
+        return mel_spectrogram, audio, speaker_id

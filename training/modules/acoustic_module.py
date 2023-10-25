@@ -15,7 +15,7 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.datasets import LibriTTSDataset
+from training.datasets import LibriTTSDatasetAcoustic
 from training.loss import FastSpeech2LossGen
 
 
@@ -272,7 +272,7 @@ class AcousticModule(LightningModule):
         Returns
             DataLoader: The training dataloader.
         """
-        dataset = LibriTTSDataset(
+        dataset = LibriTTSDatasetAcoustic(
             root=self.root,
             batch_size=self.train_config.batch_size,
             lang=self.lang,
@@ -281,5 +281,5 @@ class AcousticModule(LightningModule):
             dataset,
             batch_size=self.train_config.batch_size,
             shuffle=False,
-            collate_fn=dataset.collate_fn_acoustic,
+            collate_fn=dataset.collate_fn,
         )

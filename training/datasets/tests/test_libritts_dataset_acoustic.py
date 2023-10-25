@@ -3,10 +3,10 @@ import unittest
 import torch
 from torch.utils.data import DataLoader
 
-from training.datasets.libritts_dataset import LibriTTSDataset
+from training.datasets import LibriTTSDatasetAcoustic
 
 
-class TestLibriTTSDataset(unittest.TestCase):
+class TestLibriTTSDatasetAcoustic(unittest.TestCase):
     def setUp(self):
         self.batch_size = 2
         self.lang = "en"
@@ -14,7 +14,7 @@ class TestLibriTTSDataset(unittest.TestCase):
         self.drop_last = False
         self.download = False
 
-        self.dataset = LibriTTSDataset(
+        self.dataset = LibriTTSDatasetAcoustic(
             root="datasets_cache/LIBRITTS",
             batch_size=self.batch_size,
             lang=self.lang,
@@ -48,7 +48,7 @@ class TestLibriTTSDataset(unittest.TestCase):
         ]
 
         # Call the collate_fn method
-        result = self.dataset.collate_fn_acoustic(data)
+        result = self.dataset.collate_fn(data)
 
         # Check the output
         self.assertEqual(len(result), 12)
@@ -75,7 +75,7 @@ class TestLibriTTSDataset(unittest.TestCase):
             self.dataset,
             batch_size=self.batch_size,
             shuffle=False,
-            collate_fn=self.dataset.collate_fn_acoustic,
+            collate_fn=self.dataset.collate_fn,
         )
 
         iter_dataloader = iter(dataloader)
