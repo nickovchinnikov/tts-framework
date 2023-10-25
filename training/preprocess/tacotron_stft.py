@@ -78,7 +78,7 @@ class TacotronSTFT(Module):
             mode="reflect",
         )
         y = y.squeeze(1)
-        return torch.stft(
+        spec = torch.stft(
             y,
             self.n_fft,
             hop_length=self.hop_size,
@@ -88,8 +88,9 @@ class TacotronSTFT(Module):
             pad_mode="reflect",
             normalized=False,
             onesided=True,
-            return_complex=False,
+            return_complex=True,
         )
+        return torch.view_as_real(spec)
 
     def linear_spectrogram(self, y: torch.Tensor) -> torch.Tensor:
         r"""Computes the linear spectrogram of a batch of waves.

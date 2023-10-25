@@ -6,7 +6,13 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
-from model.config import PreprocessingConfig, VocoderModelConfig, VoicoderTrainingConfig
+from model.config import (
+    PreprocessingConfig,
+    VocoderFinetuningConfig,
+    VocoderModelConfig,
+    VocoderPretrainingConfig,
+    VoicoderTrainingConfig,
+)
 from model.univnet import Discriminator, UnivNet
 from training.datasets import LibriTTSDatasetVocoder
 from training.loss import UnivnetLoss
@@ -20,24 +26,23 @@ class VocoderModule(LightningModule):
 
     def __init__(
             self,
-            train_config: VoicoderTrainingConfig,
-            model_config: VocoderModelConfig,
-            preprocess_config: PreprocessingConfig,
+            fine_tuning: bool = False,
             root: str = "datasets_cache/LIBRITTS",
             checkpoint_path_v1: Optional[str] = None,
         ):
         r"""Initializes the `VocoderModule`.
 
         Args:
-            train_config (VoicoderTrainingConfig): The training configuration.
-            model_config (VocoderModelConfig): The model configuration.
-            preprocess_config (PreprocessingConfig): The preprocessing configuration.
+            fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
             root (str, optional): The root directory for the dataset. Defaults to "datasets_cache/LIBRITTS".
             checkpoint_path_v1 (Optional[str], optional): The path to the checkpoint for the model. If provided, the model weights will be loaded from this checkpoint. Defaults to None.
         """
         super().__init__()
 
         self.root = root
+
+        model_config = VocoderModelConfig()
+        preprocess_config = PreprocessingConfig("english_only")
 
         self.univnet = UnivNet(
             model_config=model_config,
@@ -47,7 +52,11 @@ class VocoderModule(LightningModule):
 
         self.loss = UnivnetLoss()
 
-        self.train_config = train_config
+        self.train_config: VoicoderTrainingConfig = \
+        VocoderFinetuningConfig() \
+        if fine_tuning \
+        else VocoderPretrainingConfig()
+
 
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!

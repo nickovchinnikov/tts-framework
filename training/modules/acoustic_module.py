@@ -23,7 +23,7 @@ class AcousticModule(LightningModule):
     r"""Trainer for the acoustic model.
 
     Args:
-        fine_tuning (bool): Whether to use fine-tuning mode or not.
+        fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
         root (str): Root directory of the dataset.
         step (int): Current training step.

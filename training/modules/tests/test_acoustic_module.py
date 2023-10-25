@@ -4,7 +4,7 @@ import unittest
 from pytorch_lightning import Trainer
 import torch
 
-from training.modules.acoustic_module import AcousticModule
+from training.modules import AcousticModule
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
