@@ -83,16 +83,19 @@ class LibriTTSDataset(Dataset):
             "lang": lang2id["en"],
         }
 
-    def collate_preprocess(self, data: List[Dict[str, Any]], idxs: List[int]) -> Tuple:
-        r"""Reprocesses a batch of data samples.
+    def collate_fn_acoustic(self, data: List) -> List:
+        r"""Collates a batch of data samples.
 
         Args:
-            data (List[Dict[str, Any]]): A list of data samples.
-            idxs (List[int]): A list of indices for the samples to reprocess.
+            data (List): A list of data samples.
 
         Returns:
-            Tuple: A tuple containing the reprocessed data.
+            List: A list of reprocessed data batches.
         """
+        data_size = len(data)
+
+        idxs = list(range(data_size))
+
         # Initialize empty lists to store extracted values
         empty_lists: List[List] = [[] for _ in range(11)]
         (
@@ -147,7 +150,7 @@ class LibriTTSDataset(Dataset):
 
         wavs = pad_2D(wavs)
 
-        return (
+        return [
             ids,
             raw_texts,
             torch.from_numpy(speakers),
@@ -160,22 +163,7 @@ class LibriTTSDataset(Dataset):
             torch.from_numpy(langs),
             torch.from_numpy(attn_priors),
             torch.from_numpy(wavs),
-        )
-
-    def collate_fn(self, data: List) -> List:
-        r"""Collates a batch of data samples.
-
-        Args:
-            data (List): A list of data samples.
-
-        Returns:
-            List: A list of reprocessed data batches.
-        """
-        data_size = len(data)
-
-        idx_arr = list(range(data_size))
-
-        return list(self.collate_preprocess(data, idx_arr))
+        ]
 
     def normalize_pitch(
         self, pitches: List[torch.Tensor],

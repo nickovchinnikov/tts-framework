@@ -41,22 +41,6 @@ class TestLibriTTSDataset(unittest.TestCase):
         self.assertEqual(sample["attn_prior"].shape, torch.Size([6, 58]))
         self.assertEqual(sample["wav"].shape, torch.Size([1, 14994]))
 
-    def test_reprocess(self):
-        # Mock the data and indices
-        data = [
-            self.dataset[0],
-            # TODO: Too long record, you need to check this, maybe we can increate the max length!
-            # self.dataset[1],
-            self.dataset[2],
-        ]
-        idxs = [0, 1]
-
-        # Call the reprocess method
-        result = self.dataset.collate_preprocess(data, idxs)
-
-        # Check the output
-        self.assertEqual(len(result), 12)
-
     def test_collate_fn(self):
         data = [
             self.dataset[0],
@@ -64,7 +48,7 @@ class TestLibriTTSDataset(unittest.TestCase):
         ]
 
         # Call the collate_fn method
-        result = self.dataset.collate_fn(data)
+        result = self.dataset.collate_fn_acoustic(data)
 
         # Check the output
         self.assertEqual(len(result), 12)
@@ -91,7 +75,7 @@ class TestLibriTTSDataset(unittest.TestCase):
             self.dataset,
             batch_size=self.batch_size,
             shuffle=False,
-            collate_fn=self.dataset.collate_fn,
+            collate_fn=self.dataset.collate_fn_acoustic,
         )
 
         iter_dataloader = iter(dataloader)

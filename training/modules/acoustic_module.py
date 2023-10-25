@@ -281,5 +281,5 @@ class AcousticModule(LightningModule):
             dataset,
             batch_size=self.train_config.batch_size,
             shuffle=False,
-            collate_fn=dataset.collate_fn,
+            collate_fn=dataset.collate_fn_acoustic,
         )
