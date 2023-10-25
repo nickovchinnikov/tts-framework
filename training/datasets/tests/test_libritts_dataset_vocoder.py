@@ -10,8 +10,6 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
     def setUp(self):
         self.batch_size = 2
         self.lang = "en"
-        self.sort = False
-        self.drop_last = False
         self.download = False
 
         self.dataset = LibriTTSDatasetVocoder(
