@@ -250,7 +250,7 @@ class VocoderFinetuningConfig(VocoderBasicConfig):
     validation_interval: int = 4000
 
 
-VoicoderTrainingConfig = Union[VocoderBasicConfig, VocoderPretrainingConfig, VocoderFinetuningConfig]
+VoicoderTrainingConfig = Union[VocoderPretrainingConfig, VocoderFinetuningConfig]
 
 
 @dataclass

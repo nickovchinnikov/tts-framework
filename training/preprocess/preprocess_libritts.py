@@ -66,7 +66,7 @@ class PreprocessLibriTTS:
 
         self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
         self.normilize_text = NormalizeText(normilize_text_lang)
-        self.train_config = VocoderBasicConfig()
+        self.vocoder_train_config = VocoderBasicConfig()
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
 
@@ -255,7 +255,7 @@ class PreprocessLibriTTS:
             _,
         ) = row
 
-        segment_size = self.train_config.segment_size
+        segment_size = self.vocoder_train_config.segment_size
         frames_per_seg = math.ceil(segment_size / self.hop_length)
 
         wav, _ = preprocess_audio(audio, sr_actual, self.sampling_rate)

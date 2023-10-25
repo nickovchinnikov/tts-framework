@@ -274,7 +274,6 @@ class AcousticModule(LightningModule):
         """
         dataset = LibriTTSDatasetAcoustic(
             root=self.root,
-            batch_size=self.train_config.batch_size,
             lang=self.lang,
         )
         return DataLoader(

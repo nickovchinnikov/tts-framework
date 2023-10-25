@@ -16,9 +16,6 @@ class LibriTTSDatasetVocoder(Dataset):
         self,
         root: str,
         batch_size: int,
-        lang: str,
-        sort: bool = False,
-        drop_last: bool = False,
         download: bool = True,
     ):
         r"""A PyTorch dataset for loading preprocessed univnet data.
@@ -26,18 +23,12 @@ class LibriTTSDatasetVocoder(Dataset):
         Args:
             root (str): Path to the directory where the dataset is found or downloaded.
             batch_size (int): Batch size for the dataset.
-            lang (str): The language of the dataset.
-            sort (bool, optional): Whether to sort the data by text length. Defaults to False.
-            drop_last (bool, optional): Whether to drop the last batch if it is smaller than the batch size. Defaults to False.
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
         """
         self.dataset = datasets.LIBRITTS(root=root, download=download)
         self.batch_size = batch_size
 
-        self.preprocess_libtts = PreprocessLibriTTS(lang)
-
-        self.sort = sort
-        self.drop_last = drop_last
+        self.preprocess_libtts = PreprocessLibriTTS()
 
     def __len__(self) -> int:
         r"""Returns the number of samples in the dataset.
