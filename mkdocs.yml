@@ -76,6 +76,7 @@ nav:
     - Datasets:
       - References: training/dataset/readme.md
       - Libri TTS dataset acoustic: training/dataset/libritts_dataset_acoustic.md
+      - Libri TTS dataset vocoder: training/dataset/libritts_dataset_vocoder.md
     - Preprocess:
       - References: training/preprocess/readme.md
       - Audio: training/preprocess/audio.md

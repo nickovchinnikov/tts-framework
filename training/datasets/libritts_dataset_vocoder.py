@@ -10,6 +10,8 @@ from training.tools import pad_1D, pad_2D
 
 
 class LibriTTSDatasetVocoder(Dataset):
+    r"""Loading preprocessed univnet model data."""
+
     def __init__(
         self,
         root: str,
@@ -19,7 +21,7 @@ class LibriTTSDatasetVocoder(Dataset):
         drop_last: bool = False,
         download: bool = True,
     ):
-        r"""A PyTorch dataset for loading preprocessed acoustic data.
+        r"""A PyTorch dataset for loading preprocessed univnet data.
 
         Args:
             root (str): Path to the directory where the dataset is found or downloaded.

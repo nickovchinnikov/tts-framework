@@ -11,6 +11,8 @@ from training.tools import pad_1D, pad_2D, pad_3D
 
 
 class LibriTTSDatasetAcoustic(Dataset):
+    r"""Loading preprocessed acoustic model data."""
+
     def __init__(
         self,
         root: str,
