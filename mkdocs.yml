@@ -60,9 +60,6 @@ nav:
       - Tools: model/helpers/tools.md
   - Training:
     - References: training/readme.md
-    - Datasets:
-      - References: training/dataset/readme.md
-      - Libri TTS dataset: training/dataset/libritts_dataset.md
     - Loss:
       - References: training/loss/readme.md
       - Acoustic Losses:
@@ -76,6 +73,10 @@ nav:
         - Spectral Convergence Loss: training/loss/spectral_convergence_loss.md
         - Multi Resolution STFT Loss: training/loss/multi_resolution_stft_loss.md
         - Univnet loss: training/loss/univnet_loss.md
+    - Datasets:
+      - References: training/dataset/readme.md
+      - Libri TTS dataset acoustic: training/dataset/libritts_dataset_acoustic.md
+      - Libri TTS dataset vocoder: training/dataset/libritts_dataset_vocoder.md
     - Preprocess:
       - References: training/preprocess/readme.md
       - Audio: training/preprocess/audio.md

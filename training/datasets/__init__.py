@@ -1,1 +1,2 @@
-from .libritts_dataset import LibriTTSDataset
+from .libritts_dataset_acoustic import LibriTTSDatasetAcoustic
+from .libritts_dataset_vocoder import LibriTTSDatasetVocoder

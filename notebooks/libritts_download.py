@@ -59,12 +59,12 @@ preprocess = PreprocessLibriTTS()
 preprocess
 
 # %%
-preprocess(dataset[0])
+preprocess.acoustic(dataset[0])
 
 # %%
-from training.preprocess.normilize_text import NormilizeText
+from training.preprocess import NormalizeText
 
-normilize_text = NormilizeText()
+normilize_text = NormalizeText()
 
 normilize_text(dataset[0][2])
 # %%

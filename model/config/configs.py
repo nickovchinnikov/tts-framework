@@ -221,39 +221,33 @@ class AcousticMultilingualModelConfig:
 
 AcousticModelConfigType = Union[AcousticENModelConfig, AcousticMultilingualModelConfig]
 
-
 @dataclass
-class VocoderPretrainingConfig:
+class VocoderBasicConfig:
     segment_size: int = 16384
     learning_rate: float = 0.0001
     adam_b1: float = 0.5
     adam_b2: float = 0.9
     lr_decay: float = 0.995
+    synth_interval: int = 250
+    checkpoint_interval: int = 250
+    stft_lamb: float = 2.5
+
+@dataclass
+class VocoderPretrainingConfig(VocoderBasicConfig):
     batch_size: int = 14
     grad_accum_steps: int = 1
     train_steps: int = 1000000
     stdout_interval: int = 25
-    synth_interval: int = 250
     validation_interval: int = 2000
-    checkpoint_interval: int = 250
-    stft_lamb: float = 2.5
 
 
 @dataclass
-class VocoderFinetuningConfig:
-    segment_size: int = 16384
-    learning_rate: float = 0.0001
-    adam_b1: float = 0.5
-    adam_b2: float = 0.9
-    lr_decay: float = 0.995
+class VocoderFinetuningConfig(VocoderBasicConfig):
     batch_size: int = 5
     grad_accum_steps: int = 3
     train_steps: int = 10000
     stdout_interval: int = 100
-    synth_interval: int = 250
     validation_interval: int = 4000
-    checkpoint_interval: int = 250
-    stft_lamb: float = 2.5
 
 
 VoicoderTrainingConfig = Union[VocoderPretrainingConfig, VocoderFinetuningConfig]
