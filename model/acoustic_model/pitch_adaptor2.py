@@ -95,7 +95,7 @@ class PitchAdaptor(Module):
         Returns:
             torch.Tensor: The tensor containing pitch embeddings.
         """
-        pitch_bins = self.get_pitch_bins(pitch_range)
+        pitch_bins = self.get_pitch_bins(pitch_range).to(x.device)
 
         prediction = self.pitch_predictor(x, mask)
         prediction = prediction * control

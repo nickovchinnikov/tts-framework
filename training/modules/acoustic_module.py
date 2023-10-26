@@ -104,11 +104,37 @@ class AcousticModule(LightningModule):
 
     def forward(
             self,
-            x: torch.Tensor,
-            speaker: torch.Tensor,
+            text: torch.Tensor,
+            src_len: torch.Tensor,
+            speaker_idx: torch.Tensor,
             lang: torch.Tensor,
         ):
-        self.acoustic_model
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
+
+        Args:
+            text (torch.Tensor): The input text tensor.
+            src_len (torch.Tensor): The length of the source sequence.
+            speaker_idx (torch.Tensor): The index of the speaker.
+            lang (torch.Tensor): The language tensor.
+
+        Returns:
+            torch.Tensor: The output of the AcousticModel.
+        """
+        cut_idx = int(src_len.item())
+        x = text[:cut_idx].unsqueeze(0)
+        speakers = speaker_idx[:cut_idx].unsqueeze(0)
+        langs = lang[:cut_idx].unsqueeze(0)
+
+        return self.acoustic_model(
+            x=x,
+            pitches_range=(
+                self.pitches_stat[0],
+                self.pitches_stat[1],
+            ),
+            speakers=speakers,
+            langs=langs,
+        )
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer

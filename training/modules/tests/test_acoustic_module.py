@@ -48,7 +48,7 @@ class TestTrainAcousticModule(unittest.TestCase):
         self.assertIsInstance(optimizer, torch.optim.Adam)
         self.assertIsInstance(lr_scheduler, torch.optim.lr_scheduler.LambdaLR)
 
-    def test_forward(self):
+    def test_train_steps(self):
         trainer = Trainer(
             # Save checkpoints to the `default_root_dir` directory
             default_root_dir="checkpoints/acoustic",
@@ -68,14 +68,33 @@ class TestTrainAcousticModule(unittest.TestCase):
         train_dataloader = module.train_dataloader()
 
         result = trainer.fit(model=module, train_dataloaders=train_dataloader)
-
+        # module.pitches_stat tensor([ 51.6393, 408.3333])
         self.assertIsNone(result)
 
-    def test_load_from_checkpoint(self):
+    def test_load_from_new_checkpoint(self):
         try:
             AcousticModule.load_from_checkpoint(
-                "./checkpoints/acoustic/lightning_logs/version_1/checkpoints/epoch=0-step=2.ckpt",
+                "./checkpoints/am_pitche_stats.ckpt",
             )
         except Exception as e:
             self.fail(f"Loading from checkpoint raised an exception: {e}")
 
+    def test_forward(self):
+        module = AcousticModule.load_from_checkpoint(
+            "./checkpoints/am_pitche_stats.ckpt",
+        )
+
+        text = torch.tensor([
+            2, 42, 14, 44, 22, 50, 21, 10, 42, 27, 24, 36, 19, 16, 42, 32, 20, 4, 42, 19, 37, 16, 19, 28, 32, 4, 45, 21, 21, 22, 50, 37, 14, 39, 50, 21, 30, 37, 44, 42, 18, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ], device=module.pitches_stat.device)
+        src_len = torch.tensor([42], device=module.pitches_stat.device)
+        speakers = torch.tensor([
+            2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436,
+        ], device=module.pitches_stat.device)
+        langs = torch.tensor([
+            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+        ], device=module.pitches_stat.device)
+
+        result = module.forward(text, src_len, speakers, langs)
+
+        self.assertIsInstance(result, torch.Tensor)
