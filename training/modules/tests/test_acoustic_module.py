@@ -70,6 +70,9 @@ class TestTrainAcousticModule(unittest.TestCase):
 
         train_dataloader = module.train_dataloader()
 
+        # automatically restores model, epoch, step, LR schedulers, etc...
+        # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
+
         result = trainer.fit(model=module, train_dataloaders=train_dataloader)
         # module.pitches_stat tensor([ 51.6393, 408.3333])
         self.assertIsNone(result)
@@ -108,7 +111,7 @@ class TestTrainAcousticModule(unittest.TestCase):
 
         # Save the audio to a file
         torchaudio.save(
-            "result/output.wav",
+            "results/output.wav",
             wav_prediction.unsqueeze(0).detach().cpu(),
             22050,
         )

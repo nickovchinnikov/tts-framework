@@ -173,6 +173,9 @@ lightning_logs
 **/checkpoints/**/*.bin
 **/checkpoints/**/*.txt
 
+# Ignore generated sounds
+results/*
+
 # Mock datasets
 datasets_cache/**/*
 

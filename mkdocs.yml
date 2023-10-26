@@ -60,6 +60,11 @@ nav:
       - Tools: model/helpers/tools.md
   - Training:
     - References: training/readme.md
+    - Training Process: training/training_process.md
+    - Modules:
+      - References: training/modules/readme.md
+      - Acoustic Module: training/modules/acoustic_module.md
+      - Vocoder Module: training/modules/vocoder_module.md
     - Loss:
       - References: training/loss/readme.md
       - Acoustic Losses:
