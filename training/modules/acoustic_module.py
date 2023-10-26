@@ -69,6 +69,9 @@ class AcousticModule(LightningModule):
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
+        # Initialize pitches_stat with large/small values for min/max
+        self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
+
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
         if checkpoint_path_v1 is not None:
@@ -99,7 +102,12 @@ class AcousticModule(LightningModule):
 
         return checkpoint["gen"]
 
-    def forward(self, x: torch.Tensor):
+    def forward(
+            self,
+            x: torch.Tensor,
+            speaker: torch.Tensor,
+            lang: torch.Tensor,
+        ):
         self.acoustic_model
 
     # TODO: don't forget about torch.no_grad() !
@@ -145,6 +153,10 @@ class AcousticModule(LightningModule):
             attn_priors,
             _,
         ) = batch
+
+        # Update pitches_stat
+        self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
+        self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
 
         src_mask = get_mask_from_lengths(src_lens)
         mel_mask = get_mask_from_lengths(mel_lens)

@@ -410,8 +410,8 @@ class AcousticModel(Module):
         pitches_range: Tuple[float, float],
         speakers: torch.Tensor,
         langs: torch.Tensor,
-        p_control: float,
-        d_control: float,
+        p_control: float = 1.0,
+        d_control: float = 1.0,
     ) -> torch.Tensor:
         r"""Forward pass during model inference.
 
@@ -424,8 +424,8 @@ class AcousticModel(Module):
             pitches_range (Tuple[float, float]): The pitch min/max range.
             speakers (torch.Tensor): Tensor of speaker identities.
             langs (torch.Tensor): Tensor of language identities.
-            p_control (float): Pitch control parameter.
-            d_control (float): Duration control parameter.
+            p_control (float): Pitch control parameter. Defaults to 1.0.
+            d_control (float): Duration control parameter. Defaults to 1.0.
 
         Returns:
             torch.Tensor: Predicted mel spectrogram.
