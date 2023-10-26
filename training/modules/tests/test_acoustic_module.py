@@ -3,8 +3,11 @@ import unittest
 
 from pytorch_lightning import Trainer
 import torch
+import torchaudio
 
-from training.modules import AcousticModule
+from training.modules import AcousticModule, VocoderModule
+
+from .mock import get_dummy_input
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -84,17 +87,30 @@ class TestTrainAcousticModule(unittest.TestCase):
             "./checkpoints/am_pitche_stats.ckpt",
         )
 
-        text = torch.tensor([
-            2, 42, 14, 44, 22, 50, 21, 10, 42, 27, 24, 36, 19, 16, 42, 32, 20, 4, 42, 19, 37, 16, 19, 28, 32, 4, 45, 21, 21, 22, 50, 37, 14, 39, 50, 21, 30, 37, 44, 42, 18, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ], device=module.pitches_stat.device)
-        src_len = torch.tensor([42], device=module.pitches_stat.device)
-        speakers = torch.tensor([
-            2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436, 2436,
-        ], device=module.pitches_stat.device)
-        langs = torch.tensor([
-            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        ], device=module.pitches_stat.device)
+        text, src_len, speakers, langs = get_dummy_input(module.pitches_stat.device)
 
         result = module.forward(text, src_len, speakers, langs)
 
         self.assertIsInstance(result, torch.Tensor)
+
+    def test_generate_audio(self):
+        acoustic_module = AcousticModule.load_from_checkpoint(
+            "./checkpoints/am_pitche_stats.ckpt",
+        )
+        vocoder_module = VocoderModule.load_from_checkpoint(
+            "./checkpoints/vocoder.ckpt",
+        )
+
+        text, src_len, speakers, langs = get_dummy_input(acoustic_module.pitches_stat.device)
+
+        y_pred = acoustic_module.forward(text, src_len, speakers, langs)
+        wav_prediction = vocoder_module.forward(y_pred)
+
+        # Save the audio to a file
+        torchaudio.save(
+            "result/output.wav",
+            wav_prediction.unsqueeze(0).detach().cpu(),
+            22050,
+        )
+
+        self.assertIsInstance(wav_prediction, torch.Tensor)

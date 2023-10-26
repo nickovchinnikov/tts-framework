@@ -96,7 +96,7 @@ class TestTrainAcousticModule(unittest.TestCase):
             actual_discriminator_optimizer_weights,
         )
 
-    def test_forward(self):
+    def test_train_step(self):
         trainer = Trainer(
             # Save checkpoints to the `default_root_dir` directory
             default_root_dir="checkpoints/vocoder",
