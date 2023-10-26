@@ -54,6 +54,8 @@ class AcousticModule(LightningModule):
             self.train_config = AcousticPretrainingConfig()
 
         # TODO: check this argument!
+        # TODO: use the `register_buffer` to export this parameter to the checkpoint!
+        # CRITICAL: Possible issue in training.
         self.initial_step = initial_step
 
         self.preprocess_config = PreprocessingConfig("english_only")
