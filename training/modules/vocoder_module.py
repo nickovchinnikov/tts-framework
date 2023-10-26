@@ -60,7 +60,6 @@ class VocoderModule(LightningModule):
         if fine_tuning \
         else VocoderPretrainingConfig()
 
-
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
         self.checkpoint_path_v1 = checkpoint_path_v1
@@ -89,6 +88,23 @@ class VocoderModule(LightningModule):
             ckpt_acoustic["optim_g"],
             ckpt_acoustic["optim_d"],
         )
+
+    def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
+        r"""Performs a forward pass through the UnivNet model.
+
+        Args:
+            y_pred (torch.Tensor): The predicted mel spectrogram.
+
+        Returns:
+            torch.Tensor: The output of the UnivNet model.
+        """
+        mel_lens=torch.tensor(
+            [y_pred.shape[2]], dtype=torch.int32, device=y_pred.device,
+        )
+
+        wav_prediction = self.univnet.infer(y_pred, mel_lens)
+
+        return wav_prediction[0, 0]
 
     def training_step(self, batch: List, _: int):
         r"""Performs a training step for the model.
