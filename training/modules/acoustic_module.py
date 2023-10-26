@@ -60,7 +60,7 @@ class AcousticModule(LightningModule):
         self.model_config = AcousticENModelConfig()
 
         # TODO: fix the arguments!
-        self.model = AcousticModel(
+        self.acoustic_model = AcousticModel(
             preprocess_config=self.preprocess_config,
             model_config=self.model_config,
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
@@ -73,7 +73,7 @@ class AcousticModule(LightningModule):
         # In the future, this code will be removed!
         if checkpoint_path_v1 is not None:
             checkpoint = self._load_weights_v1(checkpoint_path_v1)
-            self.model.load_state_dict(checkpoint, strict=False)
+            self.acoustic_model.load_state_dict(checkpoint, strict=False)
 
     def _load_weights_v1(self, checkpoint_path: str) -> dict:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
@@ -100,7 +100,7 @@ class AcousticModule(LightningModule):
         return checkpoint["gen"]
 
     def forward(self, x: torch.Tensor):
-        self.model
+        self.acoustic_model
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -149,7 +149,7 @@ class AcousticModule(LightningModule):
         src_mask = get_mask_from_lengths(src_lens)
         mel_mask = get_mask_from_lengths(mel_lens)
 
-        outputs = self.model.forward_train(
+        outputs = self.acoustic_model.forward_train(
             x=texts,
             speakers=speakers,
             src_lens=src_lens,
@@ -219,7 +219,7 @@ class AcousticModule(LightningModule):
         Returns
             dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
-        parameters = self.model.parameters()
+        parameters = self.acoustic_model.parameters()
 
         if self.fine_tuning:
             # Compute the gamma and initial learning rate based on the current step

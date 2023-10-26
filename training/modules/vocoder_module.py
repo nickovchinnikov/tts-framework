@@ -69,7 +69,7 @@ class VocoderModule(LightningModule):
             self.univnet.load_state_dict(generator, strict=False)
             self.discriminator.load_state_dict(discriminator, strict=False)
 
-    def get_weights_v1(self, checkpoint_path: str) -> Tuple[Any, Any, Any, Any]:
+    def get_weights_v1(self, checkpoint_path: str) -> Tuple[dict, dict, dict, dict]:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
         Prepares the weights for the model.
 
@@ -79,7 +79,7 @@ class VocoderModule(LightningModule):
             checkpoint_path (str): The path to the checkpoint.
 
         Returns:
-            Tuple[Any, Any, Any, Any]: The weights for the generator and discriminator.
+            Tuple[dict, dict, dict, dict]: The weights for the generator and discriminator.
         """
         ckpt_acoustic = torch.load(checkpoint_path)
 

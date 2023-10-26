@@ -10,9 +10,6 @@ from training.modules import AcousticModule
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 class TestTrainAcousticModule(unittest.TestCase):
-    def setUp(self):
-        pass
-
     def test_optim_finetuning(self):
         module = AcousticModule(fine_tuning=True)
 
