@@ -48,7 +48,7 @@ class UnivnetLoss(Module):
 
         # Calculate the score loss
         score_loss = sum([
-            torch.mean(torch.pow(score_fake - 1.0, 2)).item()
+            torch.mean(torch.pow(score_fake - 1.0, 2))
             for (_, score_fake) in res_fake + period_fake
         ])
         score_loss = score_loss / len(res_fake + period_fake)
@@ -57,17 +57,18 @@ class UnivnetLoss(Module):
         total_loss_gen = score_loss + stft_loss
 
         # Calculate the discriminator loss
-        total_loss_disc: float = sum([
-            torch.mean(torch.pow(score_real - 1.0, 2)).item() +
-            torch.mean(torch.pow(score_fake, 2)).item()
-            for (_, score_fake), (_, score_real) in zip(res_fake + period_fake, res_real + period_real)
+        total_loss_disc = sum([
+            torch.mean(torch.pow(score_real - 1.0, 2)) +
+            torch.mean(torch.pow(score_fake, 2))
+            for (_, score_fake), (_, score_real) in \
+                zip(res_fake + period_fake, res_real + period_real)
         ])
 
         total_loss_disc = total_loss_disc / len(res_fake + period_fake)
 
         return (
-            total_loss_gen.item(),
+            total_loss_gen,
             total_loss_disc,
-            stft_loss.item(),
+            stft_loss,
             score_loss,
         )
