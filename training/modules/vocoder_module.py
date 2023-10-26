@@ -2,11 +2,17 @@ from typing import Any, List, Optional, Tuple
 
 from pytorch_lightning.core import LightningModule
 import torch
-from torch.optim import AdamW
+from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
-from model.config import PreprocessingConfig, VocoderModelConfig, VoicoderTrainingConfig
+from model.config import (
+    PreprocessingConfig,
+    VocoderFinetuningConfig,
+    VocoderModelConfig,
+    VocoderPretrainingConfig,
+    VoicoderTrainingConfig,
+)
 from model.univnet import Discriminator, UnivNet
 from training.datasets import LibriTTSDatasetVocoder
 from training.loss import UnivnetLoss
@@ -20,24 +26,26 @@ class VocoderModule(LightningModule):
 
     def __init__(
             self,
-            train_config: VoicoderTrainingConfig,
-            model_config: VocoderModelConfig,
-            preprocess_config: PreprocessingConfig,
+            fine_tuning: bool = False,
             root: str = "datasets_cache/LIBRITTS",
             checkpoint_path_v1: Optional[str] = None,
         ):
         r"""Initializes the `VocoderModule`.
 
         Args:
-            train_config (VoicoderTrainingConfig): The training configuration.
-            model_config (VocoderModelConfig): The model configuration.
-            preprocess_config (PreprocessingConfig): The preprocessing configuration.
+            fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
             root (str, optional): The root directory for the dataset. Defaults to "datasets_cache/LIBRITTS".
-            checkpoint_path_v1 (Optional[str], optional): The path to the checkpoint for the model. If provided, the model weights will be loaded from this checkpoint. Defaults to None.
+            checkpoint_path_v1 (str, optional): The path to the checkpoint for the model. If provided, the model weights will be loaded from this checkpoint. Defaults to None.
         """
         super().__init__()
 
+        # Switch to manual optimization
+        self.automatic_optimization = False
+
         self.root = root
+
+        model_config = VocoderModelConfig()
+        preprocess_config = PreprocessingConfig("english_only")
 
         self.univnet = UnivNet(
             model_config=model_config,
@@ -47,16 +55,20 @@ class VocoderModule(LightningModule):
 
         self.loss = UnivnetLoss()
 
-        self.train_config = train_config
+        self.train_config: VoicoderTrainingConfig = \
+        VocoderFinetuningConfig() \
+        if fine_tuning \
+        else VocoderPretrainingConfig()
 
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
+        self.checkpoint_path_v1 = checkpoint_path_v1
         if checkpoint_path_v1 is not None:
-            generator, discriminator = self.get_weights_v1(checkpoint_path_v1)
+            generator, discriminator, _, _ = self.get_weights_v1(checkpoint_path_v1)
             self.univnet.load_state_dict(generator, strict=False)
             self.discriminator.load_state_dict(discriminator, strict=False)
 
-    def get_weights_v1(self, checkpoint_path: str) -> Tuple[Any, Any]:
+    def get_weights_v1(self, checkpoint_path: str) -> Tuple[dict, dict, dict, dict]:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
         Prepares the weights for the model.
 
@@ -66,13 +78,35 @@ class VocoderModule(LightningModule):
             checkpoint_path (str): The path to the checkpoint.
 
         Returns:
-            Tuple[Any, Any]: The weights for the generator and discriminator.
+            Tuple[dict, dict, dict, dict]: The weights for the generator and discriminator.
         """
         ckpt_acoustic = torch.load(checkpoint_path)
 
-        return ckpt_acoustic["generator"], ckpt_acoustic["discriminator"]
+        return (
+            ckpt_acoustic["generator"],
+            ckpt_acoustic["discriminator"],
+            ckpt_acoustic["optim_g"],
+            ckpt_acoustic["optim_d"],
+        )
 
-    def training_step(self, batch: List, batch_idx: int):
+    def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
+        r"""Performs a forward pass through the UnivNet model.
+
+        Args:
+            y_pred (torch.Tensor): The predicted mel spectrogram.
+
+        Returns:
+            torch.Tensor: The output of the UnivNet model.
+        """
+        mel_lens=torch.tensor(
+            [y_pred.shape[2]], dtype=torch.int32, device=y_pred.device,
+        )
+
+        wav_prediction = self.univnet.infer(y_pred, mel_lens)
+
+        return wav_prediction[0, 0]
+
+    def training_step(self, batch: List, _: int):
         r"""Performs a training step for the model.
 
         Args:
@@ -82,13 +116,19 @@ class VocoderModule(LightningModule):
         Returns:
             dict: A dictionary containing the total loss for the generator and logs for tensorboard.
         """
+        # Access your optimizers
+        optimizers: List[Optimizer] = self.optimizers() # type: ignore
+
+        opt_univnet, opt_discriminator = optimizers
+
         (
             mel,
-            mel_len,
+            _,
             audio,
-            speaker_id,
+            _,
         ) = batch
 
+        audio = audio.unsqueeze(1)
         fake_audio = self.univnet(mel)
 
         res_fake, period_fake = self.discriminator(fake_audio.detach())
@@ -97,7 +137,7 @@ class VocoderModule(LightningModule):
         (
             total_loss_gen,
             total_loss_disc,
-            mel_loss,
+            stft_loss,
             score_loss,
         ) = self.loss(
             audio,
@@ -108,10 +148,20 @@ class VocoderModule(LightningModule):
             period_real,
         )
 
+        # Perform manual optimization
+        # TODO: total_loss_gen shouldn't be float! Here is a bug!
+        opt_univnet.zero_grad()
+        self.manual_backward(total_loss_gen, retain_graph=True)
+        opt_univnet.step()
+
+        opt_discriminator.zero_grad()
+        self.manual_backward(total_loss_disc)
+        opt_discriminator.step()
+
         tensorboard_logs = {
             "total_loss_gen": total_loss_gen,
             "total_loss_disc": total_loss_disc,
-            "mel_loss": mel_loss,
+            "mel_loss": stft_loss,
             "score_loss": score_loss,
         }
 
@@ -152,6 +202,13 @@ class VocoderModule(LightningModule):
         scheduler_discriminator = ExponentialLR(
             optim_discriminator, gamma=self.train_config.lr_decay, last_epoch=-1,
         )
+
+        # NOTE: this code is used only for the v0.1.0 checkpoint.
+        # In the future, this code will be removed!
+        if self.checkpoint_path_v1 is not None:
+            _, _, optim_g, optim_d = self.get_weights_v1(self.checkpoint_path_v1)
+            optim_univnet.load_state_dict(optim_g)
+            optim_discriminator.load_state_dict(optim_d)
 
         return (
             {"optimizer": optim_univnet, "lr_scheduler": scheduler_univnet},

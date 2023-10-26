@@ -3,16 +3,16 @@ import unittest
 
 from pytorch_lightning import Trainer
 import torch
+import torchaudio
 
-from training.modules.acoustic_module import AcousticModule
+from training.modules import AcousticModule, VocoderModule
+
+from .mock import get_dummy_input
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 class TestTrainAcousticModule(unittest.TestCase):
-    def setUp(self):
-        pass
-
     def test_optim_finetuning(self):
         module = AcousticModule(fine_tuning=True)
 
@@ -51,7 +51,7 @@ class TestTrainAcousticModule(unittest.TestCase):
         self.assertIsInstance(optimizer, torch.optim.Adam)
         self.assertIsInstance(lr_scheduler, torch.optim.lr_scheduler.LambdaLR)
 
-    def test_forward(self):
+    def test_train_steps(self):
         trainer = Trainer(
             # Save checkpoints to the `default_root_dir` directory
             default_root_dir="checkpoints/acoustic",
@@ -71,14 +71,46 @@ class TestTrainAcousticModule(unittest.TestCase):
         train_dataloader = module.train_dataloader()
 
         result = trainer.fit(model=module, train_dataloaders=train_dataloader)
-
+        # module.pitches_stat tensor([ 51.6393, 408.3333])
         self.assertIsNone(result)
 
-    def test_load_from_checkpoint(self):
+    def test_load_from_new_checkpoint(self):
         try:
             AcousticModule.load_from_checkpoint(
-                "./checkpoints/acoustic/lightning_logs/version_1/checkpoints/epoch=0-step=2.ckpt",
+                "./checkpoints/am_pitche_stats.ckpt",
             )
         except Exception as e:
             self.fail(f"Loading from checkpoint raised an exception: {e}")
 
+    def test_forward(self):
+        module = AcousticModule.load_from_checkpoint(
+            "./checkpoints/am_pitche_stats.ckpt",
+        )
+
+        text, src_len, speakers, langs = get_dummy_input(module.pitches_stat.device)
+
+        result = module.forward(text, src_len, speakers, langs)
+
+        self.assertIsInstance(result, torch.Tensor)
+
+    def test_generate_audio(self):
+        acoustic_module = AcousticModule.load_from_checkpoint(
+            "./checkpoints/am_pitche_stats.ckpt",
+        )
+        vocoder_module = VocoderModule.load_from_checkpoint(
+            "./checkpoints/vocoder.ckpt",
+        )
+
+        text, src_len, speakers, langs = get_dummy_input(acoustic_module.pitches_stat.device)
+
+        y_pred = acoustic_module.forward(text, src_len, speakers, langs)
+        wav_prediction = vocoder_module.forward(y_pred)
+
+        # Save the audio to a file
+        torchaudio.save(
+            "result/output.wav",
+            wav_prediction.unsqueeze(0).detach().cpu(),
+            22050,
+        )
+
+        self.assertIsInstance(wav_prediction, torch.Tensor)

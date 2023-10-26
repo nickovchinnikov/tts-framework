@@ -23,7 +23,7 @@ class AcousticModule(LightningModule):
     r"""Trainer for the acoustic model.
 
     Args:
-        fine_tuning (bool): Whether to use fine-tuning mode or not.
+        fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
         root (str): Root directory of the dataset.
         step (int): Current training step.
@@ -60,7 +60,7 @@ class AcousticModule(LightningModule):
         self.model_config = AcousticENModelConfig()
 
         # TODO: fix the arguments!
-        self.model = AcousticModel(
+        self.acoustic_model = AcousticModel(
             preprocess_config=self.preprocess_config,
             model_config=self.model_config,
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
@@ -69,11 +69,14 @@ class AcousticModule(LightningModule):
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
+        # Initialize pitches_stat with large/small values for min/max
+        self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
+
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
         if checkpoint_path_v1 is not None:
             checkpoint = self._load_weights_v1(checkpoint_path_v1)
-            self.model.load_state_dict(checkpoint, strict=False)
+            self.acoustic_model.load_state_dict(checkpoint, strict=False)
 
     def _load_weights_v1(self, checkpoint_path: str) -> dict:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
@@ -99,8 +102,39 @@ class AcousticModule(LightningModule):
 
         return checkpoint["gen"]
 
-    def forward(self, x: torch.Tensor):
-        self.model
+    def forward(
+            self,
+            text: torch.Tensor,
+            src_len: torch.Tensor,
+            speaker_idx: torch.Tensor,
+            lang: torch.Tensor,
+        ):
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
+
+        Args:
+            text (torch.Tensor): The input text tensor.
+            src_len (torch.Tensor): The length of the source sequence.
+            speaker_idx (torch.Tensor): The index of the speaker.
+            lang (torch.Tensor): The language tensor.
+
+        Returns:
+            torch.Tensor: The output of the AcousticModel.
+        """
+        cut_idx = int(src_len.item())
+        x = text[:cut_idx].unsqueeze(0)
+        speakers = speaker_idx[:cut_idx].unsqueeze(0)
+        langs = lang[:cut_idx].unsqueeze(0)
+
+        return self.acoustic_model(
+            x=x,
+            pitches_range=(
+                self.pitches_stat[0],
+                self.pitches_stat[1],
+            ),
+            speakers=speakers,
+            langs=langs,
+        )
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -146,10 +180,14 @@ class AcousticModule(LightningModule):
             _,
         ) = batch
 
+        # Update pitches_stat
+        self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
+        self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
+
         src_mask = get_mask_from_lengths(src_lens)
         mel_mask = get_mask_from_lengths(mel_lens)
 
-        outputs = self.model.forward_train(
+        outputs = self.acoustic_model.forward_train(
             x=texts,
             speakers=speakers,
             src_lens=src_lens,
@@ -219,7 +257,7 @@ class AcousticModule(LightningModule):
         Returns
             dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
-        parameters = self.model.parameters()
+        parameters = self.acoustic_model.parameters()
 
         if self.fine_tuning:
             # Compute the gamma and initial learning rate based on the current step

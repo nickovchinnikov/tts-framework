@@ -410,8 +410,8 @@ class AcousticModel(Module):
         pitches_range: Tuple[float, float],
         speakers: torch.Tensor,
         langs: torch.Tensor,
-        p_control: float,
-        d_control: float,
+        p_control: float = 1.0,
+        d_control: float = 1.0,
     ) -> torch.Tensor:
         r"""Forward pass during model inference.
 
@@ -424,8 +424,8 @@ class AcousticModel(Module):
             pitches_range (Tuple[float, float]): The pitch min/max range.
             speakers (torch.Tensor): Tensor of speaker identities.
             langs (torch.Tensor): Tensor of language identities.
-            p_control (float): Pitch control parameter.
-            d_control (float): Duration control parameter.
+            p_control (float): Pitch control parameter. Defaults to 1.0.
+            d_control (float): Duration control parameter. Defaults to 1.0.
 
         Returns:
             torch.Tensor: Predicted mel spectrogram.
@@ -433,7 +433,7 @@ class AcousticModel(Module):
         # Generate masks for padding positions in the source sequences
         src_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
-        )
+        ).to(x.device)
 
         # Obtain the embeddings for the input
         x, embeddings = self.get_embeddings(
@@ -441,7 +441,7 @@ class AcousticModel(Module):
         )
 
         # Generate positional encodings
-        encoding = positional_encoding(self.emb_dim, x.shape[1])
+        encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
 
         # Process the embeddings through the encoder
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
@@ -474,9 +474,9 @@ class AcousticModel(Module):
         )
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
-        )
+        ).to(x.device)
         if x.shape[1] > encoding.shape[1]:
-            encoding = positional_encoding(self.emb_dim, x.shape[1])
+            encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)

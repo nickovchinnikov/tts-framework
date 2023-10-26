@@ -149,9 +149,11 @@ class DiscriminatorR(Module):
             hop_length=hop_length,
             win_length=win_length,
             center=False,
-            # TODO: not sure about complex datatype here:
             return_complex=True,
+            window=torch.ones(win_length, device=x.device),
         )  # [B, F, TT, 2]
+
+        x = torch.view_as_real(x)
 
         # Compute the magnitude spectrogram from the complex spectrogram
         return torch.norm(x, p=2, dim=-1)  # [B, F, TT]
