@@ -2,10 +2,6 @@
 
 Training code documentation. Here you can find the documentation for the training code and the training process. Also training tools and utilities are documented here.
 
-### [Training Process](./training_process.md)
-
-Description of the training process. Docs, ideas and examples for the training process. 
-
 ### [Modules](modules/readme.md)
 
 Modules use for training of the models. The core of the training.

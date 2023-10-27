@@ -10,4 +10,6 @@
 
 ### [Find bottleneck](./find_bottlenecks.md)
 
+### [Saving Loading Checkpoints](./saving_loading_checkpoints.md)
+
 ### [Visualize experiments](./visualize_experiments.md)

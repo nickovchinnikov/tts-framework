@@ -11,9 +11,9 @@ You can read about this mkdocs-material here: [mkdocs-material](readme.md)
 
 ## References
 
-## [Development docs](./dev/readme.md)
+### [Development docs](./dev/readme.md)
 
-Development docs with examples and ideas.
+Description of the training process. Docs, ideas and examples for the training process. 
 
 ## Model
 

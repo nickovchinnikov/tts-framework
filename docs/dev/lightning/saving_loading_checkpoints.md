@@ -1,5 +1,3 @@
-# Training process
-
 ## Lightning checkpoints
 
 #### [More details are here: Transfer Learning](https://lightning.ai/docs/pytorch/stable/advanced/transfer_learning.html)

@@ -12,6 +12,7 @@ nav:
       - Debug: dev/lightning/debug.md
       - Early Stopping: dev/lightning/early_stopping.md
       - Find Bottlenecks: dev/lightning/find_bottlenecks.md
+      - Saving Loading checkpoints: dev/lightning/saving_loading_checkpoints.md
       - Visualize Experiments: dev/lightning/visualize_experiments.md
   - Model:
     - Convolution Blocks:
