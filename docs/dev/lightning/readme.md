@@ -23,3 +23,9 @@
 ### [Lightning Data Module](./intermediate/lightning_data_module.md)
 
 ### [Configure hyperparameters from the CLI](./intermediate/configure_hyperparameters_from_the_cli.md)
+
+### [Customize checkpointing behavior](./intermediate/customize_checkpointing_behavior.md)
+
+### [Track and Visualize Experiments](./intermediate/track_and_visualize_experiments.md)
+
+### [SOTA scaling techniques](./intermediate/)
