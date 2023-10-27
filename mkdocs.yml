@@ -6,6 +6,13 @@ nav:
     - Change Log: dev/change_log.md
     - Problems and Fixes: dev/problems_and_fixes.md
     - Training: dev/training.md
+    - Lightning docs:
+      - References: dev/lightning/readme.md
+      - Argparse and Hyperparams: dev/lightning/argparse_and_cli.md
+      - Debug: dev/lightning/debug.md
+      - Early Stopping: dev/lightning/early_stopping.md
+      - Find Bottlenecks: dev/lightning/find_bottlenecks.md
+      - Visualize Experiments: dev/lightning/visualize_experiments.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
