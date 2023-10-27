@@ -28,4 +28,8 @@
 
 ### [Track and Visualize Experiments](./intermediate/track_and_visualize_experiments.md)
 
-### [SOTA scaling techniques](./intermediate/)
+### [SOTA scaling techniques (N-Bit Precision)](./intermediate/sota_scaling_techniques.md)
+
+### [Important! Effective Training Techniques (Acc grad,cliping)](./intermediate/effective_training_techniques.md)
+
+
