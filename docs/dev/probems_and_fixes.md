@@ -25,6 +25,15 @@ Minor fixes, and `TODO` that I can't fix now, but wanted to fix for the future.
 
 The ideas behind the model and architecture are mostly the same. The training code is completely different, there is a base of dunky11 and the architecture is completely new.
 
+## Changes
+
+### pitch_adaptor2 and pitches_stat
+
+Instead of `pitch_adaptor` that used the `stats.json` (which is unknown) that looks like critical issue for me, I have a new version of `PitchAdaptor` that receive an argument `pitch_range`.
+
+Inside the `AcousticModule` I have the `pitches_stat`, parameter, it's required for the audio generation and `PitchAdaptor.
+Without the new weights that keep-in-track `pitches_stat``, it's not possible to generate the waveform or mel-spectrogram.
+
 ## Problems
 
 ### FIXME: Step param!
