@@ -19,6 +19,7 @@ nav:
         - Hardware-Agnostic training: dev/lightning/intermediate/hardware_agnostic_training.md
         - GPU training: dev/lightning/intermediate/gpu_training.md
         - Lightning Data Module: dev/lightning/intermediate/lightning_data_module.md
+        - Configure hyperparameters from the CLI: dev/lightning/intermediate/configure_hyperparameters_from_the_cli.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md

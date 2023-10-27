@@ -21,3 +21,5 @@
 ### [GPU training](./intermediate/gpu_training.md)
 
 ### [Lightning Data Module](./intermediate/lightning_data_module.md)
+
+### [Configure hyperparameters from the CLI](./intermediate/configure_hyperparameters_from_the_cli.md)
