@@ -11,6 +11,10 @@ You can read about this mkdocs-material here: [mkdocs-material](readme.md)
 
 ## References
 
+## [Development docs](./dev/readme.md)
+
+Development docs with examples and ideas.
+
 ## Model
 
 ### [Acoustic Model](model/acoustic_model/readme.md)

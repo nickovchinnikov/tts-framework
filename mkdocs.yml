@@ -1,6 +1,11 @@
 site_name: TTS-Framework
 nav:
   - Home: index.md
+  - Dev docs:
+    - References: dev/readme.md
+    - Change Log: dev/change_log.md
+    - Problems and Fixes: dev/problems_and_fixes.md
+    - Training: dev/training.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
