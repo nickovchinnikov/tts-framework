@@ -28,3 +28,29 @@ vocoder_module = VocoderModule.load_from_checkpoint(
 )
 
 ```
+
+### Initialize with other parameters
+
+```python
+# if you train and save the model like this it will use these values when loading
+# the weights. But you can overwrite this
+LitModel(in_dim=32, out_dim=10)
+
+# uses in_dim=32, out_dim=10
+model = LitModel.load_from_checkpoint(PATH)
+
+# uses in_dim=128, out_dim=10
+model = LitModel.load_from_checkpoint(PATH, in_dim=128, out_dim=10)
+```
+
+### Resume training state
+
+If you don't just want to load weights, but instead restore the full training, do the following:
+
+```python
+model = LitModel()
+trainer = Trainer()
+
+# automatically restores model, epoch, step, LR schedulers, etc...
+trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
+```
