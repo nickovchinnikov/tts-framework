@@ -6,7 +6,7 @@ Dunky11 created a not-so-good way for text preprocessing. Maybe his solutions ar
 *Dunky11 quote*:
 > Nemo's text normalizer unfortunately produces a large amount of false positives. For example it normalizes 'medic' into 'm e d i c' or 'yeah' into 'y e a h'. To reduce the amount of false positives we will do a check for unusual symbols or words inside the text and only normalize if necessary.
 I checked the described cases and it works fine. Tried to find an issue, but wasn't lucky. Maybe I did it wrong.
-I have the code, that wrapped the `NeMo` and added several more preprocessing features, that absolutely required, like char mapping. You can find docs here: [NormalizeText](./preprocess/normalize_text.md)
+I have the code, that wrapped the `NeMo` and added several more preprocessing features, that absolutely required, like char mapping. You can find docs here: [NormalizeText](../training/preprocess/normalize_text.md)
 
 ### 2 The phonemizer process (G2P) and tokenization process are changed.
 

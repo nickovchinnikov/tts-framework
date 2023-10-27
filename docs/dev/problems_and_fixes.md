@@ -38,5 +38,5 @@ Without the new weights that keep-in-track `pitches_stat``, it's not possible to
 
 ### FIXME: Step param!
 
-I have a `step` parameter, it requires the future investigation. Maybe I need to add this param to the model step with `self.register_buffer`. It's required for the [FastSpeech2LossGen](./loss/fast_speech_2_loss_gen.md)
+I have a `step` parameter, it requires the future investigation. Maybe I need to add this param to the model step with `self.register_buffer`. It's required for the [FastSpeech2LossGen](../training/loss/fast_speech_2_loss_gen.md)
 Possible training issue!

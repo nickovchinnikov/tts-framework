@@ -10,7 +10,7 @@ And crucial ideas behind the training and architecture. Description of the probl
 
 Difference with original implementation.
 
-### [Problems and fixes](./probems_and_fixes.md)
+### [Problems and fixes](./problems_and_fixes.md)
 
 Fixes and problem in the system.
 

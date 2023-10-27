@@ -8,12 +8,17 @@ nav:
     - Training: dev/training.md
     - Lightning docs:
       - References: dev/lightning/readme.md
-      - Argparse and Hyperparams: dev/lightning/argparse_and_cli.md
-      - Debug: dev/lightning/debug.md
-      - Early Stopping: dev/lightning/early_stopping.md
-      - Find Bottlenecks: dev/lightning/find_bottlenecks.md
-      - Saving Loading checkpoints: dev/lightning/saving_loading_checkpoints.md
-      - Visualize Experiments: dev/lightning/visualize_experiments.md
+      - Basic:
+        - Argparse and Hyperparams: dev/lightning/argparse_and_cli.md
+        - Debug: dev/lightning/debug.md
+        - Early Stopping: dev/lightning/early_stopping.md
+        - Find Bottlenecks: dev/lightning/find_bottlenecks.md
+        - Saving Loading checkpoints: dev/lightning/saving_loading_checkpoints.md
+        - Visualize Experiments: dev/lightning/visualize_experiments.md
+      - Intermediate:
+        - Hardware-Agnostic training: dev/lightning/hardware_agnostic_training.md
+        - GPU training: dev/lightning/gpu_training.md
+        - Lightning Data Module: dev/lightning/lightning_data_module.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
@@ -73,7 +78,6 @@ nav:
       - Tools: model/helpers/tools.md
   - Training:
     - References: training/readme.md
-    - Training Process: training/training_process.md
     - Modules:
       - References: training/modules/readme.md
       - Acoustic Module: training/modules/acoustic_module.md
