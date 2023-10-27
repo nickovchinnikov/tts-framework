@@ -2,22 +2,22 @@
 
 ## Basic: 
 
-### [Hyperparameters from the CLI and argparse](./argparse_and_cli.md)
+### [Hyperparameters from the CLI and argparse](./basic/argparse_and_cli.md)
 
-### [Debug](./debug.md)
+### [Debug](./basic/debug.md)
 
-### [Early Stopping](./early_stopping.md)
+### [Early Stopping](./basic/early_stopping.md)
 
-### [Find bottleneck](./find_bottlenecks.md)
+### [Find bottleneck](./basic/find_bottlenecks.md)
 
-### [Saving Loading Checkpoints](./saving_loading_checkpoints.md)
+### [Saving Loading Checkpoints](./basic/saving_loading_checkpoints.md)
 
-### [Visualize experiments](./visualize_experiments.md)
+### [Visualize experiments](./basic/visualize_experiments.md)
 
 ## Intermediate
 
-### [Hardware agnostic training](./hardware_agnostic_training.md)
+### [Hardware agnostic training](./intermediate/hardware_agnostic_training.md)
 
-### [GPU training](./gpu_training.md)
+### [GPU training](./intermediate/gpu_training.md)
 
-### [Lightning Data Module](./lightning_data_module.md)
+### [Lightning Data Module](./intermediate/lightning_data_module.md)
