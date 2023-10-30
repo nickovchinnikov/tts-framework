@@ -38,3 +38,4 @@
 
 ### [Configure hyperparameters from the CLI (Advanced)](./advanced/hyperparameters_from_the_cli.md)
 
+### [Customize training loop](./advanced/own_your_loop.md)

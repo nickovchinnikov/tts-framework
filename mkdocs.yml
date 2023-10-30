@@ -26,7 +26,8 @@ nav:
         - Important! Effective Training Techniques (Acc grad,cliping): dev/lightning/intermediate/effective_training_techniques.md
         - Deploy Models into Production: dev/lightning/intermediate/deploy_models_into_production.md
       - Advanced:
-        - Configure hyperparameters from the CLI (Advanced): dev/lightning/advanced/hyperparameters_from_the_cli.md
+        - Configure hyperparameters from the CLI: dev/lightning/advanced/hyperparameters_from_the_cli.md
+        - Customize training loop: dev/lightning/advanced/own_your_loop.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
