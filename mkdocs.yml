@@ -1,6 +1,33 @@
 site_name: TTS-Framework
 nav:
   - Home: index.md
+  - Dev docs:
+    - References: dev/readme.md
+    - Change Log: dev/change_log.md
+    - Problems and Fixes: dev/problems_and_fixes.md
+    - Training: dev/training.md
+    - Lightning docs:
+      - References: dev/lightning/readme.md
+      - Basic:
+        - Argparse and Hyperparams: dev/lightning/basic/argparse_and_cli.md
+        - Debug: dev/lightning/basic/debug.md
+        - Early Stopping: dev/lightning/basic/early_stopping.md
+        - Find Bottlenecks: dev/lightning/basic/find_bottlenecks.md
+        - Saving Loading checkpoints: dev/lightning/basic/saving_loading_checkpoints.md
+        - Visualize Experiments: dev/lightning/basic/visualize_experiments.md
+      - Intermediate:
+        - Hardware-Agnostic training: dev/lightning/intermediate/hardware_agnostic_training.md
+        - GPU training: dev/lightning/intermediate/gpu_training.md
+        - Lightning Data Module: dev/lightning/intermediate/lightning_data_module.md
+        - Configure hyperparameters from the CLI: dev/lightning/intermediate/configure_hyperparameters_from_the_cli.md
+        - Customize checkpointing behavior: dev/lightning/intermediate/customize_checkpointing_behavior.md
+        - Track and Visualize Experiments: dev/lightning/intermediate/track_and_visualize_experiments.md
+        - SOTA scaling techniques (N-Bit Precision): dev/lightning/intermediate/sota_scaling_techniques.md
+        - Important! Effective Training Techniques (Acc grad,cliping): dev/lightning/intermediate/effective_training_techniques.md
+        - Deploy Models into Production: dev/lightning/intermediate/deploy_models_into_production.md
+      - Advanced:
+        - Configure hyperparameters from the CLI: dev/lightning/advanced/hyperparameters_from_the_cli.md
+        - Customize training loop: dev/lightning/advanced/own_your_loop.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
@@ -60,6 +87,10 @@ nav:
       - Tools: model/helpers/tools.md
   - Training:
     - References: training/readme.md
+    - Modules:
+      - References: training/modules/readme.md
+      - Acoustic Module: training/modules/acoustic_module.md
+      - Vocoder Module: training/modules/vocoder_module.md
     - Loss:
       - References: training/loss/readme.md
       - Acoustic Losses:
