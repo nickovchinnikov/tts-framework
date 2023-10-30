@@ -25,6 +25,8 @@ nav:
         - SOTA scaling techniques (N-Bit Precision): dev/lightning/intermediate/sota_scaling_techniques.md
         - Important! Effective Training Techniques (Acc grad,cliping): dev/lightning/intermediate/effective_training_techniques.md
         - Deploy Models into Production: dev/lightning/intermediate/deploy_models_into_production.md
+      - Advanced:
+        - Configure hyperparameters from the CLI (Advanced): dev/lightning/advanced/hyperparameters_from_the_cli.md
   - Model:
     - Convolution Blocks:
       - References: model/conv_blocks/readme.md
