@@ -32,4 +32,4 @@
 
 ### [Important! Effective Training Techniques (Acc grad,cliping)](./intermediate/effective_training_techniques.md)
 
-
+### [Deploy models into production](./intermediate/deploy_models_into_production.md)
