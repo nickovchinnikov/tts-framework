@@ -31,6 +31,11 @@ class AcousticModule(LightningModule):
         step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.
         checkpoint_path_v1 (Optional[str]): Path to the checkpoint to load the weights from. Note: this parameter is used only for the v0.1.0 checkpoint. In the future, this parameter will be removed!
+        vocoder_module (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
+        learning_rate (Optional[float]): Learning rate for the Learning Rate Finder. Defaults to None.
+
+    Optimizations:
+        Learning Rate Finder defined by the learning_rate parameter.
     """
 
     def __init__(
@@ -42,12 +47,16 @@ class AcousticModule(LightningModule):
             n_speakers: int = 5392,
             checkpoint_path_v1: Optional[str] = None,
             vocoder_module: Optional[VocoderModule] = None,
+            learning_rate: Optional[float] = None,
         ):
         super().__init__()
 
         self.lang = lang
         self.root = root
         self.fine_tuning = fine_tuning
+
+        # Learning Rate Finder
+        self.learning_rate = learning_rate
 
         self.train_config: AcousticTrainingConfig
 
@@ -57,9 +66,7 @@ class AcousticModule(LightningModule):
             self.train_config = AcousticPretrainingConfig()
 
         # TODO: check this argument!
-        # TODO: use the `register_buffer` to export this parameter to the checkpoint!
-        # CRITICAL: Possible issue in training.
-        self.initial_step = initial_step
+        self.register_buffer("initial_step", torch.tensor(initial_step))
 
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
@@ -239,7 +246,7 @@ class AcousticModule(LightningModule):
             attn_hard=outputs["attn_hard"],
             src_lens=src_lens,
             mel_lens=mel_lens,
-            step=batch_idx + self.initial_step,
+            step=batch_idx + self.initial_step.item(),
         )
 
         tensorboard_logs = {
@@ -263,24 +270,39 @@ class AcousticModule(LightningModule):
             wav_prediction = self.vocoder_module.forward(y_pred)
             tensorboard.add_audio("wav_prediction", wav_prediction)
 
+        self.initial_step += torch.tensor(1)
+
         return step_log
 
     def configure_optimizers(self):
         r"""Configures the optimizer used for training.
         Depending on the training mode, either the finetuning or the pretraining optimizer is used.
 
+        The `Learning Rate Finder` is also configured, if self.learning_rate is not None.
+        So, if the Learning Rate Finder is used, the optimizer is used self.learning_rate and the scheduler is not used.
+
         Returns
             dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
         parameters = self.acoustic_model.parameters()
 
+        # Learning Rate Finder
+        if self.learning_rate is not None:
+            return AdamW(
+                parameters,
+                betas=self.train_config.optimizer_config.betas,
+                eps=self.train_config.optimizer_config.eps,
+                lr=self.learning_rate,
+            )
+
+        # If the Learning Rate Finder is not used, the optimizer and the scheduler are used
         if self.fine_tuning:
             # Compute the gamma and initial learning rate based on the current step
             lr_decay = self.train_config.optimizer_config.lr_decay
             default_lr = self.train_config.optimizer_config.learning_rate
 
-            init_lr = default_lr if self.initial_step is None \
-            else default_lr * (lr_decay ** self.initial_step)
+            init_lr = default_lr if self.initial_step.item() == 0 \
+            else default_lr * (lr_decay ** self.initial_step.item())
 
             optimizer = AdamW(
                 parameters,
@@ -313,7 +335,7 @@ class AcousticModule(LightningModule):
         """
         init_lr = self.model_config.encoder.n_hidden ** -0.5
 
-        def lr_lambda(step: int = self.initial_step) -> float:
+        def lr_lambda(step: int = self.initial_step.item()) -> float:
             r"""Computes the learning rate scale factor.
 
             Args:
