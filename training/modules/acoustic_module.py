@@ -48,6 +48,7 @@ class AcousticModule(LightningModule):
             checkpoint_path_v1: Optional[str] = None,
             vocoder_module: Optional[VocoderModule] = None,
             learning_rate: Optional[float] = None,
+            batch_size: Optional[int] = None,
         ):
         super().__init__()
 
@@ -55,15 +56,18 @@ class AcousticModule(LightningModule):
         self.root = root
         self.fine_tuning = fine_tuning
 
-        # Learning Rate Finder
-        self.learning_rate = learning_rate
-
         self.train_config: AcousticTrainingConfig
 
         if self.fine_tuning:
             self.train_config = AcousticFinetuningConfig()
         else:
             self.train_config = AcousticPretrainingConfig()
+
+        # Learning Rate Finder
+        self.learning_rate = learning_rate
+
+        # Auto batch size scaling
+        self.batch_size = batch_size or self.train_config.batch_size
 
         # TODO: check this argument!
         self.register_buffer("initial_step", torch.tensor(initial_step))
