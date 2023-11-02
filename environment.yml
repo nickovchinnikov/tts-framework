@@ -35,4 +35,5 @@ dependencies:
       - ruff
       - mkdocstrings-python
       - lightning[pytorch-extra]
+      - tensorboard
 prefix: D:\Program Files\anaconda3\envs\tts_framework
