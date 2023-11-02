@@ -1,7 +1,8 @@
 import os
 import unittest
 
-from pytorch_lightning import Trainer
+from lightning.pytorch import Trainer
+from lightning.pytorch.loggers import TensorBoardLogger
 import torch
 import torchaudio
 
@@ -52,12 +53,20 @@ class TestTrainAcousticModule(unittest.TestCase):
         self.assertIsInstance(lr_scheduler, torch.optim.lr_scheduler.LambdaLR)
 
     def test_train_steps(self):
+        default_root_dir = "checkpoints/acoustic"
+        tensorboard = TensorBoardLogger(save_dir=default_root_dir)
+
         trainer = Trainer(
+            logger=tensorboard,
             # Save checkpoints to the `default_root_dir` directory
-            default_root_dir="checkpoints/acoustic",
+            default_root_dir=default_root_dir,
             limit_train_batches=2,
             max_epochs=1,
             accelerator="cuda",
+        )
+
+        vocoder_module = VocoderModule.load_from_checkpoint(
+            "./checkpoints/vocoder.ckpt",
         )
 
         # Load the pretrained weights
@@ -66,7 +75,10 @@ class TestTrainAcousticModule(unittest.TestCase):
         # This code will be removed in the future!
         checkpoint_path = "model/checkpoints/assets/v0.1.0/acoustic_pretrained.pt"
 
-        module = AcousticModule(checkpoint_path_v1=checkpoint_path)
+        module = AcousticModule(
+            vocoder_module=vocoder_module,
+            checkpoint_path_v1=checkpoint_path,
+        )
 
         train_dataloader = module.train_dataloader()
 
@@ -97,11 +109,12 @@ class TestTrainAcousticModule(unittest.TestCase):
         self.assertIsInstance(result, torch.Tensor)
 
     def test_generate_audio(self):
-        acoustic_module = AcousticModule.load_from_checkpoint(
-            "./checkpoints/am_pitche_stats.ckpt",
-        )
         vocoder_module = VocoderModule.load_from_checkpoint(
             "./checkpoints/vocoder.ckpt",
+        )
+        acoustic_module = AcousticModule.load_from_checkpoint(
+            "./checkpoints/am_pitche_stats.ckpt",
+            vocoder_module=vocoder_module,
         )
 
         text, src_len, speakers, langs = get_dummy_input(acoustic_module.pitches_stat.device)

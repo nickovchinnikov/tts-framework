@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Tuple
 
-from pytorch_lightning.core import LightningModule
+from lightning.pytorch.core import LightningModule
 import torch
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR

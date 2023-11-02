@@ -8,6 +8,8 @@ channels:
 dependencies:
   - pytorch
   - torchaudio
+  - libpng
+  - jpeg
   - torchvision
   - pytorch-cuda=12.1
   - ipykernel
@@ -32,4 +34,5 @@ dependencies:
       - unidecode
       - ruff
       - mkdocstrings-python
+      - lightning[pytorch-extra]
 prefix: D:\Program Files\anaconda3\envs\tts_framework

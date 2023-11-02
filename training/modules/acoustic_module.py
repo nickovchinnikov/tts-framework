@@ -1,6 +1,6 @@
 from typing import Callable, List, Optional, Tuple
 
-from pytorch_lightning.core import LightningModule
+from lightning.pytorch.core import LightningModule
 import torch
 from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
@@ -17,6 +17,8 @@ from model.config import (
 from model.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDatasetAcoustic
 from training.loss import FastSpeech2LossGen
+
+from .vocoder_module import VocoderModule
 
 
 class AcousticModule(LightningModule):
@@ -39,6 +41,7 @@ class AcousticModule(LightningModule):
             initial_step: int = 0,
             n_speakers: int = 5392,
             checkpoint_path_v1: Optional[str] = None,
+            vocoder_module: Optional[VocoderModule] = None,
         ):
         super().__init__()
 
@@ -68,6 +71,7 @@ class AcousticModule(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
+        self.vocoder_module = vocoder_module
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
@@ -250,7 +254,16 @@ class AcousticModule(LightningModule):
             "bin_loss": bin_loss.detach(),
         }
 
-        return {"loss": total_loss, "log": tensorboard_logs}
+        step_log = {"loss": total_loss, "log": tensorboard_logs}
+
+        # Add the logs to the tensorboard
+        if self.logger.experiment is not None and self.vocoder_module is not None: # type: ignore
+            # Generate an audio ones in a while and save to tensorboard
+            tensorboard = self.logger.experiment # type: ignore
+            wav_prediction = self.vocoder_module.forward(y_pred)
+            tensorboard.add_audio("wav_prediction", wav_prediction)
+
+        return step_log
 
     def configure_optimizers(self):
         r"""Configures the optimizer used for training.

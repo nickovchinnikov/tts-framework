@@ -15,8 +15,8 @@ class LibriTTSDatasetAcoustic(Dataset):
 
     def __init__(
         self,
-        root: str,
-        lang: str,
+        lang: str = "en",
+        root: str = "datasets_cache/LIBRITTS",
         download: bool = True,
     ):
         r"""A PyTorch dataset for loading preprocessed acoustic data.
