@@ -265,7 +265,96 @@ class AcousticModule(LightningModule):
             "bin_loss": bin_loss.detach(),
         }
 
-        step_log = {"loss": total_loss, "log": tensorboard_logs}
+        # TODO: check the initial_step, not sure that this's correct
+        self.initial_step += torch.tensor(1)
+
+        return {"loss": total_loss, "log": tensorboard_logs}
+
+    def validation_step(self, batch: List, batch_idx: int):
+        r"""Performs a validation step for the model.
+
+        Args:
+        batch (List): The batch of data for training. The batch should contain:
+            - ids: List of indexes.
+            - raw_texts: Raw text inputs.
+            - speakers: Speaker identities.
+            - texts: Text inputs.
+            - src_lens: Lengths of the source sequences.
+            - mels: Mel spectrogram targets.
+            - pitches: Pitch targets.
+            - pitches_stat: Statistics of the pitches.
+            - mel_lens: Lengths of the mel spectrograms.
+            - langs: Language identities.
+            - attn_priors: Prior attention weights.
+            - wavs: Waveform targets.
+        batch_idx (int): Index of the batch.
+        """
+        (
+            _,
+            _,
+            speakers,
+            texts,
+            src_lens,
+            mels,
+            pitches,
+            pitches_stat,
+            mel_lens,
+            langs,
+            attn_priors,
+            _,
+        ) = batch
+
+        outputs = self.acoustic_model.forward_train(
+            x=texts,
+            speakers=speakers,
+            src_lens=src_lens,
+            mels=mels,
+            mel_lens=mel_lens,
+            pitches=pitches,
+            pitches_range=pitches_stat,
+            langs=langs,
+            attn_priors=attn_priors,
+        )
+
+        y_pred = outputs["y_pred"]
+        log_duration_prediction = outputs["log_duration_prediction"]
+        p_prosody_ref = outputs["p_prosody_ref"]
+        p_prosody_pred = outputs["p_prosody_pred"]
+        pitch_prediction = outputs["pitch_prediction"]
+
+        src_mask = get_mask_from_lengths(src_lens)
+        mel_mask = get_mask_from_lengths(mel_lens)
+
+        (
+            total_loss,
+            mel_loss,
+            ssim_loss,
+            duration_loss,
+            u_prosody_loss,
+            p_prosody_loss,
+            pitch_loss,
+            ctc_loss,
+            bin_loss,
+        ) = self.loss(
+            src_masks=src_mask,
+            mel_masks=mel_mask,
+            mel_targets=mels,
+            mel_predictions=y_pred,
+            log_duration_predictions=log_duration_prediction,
+            u_prosody_ref=outputs["u_prosody_ref"],
+            u_prosody_pred=outputs["u_prosody_pred"],
+            p_prosody_ref=p_prosody_ref,
+            p_prosody_pred=p_prosody_pred,
+            pitch_predictions=pitch_prediction,
+            p_targets=outputs["pitch_target"],
+            durations=outputs["attn_hard_dur"],
+            attn_logprob=outputs["attn_logprob"],
+            attn_soft=outputs["attn_soft"],
+            attn_hard=outputs["attn_hard"],
+            src_lens=src_lens,
+            mel_lens=mel_lens,
+            step=batch_idx + self.initial_step.item(),
+        )
 
         # Add the logs to the tensorboard
         if self.logger.experiment is not None and self.vocoder_module is not None: # type: ignore
@@ -284,9 +373,6 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
 
-        self.initial_step += torch.tensor(1)
-
-        return step_log
 
     def configure_optimizers(self):
         r"""Configures the optimizer used for training.
@@ -392,7 +478,7 @@ class AcousticModule(LightningModule):
             dataset,
             batch_size=self.train_config.batch_size,
             # TODO: find the optimal num_workers
-            num_workers=12,
+            num_workers=self.preprocess_config.workers,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )
