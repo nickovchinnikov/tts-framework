@@ -17,6 +17,7 @@ class AcousticDataModule(LightningDataModule):
         return DataLoader(
             self.dataset,
             batch_size=self.batch_size,
+            num_workers=12,
             shuffle=True,
             collate_fn=self.dataset.collate_fn,
         )
