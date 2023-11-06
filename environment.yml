@@ -6,34 +6,33 @@ channels:
   - anaconda
   - conda-forge
 dependencies:
-  - pytorch
-  - torchaudio
-  - libpng
-  - jpeg
-  - torchvision
-  - pytorch-cuda=12.1
-  - ipykernel
-  - mkdocs-material
-  - mkdocstrings
-  - mypy
-  - pyright
-  - numba
-  - lightning
-  - pip
-  - numpy
-  - scikit-learn
-  - tqdm
-  - pynini
+  # - pytorch=2.2.0.dev20231017
+  # - pytorch-cuda=12.1
+  # - lightning=2.1.0
+  # - torchaudio==2.2.0.dev20231017
+  # - torchvision=0.15.2
+  # - libpng=1.6.39
+  - ipykernel=6.25.0
+  - mkdocs-material=9.4.6
+  - mkdocs-material-extensions=1.3
+  - mkdocstrings=0.23.0
+  - mypy=1.5.1
+  # - pyright=1.1.331
+  - numba=0.58.0
+  - pip=23.3
+  - numpy=1.25.2
+  - scikit-learn=1.2.2
+  - tqdm=4.65.0
+  - pynini=2.1.5
   - pip:
-      - datasets
-      - deep-phonemizer
-      - nemo-text-processing
-      - piq
-      - soundfile
-      - transformers
-      - unidecode
-      - ruff
-      - mkdocstrings-python
-      - lightning[pytorch-extra]
-      - tensorboard
+      - datasets==2.14.5
+      - deep-phonemizer==0.0.19
+      - nemo-text-processing==0.2.0rc0
+      - piq==0.8.0
+      - soundfile==0.12.1
+      - transformers==4.34.0
+      - unidecode==1.3.7
+      - ruff==0.1.0
+      - mkdocstrings-python==1.7.3
+      - tensorboard==2.15.0
 prefix: D:\Program Files\anaconda3\envs\tts_framework

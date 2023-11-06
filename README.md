@@ -62,3 +62,30 @@ Test cases:
 ```
 python -m unittest discover -v
 ```
+
+### [Libmamba solver](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community):
+
+```
+conda update -n base conda
+```
+
+And then:
+
+```
+conda install -n base conda-libmamba-solver
+conda config --set solver libmamba
+```
+
+### Env Installation process
+
+Install separately
+
+```
+# First - pytorch
+# conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch-nightly -c nvidia
+
+pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
+
+# Second - lightning
+pip3 install lightning
+```

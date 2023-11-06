@@ -13,7 +13,7 @@ def train():
 
     # Trainer arguments
     parser.add_argument("--devices", type=int, default=None)
-    parser.add_argument("--default_root_dir", type=str, default="checkpoints/acoustic")
+    parser.add_argument("--default_root_dir", type=str, default="logs/acoustic")
 
     parser.add_argument("--limit_train_batches", type=int, default=None)
     parser.add_argument("--max_epochs", type=int, default=None)

@@ -48,7 +48,7 @@ class AcousticModule(LightningModule):
             checkpoint_path_v1: Optional[str] = None,
             vocoder_module: Optional[VocoderModule] = None,
             learning_rate: Optional[float] = None,
-            batch_size: Optional[int] = None,
+            # batch_size: Optional[int] = None,
         ):
         super().__init__()
 
@@ -67,7 +67,7 @@ class AcousticModule(LightningModule):
         self.learning_rate = learning_rate
 
         # Auto batch size scaling
-        self.batch_size = batch_size or self.train_config.batch_size
+        # self.batch_size = batch_size or self.train_config.batch_size
 
         # TODO: check this argument!
         self.register_buffer("initial_step", torch.tensor(initial_step))
@@ -272,7 +272,17 @@ class AcousticModule(LightningModule):
             # Generate an audio ones in a while and save to tensorboard
             tensorboard = self.logger.experiment # type: ignore
             wav_prediction = self.vocoder_module.forward(y_pred)
-            tensorboard.add_audio("wav_prediction", wav_prediction)
+            tensorboard.add_audio("wav_prediction", wav_prediction, self.current_epoch)
+
+            tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
+            tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
+            tensorboard.add_scalar("ssim_loss", ssim_loss, self.current_epoch)
+            tensorboard.add_scalar("duration_loss", duration_loss, self.current_epoch)
+            tensorboard.add_scalar("u_prosody_loss", u_prosody_loss, self.current_epoch)
+            tensorboard.add_scalar("p_prosody_loss", p_prosody_loss, self.current_epoch)
+            tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
+            tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
+            tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
 
         self.initial_step += torch.tensor(1)
 
@@ -381,6 +391,8 @@ class AcousticModule(LightningModule):
         return DataLoader(
             dataset,
             batch_size=self.train_config.batch_size,
+            # TODO: find the optimal num_workers
+            num_workers=12,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )

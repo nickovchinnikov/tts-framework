@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
@@ -28,6 +29,10 @@ class LibriTTSDatasetAcoustic(Dataset):
         """
         self.dataset = datasets.LIBRITTS(root=root, download=download)
 
+        # Load the id_mapping dictionary from the JSON file
+        with open("speaker_id_mapping_libri.json") as f:
+            self.id_mapping = json.load(f)
+
         self.preprocess_libtts = PreprocessLibriTTS(lang)
 
     def __len__(self) -> int:
@@ -54,7 +59,7 @@ class LibriTTSDatasetAcoustic(Dataset):
 
         # TODO: bad way to do filtering, fix this!
         if data is None:
-            print("Skipping due to preprocessing error")
+            # print("Skipping due to preprocessing error")
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
 
@@ -69,7 +74,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             "attn_prior": data.attn_prior,
             "raw_text": data.raw_text,
             "normalized_text": data.normalized_text,
-            "speaker": data.speaker_id,
+            "speaker": self.id_mapping.get(str(data.speaker_id)),
             "pitch_is_normalized": data.pitch_is_normalized,
             # TODO: fix lang!
             "lang": lang2id["en"],

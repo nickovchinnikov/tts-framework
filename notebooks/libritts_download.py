@@ -70,3 +70,23 @@ normilize_text(dataset[0][2])
 # %%
 
 # %%
+# Read the file and extract the speaker IDs
+with open("./libri_speakers.txt") as f:
+    lines = f.readlines()[1:]  # Skip the header line
+    speaker_ids = [int(line.split("|")[0].strip()) for line in lines]
+
+# Create a mapping from original IDs to new IDs
+id_mapping = {old_id: new_id for new_id, old_id in enumerate(sorted(set(speaker_ids)))}
+
+# Now you can use id_mapping to get a new ID for any old ID
+# For example:
+print(id_mapping[14])  # This will print 0
+
+# %%
+import json
+
+# Save the id_mapping dictionary to a JSON file
+with open("id_mapping.json", "w") as f:
+    json.dump(id_mapping, f)
+
+# %%

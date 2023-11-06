@@ -53,7 +53,7 @@ class LibriTTSDatasetVocoder(Dataset):
         data = self.preprocess_libtts.univnet(data)
 
         if data is None:
-            print("Skipping due to preprocessing error")
+            # print("Skipping due to preprocessing error")
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
 
