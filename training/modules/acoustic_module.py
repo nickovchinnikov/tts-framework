@@ -15,7 +15,7 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.datasets import LibriTTSDatasetAcoustic
+from training.datasets import LibriTTSDatasetAcoustic, LibriTTSMMDatasetAcoustic
 from training.loss import FastSpeech2LossGen
 
 from .vocoder_module import VocoderModule
@@ -488,10 +488,11 @@ class AcousticModule(LightningModule):
         Returns
             DataLoader: The training dataloader.
         """
-        dataset = LibriTTSDatasetAcoustic(
-            root=self.root,
-            lang=self.lang,
-        )
+        # dataset = LibriTTSDatasetAcoustic(
+        #     root=self.root,
+        #     lang=self.lang,
+        # )
+        dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
         return DataLoader(
             dataset,
             batch_size=self.train_config.batch_size,
