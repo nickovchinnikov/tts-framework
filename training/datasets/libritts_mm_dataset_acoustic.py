@@ -6,6 +6,8 @@ from torch.utils.data import Dataset
 
 from training.tools import pad_1D, pad_2D, pad_3D
 
+from .preprocessed_dataset import PreprocessedDataset
+
 
 class LibriTTSMMDatasetAcoustic(Dataset):
     def __init__(self, file_path: str):
