@@ -6,6 +6,7 @@ from lightning.pytorch.callbacks import StochasticWeightAveraging
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.tuner.tuning import Tuner
 
+from training.datasets import PreprocessedDataset
 from training.modules import AcousticDataModule, AcousticModule, VocoderModule
 
 print("usable_cuda_devices: ", find_usable_cuda_devices())
