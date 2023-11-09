@@ -498,7 +498,7 @@ class AcousticModule(LightningModule):
             batch_size=self.train_config.batch_size,
             # TODO: find the optimal num_workers
             # num_workers=self.preprocess_config.workers,
-            num_workers=8,
+            num_workers=12,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )
