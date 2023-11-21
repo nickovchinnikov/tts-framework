@@ -1,0 +1,1 @@
+rsync -avP --progress --exclude="datasets_cache" --exclude="notebooks" --exclude="docs" --exclude="logs" ./tts-framework/ ~/localfiles/tts-framework/
