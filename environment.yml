@@ -21,6 +21,7 @@ dependencies:
   - tqdm=4.65.0
   - pynini=2.1.5
   - pip:
+      - librosa==0.10.0
       - torch==2.1.1
       - torchaudio==2.1.1
       - torchvision==0.16.1

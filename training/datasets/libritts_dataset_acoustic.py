@@ -28,6 +28,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
         """
         self.dataset = datasets.LIBRITTS(root=root, download=download)
+        self.dataset_cache = {}
 
         # Load the id_mapping dictionary from the JSON file
         with open("speaker_id_mapping_libri.json") as f:
@@ -52,6 +53,13 @@ class LibriTTSDatasetAcoustic(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing the sample data.
         """
+
+        # Check if the data is in the cache
+        if idx in self.dataset_cache:
+            # If the data is in the cache, return it
+            data = self.dataset_cache[idx]
+            return data
+
         # Retrive the dataset row
         data = self.dataset[idx]
 
@@ -64,6 +72,9 @@ class LibriTTSDatasetAcoustic(Dataset):
             return self.__getitem__(rand_idx)
 
         data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
+
+        # Store the preprocessed data in the cache
+        self.dataset_cache[idx] = data
 
         return {
             "id": data.utterance_id,
