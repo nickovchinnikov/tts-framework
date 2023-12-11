@@ -97,6 +97,18 @@ class FastSpeech2LossGen(Module):
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The total loss and its components.
+
+        Note:
+            Here is the description of the returned loss components:
+            `total_loss`: This is the total loss computed as the sum of all the other losses.
+            `mel_loss`: This is the mean absolute error (MAE) loss between the predicted and target mel-spectrograms. It measures how well the model predicts the mel-spectrograms.
+            `ssim_loss`: This is the Structural Similarity Index (SSIM) loss between the predicted and target mel-spectrograms. It measures the similarity between the two mel-spectrograms in terms of their structure, contrast, and luminance.
+            `duration_loss`: This is the mean squared error (MSE) loss between the predicted and target log-durations. It measures how well the model predicts the durations of the phonemes.
+            `u_prosody_loss`: This is the MAE loss between the predicted and reference unvoiced prosody. It measures how well the model predicts the prosody (rhythm, stress, and intonation) of the unvoiced parts of the speech.
+            `p_prosody_loss`: This is the MAE loss between the predicted and reference voiced prosody. It measures how well the model predicts the prosody of the voiced parts of the speech.
+            `pitch_loss`: This is the MSE loss between the predicted and target pitch. It measures how well the model predicts the pitch of the speech.
+            `ctc_loss`: This is the Connectionist Temporal Classification (CTC) loss computed from the log-probability of attention and the lengths of the source sequences and mel-spectrograms. It measures how well the model aligns the input and output sequences.
+            `bin_loss`: This is the binarization loss computed from the hard and soft attention. It measures how well the model learns to attend to the correct parts of the input sequence.
         """
         log_duration_targets = torch.log(durations.float() + 1).to(src_masks.device)
 
