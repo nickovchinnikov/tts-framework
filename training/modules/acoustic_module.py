@@ -265,12 +265,17 @@ class AcousticModule(LightningModule):
             "bin_loss": bin_loss.detach(),
         }
 
-                # Add the logs to the tensorboard
+        # Add the logs to the tensorboard
         if self.logger.experiment is not None and self.vocoder_module is not None: # type: ignore
             # Generate an audio ones in a while and save to tensorboard
             tensorboard = self.logger.experiment # type: ignore
             wav_prediction = self.vocoder_module.forward(y_pred)
-            tensorboard.add_audio("wav_prediction", wav_prediction, self.current_epoch)
+            tensorboard.add_audio(
+                "wav_prediction",
+                wav_prediction,
+                self.current_epoch,
+                self.preprocess_config.sampling_rate
+            )
 
             tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
             tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
@@ -488,14 +493,17 @@ class AcousticModule(LightningModule):
         Returns
             DataLoader: The training dataloader.
         """
-        # dataset = LibriTTSDatasetAcoustic(
-        #     root=self.root,
-        #     lang=self.lang,
-        # )
-        dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
+        dataset = LibriTTSDatasetAcoustic(
+            root=self.root,
+            lang=self.lang,
+        )
+        # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
         return DataLoader(
             dataset,
-            batch_size=self.train_config.batch_size,
+            # 4x80Gb max 10 sec audio
+            # batch_size=20, # self.train_config.batch_size,
+            # 4*80Gb max ~20.4 sec audio
+            batch_size=10,
             # TODO: find the optimal num_workers
             # num_workers=self.preprocess_config.workers,
             num_workers=12,

@@ -1,57 +1,21 @@
 import os
-from typing import Any
 
 from lightning.pytorch import Trainer
-# from lightning.pytorch.accelerators import find_usable_cuda_devices
+from lightning.pytorch.accelerators import find_usable_cuda_devices
 from lightning.pytorch.callbacks import StochasticWeightAveraging
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.tuner.tuning import Tuner
-from torch.utils.data import Dataset
 
+from training.datasets import PreprocessedDataset
 from training.modules import AcousticDataModule, AcousticModule, VocoderModule
 
+print("usable_cuda_devices: ", find_usable_cuda_devices())
 
-class PreprocessedDataset(Dataset):
-    r"""A PyTorch Dataset for holding preprocessed data.
-
-    Attributes
-        data (list): The preprocessed data.
-    """
-
-    def __init__(self, data: Any):
-        r"""Initialize the PreprocessedDataset.
-
-        Args:
-            data (list): The preprocessed data.
-        """
-        self.data = data
-
-    def __getitem__(self, index: int):
-        r"""Get the data at the given index.
-
-        Args:
-            index (int): The index of the data to get.
-
-        Returns:
-            The data at the given index.
-        """
-        return self.data[index]
-
-    def __len__(self):
-        r"""Get the number of data in the dataset.
-
-        Returns
-            The number of data in the dataset.
-        """
-        return len(self.data)
-
-
-# print("usable_cuda_devices: ", find_usable_cuda_devices())
+gcp_logs_bucket = "gs://tts-training-bucket/logs_version12"
 
 default_root_dir="logs/acoustic"
 
-
-ckpt_acoustic="./acoustic_epoch8.ckpt"
+ckpt_acoustic="./logs/acoustic/lightning_logs/version_10/checkpoints/epoch=436-step=107686.ckpt"
 ckpt_vocoder="./vocoder.ckpt"
 
 # Control Validation Frequency
@@ -91,10 +55,14 @@ vocoder_module = VocoderModule.load_from_checkpoint(
     ckpt_vocoder,
 )
 
-module = AcousticModule.load_from_checkpoint(
-    ckpt_acoustic,
+module = AcousticModule(
     vocoder_module=vocoder_module,
 )
+
+# module = AcousticModule.load_from_checkpoint(
+#     ckpt_acoustic,
+#     vocoder_module=vocoder_module,
+# )
 
 # datamodule = AcousticDataModule(batch_size=module.train_config.batch_size)
 
@@ -114,7 +82,6 @@ train_dataloader = module.train_dataloader()
 
 trainer.fit(
     model=module,
-    train_dataloaders=train_dataloader,
-    # Resume training states from the checkpoint file
     ckpt_path=ckpt_acoustic,
+    train_dataloaders=train_dataloader,
 )

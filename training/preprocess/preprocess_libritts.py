@@ -162,7 +162,8 @@ class PreprocessLibriTTS:
 
         normalized_text = self.normilize_text(normalized_text)
 
-        phones_ipa: Any = self.phonemizer(raw_text, lang=self.phonemizer_lang)
+        # TODO: BUG with phonemizer raw_text must be normalized_text!
+        phones_ipa: Any = self.phonemizer(normalized_text, lang=self.phonemizer_lang)
         phones = self.phonemizer.predictor.phoneme_tokenizer(
             phones_ipa, language=self.phonemizer_lang,
         )
