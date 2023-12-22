@@ -57,5 +57,8 @@ class TokenizerIPA:
             list: The tokenized phonemes.
 
         """
+        
         phones_ipa = self.phonemizer(text, lang=self.lang)
-        return phones_ipa, self.tokenizer(phones_ipa, language=self.lang)
+        tokens = self.tokenizer(phones_ipa, language=self.lang)
+
+        return phones_ipa, tokens

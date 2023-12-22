@@ -15,6 +15,7 @@ from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0
 from .normalize_text import NormalizeText
 from .tacotron_stft import TacotronSTFT
+from .tokenizer_ipa import TokenizerIPA
 
 
 @dataclass
@@ -22,7 +23,7 @@ class PreprocessForAcousticResult:
     wav: torch.Tensor
     mel: torch.Tensor
     pitch: torch.Tensor
-    phones_ipa: List[str]
+    phones_ipa: Union[str, List[str]]
     phones: torch.Tensor
     attn_prior: torch.Tensor
     raw_text: str
@@ -38,7 +39,6 @@ class PreprocessLibriTTS:
 
     Args:
         lang (str): The language of the input text.
-        phonemizer_checkpoint (str): The path to the phonemizer checkpoint.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -54,7 +54,6 @@ class PreprocessLibriTTS:
     def __init__(
         self,
         lang: str = "en",
-        phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
     ):
         super().__init__()
 
@@ -64,8 +63,8 @@ class PreprocessLibriTTS:
         normilize_text_lang = lang_map.nemo
         processing_lang_type = lang_map.processing_lang_type
 
-        self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
         self.normilize_text = NormalizeText(normilize_text_lang)
+        self.tokenizer = TokenizerIPA(lang)
         self.vocoder_train_config = VocoderBasicConfig()
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
@@ -162,11 +161,9 @@ class PreprocessLibriTTS:
 
         normalized_text = self.normilize_text(normalized_text)
 
-        # TODO: BUG with phonemizer raw_text must be normalized_text!
-        phones_ipa: Any = self.phonemizer(normalized_text, lang=self.phonemizer_lang)
-        phones = self.phonemizer.predictor.phoneme_tokenizer(
-            phones_ipa, language=self.phonemizer_lang,
-        )
+        # NOTE: here fixed version of tokenizer with punctuation
+        phones_ipa, phones = self.tokenizer(normalized_text)
+        
         # Convert to tensor
         phones = torch.Tensor(phones)
 
