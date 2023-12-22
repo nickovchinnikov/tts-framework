@@ -1,7 +1,7 @@
 import os
 
 from lightning.pytorch import Trainer
-from lightning.pytorch.accelerators import find_usable_cuda_devices
+from lightning.pytorch.accelerators import find_usable_cuda_devices # type: ignore
 from lightning.pytorch.callbacks import StochasticWeightAveraging
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.tuner.tuning import Tuner
