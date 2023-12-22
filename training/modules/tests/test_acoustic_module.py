@@ -6,9 +6,7 @@ from lightning.pytorch.loggers import TensorBoardLogger
 import torch
 import torchaudio
 
-from training.modules import AcousticModule, VocoderModule
-
-from .mock import get_dummy_input
+from training.modules import AcousticModule
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -65,10 +63,6 @@ class TestTrainAcousticModule(unittest.TestCase):
             accelerator="cuda",
         )
 
-        vocoder_module = VocoderModule.load_from_checkpoint(
-            "./checkpoints/vocoder.ckpt",
-        )
-
         # Load the pretrained weights
         # NOTE: this is the path to the checkpoint in the repo
         # It works only for version 0.1.0 checkpoint
@@ -76,7 +70,6 @@ class TestTrainAcousticModule(unittest.TestCase):
         checkpoint_path = "model/checkpoints/assets/v0.1.0/acoustic_pretrained.pt"
 
         module = AcousticModule(
-            vocoder_module=vocoder_module,
             checkpoint_path_v1=checkpoint_path,
         )
 
@@ -97,34 +90,21 @@ class TestTrainAcousticModule(unittest.TestCase):
         except Exception as e:
             self.fail(f"Loading from checkpoint raised an exception: {e}")
 
-    def test_forward(self):
-        module = AcousticModule.load_from_checkpoint(
-            "./checkpoints/am_pitche_stats.ckpt",
-        )
-
-        text, src_len, speakers, langs = get_dummy_input(module.pitches_stat.device)
-
-        result = module.forward(text, src_len, speakers, langs)
-
-        self.assertIsInstance(result, torch.Tensor)
-
     def test_generate_audio(self):
-        vocoder_module = VocoderModule.load_from_checkpoint(
-            "./checkpoints/vocoder.ckpt",
-        )
-        acoustic_module = AcousticModule.load_from_checkpoint(
-            "./checkpoints/am_pitche_stats.ckpt",
-            vocoder_module=vocoder_module,
-        )
+        checkpoint = "checkpoints/epoch=4796-step=438683.ckpt"
+        module = AcousticModule.load_from_checkpoint(checkpoint)
 
-        text, src_len, speakers, langs = get_dummy_input(acoustic_module.pitches_stat.device)
+        text = "Hello, this is a test sentence."
+        speaker = 100
 
-        y_pred = acoustic_module.forward(text, src_len, speakers, langs)
-        wav_prediction = vocoder_module.forward(y_pred)
+        wav_prediction = module(
+            text,
+            speaker,
+        )
 
         # Save the audio to a file
-        torchaudio.save(
-            "results/output.wav",
+        torchaudio.save(        # type: ignore
+            "results/output1.wav",
             wav_prediction.unsqueeze(0).detach().cpu(),
             22050,
         )
