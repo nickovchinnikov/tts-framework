@@ -14,7 +14,7 @@ dependencies:
   - mkdocstrings=0.23.0
   - mypy=1.5.1
   - pyright=1.1.331
-  - numba=0.58.0
+  - numba=0.58.1
   - pip=23.3
   - numpy=1.25.2
   - scikit-learn=1.2.2

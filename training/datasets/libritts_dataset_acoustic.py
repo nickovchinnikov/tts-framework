@@ -1,3 +1,4 @@
+import os
 import json
 from typing import Any, Dict, List, Tuple
 
@@ -19,6 +20,8 @@ class LibriTTSDatasetAcoustic(Dataset):
         lang: str = "en",
         root: str = "datasets_cache/LIBRITTS",
         download: bool = True,
+        cache: bool = False,
+        cache_dir: str = "datasets_cache",
     ):
         r"""A PyTorch dataset for loading preprocessed acoustic data.
 
@@ -28,7 +31,12 @@ class LibriTTSDatasetAcoustic(Dataset):
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
         """
         self.dataset = datasets.LIBRITTS(root=root, download=download)
-        self.dataset_cache = {}
+        self.cache = cache
+
+        # Calculate the directory for the cache file
+        self.cache_subdir = lambda idx: str(((idx // 1000) + 1) * 1000)
+
+        self.cache_dir = os.path.join(cache_dir, 'cache_libri_preprocessed')
 
         # Load the id_mapping dictionary from the JSON file
         with open("speaker_id_mapping_libri.json") as f:
@@ -55,9 +63,13 @@ class LibriTTSDatasetAcoustic(Dataset):
         """
 
         # Check if the data is in the cache
-        if idx in self.dataset_cache:
-            # If the data is in the cache, return it
-            data = self.dataset_cache[idx]
+        cache_subdir_path = os.path.join(self.cache_dir, self.cache_subdir(idx))
+        cache_file = os.path.join(cache_subdir_path, f'{idx}.pt')
+
+        # Check if the data is in the cache
+        if self.cache and os.path.exists(cache_file):
+            # If the data is in the cache, load it from the cache file and return it
+            data = torch.load(cache_file)
             return data
 
         # Retrive the dataset row
@@ -73,10 +85,7 @@ class LibriTTSDatasetAcoustic(Dataset):
 
         data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
 
-        # Store the preprocessed data in the cache
-        self.dataset_cache[idx] = data
-
-        return {
+        result = {
             "id": data.utterance_id,
             "wav": data.wav,
             "mel": data.mel,
@@ -90,6 +99,15 @@ class LibriTTSDatasetAcoustic(Dataset):
             # TODO: fix lang!
             "lang": lang2id["en"],
         }
+
+        if self.cache:
+            # Create the cache subdirectory if it doesn't exist
+            os.makedirs(cache_subdir_path, exist_ok=True)
+
+            # Save the preprocessed data to the cache
+            torch.save(result, cache_file)
+
+        return result
 
     def collate_fn(self, data: List) -> List:
         r"""Collates a batch of data samples.
