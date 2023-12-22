@@ -1,6 +1,8 @@
 import os
 from typing import Any
 
+import torch
+
 from lightning.pytorch import Trainer
 # from lightning.pytorch.accelerators import find_usable_cuda_devices
 from lightning.pytorch.callbacks import StochasticWeightAveraging
@@ -45,13 +47,25 @@ class PreprocessedDataset(Dataset):
         """
         return len(self.data)
 
-
 # print("usable_cuda_devices: ", find_usable_cuda_devices())
 
 default_root_dir="logs/acoustic"
 
-
 ckpt_acoustic="./acoustic_epoch8.ckpt"
+
+# TODO: changes in LR is maybe not the best way to do this...
+ckpt_acoustic_fixedlr="./acoustic_epoch8.ckpt_fixedlr.ckpt"
+
+# Change the LR in the checkpoint
+ckpt_acoustic_loaded = torch.load(ckpt_acoustic)
+
+latest_lr = ckpt_acoustic_loaded["optimizer_states"][0]['param_groups'][0]["lr"]
+ckpt_acoustic_loaded["optimizer_states"][0]['param_groups'][0]["lr"] = latest_lr * 2000
+
+# Save the new updated checkpoint
+torch.save(ckpt_acoustic_loaded, ckpt_acoustic_fixedlr)
+
+
 ckpt_vocoder="./vocoder.ckpt"
 
 # Control Validation Frequency
