@@ -6,7 +6,7 @@ from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
 
-from dp.phonemizer import Phonemizer
+# from dp.phonemizer import Phonemizer
 
 from model.acoustic_model import AcousticModel
 from model.config import (
@@ -24,6 +24,7 @@ from training.preprocess.normalize_text import NormalizeText
 from model.config import get_lang_map, lang2id
 
 from .vocoder_module import VocoderModule
+from training.preprocess.tokenizer_ipa import TokenizerIPA
 
 
 class AcousticModule(LightningModule):
@@ -64,9 +65,8 @@ class AcousticModule(LightningModule):
 
         lang_map = get_lang_map(lang)
         normilize_text_lang = lang_map.nemo
-        self.phonemizer_lang = lang_map.phonemizer
 
-        self.phonemizer = Phonemizer.from_checkpoint(phonemizer_checkpoint)
+        self.tokenizer = TokenizerIPA(lang)
         self.normilize_text = NormalizeText(normilize_text_lang)
 
         self.train_config: AcousticTrainingConfig
@@ -136,13 +136,13 @@ class AcousticModule(LightningModule):
         return checkpoint["gen"]
 
 
-    def forward(self, text: str, speaker_idx: int, lang: str = "en") -> torch.Tensor:
+    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
         Args:
             text (str): The input text.
-            speaker_idx (int): The index of the speaker.
+            speaker_idx (torch.Tensor): The index of the speaker.
             lang (str): The language.
 
         Returns:
@@ -150,24 +150,20 @@ class AcousticModule(LightningModule):
         """
 
         normalized_text = self.normilize_text(text)
-        phones_ipa = self.phonemizer(normalized_text, lang=self.phonemizer_lang)
-        phones = self.phonemizer.predictor.phoneme_tokenizer(
-            phones_ipa, language=self.phonemizer_lang,
-        )
+        _, phones = self.tokenizer(normalized_text)
 
         # Convert to tensor
         x = torch.tensor(
-            phones, dtype=torch.int
+            phones, dtype=torch.int, device=speaker_idx.device
         ).unsqueeze(0)
 
-        speakers = torch.full(
-            (x.shape[1],), speaker_idx, dtype=torch.int
-        ).unsqueeze(0)
+        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        lang_id = lang2id[lang]
-        langs = torch.full(
-            (x.shape[1],), lang_id, dtype=torch.int
-        ).unsqueeze(0)
+        langs = torch.tensor(
+            [lang2id[lang]],
+            dtype=torch.int,
+            device=speaker_idx.device
+        ).repeat(x.shape[1]).unsqueeze(0)
 
         y_pred = self.acoustic_model(
             x=x,

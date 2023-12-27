@@ -161,7 +161,7 @@ class PreprocessLibriTTS:
 
         normalized_text = self.normilize_text(normalized_text)
 
-        # NOTE: here fixed version of tokenizer with punctuation
+        # NOTE: fixed version of tokenizer with punctuation
         phones_ipa, phones = self.tokenizer(normalized_text)
         
         # Convert to tensor

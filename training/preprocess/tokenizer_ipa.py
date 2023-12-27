@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List, Tuple
 
 from dp.phonemizer import Phonemizer
 from dp.preprocessing.text import SequenceTokenizer
@@ -37,7 +37,7 @@ class TokenizerIPA:
             # IPA symbols
             'a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'æ', 'ç', 'ð', 'ø', 'ŋ', 'œ', 'ɐ', 'ɑ', 'ɔ', 'ə', 'ɛ', 'ɝ', 'ɹ', 'ɡ', 'ɪ', 'ʁ', 'ʃ', 'ʊ', 'ʌ', 'ʏ', 'ʒ', 'ʔ', 'ˈ', 'ˌ', 'ː', '̃', '̍', '̥', '̩', '̯', '͡', 'θ',
             # Punctuation
-            '!', '?', ',', '.', '-', ':', ';', '"', "'", '(', ')'
+            '!', '?', ',', '.', '-', ':', ';', '"', "'", '(', ')', ' ',
         ]
 
         self.tokenizer = SequenceTokenizer(phoneme_symbols,
@@ -45,8 +45,18 @@ class TokenizerIPA:
                                         lowercase=True,
                                         char_repeats=1,
                                         append_start_end=True)
+        
+        # test_text = "Hello, World!"
+        # print("Initializing TokenizerIPA, check on: ", test_text)
 
-    def __call__(self, text: str) -> tuple[Union[str, list[str]], list[int]]:
+        # phones_ipa = self.phonemizer(test_text, lang=self.lang)
+        # tokens = self.tokenizer(phones_ipa, language=self.lang)
+
+        # print("phones_ipa: ", phones_ipa)
+        # print("tokens: ", tokens)
+        # print("decoded: ", self.tokenizer.decode(tokens))
+
+    def __call__(self, text: str) -> Tuple[Union[str, List[str]], List[int]]:
         r"""
         Converts the input text to phonemes and tokenizes them.
 

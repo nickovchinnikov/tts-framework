@@ -91,11 +91,13 @@ class TestTrainAcousticModule(unittest.TestCase):
             self.fail(f"Loading from checkpoint raised an exception: {e}")
 
     def test_generate_audio(self):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         checkpoint = "checkpoints/epoch=4796-step=438683.ckpt"
         module = AcousticModule.load_from_checkpoint(checkpoint)
 
         text = "Hello, this is a test sentence."
-        speaker = 100
+        speaker = torch.tensor([100], device=device)
 
         wav_prediction = module(
             text,

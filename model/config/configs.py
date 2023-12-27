@@ -22,7 +22,7 @@ class PreprocessingConfig:
     # min_seconds: float = 0.5
     # max_seconds: float = 10.0
     min_seconds: float = 0.5
-    max_seconds: float = 34.0
+    max_seconds: float = 30.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11

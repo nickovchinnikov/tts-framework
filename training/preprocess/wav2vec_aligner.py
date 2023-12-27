@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 import torch
 from torch.nn import Module
@@ -62,7 +62,7 @@ class Wav2VecAligner(Module):
         config (AutoConfig): The configuration for the pre-trained model.
         model (AutoModelForCTC): The pre-trained model.
         processor (AutoProcessor): The processor for the pre-trained model.
-        labels (list): The labels from the vocabulary of the tokenizer.
+        labels (List): The labels from the vocabulary of the tokenizer.
         blank_id (int): The ID of the blank token.
 
     Methods
@@ -118,22 +118,22 @@ class Wav2VecAligner(Module):
         if not os.path.isfile(wav_path):
             raise FileNotFoundError(wav_path, "Not found in wavs directory")
 
-        speech_array, sampling_rate = torchaudio.load(wav_path)
+        speech_array, sampling_rate = torchaudio.load(wav_path) # type: ignore
         return speech_array, sampling_rate
 
-    def encode(self, text: str) -> list:
+    def encode(self, text: str) -> List:
         # encode labels
         with self.processor.as_target_processor():
             return self.processor(text, return_tensors="pt").input_ids
 
-    def decode(self, tokens: list):
+    def decode(self, tokens: List):
         # Decode tokens
         decoded = self.processor.batch_decode(tokens)
         return decoded[0]
 
     def align_single_sample(
         self, audio_input: torch.Tensor, text: str,
-    ) -> Tuple[torch.Tensor, list, str]:
+    ) -> Tuple[torch.Tensor, List, str]:
         r"""Align a single sample of audio data with the corresponding text.
 
         Args:
@@ -141,7 +141,7 @@ class Wav2VecAligner(Module):
             text (str): The corresponding text.
 
         Returns:
-            Tuple[torch.Tensor, list, str]: A tuple containing the emissions, the tokens, and the transcript.
+            Tuple[torch.Tensor, List, str]: A tuple containing the emissions, the tokens, and the transcript.
         """
         transcript = "|".join(text.split(" "))
         transcript = f"|{transcript}|"
@@ -162,7 +162,7 @@ class Wav2VecAligner(Module):
     def get_trellis(
         self,
         emission: torch.Tensor,
-        tokens: list,
+        tokens: List,
     ) -> torch.Tensor:
         r"""Build a trellis matrix of shape (num_frames + 1, num_tokens + 1)
         that represents the probabilities of each source token being at a certain time step.
@@ -173,7 +173,7 @@ class Wav2VecAligner(Module):
 
         Args:
             emission (torch.Tensor): The emission tensor.
-            tokens (list): The list of tokens.
+            tokens (List): The list of tokens.
 
         Returns:
             torch.Tensor: The trellis matrix.
@@ -203,17 +203,17 @@ class Wav2VecAligner(Module):
         self,
         trellis: torch.Tensor,
         emission: torch.Tensor,
-        tokens: list,
-    ) -> list[Point]:
+        tokens: List,
+    ) -> List[Point]:
         r"""Walk backwards from the last (sentence_token, time_step) pair to build the optimal sequence alignment path.
 
         Args:
             trellis (torch.Tensor): The trellis matrix.
             emission (torch.Tensor): The emission tensor.
-            tokens (list): The list of tokens.
+            tokens (List): The list of tokens.
 
         Returns:
-            list[Point]: The optimal sequence alignment path.
+            List[Point]: The optimal sequence alignment path.
         """
         # Note:
         # j and t are indices for trellis, which has extra dimensions
@@ -256,15 +256,15 @@ class Wav2VecAligner(Module):
 
         return path[::-1]
 
-    def merge_repeats(self, path: list[Point], transcript: str) -> list[Segment]:
+    def merge_repeats(self, path: List[Point], transcript: str) -> List[Segment]:
         r"""Merge repeated tokens into a single segment.
 
         Args:
-            path (list[Point]): The sequence alignment path.
+            path (List[Point]): The sequence alignment path.
             transcript (str): The transcript.
 
         Returns:
-            list[Segment]: The list of segments.
+            List[Segment]: The list of segments.
 
         Note: this shouldn't affect repeated characters from the
         original sentences (e.g. `ll` in `hello`)
@@ -293,16 +293,16 @@ class Wav2VecAligner(Module):
 
     # Merge words
     def merge_words(
-        self, segments: list[Segment], separator: str = "|",
-    ) -> list[Segment]:
+        self, segments: List[Segment], separator: str = "|",
+    ) -> List[Segment]:
         r"""Merge words in the given path.
 
         Args:
-            segments (list[Segment]): The list of segments.
+            segments (List[Segment]): The list of segments.
             separator (str): The separator character. Defaults to "|".
 
         Returns:
-            list[Segment]: The list of merged words.
+            List[Segment]: The list of merged words.
         """
         words = []
         i1, i2 = 0, 0
@@ -325,7 +325,7 @@ class Wav2VecAligner(Module):
                 i2 += 1
         return words
 
-    def forward(self, wav_path: str, text: str) -> list[Segment]:
+    def forward(self, wav_path: str, text: str) -> List[Segment]:
         r"""Perform the forward pass of the model, which involves loading the audio data, aligning the audio with the text,
         building the trellis, backtracking to find the optimal path, merging repeated tokens, and finally merging words.
 
@@ -334,7 +334,7 @@ class Wav2VecAligner(Module):
             text (str): The corresponding text.
 
         Returns:
-            list[Segment]: The list of segments representing the alignment of the audio data with the text.
+            List[Segment]: The list of segments representing the alignment of the audio data with the text.
         """
         audio_input, _ = self.load_audio(wav_path)
 
@@ -382,6 +382,6 @@ class Wav2VecAligner(Module):
 
             # Save the segment waveform to a file
             filename = f"{i}_{word.label}.wav"
-            torchaudio.save(
+            torchaudio.save( # type: ignore
                 os.path.join(save_dir, filename), segment_waveform, sampling_rate,
             )
