@@ -192,6 +192,5 @@ class TestAcousticModel(unittest.TestCase):
         self.assertEqual(x.shape[0], self.model_config.speaker_embed_dim)
         self.assertEqual(x.shape[1], self.preprocess_config.stft.n_mel_channels)
 
-
 if __name__ == "__main__":
     unittest.main()

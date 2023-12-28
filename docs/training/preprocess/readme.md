@@ -26,3 +26,7 @@ Preprocessing `PreprocessLibriTTS` audio and text data for use with a `TacotronS
 
 The Wav2VecAligner model is designed for aligning audio data with text data.
 This class handles the training and validation of the Wav2VecAligner model.
+
+### [TokenizerIPA](./tokenizer_ipa.md)
+
+The tokenizer of IPA tokens with punctuation

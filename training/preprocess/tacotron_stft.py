@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import librosa
 import torch
@@ -104,7 +104,7 @@ class TacotronSTFT(Module):
         spec = self._spectrogram(y)
         return torch.norm(spec, p=2, dim=-1)
 
-    def forward(self, y: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, y: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Computes mel-spectrograms from a batch of waves.
 
         Args:

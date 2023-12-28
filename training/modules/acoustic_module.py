@@ -1,10 +1,12 @@
 from typing import Callable, List, Optional, Tuple
 
-from pytorch_lightning.core import LightningModule
+from lightning.pytorch.core import LightningModule
 import torch
 from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
+
+# from dp.phonemizer import Phonemizer
 
 from model.acoustic_model import AcousticModel
 from model.config import (
@@ -15,8 +17,14 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.datasets import LibriTTSDatasetAcoustic
+from training.datasets import LibriTTSDatasetAcoustic, LibriTTSMMDatasetAcoustic
 from training.loss import FastSpeech2LossGen
+
+from training.preprocess.normalize_text import NormalizeText
+from model.config import get_lang_map, lang2id
+
+from .vocoder_module import VocoderModule
+from training.preprocess.tokenizer_ipa import TokenizerIPA
 
 
 class AcousticModule(LightningModule):
@@ -29,6 +37,11 @@ class AcousticModule(LightningModule):
         step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.
         checkpoint_path_v1 (Optional[str]): Path to the checkpoint to load the weights from. Note: this parameter is used only for the v0.1.0 checkpoint. In the future, this parameter will be removed!
+        vocoder_module (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
+        learning_rate (Optional[float]): Learning rate for the Learning Rate Finder. Defaults to None.
+
+    Optimizations:
+        Learning Rate Finder defined by the learning_rate parameter.
     """
 
     def __init__(
@@ -39,12 +52,22 @@ class AcousticModule(LightningModule):
             initial_step: int = 0,
             n_speakers: int = 5392,
             checkpoint_path_v1: Optional[str] = None,
+            vocoder_module_checkpoint: str = "checkpoints/vocoder.ckpt",
+            phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
+            # learning_rate: Optional[float] = None,
+            # batch_size: Optional[int] = None,
         ):
         super().__init__()
 
         self.lang = lang
         self.root = root
         self.fine_tuning = fine_tuning
+
+        lang_map = get_lang_map(lang)
+        normilize_text_lang = lang_map.nemo
+
+        self.tokenizer = TokenizerIPA(lang)
+        self.normilize_text = NormalizeText(normilize_text_lang)
 
         self.train_config: AcousticTrainingConfig
 
@@ -53,10 +76,14 @@ class AcousticModule(LightningModule):
         else:
             self.train_config = AcousticPretrainingConfig()
 
+        # Learning Rate Finder
+        # self.learning_rate = learning_rate
+
+        # Auto batch size scaling
+        # self.batch_size = batch_size or self.train_config.batch_size
+
         # TODO: check this argument!
-        # TODO: use the `register_buffer` to export this parameter to the checkpoint!
-        # CRITICAL: Possible issue in training.
-        self.initial_step = initial_step
+        self.register_buffer("initial_step", torch.tensor(initial_step))
 
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
@@ -67,6 +94,9 @@ class AcousticModule(LightningModule):
             model_config=self.model_config,
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
+        )
+        self.vocoder_module = VocoderModule.load_from_checkpoint(
+            vocoder_module_checkpoint
         )
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
@@ -79,6 +109,7 @@ class AcousticModule(LightningModule):
         if checkpoint_path_v1 is not None:
             checkpoint = self._load_weights_v1(checkpoint_path_v1)
             self.acoustic_model.load_state_dict(checkpoint, strict=False)
+
 
     def _load_weights_v1(self, checkpoint_path: str) -> dict:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
@@ -104,14 +135,56 @@ class AcousticModule(LightningModule):
 
         return checkpoint["gen"]
 
-    def forward(
+
+    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
+
+        Args:
+            text (str): The input text.
+            speaker_idx (torch.Tensor): The index of the speaker.
+            lang (str): The language.
+
+        Returns:
+            torch.Tensor: The output of the AcousticModel.
+        """
+
+        normalized_text = self.normilize_text(text)
+        _, phones = self.tokenizer(normalized_text)
+
+        # Convert to tensor
+        x = torch.tensor(
+            phones, dtype=torch.int, device=speaker_idx.device
+        ).unsqueeze(0)
+
+        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+
+        langs = torch.tensor(
+            [lang2id[lang]],
+            dtype=torch.int,
+            device=speaker_idx.device
+        ).repeat(x.shape[1]).unsqueeze(0)
+
+        y_pred = self.acoustic_model(
+            x=x,
+            pitches_range=self.pitches_stat,
+            speakers=speakers,
+            langs=langs,
+        )
+
+        wav_prediction = self.vocoder_module.forward(y_pred)
+
+        return wav_prediction
+
+
+    def forward_old(
             self,
             text: torch.Tensor,
             src_len: torch.Tensor,
             speaker_idx: torch.Tensor,
             lang: torch.Tensor,
         ):
-        r"""Performs a forward pass through the AcousticModel.
+        r"""DEPRECATED: Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
         Args:
@@ -235,7 +308,7 @@ class AcousticModule(LightningModule):
             attn_hard=outputs["attn_hard"],
             src_lens=src_lens,
             mel_lens=mel_lens,
-            step=batch_idx + self.initial_step,
+            step=batch_idx + self.initial_step.item(),
         )
 
         tensorboard_logs = {
@@ -250,24 +323,63 @@ class AcousticModule(LightningModule):
             "bin_loss": bin_loss.detach(),
         }
 
+        # Add the logs to the tensorboard
+        if self.logger.experiment is not None: # type: ignore
+            # Generate an audio ones in a while and save to tensorboard
+            tensorboard = self.logger.experiment # type: ignore
+            wav_prediction = self.vocoder_module.forward(y_pred)
+            tensorboard.add_audio(
+                "wav_prediction",
+                wav_prediction,
+                self.current_epoch,
+                self.preprocess_config.sampling_rate
+            )
+
+            tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
+            tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
+            tensorboard.add_scalar("ssim_loss", ssim_loss, self.current_epoch)
+            tensorboard.add_scalar("duration_loss", duration_loss, self.current_epoch)
+            tensorboard.add_scalar("u_prosody_loss", u_prosody_loss, self.current_epoch)
+            tensorboard.add_scalar("p_prosody_loss", p_prosody_loss, self.current_epoch)
+            tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
+            tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
+            tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
+
+        # TODO: check the initial_step, not sure that this's correct
+        self.initial_step += torch.tensor(1)
+
         return {"loss": total_loss, "log": tensorboard_logs}
+
 
     def configure_optimizers(self):
         r"""Configures the optimizer used for training.
         Depending on the training mode, either the finetuning or the pretraining optimizer is used.
+
+        The `Learning Rate Finder` is also configured, if self.learning_rate is not None.
+        So, if the Learning Rate Finder is used, the optimizer is used self.learning_rate and the scheduler is not used.
 
         Returns
             dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
         parameters = self.acoustic_model.parameters()
 
+        # Learning Rate Finder
+        # if self.learning_rate is not None:
+        #     return AdamW(
+        #         parameters,
+        #         betas=self.train_config.optimizer_config.betas,
+        #         eps=self.train_config.optimizer_config.eps,
+        #         lr=self.learning_rate,
+        #     )
+
+        # If the Learning Rate Finder is not used, the optimizer and the scheduler are used
         if self.fine_tuning:
             # Compute the gamma and initial learning rate based on the current step
             lr_decay = self.train_config.optimizer_config.lr_decay
             default_lr = self.train_config.optimizer_config.learning_rate
 
-            init_lr = default_lr if self.initial_step is None \
-            else default_lr * (lr_decay ** self.initial_step)
+            init_lr = default_lr if self.initial_step.item() == 0 \
+            else default_lr * (lr_decay ** self.initial_step.item())
 
             optimizer = AdamW(
                 parameters,
@@ -292,6 +404,7 @@ class AcousticModule(LightningModule):
 
             return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
+
     def get_lr_lambda(self) -> Tuple[float, Callable[[int], float]]:
         r"""Returns the custom lambda function for the learning rate schedule.
 
@@ -300,7 +413,7 @@ class AcousticModule(LightningModule):
         """
         init_lr = self.model_config.encoder.n_hidden ** -0.5
 
-        def lr_lambda(step: int = self.initial_step) -> float:
+        def lr_lambda(step: int = self.initial_step.item()) -> float:
             r"""Computes the learning rate scale factor.
 
             Args:
@@ -329,8 +442,10 @@ class AcousticModule(LightningModule):
         # Function that returns the learning rate scale factor
         return init_lr, lr_lambda
 
+
     def train_dataloader(self):
-        r"""Returns the training dataloader, that is using the LibriTTS dataset.
+        r"""DEPRECATED: use AcousticDataModule instead!
+        Returns the training dataloader, that is using the LibriTTS dataset.
 
         Returns
             DataLoader: The training dataloader.
@@ -339,9 +454,16 @@ class AcousticModule(LightningModule):
             root=self.root,
             lang=self.lang,
         )
+        # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
         return DataLoader(
             dataset,
-            batch_size=self.train_config.batch_size,
+            # 4x80Gb max 10 sec audio
+            # batch_size=20, # self.train_config.batch_size,
+            # 4*80Gb max ~20.4 sec audio
+            batch_size=10,
+            # TODO: find the optimal num_workers
+            # num_workers=self.preprocess_config.workers,
+            num_workers=12,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from pytorch_lightning import Trainer
+from lightning.pytorch import Trainer
 import torch
 
 from model.config import VocoderFinetuningConfig, VocoderPretrainingConfig

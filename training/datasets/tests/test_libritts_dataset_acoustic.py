@@ -1,7 +1,10 @@
 import unittest
 
+import os
+
 import torch
 from torch.utils.data import DataLoader
+
 
 from training.datasets import LibriTTSDatasetAcoustic
 
@@ -18,8 +21,10 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
             download=self.download,
         )
 
+
     def test_len(self):
         self.assertEqual(len(self.dataset), 33236)
+
 
     def test_getitem(self):
         sample = self.dataset[0]
@@ -36,6 +41,34 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
         self.assertEqual(sample["attn_prior"].shape, torch.Size([6, 58]))
         self.assertEqual(sample["wav"].shape, torch.Size([1, 14994]))
 
+    def test_cache_item(self):
+        dataset = LibriTTSDatasetAcoustic(
+            cache=True,
+        )
+
+        idxs = [0, 1, 1000, 1002, 2010]
+
+        for idx in idxs:
+            # Get a sample from the dataset
+            sample = dataset[idx]
+
+            cache_subdir_path = os.path.join(dataset.cache_dir, dataset.cache_subdir(idx))
+            cache_file = os.path.join(cache_subdir_path, f'{idx}.pt')
+
+            # Check if the data is in the cache
+            self.assertTrue(os.path.exists(cache_file))
+
+            # Load the data from the cache file
+            cached_sample = torch.load(cache_file)
+
+            # Check if the cached data is the same as the original data
+            for key in sample:
+                if torch.is_tensor(sample[key]):
+                    self.assertTrue(torch.all(sample[key] == cached_sample[key]))
+                else:
+                    self.assertEqual(sample[key], cached_sample[key])
+
+
     def test_collate_fn(self):
         data = [
             self.dataset[0],
@@ -51,6 +84,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
         # Check that all the batches are the same size
         for batch in result:
             self.assertEqual(len(batch), 2)
+
 
     def test_normalize_pitch(self):
         pitches = [
