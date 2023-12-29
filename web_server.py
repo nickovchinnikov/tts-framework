@@ -33,7 +33,7 @@ module.eval()
 existed_speakers = speakers_info()
 
 SAMPLING_RATE = 22050
-AUDIO_FORMAT = "mp3"
+AUDIO_FORMAT = "mpeg"
 
 
 class TransformerParams(BaseModel):

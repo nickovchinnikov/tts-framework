@@ -13,5 +13,5 @@ steps:
 
 # Deploy container image to Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['run', 'deploy', 'peech-delightful-tts', '--image', 'gcr.io/$PROJECT_ID/tts-framework', '--region', 'us-central1', '--platform', 'managed', '--cpu', '2', '--memory', '4.5Gi', '--no-cpu-throttling', '--concurrency', '1', '--port', '8080']
+  args: ['run', 'deploy', 'peech-delightful-tts', '--image', 'gcr.io/$PROJECT_ID/tts-framework', '--region', 'us-central1', '--platform', 'managed', '--cpu', '8', '--memory', '5Gi', '--no-cpu-throttling', '--concurrency', '1', '--port', '8080']
 images: ['gcr.io/$PROJECT_ID/tts-framework']
