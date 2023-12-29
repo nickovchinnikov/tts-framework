@@ -26,7 +26,7 @@ COPY ./en_us_cmudict_ipa_forward.pt /app/checkpoints/en_us_cmudict_ipa_forward.p
 RUN mamba env create -f environment.yml
 
 # Expose a port if needed
-EXPOSE 8000
+EXPOSE 8080
 
 # Set the entry point
 CMD ["conda", "run", "-n", "tts_framework", "python", "web_server.py"]
