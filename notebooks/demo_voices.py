@@ -31,6 +31,7 @@ speakers_speakerid_libriid = {
 }
 speakers_speakerid_libriid[0], speakers_libriid_speakerid["14"]
 
+
 # %%
 speakers_dict_train_clean_100 = speakers_df[speakers_df["SUBSET"] == "train-clean-100"].to_dict('records')
 speakers_dict_train_clean_100[:10]
@@ -42,15 +43,19 @@ existed_speakers = []
 for row in speakers_dict_train_clean_100:
     speaker_id = row["READER"]
     speaker_name = row["NAME"]
+    gender = row['GENDER']
 
     existed_speakers.append(
         (
             speaker_id,
-            speakers_libriid_speakerid[str(speaker_id)]
+            speakers_libriid_speakerid[str(speaker_id)],
+            speaker_name,
+            gender
         )
     )
 
 existed_speakers[:5]
+
 
 # %%
 from training.preprocess.tokenizer_ipa import TokenizerIPA
