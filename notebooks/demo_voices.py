@@ -16,8 +16,10 @@ from IPython.display import Audio, display
 from training.modules import AcousticModule
 
 # %%
-checkpoint = "checkpoints/epoch=4988-step=484379.ckpt"
+checkpoint = "checkpoints/epoch=5371-step=575533.ckpt"
 module = AcousticModule.load_from_checkpoint(checkpoint)
+module.eval()
+
 
 # %%
 speakers_df = pd.read_csv("../datasets_cache/LIBRITTS/LibriTTS/speakers.tsv", sep="\t",)
@@ -83,7 +85,7 @@ html = "<table>"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-for libriid, speaker_id in existed_speakers:
+for libriid, speaker_id, speaker_name, gender in existed_speakers:
     start_time = time.time()
     with torch.no_grad():
         wav_prediction = module(

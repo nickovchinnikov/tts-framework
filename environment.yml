@@ -40,4 +40,5 @@ dependencies:
       - tensorboard==2.15.0
       - uvicorn==0.24.0
       - onnx==1.15.0
+      - neural-compressor==2.4.1
 prefix: D:\Program Files\anaconda3\envs\tts_framework

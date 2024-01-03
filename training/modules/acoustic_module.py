@@ -444,7 +444,7 @@ class AcousticModule(LightningModule):
 
 
     def train_dataloader(self):
-        r"""DEPRECATED: use AcousticDataModule instead!
+        r"""
         Returns the training dataloader, that is using the LibriTTS dataset.
 
         Returns
