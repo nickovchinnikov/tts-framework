@@ -39,4 +39,5 @@ dependencies:
       - mkdocstrings-python==1.7.3
       - tensorboard==2.15.0
       - uvicorn==0.24.0
+      - onnx==1.15.0
 prefix: D:\Program Files\anaconda3\envs\tts_framework

@@ -33,7 +33,7 @@ module.eval()
 existed_speakers = speakers_info()
 
 SAMPLING_RATE = 22050
-AUDIO_FORMAT = "mpeg"
+AUDIO_FORMAT = "mp3"
 
 
 class TransformerParams(BaseModel):
@@ -100,6 +100,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "web_server:app",
         host="0.0.0.0",
-        port=8000,
+        port=8080,
         log_level="info",
     )
