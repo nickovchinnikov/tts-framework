@@ -56,7 +56,7 @@ vocoder_module = VocoderModule.load_from_checkpoint(
 )
 
 module = AcousticModule(
-    vocoder_module=vocoder_module,
+    # vocoder_module=vocoder_module,
 )
 
 # module = AcousticModule.load_from_checkpoint(

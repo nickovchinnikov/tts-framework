@@ -1,0 +1,13 @@
+[Unit]
+Description=DelightfulTTS 2 service
+After=network.target
+
+[Service]
+Environment=PATH=/opt/conda/envs/tts_framework/bin:/usr/bin
+ExecStart=/opt/conda/envs/tts_framework/bin/python /home/jupyter/tts-framework/web_server.py
+Restart=always
+User=jupyter
+WorkingDirectory=/home/jupyter/tts-framework
+
+[Install]
+WantedBy=multi-user.target
