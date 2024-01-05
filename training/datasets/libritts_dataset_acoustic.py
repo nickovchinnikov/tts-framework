@@ -19,6 +19,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         self,
         lang: str = "en",
         root: str = "datasets_cache/LIBRITTS",
+        url: str = "train-clean-360",
         download: bool = True,
         cache: bool = False,
         cache_dir: str = "datasets_cache",
@@ -30,13 +31,17 @@ class LibriTTSDatasetAcoustic(Dataset):
             lang (str): The language of the dataset.
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
         """
-        self.dataset = datasets.LIBRITTS(root=root, download=download)
+        self.dataset = datasets.LIBRITTS(
+            root=root,
+            download=download,
+            url=url,
+        )
         self.cache = cache
 
         # Calculate the directory for the cache file
         self.cache_subdir = lambda idx: str(((idx // 1000) + 1) * 1000)
 
-        self.cache_dir = os.path.join(cache_dir, 'cache_libri_preprocessed')
+        self.cache_dir = os.path.join(cache_dir, f'cache-{url}')
 
         # Load the id_mapping dictionary from the JSON file
         with open("speaker_id_mapping_libri.json") as f:

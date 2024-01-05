@@ -460,10 +460,10 @@ class AcousticModule(LightningModule):
             # 4x80Gb max 10 sec audio
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
-            batch_size=10,
+            batch_size=8,
             # TODO: find the optimal num_workers
             # num_workers=self.preprocess_config.workers,
-            num_workers=12,
+            num_workers=18,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )
