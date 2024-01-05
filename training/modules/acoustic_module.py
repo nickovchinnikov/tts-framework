@@ -453,6 +453,7 @@ class AcousticModule(LightningModule):
         dataset = LibriTTSDatasetAcoustic(
             root=self.root,
             lang=self.lang,
+            cache=True,
         )
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
         return DataLoader(
