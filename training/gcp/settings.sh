@@ -3,6 +3,9 @@
 # sudo dpkg -i cuda-keyring_1.0-1_all.deb
 # sudo apt-get update
 
+# If you have dead loop and CUDA out of memory error, run the following commands
+# pkill -9 python
+
 # Update the system
 sudo apt update && sudo apt upgrade -y
 
