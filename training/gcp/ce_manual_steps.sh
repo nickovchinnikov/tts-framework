@@ -65,6 +65,9 @@ ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ""
 # Mount the disc
 ###############################################
 
+# List the disks
+# lsblk -o NAME,HCTL,SIZE,MOUNTPOINT | grep nvme
+
 # Check the devices
 ls -l /dev/disk/by-id/google-*
 
@@ -90,7 +93,7 @@ sudo blkid /dev/disk/by-id/google-local-nvme-ssd-0
 # /dev/disk/by-id/google-local-nvme-ssd-0: UUID="35c0d7f9-bf93-4dce-8dd9-fe2b5ba8e867" BLOCK_SIZE="4096" TYPE="ext4"
 # Change the /etc/fstab file to mount the disk automatically after a VM restart.
 ###############################################
-# cat /etc/fsta:
+# cat /etc/fstab:
 # UUID=35c0d7f9-bf93-4dce-8dd9-fe2b5ba8e867 /mnt/disks/training-disk ext4 discard,defaults 0 2
 
 # Choose the mounted disk
@@ -99,3 +102,6 @@ cd /mnt/disks/training-disk
 
 # Clone the repo
 git clone git@github.com:nickovchinnikov/tts-framework.git
+
+# After the setup
+pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

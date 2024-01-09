@@ -21,13 +21,13 @@ sudo apt update && sudo apt upgrade -y
 
 sudo apt install ffmpeg libasound2-dev -y
 
-mkdir tts-training-bucket
+mkdir ./tts-training-bucket
 
 # Mount the bucket
-gcsfuse tts-training-bucket "$HOME/tts-training-bucket"
+gcsfuse tts-training-bucket ./tts-training-bucket
 
 # Clone the repo
-git clone git@github.com:nickovchinnikov/tts-framework.git
+# git clone git@github.com:nickovchinnikov/tts-framework.git
 
 # Connect the bucket to the VM instance, cd tts_framework
 cp ./tts-training-bucket/vocoder.ckpt ./tts-framework/checkpoints/
@@ -72,19 +72,19 @@ rm -r ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R
 #########################################  LibriTTS dataset  ################################################
 #############################################################################################################
 
-curl -O https://us.openslr.org/resources/60/train-clean-100.tar.gz
-mv train-clean-100.tar.gz ./tts-framework/datasets_cache/LIBRITTS/
+# curl -O https://us.openslr.org/resources/60/train-clean-100.tar.gz
+# mv train-clean-100.tar.gz ./tts-framework/datasets_cache/LIBRITTS/
 
-tar -xzvf ./tts-framework/datasets_cache/LIBRITTS/train-clean-100.tar.gz -C ./tts-framework/datasets_cache/LIBRITTS/
-mv ./tts-framework/datasets_cache/LIBRITTS/LibriTTS/train-clean-100 ./tts-framework/datasets_cache/LIBRITTS/LibriTTS
-rm -r ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R
+# tar -xzvf ./tts-framework/datasets_cache/LIBRITTS/train-clean-100.tar.gz -C ./tts-framework/datasets_cache/LIBRITTS/
+# mv ./tts-framework/datasets_cache/LIBRITTS/LibriTTS/train-clean-100 ./tts-framework/datasets_cache/LIBRITTS/LibriTTS
+# rm -r ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R
 
 #############################################################################################################
 
 conda env create -f ./tts-framework/environment.yml
 conda activate tts_framework
 
-pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 cp ./tts-framework/training/scripts/train_dist.py ./tts-framework
 
