@@ -24,7 +24,9 @@ from training.preprocess.normalize_text import NormalizeText
 from model.config import get_lang_map, lang2id
 
 from .vocoder_module import VocoderModule
-from training.preprocess.tokenizer_ipa import TokenizerIPA
+# from training.preprocess.tokenizer_ipa import TokenizerIPA
+# Updated version of the tokenizer
+from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
 
 
 class AcousticModule(LightningModule):

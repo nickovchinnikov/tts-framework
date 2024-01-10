@@ -35,11 +35,17 @@ class LangItem:
     r"""A class for storing language information."""
 
     phonemizer: str
+    phonemizer_espeak: str
     nemo: str
     processing_lang_type: PreprocessLangType
 
 langs_map: Dict[str, LangItem] = {
-    "en": LangItem(phonemizer="en_us", nemo="en", processing_lang_type="english_only"),
+    "en": LangItem(
+        phonemizer="en_us",
+        phonemizer_espeak="en-us",
+        nemo="en",
+        processing_lang_type="english_only"
+    ),
 }
 
 def get_lang_map(lang: str) -> LangItem:

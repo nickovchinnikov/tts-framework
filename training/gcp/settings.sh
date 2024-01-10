@@ -15,6 +15,9 @@
 # Update the system
 sudo apt update && sudo apt upgrade -y
 
+# espeak-ng
+sudo apt-get install espeak-ng -y
+
 # Install CUDA drivers
 # sudo apt -y install cuda-drivers
 # sudo apt -y install nvidia-cuda-toolkit
