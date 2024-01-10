@@ -24,7 +24,9 @@ from training.preprocess.normalize_text import NormalizeText
 from model.config import get_lang_map, lang2id
 
 from .vocoder_module import VocoderModule
-from training.preprocess.tokenizer_ipa import TokenizerIPA
+# from training.preprocess.tokenizer_ipa import TokenizerIPA
+# Updated version of the tokenizer
+from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
 
 
 class AcousticModule(LightningModule):
@@ -453,17 +455,19 @@ class AcousticModule(LightningModule):
         dataset = LibriTTSDatasetAcoustic(
             root=self.root,
             lang=self.lang,
+            cache=True,
         )
+        
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
         return DataLoader(
             dataset,
             # 4x80Gb max 10 sec audio
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
-            batch_size=8,
+            batch_size=7,
             # TODO: find the optimal num_workers
             # num_workers=self.preprocess_config.workers,
-            num_workers=18,
+            num_workers=12,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )
