@@ -58,7 +58,8 @@ class TokenizerIpaEspeak:
         self.phonemizer = EspeakBackend(
             language=self.lang,
             preserve_punctuation=True, 
-            with_stress=True
+            with_stress=True,
+            words_mismatch='ignore'
         ).phonemize
 
     def __call__(self, text: str):
