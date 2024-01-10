@@ -1,5 +1,6 @@
 # Update the system
 sudo apt update && sudo apt upgrade -y
+
 # Install deps
 sudo apt install ffmpeg libasound2-dev -y
 
@@ -29,7 +30,7 @@ cp ./tts-training-bucket/datasets_cache/LIBRITTS/LibriTTS/speakers.tsv ./tts-fra
 cp ./tts-training-bucket/datasets_cache/LIBRITTS/LibriTTS/SPEAKERS.txt ./tts-framework/datasets_cache/LIBRITTS/LibriTTS/
 
 # Download the dataset train_clean_360
-curl -O https://us.openslr.org/resources/141/train_clean_360.tar.gz
+curl -O http://us.openslr.org/resources/141/train_clean_360.tar.gz
 mv train_clean_360.tar.gz ./tts-framework/datasets_cache/LIBRITTS/
 
 tar -xzvf ./tts-framework/datasets_cache/LIBRITTS/train_clean_360.tar.gz -C ./tts-framework/datasets_cache/LIBRITTS/
@@ -37,11 +38,11 @@ mv ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R/train-clean-360 ./tts-fram
 rm -r ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R
 
 conda env create -f ./tts-framework/environment.yml
-conda activate tts_framework
+# conda activate tts_framework
 
 cp ./tts-framework/training/scripts/train_dist.py ./tts-framework
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
 
 # And then check the torch version and cuda version
-python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.backends.cudnn.version())"
+# python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.backends.cudnn.version())"

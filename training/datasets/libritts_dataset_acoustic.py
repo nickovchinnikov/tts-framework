@@ -11,6 +11,8 @@ from model.config import lang2id
 from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
+from .libritts_r import LIBRITTS_R
+
 
 class LibriTTSDatasetAcoustic(Dataset):
     r"""Loading preprocessed acoustic model data."""
@@ -31,10 +33,15 @@ class LibriTTSDatasetAcoustic(Dataset):
             lang (str): The language of the dataset.
             url (str): The dataset url, default "train-clean-360".
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
-            cache (bool, optional): Whether to cache the preprocessed data. Defaults to False. NOTE: This is not speed up the training on the GCP at least!
+            cache (bool, optional): Whether to cache the preprocessed data. Defaults to False.
             cache_dir (str, optional): Path to the directory where the cache is stored. Defaults to "datasets_cache".
         """
-        self.dataset = datasets.LIBRITTS(
+        # self.dataset = datasets.LIBRITTS(
+        #     root=root,
+        #     download=download,
+        #     url=url,
+        # )
+        self.dataset = LIBRITTS_R(
             root=root,
             download=download,
             url=url,
