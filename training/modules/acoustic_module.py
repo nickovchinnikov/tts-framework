@@ -6,6 +6,10 @@ from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
 
+import numpy as np
+import librosa
+import matplotlib.pyplot as plt
+
 # from dp.phonemizer import Phonemizer
 
 from model.acoustic_model import AcousticModel
@@ -213,6 +217,27 @@ class AcousticModule(LightningModule):
             langs=langs,
         )
 
+
+    def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
+        r"""
+        Plots the mel spectrograms for the target and the prediction.
+        """
+        fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
+
+        img1 = librosa.display.specshow(mel_target, x_axis='time', y_axis='mel', sr=sr, ax=axs[0])
+        axs[0].set_title('Target spectrogram')
+        fig.colorbar(img1, ax=axs[0], format='%+2.0f dB')
+
+        img2 = librosa.display.specshow(mel_prediction, x_axis='time', y_axis='mel', sr=sr, ax=axs[1])
+        axs[1].set_title('Prediction spectrogram')
+        fig.colorbar(img2, ax=axs[1], format='%+2.0f dB')
+
+        # Adjust the spacing between subplots
+        fig.subplots_adjust(hspace=0.5)
+
+        return fig
+
+
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
     # trainer = Trainer(inference_mode=True)
@@ -347,6 +372,34 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
 
+            optimizers = self.optimizers()
+
+            for param_group in optimizers.optimizer.param_groups: # type: ignore
+                # Add the learning rate to the tensorboard
+                tensorboard.add_scalar('learning_rate', param_group['lr'], self.current_epoch)
+
+            # Model Parameters histogram
+            for name, param in self.acoustic_model.named_parameters():
+                tensorboard.add_histogram(f"{name}_param", param, self.current_epoch)
+
+            # Gradients histogram
+            for name, param in self.acoustic_model.named_parameters():
+                if param.grad is not None:
+                    tensorboard.add_histogram(f'{name}_grad', param.grad, self.current_epoch)
+
+            # Select the first spectrogram in the batch
+            mel_target = mels[0].detach().cpu().numpy()
+            mel_prediction = y_pred[0].detach().cpu().numpy()
+
+            # Plot and add the comparison plot to TensorBoard
+            tensorboard.add_figure(
+                "mel_spectrograms",
+                self.plot_spectrograms(
+                    mel_target, mel_prediction, self.preprocess_config.sampling_rate
+                ),
+                self.current_epoch
+            )
+
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
 
@@ -464,10 +517,11 @@ class AcousticModule(LightningModule):
             # 4x80Gb max 10 sec audio
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
-            batch_size=7,
+            # batch_size=7,
+            batch_size=6,
             # TODO: find the optimal num_workers
             # num_workers=self.preprocess_config.workers,
-            num_workers=12,
+            num_workers=18,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )

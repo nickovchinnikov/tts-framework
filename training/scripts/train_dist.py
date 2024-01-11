@@ -1,5 +1,4 @@
 import os
-import warnings
 from typing import Any
 
 import torch
@@ -15,7 +14,6 @@ from training.modules import AcousticDataModule, AcousticModule, VocoderModule
 
 print("usable_cuda_devices: ", find_usable_cuda_devices())
 
-warnings.filterwarnings("ignore")
 # warnings.filterwarnings("ignore", category=UserWarning, module="phonemizer")
 
 # Set the precision of the matrix multiplication to float32 to improve the performance of the training
@@ -23,7 +21,7 @@ torch.set_float32_matmul_precision("high")
 
 default_root_dir="../tts-training-bucket/logs_new_training/"
 
-ckpt_acoustic="./checkpoints/epoch=5537-step=615041.ckpt"
+# ckpt_acoustic="./checkpoints/epoch=5537-step=615041.ckpt"
 
 ckpt_vocoder="./vocoder.ckpt"
 
