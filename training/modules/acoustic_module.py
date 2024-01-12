@@ -378,27 +378,57 @@ class AcousticModule(LightningModule):
                 # Add the learning rate to the tensorboard
                 tensorboard.add_scalar('learning_rate', param_group['lr'], self.current_epoch)
 
-            # Model Parameters histogram
-            for name, param in self.acoustic_model.named_parameters():
-                tensorboard.add_histogram(f"{name}_param", param, self.current_epoch)
+            # Configuration options
+            LOG_EVERY_N_STEPS = 1000  # Log every N steps
 
-            # Gradients histogram
-            for name, param in self.acoustic_model.named_parameters():
-                if param.grad is not None:
-                    tensorboard.add_histogram(f'{name}_grad', param.grad, self.current_epoch)
+            # Check if the current step is a multiple of LOG_EVERY_N_STEPS
+            if self.initial_step % LOG_EVERY_N_STEPS == 0:
+                # Select the first spectrogram in the batch
+                mel_target = mels[0].detach().cpu().numpy()
+                mel_prediction = y_pred[0].detach().cpu().numpy()
 
-            # Select the first spectrogram in the batch
-            mel_target = mels[0].detach().cpu().numpy()
-            mel_prediction = y_pred[0].detach().cpu().numpy()
+                # Plot and add the comparison plot to TensorBoard
+                tensorboard.add_figure(
+                    "mel_spectrograms",
+                    self.plot_spectrograms(
+                        mel_target, mel_prediction, self.preprocess_config.sampling_rate
+                    ),
+                    self.current_epoch
+                )
 
-            # Plot and add the comparison plot to TensorBoard
-            tensorboard.add_figure(
-                "mel_spectrograms",
-                self.plot_spectrograms(
-                    mel_target, mel_prediction, self.preprocess_config.sampling_rate
-                ),
-                self.current_epoch
-            )
+            # # Model Parameters histogram
+            # for name, param in self.acoustic_model.named_parameters():
+            #     tensorboard.add_histogram(f"{name}_param", param, self.current_epoch)
+
+            # # Gradients histogram
+            # for name, param in self.acoustic_model.named_parameters():
+            #     if param.grad is not None:
+            #         tensorboard.add_histogram(f'{name}_grad', param.grad, self.current_epoch)
+
+            # Spectrogram is expensive to compute, so we only plot it for the first spectrogram in the batch
+            # SUBSET_SIZE = 5
+            # DOWNSAMPLE_FACTOR = 2
+
+            # # Select a random subset of spectrograms
+            # indices = np.random.choice(len(mels), size=SUBSET_SIZE, replace=False)
+            # mels_subset = mels[0][indices]
+            # y_pred_subset = y_pred[0][indices]
+
+            # # Select the first spectrogram in the batch
+            # mel_target = mels_subset.detach().cpu().numpy()
+            # mel_prediction = y_pred_subset.detach().cpu().numpy()
+
+            # mel_target = mel_target[::DOWNSAMPLE_FACTOR, ::DOWNSAMPLE_FACTOR]
+            # mel_prediction = mel_prediction[::DOWNSAMPLE_FACTOR, ::DOWNSAMPLE_FACTOR]
+
+            # # Plot and add the comparison plot to TensorBoard
+            # tensorboard.add_figure(
+            #     "mel_spectrograms",
+            #     self.plot_spectrograms(
+            #         mel_target, mel_prediction, self.preprocess_config.sampling_rate
+            #     ),
+            #     self.current_epoch
+            # )
 
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
