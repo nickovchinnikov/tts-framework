@@ -1,8 +1,14 @@
 import os
+from logging import Logger, ERROR
 
 # IPA Phonemizer: https://github.com/bootphon/phonemizer
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
 from phonemizer.backend import EspeakBackend
+
+# Create a Logger instance
+logger = Logger('my_logger')
+# Set the level to ERROR
+logger.setLevel(ERROR)
 
 from dp.preprocessing.text import SequenceTokenizer
 
@@ -58,7 +64,9 @@ class TokenizerIpaEspeak:
         self.phonemizer = EspeakBackend(
             language=self.lang,
             preserve_punctuation=True, 
-            with_stress=True
+            with_stress=True,
+            words_mismatch='ignore',
+            logger=logger
         ).phonemize
 
     def __call__(self, text: str):

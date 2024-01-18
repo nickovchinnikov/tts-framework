@@ -61,6 +61,9 @@ gcloud compute instances create prod-train \
 # Create a ssh key and add it to the github
 ssh-keygen -t rsa -f ~/.ssh/id_rsa -q -N ""
 
+# Add the key to the github and add the github to the known hosts
+ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
 ###############################################
 # Mount the disc
 ###############################################
