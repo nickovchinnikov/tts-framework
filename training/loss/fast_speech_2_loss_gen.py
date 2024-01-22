@@ -5,6 +5,14 @@ import torch
 from torch import nn
 from torch.nn import Module
 
+# from torchmetrics.audio import (
+#     ComplexScaleInvariantSignalNoiseRatio,
+#     ScaleInvariantSignalDistortionRatio,
+#     ScaleInvariantSignalNoiseRatio,
+#     ShortTimeObjectiveIntelligibility,
+#     PerceptualEvaluationSpeechQuality,
+# )
+
 from training.loss.bin_loss import BinLoss
 from training.loss.forward_sum_loss import ForwardSumLoss
 
@@ -40,6 +48,13 @@ class FastSpeech2LossGen(Module):
         self.ssim_loss = SSIMLoss()
         self.sum_loss = ForwardSumLoss()
         self.bin_loss = BinLoss()
+
+        # self.si_sdr = ScaleInvariantSignalDistortionRatio()
+        # self.si_snr = ScaleInvariantSignalNoiseRatio()
+        # self.c_si_snr = ComplexScaleInvariantSignalNoiseRatio(zero_mean=False)
+        # self.stoi = ShortTimeObjectiveIntelligibility(1000, extended=True)
+        # self.pesq = PerceptualEvaluationSpeechQuality(fs=16000, mode="wb")
+
         self.fine_tuning = fine_tuning
 
     def forward(
@@ -62,10 +77,7 @@ class FastSpeech2LossGen(Module):
         step: int,
         src_lens: torch.Tensor,
         mel_lens: torch.Tensor,
-        energy_pred: torch.Tensor,
-        energy_target: torch.Tensor,
     ) -> Tuple[
-        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -112,6 +124,10 @@ class FastSpeech2LossGen(Module):
             `pitch_loss`: This is the MSE loss between the predicted and target pitch. It measures how well the model predicts the pitch of the speech.
             `ctc_loss`: This is the Connectionist Temporal Classification (CTC) loss computed from the log-probability of attention and the lengths of the source sequences and mel-spectrograms. It measures how well the model aligns the input and output sequences.
             `bin_loss`: This is the binarization loss computed from the hard and soft attention. It measures how well the model learns to attend to the correct parts of the input sequence.
+            `energy_loss`: This is the MSE loss between the predicted and target energy. It measures how well the model predicts the energy of the speech.
+            `si_sdr`: This is the Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) computed between the predicted and target mel-spectrograms.
+            `si_snr`: This is the Scale-Invariant Signal-to-Noise Ratio (SI-SNR) computed between the predicted and target mel-spectrograms.
+            `stoi`: This is the Short-Time Objective Intelligibility (STOI) computed between the predicted and target mel-spectrograms.
         """
         log_duration_targets = torch.log(durations.float() + 1).to(src_masks.device)
 
@@ -194,7 +210,19 @@ class FastSpeech2LossGen(Module):
             * bin_loss_weight
         )
 
-        energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
+        # New losses
+        # energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
+
+        # # New Metrics
+        # si_sdr: torch.Tensor = self.si_sdr(mel_predictions, mel_targets)
+        # si_snr: torch.Tensor = self.si_snr(mel_predictions, mel_targets)
+
+        # # New shape: [1, F, T, 2]
+        # mel_predictions_complex = torch.stack((mel_predictions, torch.zeros_like(mel_predictions)), dim=-1)  
+        # mel_targets_complex = torch.stack((mel_targets, torch.zeros_like(mel_targets)), dim=-1)
+
+        # c_si_snr: torch.Tensor = self.c_si_snr(mel_predictions_complex, mel_targets_complex)
+        # stoi: torch.Tensor = self.stoi(mel_predictions, mel_targets)
 
         total_loss = (
             mel_loss
@@ -205,7 +233,11 @@ class FastSpeech2LossGen(Module):
             + pitch_loss
             + ctc_loss
             + bin_loss
-            + energy_loss
+            # + energy_loss
+            # + si_sdr
+            # + si_snr
+            # + c_si_snr
+            # + stoi
         )
 
         return (
@@ -218,5 +250,8 @@ class FastSpeech2LossGen(Module):
             pitch_loss,
             ctc_loss,
             bin_loss,
-            energy_loss
+            # energy_loss,
+            # si_sdr,
+            # si_snr,
+            # stoi,
         )

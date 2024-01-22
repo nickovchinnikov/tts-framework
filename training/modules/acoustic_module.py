@@ -309,8 +309,8 @@ class AcousticModule(LightningModule):
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
         pitch_prediction = outputs["pitch_prediction"]
-        energy_pred = outputs["energy_pred"]
-        energy_target = outputs["energy_target"]
+        # energy_pred = outputs["energy_pred"]
+        # energy_target = outputs["energy_target"]
 
         (
             total_loss,
@@ -322,7 +322,7 @@ class AcousticModule(LightningModule):
             pitch_loss,
             ctc_loss,
             bin_loss,
-            energy_loss,
+            # energy_loss,
         ) = self.loss(
             src_masks=src_mask,
             mel_masks=mel_mask,
@@ -341,8 +341,8 @@ class AcousticModule(LightningModule):
             attn_hard=outputs["attn_hard"],
             src_lens=src_lens,
             mel_lens=mel_lens,
-            energy_pred=energy_pred,
-            energy_target=energy_target,
+            # energy_pred=energy_pred,
+            # energy_target=energy_target,
             step=batch_idx + self.initial_step.item(),
         )
 
@@ -356,7 +356,7 @@ class AcousticModule(LightningModule):
             "pitch_loss": pitch_loss.detach(),
             "ctc_loss": ctc_loss.detach(),
             "bin_loss": bin_loss.detach(),
-            "energy_loss": energy_loss.detach(),
+            # "energy_loss": energy_loss.detach(),
         }
 
         # Add the logs to the tensorboard
@@ -380,7 +380,7 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
-            tensorboard.add_scalar("energy_loss", energy_loss, self.current_epoch)
+            # tensorboard.add_scalar("energy_loss", energy_loss, self.current_epoch)
 
             # optimizers = self.optimizers()
 

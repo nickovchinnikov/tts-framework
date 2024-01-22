@@ -28,7 +28,8 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 
 # from .pitch_adaptor import PitchAdaptor
 from .pitch_adaptor2 import PitchAdaptor
-from .energy_adaptor import EnergyAdaptor
+# TODO: maybe I can use the energy adaptor for the next versions?
+# from .energy_adaptor import EnergyAdaptor
 
 
 class AcousticModel(Module):
@@ -71,15 +72,15 @@ class AcousticModel(Module):
             model_config,
         )
 
-        self.energy_adaptor = EnergyAdaptor(
-            channels_in=model_config.encoder.n_hidden,
-            channels_hidden=model_config.variance_adaptor.n_hidden,
-            channels_out=1,
-            kernel_size=model_config.variance_adaptor.kernel_size,
-            emb_kernel_size=model_config.variance_adaptor.emb_kernel_size,
-            dropout=model_config.variance_adaptor.p_dropout,
-            leaky_relu_slope=leaky_relu_slope,
-        )
+        # self.energy_adaptor = EnergyAdaptor(
+        #     channels_in=model_config.encoder.n_hidden,
+        #     channels_hidden=model_config.variance_adaptor.n_hidden,
+        #     channels_out=1,
+        #     kernel_size=model_config.variance_adaptor.kernel_size,
+        #     emb_kernel_size=model_config.variance_adaptor.emb_kernel_size,
+        #     dropout=model_config.variance_adaptor.p_dropout,
+        #     leaky_relu_slope=leaky_relu_slope,
+        # )
 
         self.length_regulator = LengthAdaptor(model_config)
 
@@ -390,15 +391,18 @@ class AcousticModel(Module):
             use_ground_truth=use_ground_truth,
         )
 
-        energies = energies.to(src_mask.device)
+        # energies = energies.to(src_mask.device)
         attn_hard_dur = attn_hard_dur.to(src_mask.device)
         
-        energy_pred, avg_energy_target, _ = self.energy_adaptor.get_energy_embedding_train(
-            x=x,
-            target=energies,
-            dr=attn_hard_dur,
-            mask=src_mask,
-        )
+        # energy_pred, avg_energy_target, _ = self.energy_adaptor.get_energy_embedding_train(
+        #     x=x,
+        #     target=energies,
+        #     dr=attn_hard_dur,
+        #     mask=src_mask,
+        # )
+
+        # NOTE: add the energy embedding to the encoder output
+        # x = x + energy_pred
 
         """assert torch.equal(attn_hard_dur.sum(1).long(), mel_lens), (
             attn_hard_dur.sum(1),
@@ -420,8 +424,8 @@ class AcousticModel(Module):
             "y_pred": x,
             "pitch_prediction": pitch_prediction,
             "pitch_target": pitches,
-            "energy_pred": energy_pred,
-            "energy_target": avg_energy_target,
+            # "energy_pred": energy_pred,
+            # "energy_target": avg_energy_target,
             "log_duration_prediction": log_duration_prediction,
             "u_prosody_pred": u_prosody_pred,
             "u_prosody_ref": u_prosody_ref,

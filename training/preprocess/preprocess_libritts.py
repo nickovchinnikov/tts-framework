@@ -19,7 +19,7 @@ from .tacotron_stft import TacotronSTFT
 # from .tokenizer_ipa import TokenizerIPA
 # Updated version of the tokenizer
 from .tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
-from .audio_processor import AudioProcessor
+# from .audio_processor import AudioProcessor
 
 
 @dataclass
@@ -30,7 +30,7 @@ class PreprocessForAcousticResult:
     phones_ipa: Union[str, List[str]]
     phones: torch.Tensor
     attn_prior: torch.Tensor
-    energy: torch.Tensor
+    # energy: torch.Tensor
     raw_text: str
     normalized_text: str
     speaker_id: int
@@ -101,7 +101,7 @@ class PreprocessLibriTTS:
         self.min_samples = int(self.sampling_rate * min_seconds)
         self.max_samples = int(self.sampling_rate * max_seconds)
 
-        self.audio_processor = AudioProcessor()
+        # self.audio_processor = AudioProcessor()
 
     def beta_binomial_prior_distribution(
         self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0,
@@ -216,19 +216,20 @@ class PreprocessLibriTTS:
             mel_spectrogram.shape[1],
         )
 
-        energy = self.audio_processor.wav_to_energy(
-            wav.unsqueeze(0),
-            self.filter_length,
-            self.hop_length,
-            self.win_length
-        )
+        # energy = self.audio_processor.wav_to_energy(
+        #     wav.unsqueeze(0),
+        #     self.filter_length,
+        #     self.hop_length,
+        #     self.win_length
+        # )
+        # energy = energy.unsqueeze(1)
 
         return PreprocessForAcousticResult(
             wav=wav,
             mel=mel_spectrogram,
             pitch=pitch,
             attn_prior=attn_prior,
-            energy=energy,
+            # energy=energy,
             phones_ipa=phones_ipa,
             phones=phones,
             raw_text=raw_text,
