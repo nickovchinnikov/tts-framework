@@ -117,8 +117,10 @@ class AudioProcessor:
             pad_mode="reflect",
             normalized=False,
             onesided=True,
-            return_complex=False,
+            return_complex=True,
         )
+
+        spec = torch.view_as_real(spec)
 
         # Compute the magnitude
         spec = torch.sqrt(spec.pow(2).sum(-1) + 1e-6)
