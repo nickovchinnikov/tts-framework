@@ -19,6 +19,8 @@ from model.reference_encoder import (
     UtteranceLevelProsodyEncoder,
 )
 
+from model.constants import LEAKY_RELU_SLOPE
+
 from .aligner import Aligner
 from .helpers import pitch_phoneme_averaging, positional_encoding
 from .length_adaptor import LengthAdaptor
@@ -26,6 +28,7 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 
 # from .pitch_adaptor import PitchAdaptor
 from .pitch_adaptor2 import PitchAdaptor
+from .energy_adaptor import EnergyAdaptor
 
 
 class AcousticModel(Module):
@@ -49,6 +52,7 @@ class AcousticModel(Module):
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
         n_speakers: int,
+        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
     ):
         super().__init__()
         self.emb_dim = model_config.encoder.n_hidden
@@ -65,6 +69,16 @@ class AcousticModel(Module):
 
         self.pitch_adaptor = PitchAdaptor(
             model_config,
+        )
+
+        self.energy_adaptor = EnergyAdaptor(
+            channels_in=model_config.encoder.n_hidden,
+            channels_hidden=model_config.variance_adaptor.n_hidden,
+            channels_out=1,
+            kernel_size=model_config.variance_adaptor.kernel_size,
+            emb_kernel_size=model_config.variance_adaptor.emb_kernel_size,
+            dropout=model_config.variance_adaptor.p_dropout,
+            leaky_relu_slope=leaky_relu_slope,
         )
 
         self.length_regulator = LengthAdaptor(model_config)
@@ -285,6 +299,7 @@ class AcousticModel(Module):
         pitches_range: Tuple[float, float],
         langs: torch.Tensor,
         attn_priors: Union[torch.Tensor, None],
+        energies: torch.Tensor,
         use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
         r"""Forward pass during training phase.
@@ -303,6 +318,7 @@ class AcousticModel(Module):
             pitches_range (Tuple[float, float]): The pitch min/max range.
             langs (torch.Tensor): Tensor of language identities.
             attn_priors (torch.Tensor): Prior attention values.
+            energies (torch.Tensor): Tensor of energy values.
             use_ground_truth (bool, optional): Flag indicating whether ground truth should be used.
                                                Defaults to True.
 
@@ -373,6 +389,14 @@ class AcousticModel(Module):
             src_mask=src_mask,
             use_ground_truth=use_ground_truth,
         )
+
+        energy_pred, avg_energy_target, _ = self.energy_adaptor.get_energy_embedding_train(
+            x=x,
+            target=energies,
+            dr=attn_hard_dur,
+            mask=src_mask,
+        )
+
         """assert torch.equal(attn_hard_dur.sum(1).long(), mel_lens), (
             attn_hard_dur.sum(1),
             mel_lens,
@@ -393,6 +417,8 @@ class AcousticModel(Module):
             "y_pred": x,
             "pitch_prediction": pitch_prediction,
             "pitch_target": pitches,
+            "energy_pred": energy_pred,
+            "energy_target": avg_energy_target,
             "log_duration_prediction": log_duration_prediction,
             "u_prosody_pred": u_prosody_pred,
             "u_prosody_ref": u_prosody_ref,

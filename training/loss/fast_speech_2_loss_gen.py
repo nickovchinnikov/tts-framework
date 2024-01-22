@@ -62,7 +62,10 @@ class FastSpeech2LossGen(Module):
         step: int,
         src_lens: torch.Tensor,
         mel_lens: torch.Tensor,
+        energy_pred: torch.Tensor,
+        energy_target: torch.Tensor,
     ) -> Tuple[
+        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -185,10 +188,13 @@ class FastSpeech2LossGen(Module):
                 )
                 * 1.0
             )
+
         bin_loss: torch.Tensor = (
             self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
             * bin_loss_weight
         )
+
+        energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
 
         total_loss = (
             mel_loss
@@ -199,6 +205,7 @@ class FastSpeech2LossGen(Module):
             + pitch_loss
             + ctc_loss
             + bin_loss
+            + energy_loss
         )
 
         return (
@@ -211,4 +218,5 @@ class FastSpeech2LossGen(Module):
             pitch_loss,
             ctc_loss,
             bin_loss,
+            energy_loss
         )
