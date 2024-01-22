@@ -390,6 +390,9 @@ class AcousticModel(Module):
             use_ground_truth=use_ground_truth,
         )
 
+        energies = energies.to(src_mask.device)
+        attn_hard_dur = attn_hard_dur.to(src_mask.device)
+        
         energy_pred, avg_energy_target, _ = self.energy_adaptor.get_energy_embedding_train(
             x=x,
             target=energies,
