@@ -115,37 +115,6 @@ class AcousticModule(LightningModule):
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
 
-        # NOTE: this code is used only for the v0.1.0 checkpoint.
-        # In the future, this code will be removed!
-        if checkpoint_path_v1 is not None:
-            checkpoint = self._load_weights_v1(checkpoint_path_v1)
-            self.acoustic_model.load_state_dict(checkpoint, strict=False)
-
-
-    def _load_weights_v1(self, checkpoint_path: str) -> dict:
-        r"""NOTE: this method is used only for the v0.1.0 checkpoint.
-        In the future, this method will be removed!
-        Prepares the weights for the model.
-        This is required for the model to be loaded from the checkpoint.
-        """
-        checkpoint = torch.load(checkpoint_path)
-
-        # Fix the weights for the embedding projection
-        for i in range(6):
-            # 0.17 is the coff of standard deviation of the truncated normal distribution
-            # Makes the range of distribution to be ~(-1, 1)
-            new_weights = torch.randn(384, 385) * 0.17
-            existing_weights = checkpoint["gen"][
-                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
-            ]
-            # Copy the existing weights into the new tensor
-            new_weights[:, :-1] = existing_weights
-            checkpoint["gen"][
-                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
-            ] = new_weights
-
-        return checkpoint["gen"]
-
 
     def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
         r"""Performs a forward pass through the AcousticModel.
@@ -186,41 +155,6 @@ class AcousticModule(LightningModule):
         wav_prediction = self.vocoder_module.forward(y_pred)
 
         return wav_prediction
-
-
-    def forward_old(
-            self,
-            text: torch.Tensor,
-            src_len: torch.Tensor,
-            speaker_idx: torch.Tensor,
-            lang: torch.Tensor,
-        ):
-        r"""DEPRECATED: Performs a forward pass through the AcousticModel.
-        This code must be run only with the loaded weights from the checkpoint!
-
-        Args:
-            text (torch.Tensor): The input text tensor.
-            src_len (torch.Tensor): The length of the source sequence.
-            speaker_idx (torch.Tensor): The index of the speaker.
-            lang (torch.Tensor): The language tensor.
-
-        Returns:
-            torch.Tensor: The output of the AcousticModel.
-        """
-        cut_idx = int(src_len.item())
-        x = text[:cut_idx].unsqueeze(0)
-        speakers = speaker_idx[:cut_idx].unsqueeze(0)
-        langs = lang[:cut_idx].unsqueeze(0)
-
-        return self.acoustic_model(
-            x=x,
-            pitches_range=(
-                self.pitches_stat[0],
-                self.pitches_stat[1],
-            ),
-            speakers=speakers,
-            langs=langs,
-        )
 
 
     # TODO: don't forget about torch.no_grad() !
@@ -380,6 +314,10 @@ class AcousticModule(LightningModule):
                     mel_spec_fig,
                     self.current_epoch
                 )
+
+                # Close the figure to avoid memory leaks
+                plt.close(mel_spec_fig)
+
                 tensorboard.add_audio(
                     "wav_original",
                     wav_original,
