@@ -22,7 +22,7 @@ from model.config import (
 )
 from model.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDatasetAcoustic, LibriTTSMMDatasetAcoustic
-from training.loss import FastSpeech2LossGen
+from training.loss import FastSpeech2LossGen, Metrics
 
 from training.preprocess.normalize_text import NormalizeText
 from model.config import get_lang_map, lang2id
@@ -31,6 +31,9 @@ from .vocoder_module import VocoderModule
 # from training.preprocess.tokenizer_ipa import TokenizerIPA
 # Updated version of the tokenizer
 from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
+
+
+MEL_SPEC_AND_AUDIO_EVERY_N_STEPS = 1000
 
 
 class AcousticModule(LightningModule):
@@ -106,6 +109,8 @@ class AcousticModule(LightningModule):
         )
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
+
+        self.metrics = Metrics(lang)
 
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
@@ -218,26 +223,6 @@ class AcousticModule(LightningModule):
         )
 
 
-    def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
-        r"""
-        Plots the mel spectrograms for the target and the prediction.
-        """
-        fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
-
-        img1 = librosa.display.specshow(mel_target, x_axis='time', y_axis='mel', sr=sr, ax=axs[0])
-        axs[0].set_title('Target spectrogram')
-        fig.colorbar(img1, ax=axs[0], format='%+2.0f dB')
-
-        img2 = librosa.display.specshow(mel_prediction, x_axis='time', y_axis='mel', sr=sr, ax=axs[1])
-        axs[1].set_title('Prediction spectrogram')
-        fig.colorbar(img2, ax=axs[1], format='%+2.0f dB')
-
-        # Adjust the spacing between subplots
-        fig.subplots_adjust(hspace=0.5)
-
-        return fig
-
-
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
     # trainer = Trainer(inference_mode=True)
@@ -281,7 +266,7 @@ class AcousticModule(LightningModule):
             langs,
             attn_priors,
             _,
-            energies,
+            # energies,
         ) = batch
 
         # Update pitches_stat
@@ -301,7 +286,7 @@ class AcousticModule(LightningModule):
             pitches_range=pitches_stat,
             langs=langs,
             attn_priors=attn_priors,
-            energies=energies,
+            # energies=energies,
         )
 
         y_pred = outputs["y_pred"]
@@ -322,7 +307,6 @@ class AcousticModule(LightningModule):
             pitch_loss,
             ctc_loss,
             bin_loss,
-            # energy_loss,
         ) = self.loss(
             src_masks=src_mask,
             mel_masks=mel_mask,
@@ -356,20 +340,15 @@ class AcousticModule(LightningModule):
             "pitch_loss": pitch_loss.detach(),
             "ctc_loss": ctc_loss.detach(),
             "bin_loss": bin_loss.detach(),
-            # "energy_loss": energy_loss.detach(),
         }
 
         # Add the logs to the tensorboard
         if self.logger.experiment is not None: # type: ignore
             # Generate an audio ones in a while and save to tensorboard
             tensorboard = self.logger.experiment # type: ignore
+            
+            wav_original = self.vocoder_module.forward(mels)
             wav_prediction = self.vocoder_module.forward(y_pred)
-            tensorboard.add_audio(
-                "wav_prediction",
-                wav_prediction,
-                self.current_epoch,
-                self.preprocess_config.sampling_rate
-            )
 
             tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
             tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
@@ -380,65 +359,39 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
-            # tensorboard.add_scalar("energy_loss", energy_loss, self.current_epoch)
 
-            # optimizers = self.optimizers()
+            metrics_logs = self.metrics(
+                wav_prediction, wav_original, y_pred, mels
+            )
 
-            # for param_group in optimizers.optimizer.param_groups: # type: ignore
-            #     # Add the learning rate to the tensorboard
-            #     tensorboard.add_scalar('learning_rate', param_group['lr'], self.current_epoch)
+            tensorboard.add_scalar("energy", metrics_logs.energy, self.current_epoch)
+            tensorboard.add_scalar("si_sdr", metrics_logs.si_sdr, self.current_epoch)
+            tensorboard.add_scalar("si_snr", metrics_logs.si_snr, self.current_epoch)
+            tensorboard.add_scalar("c_si_snr", metrics_logs.c_si_snr, self.current_epoch)
+            tensorboard.add_scalar("stoi", metrics_logs.stoi, self.current_epoch)
 
-            # Configuration options
-            LOG_EVERY_N_STEPS = 1000  # Log every N steps
-
-            # Check if the current step is a multiple of LOG_EVERY_N_STEPS
-            if self.initial_step % LOG_EVERY_N_STEPS == 0:
-                # Select the first spectrogram in the batch
-                mel_target = mels[0].detach().cpu().numpy()
-                mel_prediction = y_pred[0].detach().cpu().numpy()
-
-                # Plot and add the comparison plot to TensorBoard
+            if self.current_epoch % MEL_SPEC_AND_AUDIO_EVERY_N_STEPS == 0:
+                mel_spec_fig = self.metrics.plot_spectrograms(
+                    mels[0].detach().cpu().numpy(),
+                    y_pred[0].detach().cpu().numpy()
+                )
                 tensorboard.add_figure(
                     "mel_spectrograms",
-                    self.plot_spectrograms(
-                        mel_target, mel_prediction, self.preprocess_config.sampling_rate
-                    ),
+                    mel_spec_fig,
                     self.current_epoch
                 )
-
-            # # Model Parameters histogram
-            # for name, param in self.acoustic_model.named_parameters():
-            #     tensorboard.add_histogram(f"{name}_param", param, self.current_epoch)
-
-            # # Gradients histogram
-            # for name, param in self.acoustic_model.named_parameters():
-            #     if param.grad is not None:
-            #         tensorboard.add_histogram(f'{name}_grad', param.grad, self.current_epoch)
-
-            # Spectrogram is expensive to compute, so we only plot it for the first spectrogram in the batch
-            # SUBSET_SIZE = 5
-            # DOWNSAMPLE_FACTOR = 2
-
-            # # Select a random subset of spectrograms
-            # indices = np.random.choice(len(mels), size=SUBSET_SIZE, replace=False)
-            # mels_subset = mels[0][indices]
-            # y_pred_subset = y_pred[0][indices]
-
-            # # Select the first spectrogram in the batch
-            # mel_target = mels_subset.detach().cpu().numpy()
-            # mel_prediction = y_pred_subset.detach().cpu().numpy()
-
-            # mel_target = mel_target[::DOWNSAMPLE_FACTOR, ::DOWNSAMPLE_FACTOR]
-            # mel_prediction = mel_prediction[::DOWNSAMPLE_FACTOR, ::DOWNSAMPLE_FACTOR]
-
-            # # Plot and add the comparison plot to TensorBoard
-            # tensorboard.add_figure(
-            #     "mel_spectrograms",
-            #     self.plot_spectrograms(
-            #         mel_target, mel_prediction, self.preprocess_config.sampling_rate
-            #     ),
-            #     self.current_epoch
-            # )
+                tensorboard.add_audio(
+                    "wav_original",
+                    wav_original,
+                    self.current_epoch,
+                    self.preprocess_config.sampling_rate
+                )
+                tensorboard.add_audio(
+                    "wav_prediction",
+                    wav_prediction,
+                    self.current_epoch,
+                    self.preprocess_config.sampling_rate
+                )
 
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
@@ -549,6 +502,7 @@ class AcousticModule(LightningModule):
             root=self.root,
             lang=self.lang,
             cache=True,
+            # url="train-clean-100",
         )
         
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
@@ -561,6 +515,7 @@ class AcousticModule(LightningModule):
             batch_size=6,
             # TODO: find the optimal num_workers
             # num_workers=self.preprocess_config.workers,
+            persistent_workers=True,
             num_workers=18,
             shuffle=False,
             collate_fn=dataset.collate_fn,

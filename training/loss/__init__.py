@@ -6,3 +6,4 @@ from .multi_resolution_stft_loss import MultiResolutionSTFTLoss
 from .spectral_convergence_loss import SpectralConvergengeLoss
 from .stft_loss import STFTLoss
 from .univnet_loss import UnivnetLoss
+from .metrics import Metrics

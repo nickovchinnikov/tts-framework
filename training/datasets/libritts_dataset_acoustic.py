@@ -139,7 +139,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         idxs = list(range(data_size))
 
         # Initialize empty lists to store extracted values
-        empty_lists: List[List] = [[] for _ in range(12)]
+        empty_lists: List[List] = [[] for _ in range(11)]
         (
             ids,
             speakers,

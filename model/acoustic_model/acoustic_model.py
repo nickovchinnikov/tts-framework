@@ -300,7 +300,7 @@ class AcousticModel(Module):
         pitches_range: Tuple[float, float],
         langs: torch.Tensor,
         attn_priors: Union[torch.Tensor, None],
-        energies: torch.Tensor,
+        # energies: torch.Tensor,
         use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
         r"""Forward pass during training phase.
