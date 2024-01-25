@@ -5,6 +5,7 @@ from torch import nn
 
 import matplotlib.pyplot as plt
 import numpy as np
+import librosa
 
 from torchmetrics.audio import (
     ComplexScaleInvariantSignalNoiseRatio,
@@ -137,17 +138,42 @@ class Metrics:
         r"""
         Plots the mel spectrograms for the target and the prediction.
         """
-        fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
+        fig, axs = plt.subplots(2, 1, sharex=True, sharey=True, dpi=80)
 
-        # img1 = librosa.display.specshow(mel_target, x_axis='time', y_axis='mel', sr=sr, ax=axs[0])
-        img1 = axs[0].imshow(mel_target, aspect='auto', origin='lower')
+        img1 = librosa.display.specshow(mel_target, x_axis='time', y_axis='mel', sr=sr, ax=axs[0])
         axs[0].set_title('Target spectrogram')
         fig.colorbar(img1, ax=axs[0], format='%+2.0f dB')
 
-        # img2 = librosa.display.specshow(mel_prediction, x_axis='time', y_axis='mel', sr=sr, ax=axs[1])
-        img2 = axs[1].imshow(mel_prediction, aspect='auto', origin='lower')
+        img2 = librosa.display.specshow(mel_prediction, x_axis='time', y_axis='mel', sr=sr, ax=axs[1])
         axs[1].set_title('Prediction spectrogram')
         fig.colorbar(img2, ax=axs[1], format='%+2.0f dB')
+
+        # Adjust the spacing between subplots
+        fig.subplots_adjust(hspace=0.5)
+
+        return fig
+
+    def plot_spectrograms_fast(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
+        r"""
+        Plots the mel spectrograms for the target and the prediction.
+        """
+        fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
+
+        axs[0].specgram(
+            mel_target,
+            aspect='auto',
+            Fs=sr,
+            cmap=plt.get_cmap("magma") # type: ignore
+        )
+        axs[0].set_title('Target spectrogram')
+
+        axs[1].specgram(
+            mel_prediction,
+            aspect='auto',
+            Fs=sr,
+            cmap=plt.get_cmap("magma") # type: ignore
+        )
+        axs[1].set_title('Prediction spectrogram')
 
         # Adjust the spacing between subplots
         fig.subplots_adjust(hspace=0.5)
