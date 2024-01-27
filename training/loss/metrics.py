@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import torch
 from torch import nn
+import torchaudio.transforms as T
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,6 +32,11 @@ class MetricsResult:
         c_si_snr (torch.Tensor): The complex scale-invariant signal-to-noise ratio.
         stoi (torch.Tensor): The short-time objective intelligibility.
         pesq (torch.Tensor): The perceptual evaluation of speech quality.
+        mcd (torch.Tensor): The Mel cepstral distortion.
+        spec_dist (torch.Tensor): The spectrogram distance.
+        f0_rmse (float): The F0 RMSE.
+        jitter (float): The jitter.
+        shimmer (float): The shimmer.
     """
     energy: torch.Tensor
     si_sdr: torch.Tensor
@@ -38,6 +44,11 @@ class MetricsResult:
     c_si_snr: torch.Tensor
     stoi: torch.Tensor
     pesq: torch.Tensor
+    mcd: torch.Tensor
+    spec_dist: torch.Tensor
+    f0_rmse: float
+    jitter: float
+    shimmer: float
 
 
 class Metrics:
@@ -65,6 +76,7 @@ class Metrics:
         self.filter_length = preprocess_config.stft.filter_length
         self.mel_fmin = preprocess_config.stft.mel_fmin
         self.win_length = preprocess_config.stft.win_length
+        self.sample_rate = preprocess_config.sampling_rate
 
         self.audio_processor = AudioProcessor()
         self.mse_loss = nn.MSELoss()
@@ -73,13 +85,145 @@ class Metrics:
         self.c_si_snr = ComplexScaleInvariantSignalNoiseRatio(zero_mean=False)
         self.stoi = ShortTimeObjectiveIntelligibility(1000, extended=True)
         self.pesq = PerceptualEvaluationSpeechQuality(fs=16000, mode="wb")
+
+    def calculate_mcd(
+        self,
+        wav_targets: torch.Tensor,
+        wav_predictions: torch.Tensor,
+        n_mfcc: int = 13
+    ) -> torch.Tensor:
+        """Calculate Mel Cepstral Distortion."""
+        mfcc_transform = T.MFCC(
+            sample_rate=self.sample_rate,
+            n_mfcc=n_mfcc,
+            melkwargs={
+                'n_fft': 400,
+                'hop_length': 160,
+                'n_mels': 23,
+                'center': False
+            }
+        ).to(wav_targets.device)
+        wav_predictions = wav_predictions.to(wav_targets.device)
+
+        ref_mfcc = mfcc_transform(wav_targets)
+        synth_mfcc = mfcc_transform(wav_predictions)
+
+        mcd = torch.mean(torch.sqrt(
+            torch.sum((ref_mfcc - synth_mfcc) ** 2, dim=0)
+        ))
+
+        return mcd
     
+    def calculate_spectrogram_distance(
+        self,
+        wav_targets: torch.Tensor,
+        wav_predictions: torch.Tensor,
+        n_fft: int = 2048,
+        hop_length: int = 512
+    ) -> torch.Tensor:
+        """Calculate spectrogram distance."""
+        spec_transform = T.Spectrogram(
+            n_fft=n_fft,
+            hop_length=hop_length,
+            power=None
+        ).to(wav_targets.device)
+        wav_predictions = wav_predictions.to(wav_targets.device)
+
+        # Compute the spectrograms
+        S1 = spec_transform(wav_targets)
+        S2 = spec_transform(wav_predictions)
+
+        # Compute the magnitude spectrograms
+        S1_mag = torch.abs(S1)
+        S2_mag = torch.abs(S2)
+
+        # Compute the Euclidean distance
+        dist = torch.dist(S1_mag.flatten(), S2_mag.flatten())
+
+        return dist
+    
+    def calculate_f0_rmse(
+        self,
+        wav_targets: torch.Tensor,
+        wav_predictions: torch.Tensor,
+        frame_length: int = 2048,
+        hop_length: int = 512,
+    ) -> float:
+        """Calculate F0 RMSE."""
+        wav_targets_ = wav_targets.detach().cpu().numpy()
+        wav_predictions_ = wav_predictions.detach().cpu().numpy()
+
+        # Compute the F0 contour for each audio signal
+        f0_audio1 = torch.from_numpy(
+            librosa.yin(
+                wav_targets_,
+                fmin=float(librosa.note_to_hz('C2')),
+                fmax=float(librosa.note_to_hz('C7')),
+                sr=self.sample_rate,
+                frame_length=frame_length,
+                hop_length=hop_length,
+            )
+        )
+        f0_audio2 = torch.from_numpy(
+            librosa.yin(
+                wav_predictions_, 
+                fmin=float(librosa.note_to_hz('C2')), 
+                fmax=float(librosa.note_to_hz('C7')), 
+                sr=self.sample_rate, 
+                frame_length=frame_length, 
+                hop_length=hop_length,
+            )
+        )
+
+        # Assuming f0_audio1 and f0_audio2 are PyTorch tensors
+        rmse = torch.sqrt(torch.mean((f0_audio1 - f0_audio2)**2)).item()
+
+        return rmse
+
+    def calculate_jitter_shimmer(
+        self,
+        audio: torch.Tensor,
+        frame_length: int = 2048,
+        hop_length: int = 512
+    ) -> tuple[float, float]:
+        """Calculate jitter and shimmer."""
+        audio_ = audio.detach().cpu().numpy()
+
+        # Compute the F0 contour
+        f0 = torch.from_numpy(
+            librosa.yin(
+                audio_,
+                fmin=float(librosa.note_to_hz('C2')),
+                fmax=float(librosa.note_to_hz('C7')),
+                sr=self.sample_rate,
+                frame_length=frame_length,
+                hop_length=hop_length
+            )
+        )
+
+        spec_transform = T.Spectrogram(
+            n_fft=frame_length,
+            hop_length=hop_length,
+            power=None
+        ).to(audio.device)
+
+        # Compute the amplitude contour
+        amplitude = torch.abs(
+            spec_transform(audio)
+        )
+
+        # Compute the relative changes
+        jitter = torch.mean(torch.abs(torch.diff(f0)) / f0[:-1]).item()
+        shimmer = torch.mean(torch.abs(torch.diff(amplitude, dim=-1)) / amplitude[:,:-1]).item()
+
+        return jitter, shimmer
+
     def __call__(
-            self,
-            wav_predictions: torch.Tensor,
-            wav_targets: torch.Tensor,
-            mel_predictions: torch.Tensor,
-            mel_targets: torch.Tensor
+        self,
+        wav_predictions: torch.Tensor,
+        wav_targets: torch.Tensor,
+        mel_predictions: torch.Tensor,
+        mel_targets: torch.Tensor,
     ) -> MetricsResult:
         r"""
         Compute the metrics.
@@ -125,6 +269,14 @@ class Metrics:
         stoi: torch.Tensor = self.stoi(mel_predictions, mel_targets)
         pesq: torch.Tensor = self.pesq(wav_predictions, wav_targets)
 
+        # wav_targets_ = wav_targets.detach().cpu().numpy()
+        # wav_predictions_ = wav_predictions.detach().cpu().numpy()
+
+        mcd = self.calculate_mcd(wav_targets, wav_predictions)
+        spec_dist = self.calculate_spectrogram_distance(wav_targets, wav_predictions)
+        f0_rmse = self.calculate_f0_rmse(wav_targets, wav_predictions)
+        jitter, shimmer = self.calculate_jitter_shimmer(wav_predictions)
+
         return MetricsResult(
             energy,
             si_sdr,
@@ -132,6 +284,11 @@ class Metrics:
             c_si_snr,
             stoi,
             pesq,
+            mcd,
+            spec_dist,
+            f0_rmse,
+            jitter,
+            shimmer,
         )
 
     def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
@@ -153,7 +310,12 @@ class Metrics:
 
         return fig
 
-    def plot_spectrograms_fast(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
+    def plot_spectrograms_fast(
+        self,
+        mel_target: np.ndarray,
+        mel_prediction: np.ndarray,
+        sr: int = 22050
+    ):
         r"""
         Plots the mel spectrograms for the target and the prediction.
         """
