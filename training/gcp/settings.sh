@@ -13,7 +13,7 @@
 # pkill -9 python
 
 # Update the system
-sudo apt update && sudo apt upgrade -y
+sudo apt update -y && sudo apt upgrade -y
 
 # espeak-ng
 sudo apt-get install espeak-ng -y

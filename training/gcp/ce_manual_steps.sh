@@ -107,8 +107,11 @@ cd /mnt/disks/training-disk
 git clone git@github.com:nickovchinnikov/tts-framework.git
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
+# Permanently add the path to the LD_LIBRARY_PATH
+# echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib' >> ~/.profile
 
 # After the setup
+conda activate tts_framework
 pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.backends.cudnn.version())"

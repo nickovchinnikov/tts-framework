@@ -33,7 +33,8 @@ from .vocoder_module import VocoderModule
 from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
 
 
-MEL_SPEC_AND_AUDIO_EVERY_N_STEPS = 1000
+MEL_SPEC_EVERY_N_STEPS = 1000
+AUDIO_EVERY_N_STEPS = 100
 
 
 class AcousticModule(LightningModule):
@@ -280,9 +281,6 @@ class AcousticModule(LightningModule):
         if self.logger.experiment is not None: # type: ignore
             # Generate an audio ones in a while and save to tensorboard
             tensorboard = self.logger.experiment # type: ignore
-            
-            wav_original = self.vocoder_module.forward(mels)
-            wav_prediction = self.vocoder_module.forward(y_pred)
 
             tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
             tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
@@ -293,6 +291,9 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
+            
+            wav_original = self.vocoder_module.forward(mels)
+            wav_prediction = self.vocoder_module.forward(y_pred)
 
             metrics_logs = self.metrics(
                 wav_prediction, wav_original, y_pred, mels
@@ -303,21 +304,14 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("si_snr", metrics_logs.si_snr, self.current_epoch)
             tensorboard.add_scalar("c_si_snr", metrics_logs.c_si_snr, self.current_epoch)
             tensorboard.add_scalar("stoi", metrics_logs.stoi, self.current_epoch)
+            tensorboard.add_scalar("pesq", metrics_logs.pesq, self.current_epoch)
+            tensorboard.add_scalar("mcd", metrics_logs.mcd, self.current_epoch)
+            tensorboard.add_scalar("spec_dist", metrics_logs.spec_dist, self.current_epoch)
+            tensorboard.add_scalar("f0_rmse", metrics_logs.f0_rmse, self.current_epoch)
+            tensorboard.add_scalar("jitter", metrics_logs.jitter, self.current_epoch)
+            tensorboard.add_scalar("shimmer", metrics_logs.shimmer, self.current_epoch)
 
-            if self.current_epoch % MEL_SPEC_AND_AUDIO_EVERY_N_STEPS == 0:
-                mel_spec_fig = self.metrics.plot_spectrograms(
-                    mels[0].detach().cpu().numpy(),
-                    y_pred[0].detach().cpu().numpy()
-                )
-                tensorboard.add_figure(
-                    "mel_spectrograms",
-                    mel_spec_fig,
-                    self.current_epoch
-                )
-
-                # Close the figure to avoid memory leaks
-                plt.close(mel_spec_fig)
-
+            if self.current_epoch % AUDIO_EVERY_N_STEPS == 0:
                 tensorboard.add_audio(
                     "wav_original",
                     wav_original,
@@ -330,6 +324,20 @@ class AcousticModule(LightningModule):
                     self.current_epoch,
                     self.preprocess_config.sampling_rate
                 )
+
+            if self.current_epoch % MEL_SPEC_EVERY_N_STEPS == 0:
+                mel_spec_fig = self.metrics.plot_spectrograms(
+                    mels[0].detach().cpu().numpy(),
+                    y_pred[0].detach().cpu().numpy()
+                )
+                tensorboard.add_figure(
+                    "mel_spectrograms",
+                    mel_spec_fig,
+                    self.current_epoch
+                )
+
+                # Close the figure to avoid memory leaks
+                plt.close(mel_spec_fig)
 
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
