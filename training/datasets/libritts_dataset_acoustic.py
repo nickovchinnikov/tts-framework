@@ -24,6 +24,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         url: str = "train-clean-360",
         download: bool = True,
         cache: bool = False,
+        mem_cache: bool = False,
         cache_dir: str = "datasets_cache",
     ):
         r"""A PyTorch dataset for loading preprocessed acoustic data.
@@ -53,6 +54,9 @@ class LibriTTSDatasetAcoustic(Dataset):
 
         self.cache_dir = os.path.join(cache_dir, f'cache-{url}')
 
+        self.mem_cache = mem_cache
+        self.memory_cache = {}
+
         # Load the id_mapping dictionary from the JSON file
         with open("speaker_id_mapping_libri.json") as f:
             self.id_mapping = json.load(f)
@@ -76,6 +80,10 @@ class LibriTTSDatasetAcoustic(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing the sample data.
         """
+
+        # Check if the data is in the memory cache
+        if self.mem_cache and idx in self.memory_cache:
+            return self.memory_cache[idx]
 
         # Check if the data is in the cache
         cache_subdir_path = os.path.join(self.cache_dir, self.cache_subdir(idx))
@@ -115,6 +123,10 @@ class LibriTTSDatasetAcoustic(Dataset):
             # TODO: fix lang!
             "lang": lang2id["en"],
         }
+
+        # Add the data to the memory cache
+        if self.mem_cache:
+            self.memory_cache[idx] = result
 
         if self.cache:
             # Create the cache subdirectory if it doesn't exist

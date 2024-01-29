@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Tuple
 
 from lightning.pytorch.core import LightningModule
 import torch
@@ -6,11 +6,7 @@ from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
 
-import numpy as np
-import librosa
 import matplotlib.pyplot as plt
-
-# from dp.phonemizer import Phonemizer
 
 from model.acoustic_model import AcousticModel
 from model.config import (
@@ -21,16 +17,17 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.datasets import LibriTTSDatasetAcoustic, LibriTTSMMDatasetAcoustic
+from training.datasets import LibriTTSDatasetAcoustic
 from training.loss import FastSpeech2LossGen, Metrics
 
 from training.preprocess.normalize_text import NormalizeText
+
+# Updated version of the tokenizer
+from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
+
 from model.config import get_lang_map, lang2id
 
 from .vocoder_module import VocoderModule
-# from training.preprocess.tokenizer_ipa import TokenizerIPA
-# Updated version of the tokenizer
-from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
 
 
 MEL_SPEC_EVERY_N_STEPS = 1000
@@ -46,12 +43,7 @@ class AcousticModule(LightningModule):
         root (str): Root directory of the dataset.
         step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.
-        checkpoint_path_v1 (Optional[str]): Path to the checkpoint to load the weights from. Note: this parameter is used only for the v0.1.0 checkpoint. In the future, this parameter will be removed!
-        vocoder_module (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
-        learning_rate (Optional[float]): Learning rate for the Learning Rate Finder. Defaults to None.
-
-    Optimizations:
-        Learning Rate Finder defined by the learning_rate parameter.
+        vocoder_module_checkpoint (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
     """
 
     def __init__(
@@ -61,11 +53,7 @@ class AcousticModule(LightningModule):
             root: str = "datasets_cache/LIBRITTS",
             initial_step: int = 0,
             n_speakers: int = 5392,
-            checkpoint_path_v1: Optional[str] = None,
             vocoder_module_checkpoint: str = "checkpoints/vocoder.ckpt",
-            phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
-            # learning_rate: Optional[float] = None,
-            # batch_size: Optional[int] = None,
         ):
         super().__init__()
 
@@ -86,12 +74,6 @@ class AcousticModule(LightningModule):
         else:
             self.train_config = AcousticPretrainingConfig()
 
-        # Learning Rate Finder
-        # self.learning_rate = learning_rate
-
-        # Auto batch size scaling
-        # self.batch_size = batch_size or self.train_config.batch_size
-
         # TODO: check this argument!
         self.register_buffer("initial_step", torch.tensor(initial_step))
 
@@ -105,9 +87,18 @@ class AcousticModule(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
+
         self.vocoder_module = VocoderModule.load_from_checkpoint(
             vocoder_module_checkpoint
         )
+        self.vocoder_module = self.vocoder_module.eval()
+        self.vocoder_module.freeze()
+        
+        # Make the parameters non-trainable
+        self.acoustic_model.utterance_prosody_encoder.encoder.convs[0].weight.requires_grad = False
+        self.acoustic_model.utterance_prosody_encoder.encoder.convs[0].bias.requires_grad = False
+        self.acoustic_model.phoneme_prosody_encoder.encoder.convs[0].weight.requires_grad = False
+        self.acoustic_model.phoneme_prosody_encoder.encoder.convs[0].bias.requires_grad = False
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
@@ -303,8 +294,6 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("si_sdr", metrics_logs.si_sdr, self.current_epoch)
             tensorboard.add_scalar("si_snr", metrics_logs.si_snr, self.current_epoch)
             tensorboard.add_scalar("c_si_snr", metrics_logs.c_si_snr, self.current_epoch)
-            tensorboard.add_scalar("stoi", metrics_logs.stoi, self.current_epoch)
-            tensorboard.add_scalar("pesq", metrics_logs.pesq, self.current_epoch)
             tensorboard.add_scalar("mcd", metrics_logs.mcd, self.current_epoch)
             tensorboard.add_scalar("spec_dist", metrics_logs.spec_dist, self.current_epoch)
             tensorboard.add_scalar("f0_rmse", metrics_logs.f0_rmse, self.current_epoch)
@@ -356,15 +345,6 @@ class AcousticModule(LightningModule):
             dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
         parameters = self.acoustic_model.parameters()
-
-        # Learning Rate Finder
-        # if self.learning_rate is not None:
-        #     return AdamW(
-        #         parameters,
-        #         betas=self.train_config.optimizer_config.betas,
-        #         eps=self.train_config.optimizer_config.eps,
-        #         lr=self.learning_rate,
-        #     )
 
         # If the Learning Rate Finder is not used, the optimizer and the scheduler are used
         if self.fine_tuning:
@@ -448,7 +428,7 @@ class AcousticModule(LightningModule):
             root=self.root,
             lang=self.lang,
             cache=True,
-            # url="train-clean-100",
+            mem_cache=True,
         )
         
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
@@ -458,11 +438,11 @@ class AcousticModule(LightningModule):
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
             # batch_size=7,
-            batch_size=6,
+            batch_size=7,
             # TODO: find the optimal num_workers
-            # num_workers=self.preprocess_config.workers,
+            num_workers=22,
             persistent_workers=True,
-            num_workers=18,
+            pin_memory=True,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )

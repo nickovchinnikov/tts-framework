@@ -12,8 +12,6 @@ from torchmetrics.audio import (
     ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
-    ShortTimeObjectiveIntelligibility,
-    PerceptualEvaluationSpeechQuality,
 )
 
 from model.config import PreprocessingConfig, get_lang_map
@@ -42,8 +40,6 @@ class MetricsResult:
     si_sdr: torch.Tensor
     si_snr: torch.Tensor
     c_si_snr: torch.Tensor
-    stoi: torch.Tensor
-    pesq: torch.Tensor
     mcd: torch.Tensor
     spec_dist: torch.Tensor
     f0_rmse: float
@@ -65,8 +61,6 @@ class Metrics:
         si_sdr (ScaleInvariantSignalDistortionRatio): The scale-invariant signal-to-distortion ratio.
         si_snr (ScaleInvariantSignalNoiseRatio): The scale-invariant signal-to-noise ratio.
         c_si_snr (ComplexScaleInvariantSignalNoiseRatio): The complex scale-invariant signal-to-noise ratio.
-        stoi (ShortTimeObjectiveIntelligibility): The short-time objective intelligibility.
-        pesq (PerceptualEvaluationSpeechQuality): The perceptual evaluation of speech quality.
     """
     def __init__(self, lang: str = "en"):
         lang_map = get_lang_map(lang)
@@ -83,8 +77,6 @@ class Metrics:
         self.si_sdr = ScaleInvariantSignalDistortionRatio()
         self.si_snr = ScaleInvariantSignalNoiseRatio()
         self.c_si_snr = ComplexScaleInvariantSignalNoiseRatio(zero_mean=False)
-        self.stoi = ShortTimeObjectiveIntelligibility(1000, extended=True)
-        self.pesq = PerceptualEvaluationSpeechQuality(fs=16000, mode="wb")
 
     def calculate_mcd(
         self,
@@ -265,12 +257,6 @@ class Metrics:
         mel_predictions_complex = torch.stack((mel_predictions, torch.zeros_like(mel_predictions)), dim=-1)  
         mel_targets_complex = torch.stack((mel_targets, torch.zeros_like(mel_targets)), dim=-1)
         c_si_snr: torch.Tensor = self.c_si_snr(mel_predictions_complex, mel_targets_complex)
-        
-        stoi: torch.Tensor = self.stoi(mel_predictions, mel_targets)
-        pesq: torch.Tensor = self.pesq(wav_predictions, wav_targets)
-
-        # wav_targets_ = wav_targets.detach().cpu().numpy()
-        # wav_predictions_ = wav_predictions.detach().cpu().numpy()
 
         mcd = self.calculate_mcd(wav_targets, wav_predictions)
         spec_dist = self.calculate_spectrogram_distance(wav_targets, wav_predictions)
@@ -282,8 +268,6 @@ class Metrics:
             si_sdr,
             si_snr,
             c_si_snr,
-            stoi,
-            pesq,
             mcd,
             spec_dist,
             f0_rmse,
