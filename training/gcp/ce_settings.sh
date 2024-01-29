@@ -17,7 +17,7 @@ gcsfuse tts-training-bucket ./tts-training-bucket
 # Connect the bucket to the VM instance, cd tts_framework
 cp ./tts-training-bucket/vocoder.ckpt ./tts-framework/checkpoints/
 cp ./tts-training-bucket/en_us_cmudict_ipa_forward.pt ./tts-framework/checkpoints/
-cp ./tts-training-bucket/epoch\=185-step\=90396.ckpt ./tts-framework/checkpoints/
+cp ./tts-training-bucket/epoch\=189-step\=92340.ckpt ./tts-framework/checkpoints/
 
 # Copy the datasets_cache folder metadata
 mkdir -p ./tts-framework/datasets_cache/LIBRITTS/LibriTTS/
