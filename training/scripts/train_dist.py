@@ -3,6 +3,7 @@ import torch
 from lightning.pytorch import Trainer
 from lightning.pytorch.accelerators import find_usable_cuda_devices # type: ignore
 from lightning.pytorch.loggers import TensorBoardLogger
+from lightning.pytorch.strategies import DDPStrategy
 
 from training.modules import AcousticModule
 
@@ -24,13 +25,17 @@ tensorboard = TensorBoardLogger(
 trainer = Trainer(
     accelerator="cuda",
     devices=-1,
-    strategy="ddp",
+    strategy=DDPStrategy(
+        gradient_as_bucket_view=True,
+        find_unused_parameters=True,
+    ),
+    # strategy="ddp",
     logger=tensorboard,
     # Save checkpoints to the `default_root_dir` directory
     default_root_dir=default_root_dir,
-    accumulate_grad_batches=10,
+    accumulate_grad_batches=5,
     max_epochs=-1,
-    enable_model_summary=False,
+    # enable_model_summary=False,
 )
 
 module = AcousticModule()
