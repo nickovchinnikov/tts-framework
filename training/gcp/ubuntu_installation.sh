@@ -4,7 +4,7 @@
 # Update the system
 sudo apt update -y && sudo apt upgrade -y
 
-ubuntu-drivers devices
+# ubuntu-drivers devices
 
 sudo apt install ubuntu-drivers-common -y
 
@@ -13,15 +13,14 @@ sudo ubuntu-drivers autoinstall
 # Reboot the system and then run the following commands
 sudo apt install nvidia-cuda-toolkit -y
 
+sudo apt-get install gcc -y
+
 curl -O https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh
 
 bash ./Anaconda3-2023.09-0-Linux-x86_64.sh
 
 # Install jupyterlab
 conda install -c conda-forge jupyterlab
-
-# Run jupyter lab in the background
-nohup jupyter lab --ip=0.0.0.0 --no-browser --port=8888 &
 
 # Install gcsfuse
 # export GCSFUSE_REPO=gcsfuse-`lsb_release -c -s`
@@ -38,5 +37,12 @@ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.clou
 
 sudo apt-get update && sudo apt-get install google-cloud-cli
 
+# Manual steps
 # Init gcloud
-gcloud init
+# gcloud init
+
+# Run jupyter lab in the background
+# nohup jupyter lab --ip=0.0.0.0 --no-browser --port=8888 &
+
+# Tensorboard
+# tensorboard --logdir ./logs --host 0.0.0.0 --port 6006

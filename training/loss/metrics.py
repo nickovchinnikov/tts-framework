@@ -28,8 +28,6 @@ class MetricsResult:
         si_sdr (torch.Tensor): The scale-invariant signal-to-distortion ratio.
         si_snr (torch.Tensor): The scale-invariant signal-to-noise ratio.
         c_si_snr (torch.Tensor): The complex scale-invariant signal-to-noise ratio.
-        stoi (torch.Tensor): The short-time objective intelligibility.
-        pesq (torch.Tensor): The perceptual evaluation of speech quality.
         mcd (torch.Tensor): The Mel cepstral distortion.
         spec_dist (torch.Tensor): The spectrogram distance.
         f0_rmse (float): The F0 RMSE.
