@@ -14,7 +14,7 @@ torch.set_float32_matmul_precision("high")
 
 default_root_dir="logs"
 
-ckpt_acoustic="./checkpoints/epoch=189-step=92340.ckpt"
+ckpt_acoustic="./checkpoints/epoch=301-step=124630.ckpt"
 
 ckpt_vocoder="./checkpoints/vocoder.ckpt"
 
@@ -33,9 +33,8 @@ trainer = Trainer(
     logger=tensorboard,
     # Save checkpoints to the `default_root_dir` directory
     default_root_dir=default_root_dir,
-    accumulate_grad_batches=5,
+    accumulate_grad_batches=10,
     max_epochs=-1,
-    # enable_model_summary=False,
 )
 
 module = AcousticModule()

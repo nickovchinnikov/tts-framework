@@ -6,8 +6,6 @@ from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
 
-import matplotlib.pyplot as plt
-
 from model.acoustic_model import AcousticModel
 from model.config import (
     AcousticENModelConfig,
@@ -88,17 +86,9 @@ class AcousticModule(LightningModule):
             n_speakers=n_speakers,
         )
 
-        self.vocoder_module = VocoderModule.load_from_checkpoint(
-            vocoder_module_checkpoint
-        )
+        self.vocoder_module = VocoderModule()
         self.vocoder_module = self.vocoder_module.eval()
         self.vocoder_module.freeze()
-        
-        # Make the parameters non-trainable
-        self.acoustic_model.utterance_prosody_encoder.encoder.convs[0].weight.requires_grad = False
-        self.acoustic_model.utterance_prosody_encoder.encoder.convs[0].bias.requires_grad = False
-        self.acoustic_model.phoneme_prosody_encoder.encoder.convs[0].weight.requires_grad = False
-        self.acoustic_model.phoneme_prosody_encoder.encoder.convs[0].bias.requires_grad = False
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
@@ -282,51 +272,6 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
-            
-            wav_original = self.vocoder_module.forward(mels)
-            wav_prediction = self.vocoder_module.forward(y_pred)
-
-            metrics_logs = self.metrics(
-                wav_prediction, wav_original, y_pred, mels
-            )
-
-            tensorboard.add_scalar("energy", metrics_logs.energy, self.current_epoch)
-            tensorboard.add_scalar("si_sdr", metrics_logs.si_sdr, self.current_epoch)
-            tensorboard.add_scalar("si_snr", metrics_logs.si_snr, self.current_epoch)
-            tensorboard.add_scalar("c_si_snr", metrics_logs.c_si_snr, self.current_epoch)
-            tensorboard.add_scalar("mcd", metrics_logs.mcd, self.current_epoch)
-            tensorboard.add_scalar("spec_dist", metrics_logs.spec_dist, self.current_epoch)
-            tensorboard.add_scalar("f0_rmse", metrics_logs.f0_rmse, self.current_epoch)
-            tensorboard.add_scalar("jitter", metrics_logs.jitter, self.current_epoch)
-            tensorboard.add_scalar("shimmer", metrics_logs.shimmer, self.current_epoch)
-
-            if self.current_epoch % AUDIO_EVERY_N_STEPS == 0:
-                tensorboard.add_audio(
-                    "wav_original",
-                    wav_original,
-                    self.current_epoch,
-                    self.preprocess_config.sampling_rate
-                )
-                tensorboard.add_audio(
-                    "wav_prediction",
-                    wav_prediction,
-                    self.current_epoch,
-                    self.preprocess_config.sampling_rate
-                )
-
-            if self.current_epoch % MEL_SPEC_EVERY_N_STEPS == 0:
-                mel_spec_fig = self.metrics.plot_spectrograms(
-                    mels[0].detach().cpu().numpy(),
-                    y_pred[0].detach().cpu().numpy()
-                )
-                tensorboard.add_figure(
-                    "mel_spectrograms",
-                    mel_spec_fig,
-                    self.current_epoch
-                )
-
-                # Close the figure to avoid memory leaks
-                plt.close(mel_spec_fig)
 
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
@@ -440,7 +385,7 @@ class AcousticModule(LightningModule):
             # batch_size=7,
             batch_size=7,
             # TODO: find the optimal num_workers
-            num_workers=22,
+            num_workers=5,
             persistent_workers=True,
             pin_memory=True,
             shuffle=False,
