@@ -117,8 +117,10 @@ class AudioProcessor:
             pad_mode="reflect",
             normalized=False,
             onesided=True,
-            return_complex=False,
+            return_complex=True,
         )
+
+        spec = torch.view_as_real(spec)
 
         # Compute the magnitude
         spec = torch.sqrt(spec.pow(2).sum(-1) + 1e-6)
@@ -148,7 +150,10 @@ class AudioProcessor:
         """
 
         spec = self.wav_to_spec(y, n_fft, hop_length, win_length, center=center)
-        return torch.norm(spec, dim=1, keepdim=True)
+        spec = torch.norm(spec, dim=1, keepdim=True).squeeze(0)
+
+        # Normalize the energy
+        return (spec - spec.mean()) / spec.std()
 
     def spec_to_mel(
             self, 

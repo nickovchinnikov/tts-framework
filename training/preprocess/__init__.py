@@ -4,3 +4,4 @@ from .normalize_text import NormalizeText
 from .preprocess_libritts import PreprocessLibriTTS
 from .tacotron_stft import TacotronSTFT
 from .wav2vec_aligner import Wav2VecAligner
+from .audio_processor import AudioProcessor

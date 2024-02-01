@@ -179,5 +179,8 @@ results/*
 # Mock datasets
 datasets_cache/**/*
 
+notebooks/**/*.wav
+notebooks/**/*.mp3
+
 # Mock audio
 mocks/wav2vec_aligner/audio

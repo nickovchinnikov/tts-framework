@@ -40,6 +40,7 @@ class FastSpeech2LossGen(Module):
         self.ssim_loss = SSIMLoss()
         self.sum_loss = ForwardSumLoss()
         self.bin_loss = BinLoss()
+
         self.fine_tuning = fine_tuning
 
     def forward(
@@ -185,6 +186,7 @@ class FastSpeech2LossGen(Module):
                 )
                 * 1.0
             )
+
         bin_loss: torch.Tensor = (
             self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
             * bin_loss_weight

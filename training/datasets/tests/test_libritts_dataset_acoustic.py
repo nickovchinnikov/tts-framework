@@ -40,6 +40,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
         self.assertEqual(sample["lang"], 3)
         self.assertEqual(sample["attn_prior"].shape, torch.Size([6, 58]))
         self.assertEqual(sample["wav"].shape, torch.Size([1, 14994]))
+        self.assertEqual(sample["energy"].shape, torch.Size([1, 957]))
 
     def test_cache_item(self):
         dataset = LibriTTSDatasetAcoustic(
@@ -79,7 +80,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
         result = self.dataset.collate_fn(data)
 
         # Check the output
-        self.assertEqual(len(result), 12)
+        self.assertEqual(len(result), 13)
 
         # Check that all the batches are the same size
         for batch in result:
@@ -114,7 +115,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
             # items = batch[0]
 
             # Check the batch size
-            self.assertEqual(len(items), 12)
+            self.assertEqual(len(items), 13)
 
             for it in items:
                 self.assertEqual(len(it), self.batch_size)

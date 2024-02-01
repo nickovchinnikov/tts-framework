@@ -1,16 +1,10 @@
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Tuple
 
 from lightning.pytorch.core import LightningModule
 import torch
 from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
-
-import numpy as np
-import librosa
-import matplotlib.pyplot as plt
-
-# from dp.phonemizer import Phonemizer
 
 from model.acoustic_model import AcousticModel
 from model.config import (
@@ -21,16 +15,21 @@ from model.config import (
     PreprocessingConfig,
 )
 from model.helpers.tools import get_mask_from_lengths
-from training.datasets import LibriTTSDatasetAcoustic, LibriTTSMMDatasetAcoustic
-from training.loss import FastSpeech2LossGen
+from training.datasets import LibriTTSDatasetAcoustic
+from training.loss import FastSpeech2LossGen, Metrics
 
 from training.preprocess.normalize_text import NormalizeText
+
+# Updated version of the tokenizer
+from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
+
 from model.config import get_lang_map, lang2id
 
 from .vocoder_module import VocoderModule
-# from training.preprocess.tokenizer_ipa import TokenizerIPA
-# Updated version of the tokenizer
-from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
+
+
+MEL_SPEC_EVERY_N_STEPS = 1000
+AUDIO_EVERY_N_STEPS = 100
 
 
 class AcousticModule(LightningModule):
@@ -42,12 +41,7 @@ class AcousticModule(LightningModule):
         root (str): Root directory of the dataset.
         step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.
-        checkpoint_path_v1 (Optional[str]): Path to the checkpoint to load the weights from. Note: this parameter is used only for the v0.1.0 checkpoint. In the future, this parameter will be removed!
-        vocoder_module (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
-        learning_rate (Optional[float]): Learning rate for the Learning Rate Finder. Defaults to None.
-
-    Optimizations:
-        Learning Rate Finder defined by the learning_rate parameter.
+        vocoder_module_checkpoint (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
     """
 
     def __init__(
@@ -57,11 +51,7 @@ class AcousticModule(LightningModule):
             root: str = "datasets_cache/LIBRITTS",
             initial_step: int = 0,
             n_speakers: int = 5392,
-            checkpoint_path_v1: Optional[str] = None,
             vocoder_module_checkpoint: str = "checkpoints/vocoder.ckpt",
-            phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
-            # learning_rate: Optional[float] = None,
-            # batch_size: Optional[int] = None,
         ):
         super().__init__()
 
@@ -82,12 +72,6 @@ class AcousticModule(LightningModule):
         else:
             self.train_config = AcousticPretrainingConfig()
 
-        # Learning Rate Finder
-        # self.learning_rate = learning_rate
-
-        # Auto batch size scaling
-        # self.batch_size = batch_size or self.train_config.batch_size
-
         # TODO: check this argument!
         self.register_buffer("initial_step", torch.tensor(initial_step))
 
@@ -101,45 +85,17 @@ class AcousticModule(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-        self.vocoder_module = VocoderModule.load_from_checkpoint(
-            vocoder_module_checkpoint
-        )
+
+        self.vocoder_module = VocoderModule()
+        self.vocoder_module = self.vocoder_module.eval()
+        self.vocoder_module.freeze()
 
         self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
 
+        self.metrics = Metrics(lang)
+
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
-
-        # NOTE: this code is used only for the v0.1.0 checkpoint.
-        # In the future, this code will be removed!
-        if checkpoint_path_v1 is not None:
-            checkpoint = self._load_weights_v1(checkpoint_path_v1)
-            self.acoustic_model.load_state_dict(checkpoint, strict=False)
-
-
-    def _load_weights_v1(self, checkpoint_path: str) -> dict:
-        r"""NOTE: this method is used only for the v0.1.0 checkpoint.
-        In the future, this method will be removed!
-        Prepares the weights for the model.
-        This is required for the model to be loaded from the checkpoint.
-        """
-        checkpoint = torch.load(checkpoint_path)
-
-        # Fix the weights for the embedding projection
-        for i in range(6):
-            # 0.17 is the coff of standard deviation of the truncated normal distribution
-            # Makes the range of distribution to be ~(-1, 1)
-            new_weights = torch.randn(384, 385) * 0.17
-            existing_weights = checkpoint["gen"][
-                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
-            ]
-            # Copy the existing weights into the new tensor
-            new_weights[:, :-1] = existing_weights
-            checkpoint["gen"][
-                f"decoder.layer_stack.{i}.conditioning.embedding_proj.weight"
-            ] = new_weights
-
-        return checkpoint["gen"]
 
 
     def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
@@ -183,61 +139,6 @@ class AcousticModule(LightningModule):
         return wav_prediction
 
 
-    def forward_old(
-            self,
-            text: torch.Tensor,
-            src_len: torch.Tensor,
-            speaker_idx: torch.Tensor,
-            lang: torch.Tensor,
-        ):
-        r"""DEPRECATED: Performs a forward pass through the AcousticModel.
-        This code must be run only with the loaded weights from the checkpoint!
-
-        Args:
-            text (torch.Tensor): The input text tensor.
-            src_len (torch.Tensor): The length of the source sequence.
-            speaker_idx (torch.Tensor): The index of the speaker.
-            lang (torch.Tensor): The language tensor.
-
-        Returns:
-            torch.Tensor: The output of the AcousticModel.
-        """
-        cut_idx = int(src_len.item())
-        x = text[:cut_idx].unsqueeze(0)
-        speakers = speaker_idx[:cut_idx].unsqueeze(0)
-        langs = lang[:cut_idx].unsqueeze(0)
-
-        return self.acoustic_model(
-            x=x,
-            pitches_range=(
-                self.pitches_stat[0],
-                self.pitches_stat[1],
-            ),
-            speakers=speakers,
-            langs=langs,
-        )
-
-
-    def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
-        r"""
-        Plots the mel spectrograms for the target and the prediction.
-        """
-        fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
-
-        img1 = librosa.display.specshow(mel_target, x_axis='time', y_axis='mel', sr=sr, ax=axs[0])
-        axs[0].set_title('Target spectrogram')
-        fig.colorbar(img1, ax=axs[0], format='%+2.0f dB')
-
-        img2 = librosa.display.specshow(mel_prediction, x_axis='time', y_axis='mel', sr=sr, ax=axs[1])
-        axs[1].set_title('Prediction spectrogram')
-        fig.colorbar(img2, ax=axs[1], format='%+2.0f dB')
-
-        # Adjust the spacing between subplots
-        fig.subplots_adjust(hspace=0.5)
-
-        return fig
-
-
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
     # trainer = Trainer(inference_mode=True)
@@ -260,6 +161,7 @@ class AcousticModule(LightningModule):
             - langs: Language identities.
             - attn_priors: Prior attention weights.
             - wavs: Waveform targets.
+            - energies: Energy targets.
         batch_idx (int): Index of the batch.
 
         Returns:
@@ -280,6 +182,7 @@ class AcousticModule(LightningModule):
             langs,
             attn_priors,
             _,
+            # energies,
         ) = batch
 
         # Update pitches_stat
@@ -299,6 +202,7 @@ class AcousticModule(LightningModule):
             pitches_range=pitches_stat,
             langs=langs,
             attn_priors=attn_priors,
+            # energies=energies,
         )
 
         y_pred = outputs["y_pred"]
@@ -306,6 +210,8 @@ class AcousticModule(LightningModule):
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
         pitch_prediction = outputs["pitch_prediction"]
+        # energy_pred = outputs["energy_pred"]
+        # energy_target = outputs["energy_target"]
 
         (
             total_loss,
@@ -335,6 +241,8 @@ class AcousticModule(LightningModule):
             attn_hard=outputs["attn_hard"],
             src_lens=src_lens,
             mel_lens=mel_lens,
+            # energy_pred=energy_pred,
+            # energy_target=energy_target,
             step=batch_idx + self.initial_step.item(),
         )
 
@@ -354,13 +262,6 @@ class AcousticModule(LightningModule):
         if self.logger.experiment is not None: # type: ignore
             # Generate an audio ones in a while and save to tensorboard
             tensorboard = self.logger.experiment # type: ignore
-            wav_prediction = self.vocoder_module.forward(y_pred)
-            tensorboard.add_audio(
-                "wav_prediction",
-                wav_prediction,
-                self.current_epoch,
-                self.preprocess_config.sampling_rate
-            )
 
             tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
             tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
@@ -371,64 +272,6 @@ class AcousticModule(LightningModule):
             tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
-
-            optimizers = self.optimizers()
-
-            for param_group in optimizers.optimizer.param_groups: # type: ignore
-                # Add the learning rate to the tensorboard
-                tensorboard.add_scalar('learning_rate', param_group['lr'], self.current_epoch)
-
-            # Configuration options
-            LOG_EVERY_N_STEPS = 1000  # Log every N steps
-
-            # Check if the current step is a multiple of LOG_EVERY_N_STEPS
-            if self.initial_step % LOG_EVERY_N_STEPS == 0:
-                # Select the first spectrogram in the batch
-                mel_target = mels[0].detach().cpu().numpy()
-                mel_prediction = y_pred[0].detach().cpu().numpy()
-
-                # Plot and add the comparison plot to TensorBoard
-                tensorboard.add_figure(
-                    "mel_spectrograms",
-                    self.plot_spectrograms(
-                        mel_target, mel_prediction, self.preprocess_config.sampling_rate
-                    ),
-                    self.current_epoch
-                )
-
-            # # Model Parameters histogram
-            # for name, param in self.acoustic_model.named_parameters():
-            #     tensorboard.add_histogram(f"{name}_param", param, self.current_epoch)
-
-            # # Gradients histogram
-            # for name, param in self.acoustic_model.named_parameters():
-            #     if param.grad is not None:
-            #         tensorboard.add_histogram(f'{name}_grad', param.grad, self.current_epoch)
-
-            # Spectrogram is expensive to compute, so we only plot it for the first spectrogram in the batch
-            # SUBSET_SIZE = 5
-            # DOWNSAMPLE_FACTOR = 2
-
-            # # Select a random subset of spectrograms
-            # indices = np.random.choice(len(mels), size=SUBSET_SIZE, replace=False)
-            # mels_subset = mels[0][indices]
-            # y_pred_subset = y_pred[0][indices]
-
-            # # Select the first spectrogram in the batch
-            # mel_target = mels_subset.detach().cpu().numpy()
-            # mel_prediction = y_pred_subset.detach().cpu().numpy()
-
-            # mel_target = mel_target[::DOWNSAMPLE_FACTOR, ::DOWNSAMPLE_FACTOR]
-            # mel_prediction = mel_prediction[::DOWNSAMPLE_FACTOR, ::DOWNSAMPLE_FACTOR]
-
-            # # Plot and add the comparison plot to TensorBoard
-            # tensorboard.add_figure(
-            #     "mel_spectrograms",
-            #     self.plot_spectrograms(
-            #         mel_target, mel_prediction, self.preprocess_config.sampling_rate
-            #     ),
-            #     self.current_epoch
-            # )
 
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
@@ -447,15 +290,6 @@ class AcousticModule(LightningModule):
             dict: The dictionary containing the optimizer and the learning rate scheduler.
         """
         parameters = self.acoustic_model.parameters()
-
-        # Learning Rate Finder
-        # if self.learning_rate is not None:
-        #     return AdamW(
-        #         parameters,
-        #         betas=self.train_config.optimizer_config.betas,
-        #         eps=self.train_config.optimizer_config.eps,
-        #         lr=self.learning_rate,
-        #     )
 
         # If the Learning Rate Finder is not used, the optimizer and the scheduler are used
         if self.fine_tuning:
@@ -539,6 +373,7 @@ class AcousticModule(LightningModule):
             root=self.root,
             lang=self.lang,
             cache=True,
+            mem_cache=True,
         )
         
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
@@ -548,10 +383,11 @@ class AcousticModule(LightningModule):
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
             # batch_size=7,
-            batch_size=6,
+            batch_size=7,
             # TODO: find the optimal num_workers
-            # num_workers=self.preprocess_config.workers,
-            num_workers=18,
+            num_workers=5,
+            persistent_workers=True,
+            pin_memory=True,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )

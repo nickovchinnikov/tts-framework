@@ -24,6 +24,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         url: str = "train-clean-360",
         download: bool = True,
         cache: bool = False,
+        mem_cache: bool = False,
         cache_dir: str = "datasets_cache",
     ):
         r"""A PyTorch dataset for loading preprocessed acoustic data.
@@ -53,6 +54,9 @@ class LibriTTSDatasetAcoustic(Dataset):
 
         self.cache_dir = os.path.join(cache_dir, f'cache-{url}')
 
+        self.mem_cache = mem_cache
+        self.memory_cache = {}
+
         # Load the id_mapping dictionary from the JSON file
         with open("speaker_id_mapping_libri.json") as f:
             self.id_mapping = json.load(f)
@@ -76,6 +80,10 @@ class LibriTTSDatasetAcoustic(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing the sample data.
         """
+
+        # Check if the data is in the memory cache
+        if self.mem_cache and idx in self.memory_cache:
+            return self.memory_cache[idx]
 
         # Check if the data is in the cache
         cache_subdir_path = os.path.join(self.cache_dir, self.cache_subdir(idx))
@@ -107,6 +115,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             "pitch": data.pitch,
             "text": data.phones,
             "attn_prior": data.attn_prior,
+            # "energy": data.energy,
             "raw_text": data.raw_text,
             "normalized_text": data.normalized_text,
             "speaker": self.id_mapping.get(str(data.speaker_id)),
@@ -114,6 +123,10 @@ class LibriTTSDatasetAcoustic(Dataset):
             # TODO: fix lang!
             "lang": lang2id["en"],
         }
+
+        # Add the data to the memory cache
+        if self.mem_cache:
+            self.memory_cache[idx] = result
 
         if self.cache:
             # Create the cache subdirectory if it doesn't exist
@@ -151,6 +164,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             src_lens,
             mel_lens,
             wavs,
+            # energy,
         ) = empty_lists
 
         # Extract fields from data dictionary and populate the lists
@@ -167,6 +181,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             src_lens.append(data_entry["text"].shape[0])
             mel_lens.append(data_entry["mel"].shape[1])
             wavs.append(data_entry["wav"].numpy())
+            # energy.append(data_entry["energy"].numpy())
 
         # Convert langs, src_lens, and mel_lens to numpy arrays
         langs = np.array(langs)
@@ -190,6 +205,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         )
 
         wavs = pad_2D(wavs)
+        # energy = pad_2D(energy)
 
         return [
             ids,
@@ -204,6 +220,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             torch.from_numpy(langs),
             torch.from_numpy(attn_priors),
             torch.from_numpy(wavs),
+            # torch.from_numpy(energy),
         ]
 
     def normalize_pitch(

@@ -123,6 +123,7 @@ class ReferenceEncoderConfig:
 class VarianceAdaptorConfig:
     n_hidden: int
     kernel_size: int
+    emb_kernel_size: int
     p_dropout: float
     n_bins: int
 
@@ -169,7 +170,7 @@ class AcousticENModelConfig:
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=384, kernel_size=5, p_dropout=0.5, n_bins=256,
+            n_hidden=384, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
         ),
     )
 
@@ -216,7 +217,7 @@ class AcousticMultilingualModelConfig:
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=512, kernel_size=5, p_dropout=0.5, n_bins=256,
+            n_hidden=512, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
         ),
     )
 

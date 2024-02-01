@@ -28,6 +28,9 @@ dependencies:
       - torchaudio==2.1.2
       - torchvision==0.16.2
       - lightning==2.1.2
+      - torchmetrics==1.2.1
+      - pystoi==0.4.1
+      - pesq==0.0.4
       - datasets==2.14.5
       - deep-phonemizer==0.0.19
       - phonemizer==3.2.1
