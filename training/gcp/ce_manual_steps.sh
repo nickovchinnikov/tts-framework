@@ -116,6 +116,9 @@ conda activate tts_framework
 # Version 11.8
 pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
+# Version 12.1 nightly (the fastest one)
+pip install --upgrade --force-reinstall --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
+
 # Version 12.1
 pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
