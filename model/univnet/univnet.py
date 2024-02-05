@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import Module
+from torch.nn.utils import parametrize
 
 from model.config import PreprocessingConfig, VocoderModelConfig
 from model.helpers.tools import get_mask_from_lengths
@@ -48,7 +49,7 @@ class UnivNet(Module):
                 ),
             )
 
-        self.conv_pre = nn.utils.weight_norm(
+        self.conv_pre = nn.utils.parametrizations.weight_norm(
             nn.Conv1d(
                 model_config.gen.noise_dim,
                 channel_size,
@@ -60,7 +61,7 @@ class UnivNet(Module):
 
         self.conv_post = nn.Sequential(
             nn.LeakyReLU(model_config.gen.lReLU_slope),
-            nn.utils.weight_norm(
+            nn.utils.parametrizations.weight_norm(
                 nn.Conv1d(
                     channel_size,
                     1,
@@ -107,11 +108,11 @@ class UnivNet(Module):
         r"""Removes weight normalization from the module."""
         print("Removing weight norm...")
 
-        nn.utils.remove_weight_norm(self.conv_pre)
+        parametrize.remove_parametrizations(self.conv_pre, "weight")
 
         for layer in self.conv_post:
             if len(layer.state_dict()) != 0:
-                nn.utils.remove_weight_norm(layer)
+                parametrize.remove_parametrizations(layer, "weight")
 
         for res_block in self.res_stack:
             res_block.remove_weight_norm()

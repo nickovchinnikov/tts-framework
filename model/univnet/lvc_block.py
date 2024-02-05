@@ -4,6 +4,7 @@ import torch
 from torch import nn
 from torch.nn import Module
 from torch.nn import functional as F
+from torch.nn.utils import parametrize
 
 from .kernel_predictor import KernelPredictor
 
@@ -72,7 +73,7 @@ class LVCBlock(Module):
 
         self.convt_pre = nn.Sequential(
             nn.LeakyReLU(lReLU_slope),
-            nn.utils.weight_norm(
+            nn.utils.parametrizations.weight_norm(
                 nn.ConvTranspose1d(
                     in_channels,
                     in_channels,
@@ -88,7 +89,7 @@ class LVCBlock(Module):
             [
                 nn.Sequential(
                     nn.LeakyReLU(lReLU_slope),
-                    nn.utils.weight_norm(
+                    nn.utils.parametrizations.weight_norm(
                         nn.Conv1d(
                             in_channels,
                             in_channels,
@@ -199,6 +200,6 @@ class LVCBlock(Module):
         This method removes weight normalization from the kernel predictor and all convolutional layers in the LVCBlock.
         """
         self.kernel_predictor.remove_weight_norm()
-        nn.utils.remove_weight_norm(self.convt_pre[1])
+        parametrize.remove_parametrizations(self.convt_pre[1], "weight")
         for block in self.conv_blocks:
-            nn.utils.remove_weight_norm(block[1]) # type: ignore
+            parametrize.remove_parametrizations(block[1], "weight") # type: ignore

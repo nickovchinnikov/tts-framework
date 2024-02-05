@@ -5,19 +5,19 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-import time
 import json
-
-import torch
-import pandas as pd
+import time
 
 from IPython.core.display import HTML
 from IPython.display import Audio, display
+import pandas as pd
+import torch
 
-from training.modules import AcousticModule
+# from model.univnet import Discriminator, UnivNet
+from training.modules import AcousticModule, VocoderModule
 
 # %%
-checkpoint = "checkpoints/epoch=5371-step=575533.ckpt"
+checkpoint = "../checkpoints/epoch=570-step=180582.ckpt"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -25,12 +25,16 @@ module = AcousticModule.load_from_checkpoint(checkpoint).to(device)
 
 module.eval()
 
+# %%
+univnet = VocoderModule.load_from_checkpoint("./checkpoints/vocoder.ckpt")
+
+univnet.eval()
 
 # %%
-speakers_df = pd.read_csv("../datasets_cache/LIBRITTS/LibriTTS/speakers.tsv", sep="\t",)
+speakers_df = pd.read_csv("../datasets_cache/LIBRITTS/LibriTTS/speakers.tsv", sep="\t")
 
 speakers_libriid_speakerid = json.load(
-    open("./speaker_id_mapping_libri.json", "r")
+    open("./speaker_id_mapping_libri.json"),
 )
 
 speakers_speakerid_libriid = {
@@ -40,7 +44,7 @@ speakers_speakerid_libriid[0], speakers_libriid_speakerid["14"]
 
 
 # %%
-speakers_dict_train_clean_100 = speakers_df[speakers_df["SUBSET"] == "train-clean-100"].to_dict('records')
+speakers_dict_train_clean_100 = speakers_df[speakers_df["SUBSET"] == "train-clean-100"].to_dict("records")
 speakers_dict_train_clean_100[:10]
 
 
@@ -54,7 +58,7 @@ for row in speakers_dict_train_clean_100:
     internal_id = speakers_libriid_speakerid[str(speaker_id)]
 
     speaker_name = row["NAME"]
-    gender = row['GENDER']
+    gender = row["GENDER"]
 
     # if internal_id not in ids:
     #     continue
@@ -64,8 +68,8 @@ for row in speakers_dict_train_clean_100:
             speaker_id,
             internal_id,
             speaker_name,
-            gender
-        )
+            gender,
+        ),
     )
 
 existed_speakers[:5]
@@ -94,7 +98,7 @@ def gen_table(text, existed_speakers):
 
         # Add a row to the HTML table
         html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{:.2f} seconds</td></tr>".format(
-            speaker_data.to_html(), audio._repr_html_(), device, generation_time
+            speaker_data.to_html(), audio._repr_html_(), device, generation_time,
         )
 
         # Add a row to the HTML table
@@ -142,27 +146,28 @@ for speaker in existed_speakers[:2]:
 
 # %%
 import string
+
 list(string.punctuation)
 
-punct = ['!', '?', ',', '.', '-', ':', ';', '"', "'", '(', ')']
+punct = ["!", "?", ",", ".", "-", ":", ";", '"', "'", "(", ")"]
 
 # %%
 from dp.preprocessing.text import SequenceTokenizer
 
-languages = ['de', 'en_us']
-phoneme_symbols = ['a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'æ', 'ç', 'ð', 'ø', 'ŋ', 'œ', 'ɐ', 'ɑ', 'ɔ', 'ə', 'ɛ', 'ɝ', 'ɹ', 'ɡ', 'ɪ', 'ʁ', 'ʃ', 'ʊ', 'ʌ', 'ʏ', 'ʒ', 'ʔ', 'ˈ', 'ˌ', 'ː', '̃', '̍', '̥', '̩', '̯', '͡', 'θ', '!', '?', ',', '.', '-', ':', ';', ' ', '"', "'", '(', ')']
+languages = ["de", "en_us"]
+phoneme_symbols = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "v", "w", "x", "y", "z", "æ", "ç", "ð", "ø", "ŋ", "œ", "ɐ", "ɑ", "ɔ", "ə", "ɛ", "ɝ", "ɹ", "ɡ", "ɪ", "ʁ", "ʃ", "ʊ", "ʌ", "ʏ", "ʒ", "ʔ", "ˈ", "ˌ", "ː", "̃", "̍", "̥", "̩", "̯", "͡", "θ", "!", "?", ",", ".", "-", ":", ";", " ", '"', "'", "(", ")"]
 
 phoneme_tokenizer = SequenceTokenizer(phoneme_symbols,
                                         languages=languages,
                                         lowercase=True,
                                         char_repeats=1,
                                         append_start_end=True)
-tokens = phoneme_tokenizer("Hello, World!", 'en_us')
+tokens = phoneme_tokenizer("Hello, World!", "en_us")
 tokens
 
 # %%
 phoneme_tokenizer.decode(tokens)
 
 # %%
-'ˈ' == "'"
+"ˈ" == "'"
 # %%
