@@ -19,6 +19,7 @@ from .tacotron_stft import TacotronSTFT
 # from .tokenizer_ipa import TokenizerIPA
 # Updated version of the tokenizer
 from .tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
+
 # from .audio_processor import AudioProcessor
 
 
@@ -171,7 +172,7 @@ class PreprocessLibriTTS:
 
         # NOTE: fixed version of tokenizer with punctuation
         phones_ipa, phones = self.tokenizer(normalized_text)
-        
+
         # Convert to tensor
         phones = torch.Tensor(phones)
 

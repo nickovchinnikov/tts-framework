@@ -8,15 +8,15 @@ from transformers import AutoModelForCTC, AutoProcessor, Wav2Vec2Processor
 
 
 def decode_phonemes(
-    ids: torch.Tensor, processor: Wav2Vec2Processor, ignore_stress: bool = False
+    ids: torch.Tensor, processor: Wav2Vec2Processor, ignore_stress: bool = False,
 ) -> str:
     """CTC-like decoding. First removes consecutive duplicates, then removes special tokens."""
     # removes consecutive duplicates
     ids = [id_ for id_, _ in groupby(ids)] # type: ignore
 
-    
+
     special_token_ids = processor.tokenizer.all_special_ids + [ # type: ignore
-        processor.tokenizer.word_delimiter_token_id # type: ignore
+        processor.tokenizer.word_delimiter_token_id, # type: ignore
     ]
     # converts id to token, skipping special tokens
     phonemes = [processor.decode(id_) for id_ in ids if id_ not in special_token_ids]

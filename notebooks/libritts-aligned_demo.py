@@ -30,7 +30,7 @@ df.columns = df.columns.str.strip()
 df.columns
 
 # %%
-grouped = df.groupby('NAME')
+grouped = df.groupby("NAME")
 grouped.head()
 
 # %%

@@ -5,7 +5,7 @@ from server.utils import sentences_split
 
 class TestUtils(unittest.TestCase):
     def test_sentences_split(self):
-        # Simple case 
+        # Simple case
         text = "Hello, world! This is a test sentence."
         sentences = sentences_split(text, 25)
 

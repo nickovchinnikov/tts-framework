@@ -2,18 +2,21 @@
 import os
 import sys
 
+from IPython.display import Audio
+from pydub import AudioSegment
+from pydub.utils import mediainfo
+import torch
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-import torch
-
-from pydub import AudioSegment
-from pydub.utils import mediainfo
-
-from IPython.display import Audio
-
+from server.utils import (
+    audio_package,
+    returnAudioBuffer,
+    sentences_split,
+    speakers_info,
+)
 from training.modules.acoustic_module import AcousticModule
-from server.utils import speakers_info, returnAudioBuffer, sentences_split, audio_package
 
 # %%
 info = mediainfo("./response_valid.mp3")
@@ -42,7 +45,7 @@ with torch.no_grad():
         wav_prediction.tobytes(),
         frame_rate=SAMPLING_RATE,
         sample_width=wav_prediction.dtype.itemsize,
-        channels=1
+        channels=1,
     )
 
 # %%
@@ -50,6 +53,7 @@ audio.export("./response.mp3", format="mp3")
 
 # %%
 from pydub.playback import play
+
 play(audio)
 
 # %%

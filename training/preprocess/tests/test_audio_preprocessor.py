@@ -1,4 +1,5 @@
 import unittest
+
 import torch
 
 from training.preprocess.audio_processor import AudioProcessor
@@ -38,7 +39,7 @@ class TestAudioProcessor(unittest.TestCase):
     def test_spec_to_mel(self):
         spec = torch.randn(1, 1025, 100)
         mel = self.audio_processor.spec_to_mel(
-            spec, self.n_fft, self.num_mels, self.sample_rate, self.fmin, self.fmax
+            spec, self.n_fft, self.num_mels, self.sample_rate, self.fmin, self.fmax,
         )
         self.assertEqual(mel.shape, (1, self.num_mels, 100))
 

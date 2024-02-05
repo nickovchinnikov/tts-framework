@@ -1,16 +1,14 @@
-import sys
-import logging
 from datetime import datetime
-
-import torch
+import logging
+import sys
 
 from lightning.pytorch import Trainer
-from lightning.pytorch.accelerators import find_usable_cuda_devices # type: ignore
+from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ignore
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
+import torch
 
 from training.modules import AcousticModule
-
 
 # Get the current date and time
 now = datetime.now()
@@ -19,16 +17,16 @@ now = datetime.now()
 timestamp = now.strftime("%Y%m%d_%H%M%S")
 
 # Create a logger
-logger = logging.getLogger('my_logger')
+logger = logging.getLogger("my_logger")
 
 # Set the level of the logger to ERROR
 logger.setLevel(logging.ERROR)
 
 # Create a file handler that logs error messages to a file with the current timestamp in its name
-handler = logging.FileHandler(f'logs/error_{timestamp}.log')
+handler = logging.FileHandler(f"logs/error_{timestamp}.log")
 
 # Create a formatter and add it to the handler
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 
 # Add the handler to the logger

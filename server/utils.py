@@ -1,18 +1,15 @@
 import io
 import json
-
 from typing import Dict
 
+from nltk.tokenize import sent_tokenize
 import numpy as np
 import pandas as pd
 import soundfile as sf
 
-from nltk.tokenize import sent_tokenize
-
 
 def package_offsets(offsets: Dict) -> bytes:
     """Package wav and offsets with headers and frame separator"""
-
     batch = b"Content-Type: application/json\r\n\r\n"
 
     batch += bytes(json.dumps(offsets), "utf-8") + b"\r\n\r\n"
@@ -24,10 +21,9 @@ def package_offsets(offsets: Dict) -> bytes:
 def returnAudioBuffer(
     audio_vector: np.ndarray,
     sample_rate: int,
-    audio_format="mp3"
+    audio_format="mp3",
 ) -> io.BytesIO:
     """Return audio buffer"""
-    
     buffer_ = io.BytesIO()
     audio_list = audio_vector.tolist()
 
@@ -54,7 +50,6 @@ def audio_package(wav: np.ndarray, audio_format: str = "mp3") -> bytes:
 # TODO: Fix this, add direct speech detection
 def sentences_split(text: str, max_symbols: int = 512):
     """Tokenize text into sentences no longer than `max_symbols`"""
-
     # sentences = sent_tokenize(text)
     # Split the text into sentences, treating direct speech as a single sentence
     # sentences = re.split(r'(?<!\"[A-Za-z0-9,])\.\s', text)
@@ -83,7 +78,7 @@ def sentences_split(text: str, max_symbols: int = 512):
         else:
             if curr_split_length == 0 or sentence_length > max_symbols or curr_split_length > max_symbols:
                 raise ValueError(
-                    f"Sentences in the text should be less than {max_symbols} symbols. "
+                    f"Sentences in the text should be less than {max_symbols} symbols. ",
                 )
 
             result.append(curr_split)
@@ -91,7 +86,7 @@ def sentences_split(text: str, max_symbols: int = 512):
 
     result.append(curr_split)
     return result
-    
+
     # if not bool(quoted_placeholders_dict):
     #     return result
 
@@ -108,20 +103,20 @@ def sentences_split(text: str, max_symbols: int = 512):
 
 def speakers_info() -> Dict:
     speakers = json.load(
-        open("config/speakers.json", "r")
+        open("config/speakers.json"),
     )
     return speakers
 
 
 def generate_speakers() -> Dict:
     # Prepare the speaker information
-    speakers_df = pd.read_csv("../config/speakers.tsv", sep="\t",)
+    speakers_df = pd.read_csv("../config/speakers.tsv", sep="\t")
 
     speakers_libriid_speakerid = json.load(
-        open("../config/speaker_id_mapping_libri.json", "r")
+        open("../config/speaker_id_mapping_libri.json"),
     )
 
-    speakers_dict_train_clean_100 = speakers_df[speakers_df["SUBSET"] == "train-clean-100"].to_dict('records')
+    speakers_dict_train_clean_100 = speakers_df[speakers_df["SUBSET"] == "train-clean-100"].to_dict("records")
 
     existed_speakers = {
         speakers_libriid_speakerid[str(row["READER"])]: {

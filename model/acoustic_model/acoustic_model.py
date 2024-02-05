@@ -19,8 +19,6 @@ from model.reference_encoder import (
     UtteranceLevelProsodyEncoder,
 )
 
-from model.constants import LEAKY_RELU_SLOPE
-
 from .aligner import Aligner
 from .helpers import pitch_phoneme_averaging, positional_encoding
 from .length_adaptor import LengthAdaptor
@@ -28,6 +26,7 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 
 # from .pitch_adaptor import PitchAdaptor
 from .pitch_adaptor2 import PitchAdaptor
+
 # TODO: maybe I can use the energy adaptor for the next versions?
 # from .energy_adaptor import EnergyAdaptor
 
@@ -53,7 +52,6 @@ class AcousticModel(Module):
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
         n_speakers: int,
-        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
     ):
         super().__init__()
         self.emb_dim = model_config.encoder.n_hidden
@@ -393,7 +391,7 @@ class AcousticModel(Module):
 
         # energies = energies.to(src_mask.device)
         attn_hard_dur = attn_hard_dur.to(src_mask.device)
-        
+
         # energy_pred, avg_energy_target, _ = self.energy_adaptor.get_energy_embedding_train(
         #     x=x,
         #     target=energies,

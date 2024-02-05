@@ -1,10 +1,8 @@
-import unittest
-
 import os
+import unittest
 
 import torch
 from torch.utils.data import DataLoader
-
 
 from training.datasets import LibriTTSDatasetAcoustic
 
@@ -54,7 +52,7 @@ class TestLibriTTSDatasetAcoustic(unittest.TestCase):
             sample = dataset[idx]
 
             cache_subdir_path = os.path.join(dataset.cache_dir, dataset.cache_subdir(idx))
-            cache_file = os.path.join(cache_subdir_path, f'{idx}.pt')
+            cache_file = os.path.join(cache_subdir_path, f"{idx}.pt")
 
             # Check if the data is in the cache
             self.assertTrue(os.path.exists(cache_file))

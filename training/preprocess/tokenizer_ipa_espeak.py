@@ -1,12 +1,13 @@
+from logging import ERROR, Logger
 import os
-from logging import Logger, ERROR
+
+from phonemizer.backend import EspeakBackend
 
 # IPA Phonemizer: https://github.com/bootphon/phonemizer
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
-from phonemizer.backend import EspeakBackend
 
 # Create a Logger instance
-logger = Logger('my_logger')
+logger = Logger("my_logger")
 # Set the level to ERROR
 logger.setLevel(ERROR)
 
@@ -15,10 +16,10 @@ from dp.preprocessing.text import SequenceTokenizer
 from model.config import get_lang_map
 
 # INFO: Fix for windows, used for local env
-if os.name == 'nt':
+if os.name == "nt":
     ESPEAK_LIBRARY = os.getenv(
         "ESPEAK_LIBRARY",
-        "C:\\Program Files\\eSpeak NG\\libespeak-ng.dll"
+        "C:\\Program Files\\eSpeak NG\\libespeak-ng.dll",
     )
     EspeakWrapper.set_library(ESPEAK_LIBRARY)
 
@@ -33,9 +34,9 @@ class TokenizerIpaEspeak:
         # Prepare the phonemes list and dictionary for the embedding
         phoneme_basic_symbols = [
             # IPA symbols
-            'a', 'b', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'æ', 'ç', 'ð', 'ø', 'ŋ', 'œ', 'ɐ', 'ɑ', 'ɔ', 'ə', 'ɛ', 'ɝ', 'ɹ', 'ɡ', 'ɪ', 'ʁ', 'ʃ', 'ʊ', 'ʌ', 'ʏ', 'ʒ', 'ʔ', 'ˈ', 'ˌ', 'ː', '̃', '̍', '̥', '̩', '̯', '͡', 'θ',
+            "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "v", "w", "x", "y", "z", "æ", "ç", "ð", "ø", "ŋ", "œ", "ɐ", "ɑ", "ɔ", "ə", "ɛ", "ɝ", "ɹ", "ɡ", "ɪ", "ʁ", "ʃ", "ʊ", "ʌ", "ʏ", "ʒ", "ʔ", "ˈ", "ˌ", "ː", "̃", "̍", "̥", "̩", "̯", "͡", "θ",
             # Punctuation
-            '!', '?', ',', '.', '-', ':', ';', '"', "'", '(', ')', ' ',
+            "!", "?", ",", ".", "-", ":", ";", '"', "'", "(", ")", " ",
         ]
 
         # TODO: add support for other languages
@@ -45,7 +46,7 @@ class TokenizerIpaEspeak:
 
         # This is the list of symbols from StyledTTS2
         _punctuation = ';:,.!?¡¿—…"«»“”'
-        _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        _letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         _letters_ipa = "ɑɐɒæɓʙβɔɕçɗɖðʤəɘɚɛɜɝɞɟʄɡɠɢʛɦɧħɥʜɨɪʝɭɬɫɮʟɱɯɰŋɳɲɴøɵɸθœɶʘɹɺɾɻʀʁɽʂʃʈʧʉʊʋⱱʌɣɤʍχʎʏʑʐʒʔʡʕʢǀǁǂǃˈˌːˑʼʴʰʱʲʷˠˤ˞↓↑→↗↘'̩'ᵻ"
 
         # Combine all symbols
@@ -56,22 +57,21 @@ class TokenizerIpaEspeak:
 
         # NOTE: for backward compatibility with previous IPA tokenizer see the TokenizerIPA class
         self.tokenizer = SequenceTokenizer(phones,
-                                           languages=['de', 'en_us'],
+                                           languages=["de", "en_us"],
                                            lowercase=True,
                                            char_repeats=1,
                                            append_start_end=True)
 
         self.phonemizer = EspeakBackend(
             language=self.lang,
-            preserve_punctuation=True, 
+            preserve_punctuation=True,
             with_stress=True,
-            words_mismatch='ignore',
-            logger=logger
+            words_mismatch="ignore",
+            logger=logger,
         ).phonemize
 
     def __call__(self, text: str):
-        r"""
-        Converts the input text to phonemes and tokenizes them.
+        r"""Converts the input text to phonemes and tokenizes them.
 
         Args:
             text (str): The input text to be tokenized.
@@ -80,7 +80,6 @@ class TokenizerIpaEspeak:
             Tuple[Union[str, List[str]], List[int]]: IPA phonemes and tokens.
 
         """
-        
         phones_ipa = "".join(self.phonemizer([text]))
 
         tokens = self.tokenizer(phones_ipa, language=self.lang_seq)

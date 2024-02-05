@@ -61,8 +61,7 @@ class Wav2Vec2Aligner:
                 tokens.append(dictionary[c])
 
         def get_trellis(emission, tokens, blank_id=0):
-            """
-            Build a trellis matrix of shape (num_frames + 1, num_tokens + 1)
+            """Build a trellis matrix of shape (num_frames + 1, num_tokens + 1)
             that represents the probabilities of each source token being at a certain time step
             """
             num_frames = emission.size(0)
@@ -91,8 +90,7 @@ class Wav2Vec2Aligner:
             score: float
 
         def backtrack(trellis, emission, tokens, blank_id=0):
-            """
-            Walk backwards from the last (sentence_token, time_step) pair to build the optimal sequence alignment path
+            """Walk backwards from the last (sentence_token, time_step) pair to build the optimal sequence alignment path
             """
             # Note:
             # j and t are indices for trellis, which has extra dimensions
@@ -145,8 +143,7 @@ class Wav2Vec2Aligner:
                 return self.end - self.start
 
         def merge_repeats(path):
-            """
-            Merge repeated tokens into a single segment. Note: this shouldn't affect repeated characters from the
+            """Merge repeated tokens into a single segment. Note: this shouldn't affect repeated characters from the
             original sentences (e.g. `ll` in `hello`)
             """
             i1, i2 = 0, 0
@@ -161,7 +158,7 @@ class Wav2Vec2Aligner:
                         path[i1].time_index,
                         path[i2 - 1].time_index + 1,
                         score,
-                    )
+                    ),
                 )
                 i1 = i2
             return segments
@@ -198,13 +195,13 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--model_name", type=str, default="arijitx/wav2vec2-xls-r-300m-bengali", help="wav2vec model name"
+        "--model_name", type=str, default="arijitx/wav2vec2-xls-r-300m-bengali", help="wav2vec model name",
     )
     parser.add_argument("--wav_dir", type=str, default="./wavs", help="directory containing wavs")
     parser.add_argument("--text_file", type=str, default="script.txt", help="file containing text")
     parser.add_argument("--input_wavs_sr", type=int, default=16000, help="sampling rate of input audios")
     parser.add_argument(
-        "--output_dir", type=str, default="./out_alignment", help="output directory containing the alignment files"
+        "--output_dir", type=str, default="./out_alignment", help="output directory containing the alignment files",
     )
     parser.add_argument("--cuda", action="store_true")
 
