@@ -34,10 +34,10 @@ class TestUnivnetLoss(unittest.TestCase):
             score_loss,
         ) = output
 
-        self.assertAlmostEqual(total_loss_gen, 4.5500, places=4)
-        self.assertAlmostEqual(total_loss_disc, 1.79197, places=4)
-        self.assertAlmostEqual(mel_loss, 3.3992, places=4)
-        self.assertAlmostEqual(score_loss, 1.1508, places=4)
+        self.assertAlmostEqual(total_loss_gen.item(), 4.5500, places=4)
+        self.assertAlmostEqual(total_loss_disc.item(), 1.79197, places=4)
+        self.assertAlmostEqual(mel_loss.item(), 3.3992, places=4)
+        self.assertAlmostEqual(score_loss.item(), 1.1508, places=4)
 
 if __name__ == "__main__":
     unittest.main()
