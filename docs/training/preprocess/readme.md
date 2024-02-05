@@ -6,6 +6,9 @@ Here you can find preprocessing code.
 
 Audio processing functions.
 
+### [Audio processor](./audio_processor.md)
+A class used to process audio signals and convert them into different representations.
+
 ### [Compute_YIN](./compute_yin.md)
 
 [Original implementation](https://github.com/NVIDIA/mellotron/blob/master/yin.py)

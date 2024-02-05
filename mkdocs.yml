@@ -111,6 +111,7 @@ nav:
     - Preprocess:
       - References: training/preprocess/readme.md
       - Audio: training/preprocess/audio.md
+      - Audio Processor: training/preprocess/audio_processor.md
       - compute_yin: training/preprocess/compute_yin.md
       - Normalize Text: training/preprocess/normalize_text.md
       - Preprocess LibriTTS: training/preprocess/preprocess_libritts.md
