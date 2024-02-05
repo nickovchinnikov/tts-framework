@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import Module
+from torch.nn.utils import parametrize
 
 
 class KernelPredictor(Module):
@@ -47,7 +48,7 @@ class KernelPredictor(Module):
         padding = (kpnet_conv_size - 1) // 2
 
         self.input_conv = nn.Sequential(
-            nn.utils.weight_norm(
+            nn.utils.parametrizations.weight_norm(
                 nn.Conv1d(
                     cond_channels,
                     kpnet_hidden_channels,
@@ -63,7 +64,7 @@ class KernelPredictor(Module):
             [
                 nn.Sequential(
                     nn.Dropout(kpnet_dropout),
-                    nn.utils.weight_norm(
+                    nn.utils.parametrizations.weight_norm(
                         nn.Conv1d(
                             kpnet_hidden_channels,
                             kpnet_hidden_channels,
@@ -73,7 +74,7 @@ class KernelPredictor(Module):
                         ),
                     ),
                     nn.LeakyReLU(lReLU_slope),
-                    nn.utils.weight_norm(
+                    nn.utils.parametrizations.weight_norm(
                         nn.Conv1d(
                             kpnet_hidden_channels,
                             kpnet_hidden_channels,
@@ -88,7 +89,7 @@ class KernelPredictor(Module):
             ],
         )
 
-        self.kernel_conv = nn.utils.weight_norm(
+        self.kernel_conv = nn.utils.parametrizations.weight_norm(
             nn.Conv1d(
                 kpnet_hidden_channels,
                 kpnet_kernel_channels,
@@ -97,7 +98,7 @@ class KernelPredictor(Module):
                 bias=True,
             ),
         )
-        self.bias_conv = nn.utils.weight_norm(
+        self.bias_conv = nn.utils.parametrizations.weight_norm(
             nn.Conv1d(
                 kpnet_hidden_channels,
                 kpnet_bias_channels,
@@ -141,10 +142,10 @@ class KernelPredictor(Module):
 
     def remove_weight_norm(self):
         r"""Removes weight normalization from the input, kernel, bias, and residual convolutional layers."""
-        nn.utils.remove_weight_norm(self.input_conv[0])
-        nn.utils.remove_weight_norm(self.kernel_conv)
-        nn.utils.remove_weight_norm(self.bias_conv)
+        parametrize.remove_parametrizations(self.input_conv[0], "weight")
+        parametrize.remove_parametrizations(self.kernel_conv, "weight")
+        parametrize.remove_parametrizations(self.bias_conv, "weight")
 
         for block in self.residual_convs:
-            nn.utils.remove_weight_norm(block[1]) # type: ignore
-            nn.utils.remove_weight_norm(block[3]) # type: ignore
+            parametrize.remove_parametrizations(block[1], "weight") # type: ignore
+            parametrize.remove_parametrizations(block[3], "weight") # type: ignore
