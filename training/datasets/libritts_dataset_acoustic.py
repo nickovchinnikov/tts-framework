@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from torchaudio import datasets
 
 from model.config import lang2id
 from training.preprocess import PreprocessLibriTTS

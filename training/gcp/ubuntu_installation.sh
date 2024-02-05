@@ -42,7 +42,7 @@ sudo apt-get update && sudo apt-get install google-cloud-cli
 # gcloud init
 
 # Run jupyter lab in the background
-# nohup jupyter lab --ip=0.0.0.0 --no-browser --port=8888 &
+# nohup jupyter lab --ip=0.0.0.0 --no-browser --port=8888 --NotebookApp.token='93058db2c647621fb48974ac8902c20b' &
 
 # Tensorboard
 # tensorboard --logdir ./logs --host 0.0.0.0 --port 6006
