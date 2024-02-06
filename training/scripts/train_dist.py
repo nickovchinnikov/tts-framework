@@ -62,6 +62,10 @@ try:
         default_root_dir=default_root_dir,
         accumulate_grad_batches=10,
         max_epochs=-1,
+        # Failed to find the `precision`
+        # precision="16-mixed",
+        # precision="bf16-mixed",
+        # precision="16-mixed",
     )
 
     module = AcousticModule()
