@@ -1,24 +1,23 @@
-import os
-import io
-
-import torch
-
-import nltk
-nltk.download('punkt')
-
-from pydantic import BaseModel, Field
-
-from pydub import AudioSegment
-
 import asyncio
+import io
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+import nltk
+from pydantic import BaseModel, Field
+from pydub import AudioSegment
+import torch
 import uvicorn
 
+from server.utils import (
+    returnAudioBuffer,
+    sentences_split,
+    speakers_info,
+)
 from training.modules.acoustic_module import AcousticModule
 
-from server.utils import speakers_info, returnAudioBuffer, sentences_split, audio_package
-
+nltk.download("punkt")
 
 os.environ["PYTHONIOENCODING"] = "utf8"
 os.environ["NUMBA_DISABLE_INTEL_SVML"] = "1"
@@ -68,23 +67,23 @@ async def async_gen(text: str, speaker: torch.Tensor):
                 buffer_ = returnAudioBuffer(
                     wav_prediction,
                     SAMPLING_RATE,
-                    AUDIO_FORMAT
+                    AUDIO_FORMAT,
                 )
 
                 # Append the buffer to the total buffer
                 total_buffer.write(buffer_.getvalue())
-        
+
         total_buffer.seek(0)
 
         audio = AudioSegment.from_file(
             total_buffer,
-            format=AUDIO_FORMAT
+            format=AUDIO_FORMAT,
         )
 
         audio_bytes = audio.export(format=AUDIO_FORMAT, bitrate="64k")
 
         yield audio_bytes.read()
-        
+
         # need this sleep in order to be able to catch the disconnect
         await asyncio.sleep(0)
 
@@ -110,7 +109,7 @@ def generate(params: TransformerParams):
             raise HTTPException(status_code=400, detail="Speaker not found")
 
         speaker = torch.tensor([
-            int(params.speaker)
+            int(params.speaker),
         ], device=device)
 
         return StreamingResponse(

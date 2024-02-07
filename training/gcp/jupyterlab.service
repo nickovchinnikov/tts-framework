@@ -1,9 +1,9 @@
 [Unit]
-Description=Jupyter Lab
+Description=JupyterLab
 
 [Service]
 Type=simple
-ExecStart=/home/oaiw/anaconda3/envs/tts_framework/bin/jupyter lab --ip=0.0.0.0 --no-browser --port=8888 --NotebookApp.token='93058db2c647621fb48974ac8902c20b'
+ExecStart=/home/oaiw/anaconda3/bin/jupyter lab --ip=0.0.0.0 --no-browser --port=8888 --NotebookApp.token='93058db2c647621fb48974ac8902c20b'
 User=oaiw
 WorkingDirectory=/home/oaiw
 Restart=always

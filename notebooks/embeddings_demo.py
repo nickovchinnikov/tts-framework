@@ -4,11 +4,11 @@ import json
 from dp.phonemizer import Phonemizer
 from transformers import BertConfig, BertModel, BertTokenizer
 
-model = BertModel.from_pretrained('bert-base-uncased')
+model = BertModel.from_pretrained("bert-base-uncased")
 
 phonemizer = Phonemizer.from_checkpoint("../checkpoints/en_us_cmudict_ipa_forward.pt")
 
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', vocab_file='../checkpoints/merged_vocab.txt')
+tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", vocab_file="../checkpoints/merged_vocab.txt")
 
 configuration = BertConfig()
 configuration
@@ -19,7 +19,7 @@ input_text = "Here is some text to encode"
 tokenizer.encode(input_text, add_special_tokens=True)
 
 # %%
-phonemes_example = ['[SILENCE]', 'ð', 'ʌ', '[SILENCE]', 'd', 'eɪ', '[SILENCE]', 'æ', 'f', 't', 'ɜ˞', '[COMMA]', 'd', 'aɪ', 'æ', 'n', 'ʌ', '[SILENCE]', 'æ', 'n', 'd', '[SILENCE]', 'm', 'ɛ', 'ɹ', 'i', '[SILENCE]', 'k', 'w', 'ɪ', 't', 'ɪ', 'd', '[SILENCE]', 'ɪ', 't', '[SILENCE]', 'f', 'ɜ˞', '[SILENCE]', 'd', 'ɪ', 's', 't', 'ʌ', 'n', 't', '[SILENCE]', 'b', 'i', '[FULL STOP]']
+phonemes_example = ["[SILENCE]", "ð", "ʌ", "[SILENCE]", "d", "eɪ", "[SILENCE]", "æ", "f", "t", "ɜ˞", "[COMMA]", "d", "aɪ", "æ", "n", "ʌ", "[SILENCE]", "æ", "n", "d", "[SILENCE]", "m", "ɛ", "ɹ", "i", "[SILENCE]", "k", "w", "ɪ", "t", "ɪ", "d", "[SILENCE]", "ɪ", "t", "[SILENCE]", "f", "ɜ˞", "[SILENCE]", "d", "ɪ", "s", "t", "ʌ", "n", "t", "[SILENCE]", "b", "i", "[FULL STOP]"]
 
 embedding = tokenizer.encode(phonemes_example, add_special_tokens=True)
 embedding

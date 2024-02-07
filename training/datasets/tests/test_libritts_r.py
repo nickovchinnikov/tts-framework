@@ -1,7 +1,8 @@
-import unittest
 import os
+import unittest
 
 from training.datasets.libritts_r import load_libritts_item
+
 
 class TestLibriTTS(unittest.TestCase):
     def setUp(self):
@@ -25,7 +26,7 @@ class TestLibriTTS(unittest.TestCase):
         base_path = os.path.join(
             self.path,
             f"{speaker_id}",
-            f"{chapter_id}"
+            f"{chapter_id}",
         )
 
         # Check that the files were created
@@ -33,17 +34,17 @@ class TestLibriTTS(unittest.TestCase):
             os.path.exists(
                 os.path.join(
                     base_path,
-                    self.fileid + self.ext_original_txt
-                )
-            )
+                    self.fileid + self.ext_original_txt,
+                ),
+            ),
         )
         self.assertTrue(
             os.path.exists(
                 os.path.join(
                     base_path,
-                    self.fileid + self.ext_normalized_txt
-                )
-            )
+                    self.fileid + self.ext_normalized_txt,
+                ),
+            ),
         )
 
         # Add any other assertions you want to make about the return values
@@ -64,5 +65,5 @@ class TestLibriTTS(unittest.TestCase):
             os.remove(original_text_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

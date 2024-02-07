@@ -24,7 +24,7 @@ phonemes
 # %%
 text = ["Phonemizing an English text is imposimpable!"]
 result = phonemizer.phonemise_list(
-    text, lang="en_us"
+    text, lang="en_us",
 )
 result
 
@@ -40,14 +40,14 @@ result2 = phonemizer.predictor.phoneme_tokenizer(phonemes, language="en_us")
 result2
 
 # %%
-libri_example = ['[SILENCE]', 'ð', 'ʌ', '[SILENCE]', 'd', 'eɪ', '[SILENCE]', 'æ', 'f', 't', 'ɜ˞', '[COMMA]', 'd', 'aɪ', 'æ', 'n', 'ʌ', '[SILENCE]', 'æ', 'n', 'd', '[SILENCE]', 'm', 'ɛ', 'ɹ', 'i', '[SILENCE]', 'k', 'w', 'ɪ', 't', 'ɪ', 'd', '[SILENCE]', 'ɪ', 't', '[SILENCE]', 'f', 'ɜ˞', '[SILENCE]', 'd', 'ɪ', 's', 't', 'ʌ', 'n', 't', '[SILENCE]', 'b', 'i', '[FULL STOP]']
+libri_example = ["[SILENCE]", "ð", "ʌ", "[SILENCE]", "d", "eɪ", "[SILENCE]", "æ", "f", "t", "ɜ˞", "[COMMA]", "d", "aɪ", "æ", "n", "ʌ", "[SILENCE]", "æ", "n", "d", "[SILENCE]", "m", "ɛ", "ɹ", "i", "[SILENCE]", "k", "w", "ɪ", "t", "ɪ", "d", "[SILENCE]", "ɪ", "t", "[SILENCE]", "f", "ɜ˞", "[SILENCE]", "d", "ɪ", "s", "t", "ʌ", "n", "t", "[SILENCE]", "b", "i", "[FULL STOP]"]
 
 result3 = phonemizer.predictor.phoneme_tokenizer(libri_example, language="en_us")
 result3
 
 # %%
-# There is no tokenization for the special tokens! 
-phonemizer.predictor.phoneme_tokenizer([';'], language="en_us")
+# There is no tokenization for the special tokens!
+phonemizer.predictor.phoneme_tokenizer([";"], language="en_us")
 
 # %%
 # ruff: noqa: E402
@@ -134,7 +134,7 @@ phone2ixd = json.load(open("phone2idx.json"))
 # %%
 import re
 
-re.sub(r"(\.|\!|\?)\1{2,}", r"\1\1\1", 'Aha!!!!!! Are you there??? Got you....')
+re.sub(r"(\.|\!|\?)\1{2,}", r"\1\1\1", "Aha!!!!!! Are you there??? Got you....")
 
 # re.sub(r"(\.|\!|\?)\1+", r"\1", 'Aha!!! Are you there??? Got you...')
 
@@ -145,7 +145,7 @@ import nemo_text_processing
 # create text normalization instance that works on cased input
 from nemo_text_processing.text_normalization.normalize import Normalizer
 
-normalizer = Normalizer(input_case='cased', lang='en')
+normalizer = Normalizer(input_case="cased", lang="en")
 
 # run normalization on example string input
 written = "We paid $123 for this desk."
@@ -158,7 +158,7 @@ text2 = "For example it normalizes 'medic' into 'm e d i c' or 'yeah' into 'y e 
 normalizer.normalize(text2, verbose=True, punct_post_process=True)
 
 # %%
-normalizer.normalize('medic, yeah', verbose=True, punct_post_process=True)
+normalizer.normalize("medic, yeah", verbose=True, punct_post_process=True)
 
 # %%
 text3 = "St. Patrick's Day, spend $123 for this desk."

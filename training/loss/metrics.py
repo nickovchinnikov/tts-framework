@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 
+import librosa
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch import nn
 import torchaudio.transforms as T
-
-import matplotlib.pyplot as plt
-import numpy as np
-import librosa
-
 from torchmetrics.audio import (
     ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalDistortionRatio,
@@ -20,8 +18,7 @@ from training.preprocess.audio_processor import AudioProcessor
 
 @dataclass
 class MetricsResult:
-    r"""
-    A data class that holds the results of the computed metrics.
+    r"""A data class that holds the results of the computed metrics.
 
     Attributes:
         energy (torch.Tensor): The energy loss ratio.
@@ -34,6 +31,7 @@ class MetricsResult:
         jitter (float): The jitter.
         shimmer (float): The shimmer.
     """
+
     energy: torch.Tensor
     si_sdr: torch.Tensor
     si_snr: torch.Tensor
@@ -46,8 +44,7 @@ class MetricsResult:
 
 
 class Metrics:
-    r"""
-    A class that computes various audio metrics.
+    r"""A class that computes various audio metrics.
 
     Attributes:
         hop_length (int): The hop length for the STFT.
@@ -60,6 +57,7 @@ class Metrics:
         si_snr (ScaleInvariantSignalNoiseRatio): The scale-invariant signal-to-noise ratio.
         c_si_snr (ComplexScaleInvariantSignalNoiseRatio): The complex scale-invariant signal-to-noise ratio.
     """
+
     def __init__(self, lang: str = "en"):
         lang_map = get_lang_map(lang)
         preprocess_config = PreprocessingConfig(lang_map.processing_lang_type)
@@ -80,18 +78,18 @@ class Metrics:
         self,
         wav_targets: torch.Tensor,
         wav_predictions: torch.Tensor,
-        n_mfcc: int = 13
+        n_mfcc: int = 13,
     ) -> torch.Tensor:
         """Calculate Mel Cepstral Distortion."""
         mfcc_transform = T.MFCC(
             sample_rate=self.sample_rate,
             n_mfcc=n_mfcc,
             melkwargs={
-                'n_fft': 400,
-                'hop_length': 160,
-                'n_mels': 23,
-                'center': False
-            }
+                "n_fft": 400,
+                "hop_length": 160,
+                "n_mels": 23,
+                "center": False,
+            },
         ).to(wav_targets.device)
         wav_predictions = wav_predictions.to(wav_targets.device)
 
@@ -99,23 +97,23 @@ class Metrics:
         synth_mfcc = mfcc_transform(wav_predictions)
 
         mcd = torch.mean(torch.sqrt(
-            torch.sum((ref_mfcc - synth_mfcc) ** 2, dim=0)
+            torch.sum((ref_mfcc - synth_mfcc) ** 2, dim=0),
         ))
 
         return mcd
-    
+
     def calculate_spectrogram_distance(
         self,
         wav_targets: torch.Tensor,
         wav_predictions: torch.Tensor,
         n_fft: int = 2048,
-        hop_length: int = 512
+        hop_length: int = 512,
     ) -> torch.Tensor:
         """Calculate spectrogram distance."""
         spec_transform = T.Spectrogram(
             n_fft=n_fft,
             hop_length=hop_length,
-            power=None
+            power=None,
         ).to(wav_targets.device)
         wav_predictions = wav_predictions.to(wav_targets.device)
 
@@ -131,7 +129,7 @@ class Metrics:
         dist = torch.dist(S1_mag.flatten(), S2_mag.flatten())
 
         return dist
-    
+
     def calculate_f0_rmse(
         self,
         wav_targets: torch.Tensor,
@@ -147,22 +145,22 @@ class Metrics:
         f0_audio1 = torch.from_numpy(
             librosa.yin(
                 wav_targets_,
-                fmin=float(librosa.note_to_hz('C2')),
-                fmax=float(librosa.note_to_hz('C7')),
+                fmin=float(librosa.note_to_hz("C2")),
+                fmax=float(librosa.note_to_hz("C7")),
                 sr=self.sample_rate,
                 frame_length=frame_length,
                 hop_length=hop_length,
-            )
+            ),
         )
         f0_audio2 = torch.from_numpy(
             librosa.yin(
-                wav_predictions_, 
-                fmin=float(librosa.note_to_hz('C2')), 
-                fmax=float(librosa.note_to_hz('C7')), 
-                sr=self.sample_rate, 
-                frame_length=frame_length, 
+                wav_predictions_,
+                fmin=float(librosa.note_to_hz("C2")),
+                fmax=float(librosa.note_to_hz("C7")),
+                sr=self.sample_rate,
+                frame_length=frame_length,
                 hop_length=hop_length,
-            )
+            ),
         )
 
         # Assuming f0_audio1 and f0_audio2 are PyTorch tensors
@@ -174,7 +172,7 @@ class Metrics:
         self,
         audio: torch.Tensor,
         frame_length: int = 2048,
-        hop_length: int = 512
+        hop_length: int = 512,
     ) -> tuple[float, float]:
         """Calculate jitter and shimmer."""
         audio_ = audio.detach().cpu().numpy()
@@ -183,23 +181,23 @@ class Metrics:
         f0 = torch.from_numpy(
             librosa.yin(
                 audio_,
-                fmin=float(librosa.note_to_hz('C2')),
-                fmax=float(librosa.note_to_hz('C7')),
+                fmin=float(librosa.note_to_hz("C2")),
+                fmax=float(librosa.note_to_hz("C7")),
                 sr=self.sample_rate,
                 frame_length=frame_length,
-                hop_length=hop_length
-            )
+                hop_length=hop_length,
+            ),
         )
 
         spec_transform = T.Spectrogram(
             n_fft=frame_length,
             hop_length=hop_length,
-            power=None
+            power=None,
         ).to(audio.device)
 
         # Compute the amplitude contour
         amplitude = torch.abs(
-            spec_transform(audio)
+            spec_transform(audio),
         )
 
         # Compute the relative changes
@@ -215,8 +213,7 @@ class Metrics:
         mel_predictions: torch.Tensor,
         mel_targets: torch.Tensor,
     ) -> MetricsResult:
-        r"""
-        Compute the metrics.
+        r"""Compute the metrics.
 
         Args:
             wav_predictions (torch.Tensor): The predicted waveforms.
@@ -231,16 +228,16 @@ class Metrics:
             wav_predictions.unsqueeze(0),
             self.filter_length,
             self.hop_length,
-            self.win_length
+            self.win_length,
         )
 
         wav_targets_energy = self.audio_processor.wav_to_energy(
             wav_targets.unsqueeze(0),
             self.filter_length,
             self.hop_length,
-            self.win_length
+            self.win_length,
         )
-        
+
         energy: torch.Tensor = self.mse_loss(wav_predictions_energy, wav_targets_energy)
 
         self.si_sdr.to(wav_predictions.device)
@@ -252,7 +249,7 @@ class Metrics:
         si_snr: torch.Tensor = self.si_snr(mel_predictions, mel_targets)
 
         # New shape: [1, F, T, 2]
-        mel_predictions_complex = torch.stack((mel_predictions, torch.zeros_like(mel_predictions)), dim=-1)  
+        mel_predictions_complex = torch.stack((mel_predictions, torch.zeros_like(mel_predictions)), dim=-1)
         mel_targets_complex = torch.stack((mel_targets, torch.zeros_like(mel_targets)), dim=-1)
         c_si_snr: torch.Tensor = self.c_si_snr(mel_predictions_complex, mel_targets_complex)
 
@@ -274,18 +271,17 @@ class Metrics:
         )
 
     def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
-        r"""
-        Plots the mel spectrograms for the target and the prediction.
+        r"""Plots the mel spectrograms for the target and the prediction.
         """
         fig, axs = plt.subplots(2, 1, sharex=True, sharey=True, dpi=80)
 
-        img1 = librosa.display.specshow(mel_target, x_axis='time', y_axis='mel', sr=sr, ax=axs[0])
-        axs[0].set_title('Target spectrogram')
-        fig.colorbar(img1, ax=axs[0], format='%+2.0f dB')
+        img1 = librosa.display.specshow(mel_target, x_axis="time", y_axis="mel", sr=sr, ax=axs[0])
+        axs[0].set_title("Target spectrogram")
+        fig.colorbar(img1, ax=axs[0], format="%+2.0f dB")
 
-        img2 = librosa.display.specshow(mel_prediction, x_axis='time', y_axis='mel', sr=sr, ax=axs[1])
-        axs[1].set_title('Prediction spectrogram')
-        fig.colorbar(img2, ax=axs[1], format='%+2.0f dB')
+        img2 = librosa.display.specshow(mel_prediction, x_axis="time", y_axis="mel", sr=sr, ax=axs[1])
+        axs[1].set_title("Prediction spectrogram")
+        fig.colorbar(img2, ax=axs[1], format="%+2.0f dB")
 
         # Adjust the spacing between subplots
         fig.subplots_adjust(hspace=0.5)
@@ -296,28 +292,27 @@ class Metrics:
         self,
         mel_target: np.ndarray,
         mel_prediction: np.ndarray,
-        sr: int = 22050
+        sr: int = 22050,
     ):
-        r"""
-        Plots the mel spectrograms for the target and the prediction.
+        r"""Plots the mel spectrograms for the target and the prediction.
         """
         fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
 
         axs[0].specgram(
             mel_target,
-            aspect='auto',
+            aspect="auto",
             Fs=sr,
-            cmap=plt.get_cmap("magma") # type: ignore
+            cmap=plt.get_cmap("magma"), # type: ignore
         )
-        axs[0].set_title('Target spectrogram')
+        axs[0].set_title("Target spectrogram")
 
         axs[1].specgram(
             mel_prediction,
-            aspect='auto',
+            aspect="auto",
             Fs=sr,
-            cmap=plt.get_cmap("magma") # type: ignore
+            cmap=plt.get_cmap("magma"), # type: ignore
         )
-        axs[1].set_title('Prediction spectrogram')
+        axs[1].set_title("Prediction spectrogram")
 
         # Adjust the spacing between subplots
         fig.subplots_adjust(hspace=0.5)

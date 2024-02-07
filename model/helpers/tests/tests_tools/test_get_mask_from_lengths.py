@@ -17,7 +17,7 @@ class TestGetMaskFromLengths(unittest.TestCase):
                 [False, False, False, True],
                 [False, True, True, True],
                 [False, False, False, False],
-            ]
+            ],
         )
 
         # Call the function with the test cases

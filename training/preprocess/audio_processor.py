@@ -1,11 +1,9 @@
-import torch
-
 from librosa.filters import mel as librosa_mel_fn
+import torch
 
 
 class AudioProcessor:
-    r"""
-    A class used to process audio signals and convert them into different representations.
+    r"""A class used to process audio signals and convert them into different representations.
 
     Attributes:
         hann_window (dict): A dictionary to store the Hann window for different configurations.
@@ -20,14 +18,14 @@ class AudioProcessor:
         spec_to_mel(spec, n_fft, num_mels, sample_rate, fmin, fmax): Convert a spectrogram to a Mel spectrogram.
         wav_to_mel(y, n_fft, num_mels, sample_rate, hop_length, win_length, fmin, fmax, center=False): Convert a waveform to a Mel spectrogram.
     """
+
     def __init__(self):
         self.hann_window = {}
         self.mel_basis = {}
 
     @staticmethod
     def name_mel_basis(spec: torch.Tensor, n_fft: int, fmax: int) -> str:
-        """
-        Generate a name for the Mel basis based on the FFT size, maximum frequency, data type, and device.
+        """Generate a name for the Mel basis based on the FFT size, maximum frequency, data type, and device.
 
         Args:
             spec (torch.Tensor): The spectrogram tensor.
@@ -42,8 +40,7 @@ class AudioProcessor:
 
     @staticmethod
     def amp_to_db(magnitudes: torch.Tensor, C: int = 1, clip_val: float = 1e-5) -> torch.Tensor:
-        r"""
-        Convert amplitude to decibels (dB).
+        r"""Convert amplitude to decibels (dB).
 
         Args:
             magnitudes (Tensor): The amplitude magnitudes to convert.
@@ -53,13 +50,11 @@ class AudioProcessor:
         Returns:
             Tensor: The converted magnitudes in dB.
         """
-
         return torch.log(torch.clamp(magnitudes, min=clip_val) * C)
 
     @staticmethod
     def db_to_amp(magnitudes: torch.Tensor, C: int = 1) -> torch.Tensor:
-        r"""
-        Convert decibels (dB) to amplitude.
+        r"""Convert decibels (dB) to amplitude.
 
         Args:
             magnitudes (Tensor): The dB magnitudes to convert.
@@ -68,7 +63,6 @@ class AudioProcessor:
         Returns:
             Tensor: The converted magnitudes in amplitude.
         """
-
         return torch.exp(magnitudes) / C
 
     def wav_to_spec(
@@ -77,10 +71,9 @@ class AudioProcessor:
         n_fft: int,
         hop_length: int,
         win_length: int,
-        center: bool = False
+        center: bool = False,
     ) -> torch.Tensor:
-        r"""
-        Convert a waveform to a spectrogram and compute the magnitude.
+        r"""Convert a waveform to a spectrogram and compute the magnitude.
 
         Args:
             y (Tensor): The input waveform.
@@ -92,7 +85,6 @@ class AudioProcessor:
         Returns:
             Tensor: The magnitude of the computed spectrogram.
         """
-
         y = y.squeeze(1)
 
         dtype_device = str(y.dtype) + "_" + str(y.device)
@@ -133,10 +125,9 @@ class AudioProcessor:
         n_fft: int,
         hop_length: int,
         win_length: int,
-        center: bool = False
+        center: bool = False,
     ) -> torch.Tensor:
-        r"""
-        Convert a waveform to a spectrogram and compute the energy.
+        r"""Convert a waveform to a spectrogram and compute the energy.
 
         Args:
             y (Tensor): The input waveform.
@@ -148,7 +139,6 @@ class AudioProcessor:
         Returns:
             Tensor: The energy of the computed spectrogram.
         """
-
         spec = self.wav_to_spec(y, n_fft, hop_length, win_length, center=center)
         spec = torch.norm(spec, dim=1, keepdim=True).squeeze(0)
 
@@ -156,16 +146,15 @@ class AudioProcessor:
         return (spec - spec.mean()) / spec.std()
 
     def spec_to_mel(
-            self, 
-            spec: torch.Tensor, 
-            n_fft: int, 
-            num_mels: int, 
-            sample_rate: int, 
-            fmin: int, 
-            fmax: int
+            self,
+            spec: torch.Tensor,
+            n_fft: int,
+            num_mels: int,
+            sample_rate: int,
+            fmin: int,
+            fmax: int,
     ) -> torch.Tensor:
-        r"""
-        Convert a spectrogram to a Mel spectrogram.
+        r"""Convert a spectrogram to a Mel spectrogram.
 
         Args:
             spec (torch.Tensor): The input spectrogram of shape [B, C, T].
@@ -178,13 +167,12 @@ class AudioProcessor:
         Returns:
             torch.Tensor: The computed Mel spectrogram of shape [B, C, T].
         """
-
         mel_basis_key = self.name_mel_basis(spec, n_fft, fmax)
 
         if mel_basis_key not in self.mel_basis:
             mel = librosa_mel_fn(sr=sample_rate, n_fft=n_fft, n_mels=num_mels, fmin=fmin, fmax=fmax)
             self.mel_basis[mel_basis_key] = torch.from_numpy(mel).to(dtype=spec.dtype, device=spec.device)
-        
+
         mel = torch.matmul(self.mel_basis[mel_basis_key], spec)
         mel = self.amp_to_db(mel)
 
@@ -194,16 +182,15 @@ class AudioProcessor:
         self,
         y: torch.Tensor,
         n_fft: int,
-        num_mels: int, 
-        sample_rate: int, 
-        hop_length: int, 
-        win_length: int, 
-        fmin: int, 
-        fmax: int, 
-        center: bool = False
+        num_mels: int,
+        sample_rate: int,
+        hop_length: int,
+        win_length: int,
+        fmin: int,
+        fmax: int,
+        center: bool = False,
     ) -> torch.Tensor:
-        r"""
-        Convert a waveform to a Mel spectrogram.
+        r"""Convert a waveform to a Mel spectrogram.
 
         Args:
             y (torch.Tensor): The input waveform.
@@ -219,7 +206,6 @@ class AudioProcessor:
         Returns:
             torch.Tensor: The computed Mel spectrogram.
         """
-
         # Convert the waveform to a spectrogram
         spec = self.wav_to_spec(y, n_fft, hop_length, win_length, center=center)
 

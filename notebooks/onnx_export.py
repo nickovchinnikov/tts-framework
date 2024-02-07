@@ -7,14 +7,12 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 import json
 
-import torch
-import pandas as pd
-
 from IPython.core.display import HTML
 from IPython.display import Audio, display
+import pandas as pd
+import torch
 
 from training.modules import AcousticModule
-
 
 # %%
 checkpoint = "checkpoints/epoch=5209-step=536977.ckpt"
@@ -36,10 +34,10 @@ module.to_onnx(
     "./acoustic_module.onnx",
     (dummy_text, dummy_speaker_id),
     export_params=True,
-    input_names = ['text', 'speaker_id'],
+    input_names = ["text", "speaker_id"],
     dynamic_axes={
-        'text' : { 0 : 'sequence_length' },
-        'output' : { 0 : 'batch_size' }
+        "text" : { 0 : "sequence_length" },
+        "output" : { 0 : "batch_size" },
     },
     opset_version=17,
 )

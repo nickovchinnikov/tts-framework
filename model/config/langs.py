@@ -44,7 +44,7 @@ langs_map: Dict[str, LangItem] = {
         phonemizer="en_us",
         phonemizer_espeak="en-us",
         nemo="en",
-        processing_lang_type="english_only"
+        processing_lang_type="english_only",
     ),
 }
 

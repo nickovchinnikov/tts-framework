@@ -13,20 +13,18 @@ from model.config import (
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
     PreprocessingConfig,
+    get_lang_map,
+    lang2id,
 )
 from model.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDatasetAcoustic
 from training.loss import FastSpeech2LossGen, Metrics
-
 from training.preprocess.normalize_text import NormalizeText
 
 # Updated version of the tokenizer
 from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
 
-from model.config import get_lang_map, lang2id
-
 from .vocoder_module import VocoderModule
-
 
 MEL_SPEC_EVERY_N_STEPS = 1000
 AUDIO_EVERY_N_STEPS = 100
@@ -40,8 +38,7 @@ class AcousticModule(LightningModule):
         lang (str): Language of the dataset.
         root (str): Root directory of the dataset.
         step (int): Current training step.
-        n_speakers (int): Number of speakers in the dataset.
-        vocoder_module_checkpoint (Optional[VocoderModule]): Vocoder module. Defaults to None. Required for the audio generation during training.
+        n_speakers (int): Number of speakers in the dataset.generation during training.
     """
 
     def __init__(
@@ -51,7 +48,6 @@ class AcousticModule(LightningModule):
             root: str = "datasets_cache/LIBRITTS",
             initial_step: int = 0,
             n_speakers: int = 5392,
-            vocoder_module_checkpoint: str = "checkpoints/vocoder.ckpt",
         ):
         super().__init__()
 
@@ -110,13 +106,12 @@ class AcousticModule(LightningModule):
         Returns:
             torch.Tensor: The output of the AcousticModel.
         """
-
         normalized_text = self.normilize_text(text)
         _, phones = self.tokenizer(normalized_text)
 
         # Convert to tensor
         x = torch.tensor(
-            phones, dtype=torch.int, device=speaker_idx.device
+            phones, dtype=torch.int, device=speaker_idx.device,
         ).unsqueeze(0)
 
         speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
@@ -124,7 +119,7 @@ class AcousticModule(LightningModule):
         langs = torch.tensor(
             [lang2id[lang]],
             dtype=torch.int,
-            device=speaker_idx.device
+            device=speaker_idx.device,
         ).repeat(x.shape[1]).unsqueeze(0)
 
         y_pred = self.acoustic_model(
@@ -134,9 +129,7 @@ class AcousticModule(LightningModule):
             langs=langs,
         )
 
-        wav_prediction = self.vocoder_module.forward(y_pred)
-
-        return wav_prediction
+        return self.vocoder_module.forward(y_pred)
 
 
     # TODO: don't forget about torch.no_grad() !
@@ -363,8 +356,7 @@ class AcousticModule(LightningModule):
 
 
     def train_dataloader(self):
-        r"""
-        Returns the training dataloader, that is using the LibriTTS dataset.
+        r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Returns
             DataLoader: The training dataloader.
@@ -375,7 +367,7 @@ class AcousticModule(LightningModule):
             cache=True,
             mem_cache=True,
         )
-        
+
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
         return DataLoader(
             dataset,

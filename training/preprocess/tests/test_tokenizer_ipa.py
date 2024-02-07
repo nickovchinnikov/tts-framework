@@ -2,10 +2,11 @@ import unittest
 
 from training.preprocess.tokenizer_ipa import TokenizerIPA
 
+
 class TestTokenizerIPA(unittest.TestCase):
     def setUp(self):
         self.tokenizer = TokenizerIPA()
-    
+
     def test_init(self):
         self.assertEqual(self.tokenizer.lang, "en_us")
         self.assertIsNotNone(self.tokenizer.phonemizer)
@@ -29,5 +30,5 @@ class TestTokenizerIPA(unittest.TestCase):
         self.assertNotEqual(phones_ipa, phones_ipa2)
         self.assertNotEqual(tokens, tokens2)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

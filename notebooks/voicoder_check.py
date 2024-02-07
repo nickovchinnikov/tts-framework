@@ -8,18 +8,14 @@ print(f"Current working directory: {os.getcwd()}")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
+from dp.phonemizer import Phonemizer
 import IPython
-
 import torch
 
-from dp.phonemizer import Phonemizer
-
 from training.modules import AcousticDataModule, AcousticModule, VocoderModule
+from training.preprocess.audio import safe_load
 from training.preprocess.normalize_text import NormalizeText
 from training.preprocess.tacotron_stft import TacotronSTFT
-
-from training.preprocess.audio import safe_load
-
 
 # %%
 ckpt_acoustic="../checkpoints/epoch=516-step=100828.ckpt"
@@ -41,7 +37,7 @@ text = "But the city itself began now to be visited too, I mean within the walls
 
 path_to_wav = "./26_496_000004_000000.wav"
 
-params = { 
+params = {
     "sampling_rate": 22050,
     "use_audio_normalization": True,
     "filter_length": 1024,

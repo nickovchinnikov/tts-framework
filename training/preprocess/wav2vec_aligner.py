@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-from typing import Tuple, List
+from typing import List, Tuple
 
 import torch
 from torch.nn import Module

@@ -1,5 +1,5 @@
-import os
 import json
+import os
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
@@ -51,7 +51,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         # Calculate the directory for the cache file
         self.cache_subdir = lambda idx: str(((idx // 1000) + 1) * 1000)
 
-        self.cache_dir = os.path.join(cache_dir, f'cache-{url}')
+        self.cache_dir = os.path.join(cache_dir, f"cache-{url}")
 
         self.mem_cache = mem_cache
         self.memory_cache = {}
@@ -79,14 +79,13 @@ class LibriTTSDatasetAcoustic(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing the sample data.
         """
-
         # Check if the data is in the memory cache
         if self.mem_cache and idx in self.memory_cache:
             return self.memory_cache[idx]
 
         # Check if the data is in the cache
         cache_subdir_path = os.path.join(self.cache_dir, self.cache_subdir(idx))
-        cache_file = os.path.join(cache_subdir_path, f'{idx}.pt')
+        cache_file = os.path.join(cache_subdir_path, f"{idx}.pt")
 
         # Check if the data is in the cache
         if self.cache and os.path.exists(cache_file):

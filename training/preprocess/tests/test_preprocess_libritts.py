@@ -49,7 +49,10 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
             torch.testing.assert_close(
                 output.phones,
-                torch.tensor([ 2., 10., 37., 14., 17., 45., 24., 39., 50., 14.,  6.,  3.]),
+                torch.tensor([
+                    2., 10., 37., 14., 50., 17., 45., 62., 71.,
+                    24., 50., 118., 52., 14.,  6., 60., 71., 3.,
+                ]),
             )
 
             self.assertEqual(output.raw_text, "Hello, world!")
@@ -88,13 +91,13 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         self.assertIsNotNone(output)
 
         if output is not None:
-            self.assertEqual(output.attn_prior.shape, torch.Size([88, 861]))
+            self.assertEqual(output.attn_prior.shape, torch.Size([222, 861]))
             self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
             self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day.mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
 
-            self.assertEqual(output.phones.shape, torch.Size([88]))
-            self.assertEqual(len(output.phones_ipa), 159)
+            self.assertEqual(output.phones.shape, torch.Size([222]))
+            self.assertEqual(len(output.phones_ipa), 220)
 
             self.assertEqual(output.wav.shape, torch.Size([220500]))
 
