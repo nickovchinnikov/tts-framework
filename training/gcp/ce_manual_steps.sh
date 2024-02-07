@@ -123,3 +123,8 @@ pip install --upgrade --force-reinstall --pre torch torchvision torchaudio --ind
 pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.backends.cudnn.version())"
+
+# Add conda env to jupyter notebook kernel
+python -m ipykernel install --user --name tts_framework --display-name "TTS-Framework"
+
+python -m ipykernel install --user --name coqui-ai --display-name "Coqui.ai"
