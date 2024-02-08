@@ -3,9 +3,6 @@ from typing import Tuple
 
 import torch
 
-from models.acoustic_model import AcousticModel
-from models.acoustic_model.helpers import positional_encoding
-from models.attention.conformer import Conformer
 from models.config import (
     SUPPORTED_LANGUAGES,
     AcousticENModelConfig,
@@ -13,7 +10,9 @@ from models.config import (
     AcousticPretrainingConfig,
     PreprocessingConfig,
 )
-from models.helpers import tools
+from models.helpers import positional_encoding, tools
+from models.tts.delightful_tts.acoustic_model import AcousticModel
+from models.tts.delightful_tts.attention.conformer import Conformer
 
 
 @dataclass

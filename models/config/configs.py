@@ -41,6 +41,20 @@ class PreprocessingConfig:
 
 
 @dataclass
+class SampleSplittingRunConfig:
+    workers: int
+    device: torch.device
+    skip_on_error: bool
+    forced_alignment_batch_size: int
+
+
+@dataclass
+class CleaningRunConfig:
+    workers: int
+    device: torch.device
+    skip_on_error: bool
+
+@dataclass
 class AcousticTrainingOptimizerConfig:
     learning_rate: float
     weight_decay: float
@@ -310,18 +324,3 @@ class VocoderModelConfig:
             lReLU_slope=0.2,
         ),
     )
-
-
-@dataclass
-class SampleSplittingRunConfig:
-    workers: int
-    device: torch.device
-    skip_on_error: bool
-    forced_alignment_batch_size: int
-
-
-@dataclass
-class CleaningRunConfig:
-    workers: int
-    device: torch.device
-    skip_on_error: bool
