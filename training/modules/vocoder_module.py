@@ -6,14 +6,14 @@ from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
-from model.config import (
+from models.config import (
     PreprocessingConfig,
     VocoderFinetuningConfig,
     VocoderModelConfig,
     VocoderPretrainingConfig,
     VoicoderTrainingConfig,
 )
-from model.univnet import Discriminator, UnivNet
+from models.univnet import Discriminator, UnivNet
 from training.datasets import LibriTTSDatasetVocoder
 from training.loss import UnivnetLoss
 

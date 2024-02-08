@@ -2,7 +2,7 @@ from typing import Any, Dict, Iterable
 
 import torch
 
-from model.config import AcousticTrainingConfig
+from models.config import AcousticTrainingConfig
 
 
 class ScheduledOptimFinetuning:

@@ -3,7 +3,7 @@ from typing import List, Tuple, Union
 from dp.phonemizer import Phonemizer
 from dp.preprocessing.text import SequenceTokenizer
 
-from model.config import get_lang_map
+from models.config import get_lang_map
 
 
 class TokenizerIPA:

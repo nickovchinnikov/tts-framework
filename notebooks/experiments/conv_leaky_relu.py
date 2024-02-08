@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import Module
 
-from model.constants import LEAKY_RELU_SLOPE
+from models.constants import LEAKY_RELU_SLOPE
 
 
 # TODO: prepared for the refactoring of Aligner

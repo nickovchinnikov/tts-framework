@@ -4,7 +4,7 @@ import torch
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 
-from model.config import AcousticTrainingConfig
+from models.config import AcousticTrainingConfig
 
 
 class ScheduledOptimFinetuning(Optimizer):

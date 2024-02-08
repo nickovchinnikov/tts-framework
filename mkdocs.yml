@@ -28,63 +28,63 @@ nav:
       - Advanced:
         - Configure hyperparameters from the CLI: dev/lightning/advanced/hyperparameters_from_the_cli.md
         - Customize training loop: dev/lightning/advanced/own_your_loop.md
-  - Model:
+  - Models:
     - Convolution Blocks:
-      - References: model/conv_blocks/readme.md
-      - Activation: model/conv_blocks/activation.md
-      - Conv1d: model/conv_blocks/conv1d.md
-      - BSConv: model/conv_blocks/bsconv.md
-      - Conv1dGLU: model/conv_blocks/conv1d_glu.md
-      - ConvTransposed: model/conv_blocks/conv_transposed.md
-      - CoordConv1d: model/conv_blocks/coord_conv1d.md
-      - AddCoords: model/conv_blocks/add_coords.md
+      - References: models/conv_blocks/readme.md
+      - Activation: models/conv_blocks/activation.md
+      - Conv1d: models/conv_blocks/conv1d.md
+      - BSConv: models/conv_blocks/bsconv.md
+      - Conv1dGLU: models/conv_blocks/conv1d_glu.md
+      - ConvTransposed: models/conv_blocks/conv_transposed.md
+      - CoordConv1d: models/conv_blocks/coord_conv1d.md
+      - AddCoords: models/conv_blocks/add_coords.md
     - Attention:
-      - References: model/attention/readme.md
-      - Conformer: model/attention/conformer.md
-      - Feed Forward: model/attention/feed_forward.md
-      - Style Embed Attention: model/attention/style_embed_attention.md
-      - Multi-Head Attention: model/attention/multi_head_attention.md
-      - Relative Multi-Head Attention: model/attention/relative_multi_head_attention.md
-      - Conformer Multi-Headed Self Attention: model/attention/conformer_multi_headed_self_attention.md
-      - Conformer Convolution Module: model/attention/conformer_conv_module.md
-      - Conformer Block: model/attention/conformer_block.md
+      - References: models/attention/readme.md
+      - Conformer: models/attention/conformer.md
+      - Feed Forward: models/attention/feed_forward.md
+      - Style Embed Attention: models/attention/style_embed_attention.md
+      - Multi-Head Attention: models/attention/multi_head_attention.md
+      - Relative Multi-Head Attention: models/attention/relative_multi_head_attention.md
+      - Conformer Multi-Headed Self Attention: models/attention/conformer_multi_headed_self_attention.md
+      - Conformer Convolution Module: models/attention/conformer_conv_module.md
+      - Conformer Block: models/attention/conformer_block.md
     - Acoustic Model:
-      - Aligner: model/acoustic_model/aligner.md
-      - References: model/acoustic_model/readme.md
-      - Accoustic Model: model/acoustic_model/acoustic_model.md
-      - Embedding: model/acoustic_model/embedding.md
-      - Helpers: model/acoustic_model/helpers.md
-      - Variance Predictor: model/acoustic_model/variance_predictor.md
-      - Pitch Adaptor: model/acoustic_model/pitch_adaptor.md
-      - Pitch Adaptor2: model/acoustic_model/pitch_adaptor2.md
-      - Length Adaptor: model/acoustic_model/length_adaptor.md
-      - Phoneme Prosody Predictor: model/acoustic_model/phoneme_prosody_predictor.md
+      - Aligner: models/acoustic_model/aligner.md
+      - References: models/acoustic_model/readme.md
+      - Accoustic Model: models/acoustic_model/acoustic_model.md
+      - Embedding: models/acoustic_model/embedding.md
+      - Helpers: models/acoustic_model/helpers.md
+      - Variance Predictor: models/acoustic_model/variance_predictor.md
+      - Pitch Adaptor: models/acoustic_model/pitch_adaptor.md
+      - Pitch Adaptor2: models/acoustic_model/pitch_adaptor2.md
+      - Length Adaptor: models/acoustic_model/length_adaptor.md
+      - Phoneme Prosody Predictor: models/acoustic_model/phoneme_prosody_predictor.md
       - Aligner:
-        - Monotonic Alignments Shrink: model/acoustic_model/mas.md
+        - Monotonic Alignments Shrink: models/acoustic_model/mas.md
     - Config:
-      - References: model/config/readme.md
-      - Langs: model/config/langs.md
+      - References: models/config/readme.md
+      - Langs: models/config/langs.md
     - Reference Encoder:
-      - References: model/reference_encoder/readme.md
-      - Style Token Layer (STL): model/reference_encoder/STL.md
-      - Reference Encoder: model/reference_encoder/reference_encoder.md
-      - Utterance Level Prosody Encoder: model/reference_encoder/utterance_level_prosody_encoder.md
-      - Phoneme Level Prosody Encoder: model/reference_encoder/phoneme_level_prosody_encoder.md
+      - References: models/reference_encoder/readme.md
+      - Style Token Layer (STL): models/reference_encoder/STL.md
+      - Reference Encoder: models/reference_encoder/reference_encoder.md
+      - Utterance Level Prosody Encoder: models/reference_encoder/utterance_level_prosody_encoder.md
+      - Phoneme Level Prosody Encoder: models/reference_encoder/phoneme_level_prosody_encoder.md
     - Univnet:
-      - References: model/univnet/readme.md
-      - Univnet: model/univnet/univnet.md
-      - Traced Univnet: model/univnet/traced_univnet.md
-      - Kernel Predictor: model/univnet/kernel_predictor.md
-      - LVC Block: model/univnet/lvc_block.md
-      - Discriminator: model/univnet/discriminator.md
-      - DiscriminatorP: model/univnet/discriminator_p.md
-      - DiscriminatorR: model/univnet/discriminator_r.md
-      - Multi Period Discriminator: model/univnet/multi_period_discriminator.md
-      - Multi Resolution Discriminator: model/univnet/multi_resolution_discriminator.md
+      - References: models/univnet/readme.md
+      - Univnet: models/univnet/univnet.md
+      - Traced Univnet: models/univnet/traced_univnet.md
+      - Kernel Predictor: models/univnet/kernel_predictor.md
+      - LVC Block: models/univnet/lvc_block.md
+      - Discriminator: models/univnet/discriminator.md
+      - DiscriminatorP: models/univnet/discriminator_p.md
+      - DiscriminatorR: models/univnet/discriminator_r.md
+      - Multi Period Discriminator: models/univnet/multi_period_discriminator.md
+      - Multi Resolution Discriminator: models/univnet/multi_resolution_discriminator.md
     - Helpers:
-      - References: model/helpers/readme.md
-      - Initializer: model/helpers/initializer.md
-      - Tools: model/helpers/tools.md
+      - References: models/helpers/readme.md
+      - Initializer: models/helpers/initializer.md
+      - Tools: models/helpers/tools.md
   - Training:
     - References: training/readme.md
     - Modules:

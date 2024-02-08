@@ -3,7 +3,7 @@ import unittest
 import torch
 from torch import nn
 
-from model.config import AcousticENModelConfig, AcousticPretrainingConfig
+from models.config import AcousticENModelConfig, AcousticPretrainingConfig
 from notebooks.experiments.optimizer.scheduled_optim_pretraining import (
     ScheduledOptimPretraining,
     get_lr_lambda,

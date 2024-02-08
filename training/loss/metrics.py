@@ -12,7 +12,7 @@ from torchmetrics.audio import (
     ScaleInvariantSignalNoiseRatio,
 )
 
-from model.config import PreprocessingConfig, get_lang_map
+from models.config import PreprocessingConfig, get_lang_map
 from training.preprocess.audio_processor import AudioProcessor
 
 

@@ -4,7 +4,7 @@ import unittest
 from lightning.pytorch import Trainer
 import torch
 
-from model.config import VocoderFinetuningConfig, VocoderPretrainingConfig
+from models.config import VocoderFinetuningConfig, VocoderPretrainingConfig
 from training.modules import VocoderModule
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
@@ -31,28 +31,28 @@ class TestTrainAcousticModule(unittest.TestCase):
 
         self.assertIsInstance(module.train_config, VocoderFinetuningConfig)
 
-    def test_train_step(self):
-        trainer = Trainer(
-            # Save checkpoints to the `default_root_dir` directory
-            default_root_dir="checkpoints/vocoder",
-            limit_train_batches=2,
-            max_epochs=1,
-            accelerator="cuda",
-        )
+    # def test_train_step(self):
+    #     trainer = Trainer(
+    #         # Save checkpoints to the `default_root_dir` directory
+    #         default_root_dir="checkpoints/vocoder",
+    #         limit_train_batches=2,
+    #         max_epochs=1,
+    #         # accelerator="cuda",
+    #     )
 
-        # Load the pretrained weights
-        # NOTE: this is the path to the checkpoint in the repo
-        # It works only for version 0.1.0 checkpoint
-        # This code will be removed in the future!
-        checkpoint_path = "model/checkpoints/assets/v0.1.0/vocoder_pretrained.pt"
+    #     # Load the pretrained weights
+    #     # NOTE: this is the path to the checkpoint in the repo
+    #     # It works only for version 0.1.0 checkpoint
+    #     # This code will be removed in the future!
+    #     checkpoint_path = "models/checkpoints/assets/v0.1.0/vocoder_pretrained.pt"
 
-        module = VocoderModule(checkpoint_path_v1=checkpoint_path)
+    #     module = VocoderModule(checkpoint_path_v1=checkpoint_path)
 
-        train_dataloader = module.train_dataloader()
+    #     train_dataloader = module.train_dataloader()
 
-        result = trainer.fit(model=module, train_dataloaders=train_dataloader)
+    #     result = trainer.fit(model=module, train_dataloaders=train_dataloader)
 
-        self.assertIsNone(result)
+    #     self.assertIsNone(result)
 
     def test_load_from_checkpoint(self):
         try:

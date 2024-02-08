@@ -6,8 +6,8 @@ from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader
 
-from model.acoustic_model import AcousticModel
-from model.config import (
+from models.acoustic_model import AcousticModel
+from models.config import (
     AcousticENModelConfig,
     AcousticFinetuningConfig,
     AcousticPretrainingConfig,
@@ -16,7 +16,7 @@ from model.config import (
     get_lang_map,
     lang2id,
 )
-from model.helpers.tools import get_mask_from_lengths
+from models.helpers.tools import get_mask_from_lengths
 from training.datasets import LibriTTSDatasetAcoustic
 from training.loss import FastSpeech2LossGen, Metrics
 from training.preprocess.normalize_text import NormalizeText

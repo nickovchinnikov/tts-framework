@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 from torchaudio import datasets
 from tqdm import tqdm
 
-from model.config import lang2id
+from models.config import lang2id
 from training.preprocess import PreprocessLibriTTS
 
 
