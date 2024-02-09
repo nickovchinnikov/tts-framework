@@ -29,68 +29,71 @@ nav:
         - Configure hyperparameters from the CLI: dev/lightning/advanced/hyperparameters_from_the_cli.md
         - Customize training loop: dev/lightning/advanced/own_your_loop.md
   - Models:
-    - Convolution Blocks:
-      - References: models/conv_blocks/readme.md
-      - Activation: models/conv_blocks/activation.md
-      - Conv1d: models/conv_blocks/conv1d.md
-      - BSConv: models/conv_blocks/bsconv.md
-      - Conv1dGLU: models/conv_blocks/conv1d_glu.md
-      - ConvTransposed: models/conv_blocks/conv_transposed.md
-      - CoordConv1d: models/conv_blocks/coord_conv1d.md
-      - AddCoords: models/conv_blocks/add_coords.md
-    - Attention:
-      - References: models/attention/readme.md
-      - Conformer: models/attention/conformer.md
-      - Feed Forward: models/attention/feed_forward.md
-      - Style Embed Attention: models/attention/style_embed_attention.md
-      - Multi-Head Attention: models/attention/multi_head_attention.md
-      - Relative Multi-Head Attention: models/attention/relative_multi_head_attention.md
-      - Conformer Multi-Headed Self Attention: models/attention/conformer_multi_headed_self_attention.md
-      - Conformer Convolution Module: models/attention/conformer_conv_module.md
-      - Conformer Block: models/attention/conformer_block.md
-    - Acoustic Model:
-      - Aligner: models/acoustic_model/aligner.md
-      - References: models/acoustic_model/readme.md
-      - Accoustic Model: models/acoustic_model/acoustic_model.md
-      - Embedding: models/acoustic_model/embedding.md
-      - Helpers: models/acoustic_model/helpers.md
-      - Variance Predictor: models/acoustic_model/variance_predictor.md
-      - Pitch Adaptor: models/acoustic_model/pitch_adaptor.md
-      - Pitch Adaptor2: models/acoustic_model/pitch_adaptor2.md
-      - Length Adaptor: models/acoustic_model/length_adaptor.md
-      - Phoneme Prosody Predictor: models/acoustic_model/phoneme_prosody_predictor.md
-      - Aligner:
-        - Monotonic Alignments Shrink: models/acoustic_model/mas.md
     - Config:
       - References: models/config/readme.md
       - Langs: models/config/langs.md
-    - Reference Encoder:
-      - References: models/reference_encoder/readme.md
-      - Style Token Layer (STL): models/reference_encoder/STL.md
-      - Reference Encoder: models/reference_encoder/reference_encoder.md
-      - Utterance Level Prosody Encoder: models/reference_encoder/utterance_level_prosody_encoder.md
-      - Phoneme Level Prosody Encoder: models/reference_encoder/phoneme_level_prosody_encoder.md
-    - Univnet:
-      - References: models/univnet/readme.md
-      - Univnet: models/univnet/univnet.md
-      - Traced Univnet: models/univnet/traced_univnet.md
-      - Kernel Predictor: models/univnet/kernel_predictor.md
-      - LVC Block: models/univnet/lvc_block.md
-      - Discriminator: models/univnet/discriminator.md
-      - DiscriminatorP: models/univnet/discriminator_p.md
-      - DiscriminatorR: models/univnet/discriminator_r.md
-      - Multi Period Discriminator: models/univnet/multi_period_discriminator.md
-      - Multi Resolution Discriminator: models/univnet/multi_resolution_discriminator.md
+    - TTS:
+      - Delightful TTS:
+        - References: models/tts/delightful_tts/readme.md
+        - DelightfulTTS: models/tts/delightful_tts/delightful_tts.md
+        - Convolution Blocks:
+          - References: models/tts/delightful_tts/conv_blocks/readme.md
+          - Activation: models/tts/delightful_tts/conv_blocks/activation.md
+          - Conv1d: models/tts/delightful_tts/conv_blocks/conv1d.md
+          - BSConv: models/tts/delightful_tts/conv_blocks/bsconv.md
+          - Conv1dGLU: models/tts/delightful_tts/conv_blocks/conv1d_glu.md
+          - ConvTransposed: models/tts/delightful_tts/conv_blocks/conv_transposed.md
+          - CoordConv1d: models/tts/delightful_tts/conv_blocks/coord_conv1d.md
+          - AddCoords: models/tts/delightful_tts/conv_blocks/add_coords.md
+        - Attention:
+          - References: models/tts/delightful_tts/attention/readme.md
+          - Conformer: models/tts/delightful_tts/attention/conformer.md
+          - Feed Forward: models/tts/delightful_tts/attention/feed_forward.md
+          - Style Embed Attention: models/tts/delightful_tts/attention/style_embed_attention.md
+          - Multi-Head Attention: models/tts/delightful_tts/attention/multi_head_attention.md
+          - Relative Multi-Head Attention: models/tts/delightful_tts/attention/relative_multi_head_attention.md
+          - Conformer Multi-Headed Self Attention: models/tts/delightful_tts/attention/conformer_multi_headed_self_attention.md
+          - Conformer Convolution Module: models/tts/delightful_tts/attention/conformer_conv_module.md
+          - Conformer Block: models/tts/delightful_tts/attention/conformer_block.md
+        - Acoustic Model:
+          - Aligner: models/tts/delightful_tts/acoustic_model/aligner.md
+          - References: models/tts/delightful_tts/acoustic_model/readme.md
+          - Accoustic Model: models/tts/delightful_tts/acoustic_model/acoustic_model.md
+          - Embedding: models/tts/delightful_tts/acoustic_model/embedding.md
+          - Helpers: models/tts/delightful_tts/acoustic_model/helpers.md
+          - Variance Predictor: models/tts/delightful_tts/acoustic_model/variance_predictor.md
+          - Pitch Adaptor: models/tts/delightful_tts/acoustic_model/pitch_adaptor.md
+          - Pitch Adaptor2: models/tts/delightful_tts/acoustic_model/pitch_adaptor2.md
+          - Length Adaptor: models/tts/delightful_tts/acoustic_model/length_adaptor.md
+          - Phoneme Prosody Predictor: models/tts/delightful_tts/acoustic_model/phoneme_prosody_predictor.md
+          - Aligner:
+            - Monotonic Alignments Shrink: models/tts/delightful_tts/acoustic_model/mas.md
+        - Reference Encoder:
+          - References: models/tts/delightful_tts/reference_encoder/readme.md
+          - Style Token Layer (STL): models/tts/delightful_tts/reference_encoder/STL.md
+          - Reference Encoder: models/tts/delightful_tts/reference_encoder/reference_encoder.md
+          - Utterance Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/utterance_level_prosody_encoder.md
+          - Phoneme Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/phoneme_level_prosody_encoder.md
+    - Vocoder:
+      - Univnet:
+        - References: models/vocoder/univnet/readme.md
+        - Univnet: models/vocoder/univnet/univnet.md
+        - Generator: models/vocoder/univnet/generator.md
+        - Traced Generator: models/vocoder/univnet/traced_generator.md
+        - Kernel Predictor: models/vocoder/univnet/kernel_predictor.md
+        - LVC Block: models/vocoder/univnet/lvc_block.md
+        - Discriminator: models/vocoder/univnet/discriminator.md
+        - DiscriminatorP: models/vocoder/univnet/discriminator_p.md
+        - DiscriminatorR: models/vocoder/univnet/discriminator_r.md
+        - Multi Period Discriminator: models/vocoder/univnet/multi_period_discriminator.md
+        - Multi Resolution Discriminator: models/vocoder/univnet/multi_resolution_discriminator.md
     - Helpers:
       - References: models/helpers/readme.md
       - Initializer: models/helpers/initializer.md
+      - Acoustic: models/helpers/acoustic.md
       - Tools: models/helpers/tools.md
   - Training:
     - References: training/readme.md
-    - Modules:
-      - References: training/modules/readme.md
-      - Acoustic Module: training/modules/acoustic_module.md
-      - Vocoder Module: training/modules/vocoder_module.md
     - Loss:
       - References: training/loss/readme.md
       - Acoustic Losses:

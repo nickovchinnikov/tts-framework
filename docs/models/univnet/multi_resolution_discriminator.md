@@ -1,1 +1,0 @@
-::: models.univnet.multi_resolution_discriminator

@@ -1,1 +1,0 @@
-::: models.reference_encoder.STL

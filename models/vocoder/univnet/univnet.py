@@ -179,13 +179,16 @@ class UnivNet(LightningModule):
             tuple: A tuple containing two dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
 
         Examples
-            >>> vocoder_module = VocoderModule()
-            >>> optimizers = vocoder_module.configure_optimizers()
-            >>> print(optimizers)
+            ```python
+            vocoder_module = VocoderModule()
+            optimizers = vocoder_module.configure_optimizers()
+
+            print(optimizers)
             (
                 {"optimizer": <torch.optim.adamw.AdamW object at 0x7f8c0c0b3d90>, "lr_scheduler": <torch.optim.lr_scheduler.ExponentialLR object at 0x7f8c0c0b3e50>},
                 {"optimizer": <torch.optim.adamw.AdamW object at 0x7f8c0c0b3f10>, "lr_scheduler": <torch.optim.lr_scheduler.ExponentialLR object at 0x7f8c0c0b3fd0>}
             )
+            ```
         """
         optim_univnet = AdamW(
             self.univnet.parameters(),

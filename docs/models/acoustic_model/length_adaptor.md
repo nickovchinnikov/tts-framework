@@ -1,1 +1,0 @@
-::: models.acoustic_model.length_adaptor
