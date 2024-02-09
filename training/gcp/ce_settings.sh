@@ -66,7 +66,7 @@ conda env create -f ./tts-framework/environment.yml
 # conda activate tts_framework
 
 
-cp ./tts-framework/training/scripts/train_dist.py ./tts-framework
+cp ./tts-framework/models/tts/delightful_tts/train/train.py ./tts-framework
 
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
 

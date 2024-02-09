@@ -5,7 +5,8 @@ from lightning.pytorch.callbacks import StochasticWeightAveraging
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.tuner.tuning import Tuner
 
-from training.modules import AcousticModule, VocoderModule
+from models.tts.delightful_tts import DelightfulTTS
+from models.vocoder.univnet import UnivNet
 
 
 def train():
@@ -66,10 +67,10 @@ def train():
     tuner = Tuner(trainer)
 
     # Load the pretrained weights for the vocoder
-    vocoder_module = VocoderModule.load_from_checkpoint(
+    vocoder_module = UnivNet.load_from_checkpoint(
         args.ckpt_vocoder,
     )
-    module = AcousticModule.load_from_checkpoint(
+    module = DelightfulTTS.load_from_checkpoint(
         args.ckpt_acoustic,
         vocoder_module=vocoder_module,
     )

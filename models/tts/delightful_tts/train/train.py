@@ -8,7 +8,7 @@ from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
 import torch
 
-from training.modules import AcousticModule
+from models.tts.delightful_tts import DelightfulTTS
 
 # Get the current date and time
 now = datetime.now()
@@ -68,12 +68,12 @@ try:
         # precision="16-mixed",
     )
 
-    module = AcousticModule()
+    model = DelightfulTTS()
 
-    train_dataloader = module.train_dataloader()
+    train_dataloader = model.train_dataloader()
 
     trainer.fit(
-        model=module,
+        model=model,
         train_dataloaders=train_dataloader,
         # Resume training states from the checkpoint file
         ckpt_path=ckpt_acoustic,
