@@ -9,7 +9,7 @@ from scipy.stats import betabinom
 import torch
 import torch.nn.functional as F
 
-from model.config import PreprocessingConfig, VocoderBasicConfig, get_lang_map
+from models.config import PreprocessingConfig, VocoderBasicConfig, get_lang_map
 
 from .audio import normalize_loudness, preprocess_audio
 from .compute_yin import compute_yin, norm_interp_f0

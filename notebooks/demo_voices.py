@@ -13,7 +13,7 @@ from IPython.display import Audio, display
 import pandas as pd
 import torch
 
-# from model.univnet import Discriminator, UnivNet
+# from models.univnet import Discriminator, UnivNet
 from training.modules import AcousticModule, VocoderModule
 
 # %%

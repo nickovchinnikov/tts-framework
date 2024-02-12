@@ -1,1 +1,0 @@
-::: model.univnet.discriminator_p

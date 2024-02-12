@@ -1,1 +1,0 @@
-::: model.conv_blocks.coord_conv1d

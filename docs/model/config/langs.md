@@ -1,1 +1,0 @@
-::: model.config.langs

@@ -13,7 +13,7 @@ logger.setLevel(ERROR)
 
 from dp.preprocessing.text import SequenceTokenizer
 
-from model.config import get_lang_map
+from models.config import get_lang_map
 
 # INFO: Fix for windows, used for local env
 if os.name == "nt":

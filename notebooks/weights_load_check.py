@@ -13,15 +13,15 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 # %%
 import torch
 
-from model.acoustic_model import AcousticModel
-from model.config import (
+from models.acoustic_model import AcousticModel
+from models.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
     PreprocessingConfig,
     VocoderModelConfig,
 )
-from model.helpers import get_device
-from model.univnet import UnivNet
+from models.helpers import get_device
+from models.univnet import UnivNet
 from training.optimizer import ScheduledOptimFinetuning, ScheduledOptimPretraining
 
 torch.cuda.is_available()

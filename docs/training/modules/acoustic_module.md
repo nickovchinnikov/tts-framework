@@ -1,1 +1,0 @@
-::: training.modules.acoustic_module

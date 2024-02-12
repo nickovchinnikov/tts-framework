@@ -42,6 +42,15 @@ gsutil cp gs://tts-training-bucket/vocoder.ckpt ./tts-framework/checkpoints/
 gsutil cp gs://tts-training-bucket/en_us_cmudict_ipa_forward.pt ./tts-framework/checkpoints/
 
 
+# Download the dataset train-other-500
+curl -O https://us.openslr.org/resources/141/train_other_500.tar.gz
+mv train_other_500.tar.gz ./tts-framework/datasets_cache/LIBRITTS/
+
+tar -xzvf ./tts-framework/datasets_cache/LIBRITTS/train_other_500.tar.gz -C ./tts-framework/datasets_cache/LIBRITTS/
+mv ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R/train-other-500 ./tts-framework/datasets_cache/LIBRITTS/LibriTTS
+rm -r ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R
+
+
 # Download the dataset train_clean_360
 curl -O http://us.openslr.org/resources/141/train_clean_360.tar.gz
 mv train_clean_360.tar.gz ./tts-framework/datasets_cache/LIBRITTS/
@@ -66,7 +75,7 @@ conda env create -f ./tts-framework/environment.yml
 # conda activate tts_framework
 
 
-cp ./tts-framework/training/scripts/train_dist.py ./tts-framework
+cp ./tts-framework/models/tts/delightful_tts/train/train.py ./tts-framework
 
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
 

@@ -1,7 +1,7 @@
 import torch
 from torch.nn import Module
 
-from model.config import VocoderBasicConfig, VocoderModelConfig
+from models.config import VocoderBasicConfig, VocoderModelConfig
 
 from .multi_resolution_stft_loss import MultiResolutionSTFTLoss
 

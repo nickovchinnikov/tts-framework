@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable
 import numpy as np
 import torch
 
-from model.config import (
+from models.config import (
     AcousticModelConfigType,
     AcousticTrainingConfig,
 )

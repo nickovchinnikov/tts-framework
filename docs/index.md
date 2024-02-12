@@ -15,30 +15,18 @@ You can read about this mkdocs-material here: [mkdocs-material](readme.md)
 
 Description of the training process. Docs, ideas and examples for the training process. 
 
-## Model
+## Models
 
-### [Acoustic Model](model/acoustic_model/readme.md)
 
-The [DelightfulTTS: The Microsoft Speech Synthesis System for Blizzard Challenge 2021](https://arxiv.org/abs/2110.12612) AcousticModel class represents a PyTorch module for an acoustic model in text-to-speech (TTS).
-The acoustic model is responsible for predicting speech signals from phoneme sequences.
+### TTS Models
 
-The model comprises multiple sub-modules including encoder, decoder and various prosody encoders and predictors.
-Additionally, a pitch and length adaptor are instantiated.
+#### [DelightfulTTS](models/tts/delightful_tts/readme.md)
 
-### [Reference Encoder](model/reference_encoder/readme.md)
+The [DelightfulTTS: The Microsoft Speech Synthesis System for Blizzard Challenge 2021](https://arxiv.org/abs/2110.12612)
 
-Similar to Tacotron model, the reference encoder is used to extract the high-level features from the reference
+### Vocoder
 
-### [Convolution Blocks](model/conv_blocks/readme.md)
-
-This part of the code responsible for the convolution blocks used in the model. Based on the FastSpeech models from [FastSpeech: Fast, Robust and Controllable Text to Speech](https://arxiv.org/abs/1905.09263) by Yi Ren et al and [FastSpeech 2: Fast and High-Quality End-to-End Text to Speech](https://arxiv.org/abs/2006.04558) by Yi Ren et al.
-
-### [Attention](model/attention/readme.md)
-
-Attention mechanizm used in the model. The concept of "global style tokens" (GST) was introduced in 
-[Style Tokens: Unsupervised Style Modeling, Control and Transfer in End-to-End Speech Synthesis](https://arxiv.org/abs/1803.09017) by Yuxuan Wang et al.
-
-### [Univnet](model/univnet/readme.md)
+#### [Univnet](models/vocoder/univnet/readme.md)
 
 [UnivNet: A Neural Vocoder with Multi-Resolution Spectrogram Discriminators for High-Fidelity Waveform Generation](https://arxiv.org/abs/2106.07889v1)
 

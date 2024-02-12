@@ -1,0 +1,1 @@
+::: models.vocoder.univnet.multi_resolution_discriminator

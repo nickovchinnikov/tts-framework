@@ -89,6 +89,6 @@ conda activate tts_framework
 
 # pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-cp ./tts-framework/training/scripts/train_dist.py ./tts-framework
+cp ./tts-framework/models/tts/delightful_tts/train/train.py ./tts-framework
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib

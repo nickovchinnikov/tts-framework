@@ -3,7 +3,7 @@ import unittest
 import torch
 from torch import nn
 
-from model.config import AcousticFinetuningConfig
+from models.config import AcousticFinetuningConfig
 from notebooks.experiments.optimizer.scheduled_optim_finetuning import (
     ScheduledOptimFinetuning,
 )
