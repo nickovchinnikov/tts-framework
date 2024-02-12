@@ -65,7 +65,7 @@ class UniformDistribution(Distribution):
 
 
 class VKDistribution(Distribution):
-    r"""VK distribution."""
+    r"""VK distribution. The class is implementing a variant of a distribution that is based on the Von Mises distribution, which is a continuous probability distribution on the circle (it's often used as a circular version of the normal distribution)."""
 
     def __init__(
         self,
