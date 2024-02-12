@@ -79,6 +79,7 @@ nav:
           - Diffusion: models/tts/styledtts2/diffusion/diffusion.md
           - Distributions: models/tts/styledtts2/diffusion/distributions.md
           - Embeddings: models/tts/styledtts2/diffusion/embeddings.md
+          - Attention: models/tts/styledtts2/diffusion/attention.md
           - AdaLayerNorm: models/tts/styledtts2/diffusion/ada_layer_norm.md
           - Utils: models/tts/styledtts2/diffusion/utils.md
     - Vocoder:
