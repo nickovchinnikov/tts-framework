@@ -21,8 +21,11 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-If any trouble with the env arise, add to the service file: `
-Environment=PATH=/home/oaiw/anaconda3/envs/tts_framework/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
+If any trouble with the env arise, add to the service file:
+
+```
+Environment=PATH=/home/oaiw/anaconda3/envs/tts_framework/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+```
 
 3. Save the file and exit the editor.
 
