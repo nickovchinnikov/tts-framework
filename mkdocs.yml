@@ -78,6 +78,7 @@ nav:
         - Diffusion:
           - Diffusion: models/tts/styledtts2/diffusion/diffusion.md
           - Distributions: models/tts/styledtts2/diffusion/distributions.md
+          - AdaLayerNorm: models/tts/styledtts2/diffusion/ada_layer_norm.md
           - Utils: models/tts/styledtts2/diffusion/utils.md
     - Vocoder:
       - Univnet:
