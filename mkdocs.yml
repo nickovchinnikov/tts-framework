@@ -75,6 +75,7 @@ nav:
           - Utterance Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/utterance_level_prosody_encoder.md
           - Phoneme Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/phoneme_level_prosody_encoder.md
       - StyledTTS 2:
+        - References: models/tts/styledtts2/readme.md
         - Diffusion:
           - Diffusion: models/tts/styledtts2/diffusion/diffusion.md
           - Distributions: models/tts/styledtts2/diffusion/distributions.md
