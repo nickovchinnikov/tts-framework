@@ -155,7 +155,7 @@ class Decoder(nn.Module):
         location_attn,
         attn_K,
         separate_stopnet,
-        max_decoder_steps,
+        max_decoder_steps = 1000,
     ):
         super().__init__()
         self.frame_channels = frame_channels
