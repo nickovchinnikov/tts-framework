@@ -364,6 +364,7 @@ class DelightfulTTS(LightningModule):
         num_workers: int = 5,
         cache: bool = True,
         mem_cache: bool = True,
+        url: str = "train-clean-360",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
@@ -381,6 +382,7 @@ class DelightfulTTS(LightningModule):
             lang=self.lang,
             cache=cache,
             mem_cache=mem_cache,
+            url=url,
         )
 
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
