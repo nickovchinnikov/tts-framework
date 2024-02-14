@@ -93,6 +93,7 @@ class TestAcousticModel(unittest.TestCase):
             mel_lens=self.forward_train_params.mel_lens,
             pitches=self.forward_train_params.pitches,
             pitches_range=self.forward_train_params.pitches_range,
+            energies=self.forward_train_params.energies,
             langs=self.forward_train_params.langs,
             # TODO: add attn_priors check
             attn_priors=None,
@@ -124,6 +125,18 @@ class TestAcousticModel(unittest.TestCase):
             pitch_shape,
         )
         self.assertEqual(result["pitch_target"].shape, pitch_shape)
+
+        energy_shape = torch.Size(
+            [
+                self.model_config.speaker_embed_dim,
+                1,
+                self.acoustic_pretraining_config.batch_size,
+            ],
+        )
+
+        self.assertEqual(result["energy_pred"].shape, energy_shape)
+        self.assertEqual(result["energy_target"].shape, energy_shape)
+
         self.assertEqual(result["log_duration_prediction"].shape, pitch_shape)
 
         prosody_shape = torch.Size(

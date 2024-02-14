@@ -113,7 +113,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             "pitch": data.pitch,
             "text": data.phones,
             "attn_prior": data.attn_prior,
-            # "energy": data.energy,
+            "energy": data.energy,
             "raw_text": data.raw_text,
             "normalized_text": data.normalized_text,
             "speaker": self.id_mapping.get(str(data.speaker_id)),
@@ -149,7 +149,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         idxs = list(range(data_size))
 
         # Initialize empty lists to store extracted values
-        empty_lists: List[List] = [[] for _ in range(11)]
+        empty_lists: List[List] = [[] for _ in range(12)]
         (
             ids,
             speakers,
@@ -162,7 +162,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             src_lens,
             mel_lens,
             wavs,
-            # energy,
+            energy,
         ) = empty_lists
 
         # Extract fields from data dictionary and populate the lists
@@ -179,7 +179,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             src_lens.append(data_entry["text"].shape[0])
             mel_lens.append(data_entry["mel"].shape[1])
             wavs.append(data_entry["wav"].numpy())
-            # energy.append(data_entry["energy"].numpy())
+            energy.append(data_entry["energy"].numpy())
 
         # Convert langs, src_lens, and mel_lens to numpy arrays
         langs = np.array(langs)
@@ -203,7 +203,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         )
 
         wavs = pad_2D(wavs)
-        # energy = pad_2D(energy)
+        energy = pad_2D(energy)
 
         return [
             ids,
@@ -218,7 +218,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             torch.from_numpy(langs),
             torch.from_numpy(attn_priors),
             torch.from_numpy(wavs),
-            # torch.from_numpy(energy),
+            torch.from_numpy(energy),
         ]
 
     def normalize_pitch(

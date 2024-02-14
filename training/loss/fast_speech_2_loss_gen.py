@@ -63,7 +63,10 @@ class FastSpeech2LossGen(Module):
         step: int,
         src_lens: torch.Tensor,
         mel_lens: torch.Tensor,
+        energy_pred: torch.Tensor,
+        energy_target: torch.Tensor,
     ) -> Tuple[
+        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -95,6 +98,8 @@ class FastSpeech2LossGen(Module):
             step (int): Current training step.
             src_lens (torch.Tensor): Lengths of the source sequences.
             mel_lens (torch.Tensor): Lengths of the mel-spectrograms.
+            energy_pred (torch.Tensor): Predicted energy.
+            energy_target (torch.Tensor): Ground-truth energy.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The total loss and its components.
@@ -110,6 +115,7 @@ class FastSpeech2LossGen(Module):
             `pitch_loss`: This is the MSE loss between the predicted and target pitch. It measures how well the model predicts the pitch of the speech.
             `ctc_loss`: This is the Connectionist Temporal Classification (CTC) loss computed from the log-probability of attention and the lengths of the source sequences and mel-spectrograms. It measures how well the model aligns the input and output sequences.
             `bin_loss`: This is the binarization loss computed from the hard and soft attention. It measures how well the model learns to attend to the correct parts of the input sequence.
+            `energy_loss`: This is the MSE loss between the predicted and target energy. It measures how well the model predicts the energy of the speech.
         """
         log_duration_targets = torch.log(durations.float() + 1).to(src_masks.device)
 
@@ -192,6 +198,8 @@ class FastSpeech2LossGen(Module):
             * bin_loss_weight
         )
 
+        energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
+
         total_loss = (
             mel_loss
             + duration_loss
@@ -201,6 +209,7 @@ class FastSpeech2LossGen(Module):
             + pitch_loss
             + ctc_loss
             + bin_loss
+            + energy_loss
         )
 
         return (
@@ -213,4 +222,5 @@ class FastSpeech2LossGen(Module):
             pitch_loss,
             ctc_loss,
             bin_loss,
+            energy_loss,
         )
