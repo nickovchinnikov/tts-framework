@@ -152,6 +152,7 @@ class ForwardTrainParams:
     enc_len: torch.Tensor
     pitches: torch.Tensor
     pitches_range: Tuple[float, float]
+    energies: torch.Tensor
     langs: torch.Tensor
     attn_priors: torch.Tensor
     use_ground_truth: bool = True
@@ -181,6 +182,7 @@ def init_forward_trains_params(
     - mels: Tensor containing the mel spectrogram. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
     - mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]
     - pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
+    - energies: Tensor containing the energy values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
     - langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]
     - attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]
     - use_ground_truth: Boolean flag indicating if ground truth values should be used or not.
@@ -254,6 +256,12 @@ def init_forward_trains_params(
             # acoustic_pretraining_config.batch_size,
             model_config.speaker_embed_dim,
             # model_config.speaker_embed_dim,
+            model_config.encoder.n_hidden,
+        ),
+        # energies: Tensor containing the energy values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]
+        energies=torch.randn(
+            model_config.speaker_embed_dim,
+            1,
             model_config.encoder.n_hidden,
         ),
         # langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]

@@ -28,6 +28,10 @@ The PitchAdaptor class is a pitch adaptor network in the model.
 
 Updated version of PitchAdaptor that used the batch pitch insted of the pitch from the whole dataset
 
+## [Energy Adaptor](energy_adaptor.md)
+
+Variance Adaptor with an added 1D conv layer. Used to get energy embeddings.
+
 ### [Length Adaptor](length_adaptor.md)
 
 The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.

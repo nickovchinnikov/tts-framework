@@ -50,37 +50,37 @@ class TestDelightfulTTS(unittest.TestCase):
         self.assertIsInstance(optimizer, torch.optim.Adam)
         self.assertIsInstance(lr_scheduler, torch.optim.lr_scheduler.LambdaLR)
 
-    # def test_train_steps(self):
-    #     default_root_dir = "checkpoints/acoustic"
-    #     tensorboard = TensorBoardLogger(save_dir=default_root_dir)
+    def test_train_steps(self):
+        default_root_dir = "checkpoints/acoustic"
+        tensorboard = TensorBoardLogger(save_dir=default_root_dir)
 
-    #     trainer = Trainer(
-    #         logger=tensorboard,
-    #         # Save checkpoints to the `default_root_dir` directory
-    #         default_root_dir=default_root_dir,
-    #         limit_train_batches=2,
-    #         max_epochs=1,
-    #         accelerator="cuda",
-    #     )
+        trainer = Trainer(
+            logger=tensorboard,
+            # Save checkpoints to the `default_root_dir` directory
+            default_root_dir=default_root_dir,
+            limit_train_batches=1,
+            max_epochs=1,
+            accelerator="cuda",
+        )
 
-    #     module = DelightfulTTS()
+        module = DelightfulTTS()
 
-    #     train_dataloader = module.train_dataloader()
+        train_dataloader = module.train_dataloader(1, 2, False, False)
 
-    #     # automatically restores model, epoch, step, LR schedulers, etc...
-    #     # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
+        # automatically restores model, epoch, step, LR schedulers, etc...
+        # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
 
-    #     result = trainer.fit(model=module, train_dataloaders=train_dataloader)
-    #     # module.pitches_stat tensor([ 51.6393, 408.3333])
-    #     self.assertIsNone(result)
+        result = trainer.fit(model=module, train_dataloaders=train_dataloader)
+        # module.pitches_stat tensor([ 51.6393, 408.3333])
+        self.assertIsNone(result)
 
-    # def test_load_from_new_checkpoint(self):
-    #     try:
-    #         DelightfulTTS.load_from_checkpoint(
-    #             "./checkpoints/am_pitche_stats.ckpt",
-    #         )
-    #     except Exception as e:
-    #         self.fail(f"Loading from checkpoint raised an exception: {e}")
+    def test_load_from_new_checkpoint(self):
+        try:
+            DelightfulTTS.load_from_checkpoint(
+                "./checkpoints/am_pitche_stats.ckpt",
+            )
+        except Exception as e:
+            self.fail(f"Loading from checkpoint raised an exception: {e}")
 
     def test_generate_audio(self):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

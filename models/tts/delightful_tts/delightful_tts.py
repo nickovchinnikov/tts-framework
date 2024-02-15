@@ -175,7 +175,7 @@ class DelightfulTTS(LightningModule):
             langs,
             attn_priors,
             _,
-            # energies,
+            energies,
         ) = batch
 
         # Update pitches_stat
@@ -195,7 +195,7 @@ class DelightfulTTS(LightningModule):
             pitches_range=pitches_stat,
             langs=langs,
             attn_priors=attn_priors,
-            # energies=energies,
+            energies=energies,
         )
 
         y_pred = outputs["y_pred"]
@@ -203,8 +203,8 @@ class DelightfulTTS(LightningModule):
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
         pitch_prediction = outputs["pitch_prediction"]
-        # energy_pred = outputs["energy_pred"]
-        # energy_target = outputs["energy_target"]
+        energy_pred = outputs["energy_pred"]
+        energy_target = outputs["energy_target"]
 
         (
             total_loss,
@@ -216,6 +216,7 @@ class DelightfulTTS(LightningModule):
             pitch_loss,
             ctc_loss,
             bin_loss,
+            energy_loss,
         ) = self.loss(
             src_masks=src_mask,
             mel_masks=mel_mask,
@@ -234,8 +235,8 @@ class DelightfulTTS(LightningModule):
             attn_hard=outputs["attn_hard"],
             src_lens=src_lens,
             mel_lens=mel_lens,
-            # energy_pred=energy_pred,
-            # energy_target=energy_target,
+            energy_pred=energy_pred,
+            energy_target=energy_target,
             step=batch_idx + self.initial_step.item(),
         )
 
@@ -249,6 +250,7 @@ class DelightfulTTS(LightningModule):
             "pitch_loss": pitch_loss.detach(),
             "ctc_loss": ctc_loss.detach(),
             "bin_loss": bin_loss.detach(),
+            "energy_loss": energy_loss.detach(),
         }
 
         # Add the logs to the tensorboard
@@ -265,6 +267,7 @@ class DelightfulTTS(LightningModule):
             tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
             tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
+            tensorboard.add_scalar("energy_loss", energy_loss, self.current_epoch)
 
         # TODO: check the initial_step, not sure that this's correct
         self.initial_step += torch.tensor(1)
@@ -355,17 +358,32 @@ class DelightfulTTS(LightningModule):
         return init_lr, lr_lambda
 
 
-    def train_dataloader(self):
+    def train_dataloader(
+        self,
+        batch_size: int = 6,
+        num_workers: int = 5,
+        cache: bool = True,
+        mem_cache: bool = True,
+        url: str = "train-clean-360",
+    ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
-        Returns
+        Args:
+            batch_size (int): The batch size.
+            num_workers (int): The number of workers.
+            cache (bool): Whether to cache the preprocessed data.
+            mem_cache (bool): Whether to use memory cache.
+            url (str): The URL of the dataset.
+
+        Returns:
             DataLoader: The training dataloader.
         """
         dataset = LibriTTSDatasetAcoustic(
             root=self.root,
             lang=self.lang,
-            cache=True,
-            mem_cache=True,
+            cache=cache,
+            mem_cache=mem_cache,
+            url=url,
         )
 
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
@@ -375,9 +393,9 @@ class DelightfulTTS(LightningModule):
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
             # batch_size=7,
-            batch_size=7,
+            batch_size=batch_size,
             # TODO: find the optimal num_workers
-            num_workers=5,
+            num_workers=num_workers,
             persistent_workers=True,
             pin_memory=True,
             shuffle=False,

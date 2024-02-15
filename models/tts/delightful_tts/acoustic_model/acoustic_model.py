@@ -18,20 +18,21 @@ from models.helpers import (
     tools,
 )
 from models.tts.delightful_tts.attention import Conformer
+from models.tts.delightful_tts.constants import LEAKY_RELU_SLOPE
 from models.tts.delightful_tts.reference_encoder import (
     PhonemeLevelProsodyEncoder,
     UtteranceLevelProsodyEncoder,
 )
 
 from .aligner import Aligner
+
+# TODO: maybe I can use the energy adaptor for the next versions?
+from .energy_adaptor import EnergyAdaptor
 from .length_adaptor import LengthAdaptor
 from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 
 # from .pitch_adaptor import PitchAdaptor
 from .pitch_adaptor2 import PitchAdaptor
-
-# TODO: maybe I can use the energy adaptor for the next versions?
-# from .energy_adaptor import EnergyAdaptor
 
 
 class AcousticModel(Module):
@@ -45,6 +46,7 @@ class AcousticModel(Module):
         preprocess_config (PreprocessingConfig): Object containing the configuration used for preprocessing the data
         model_config (AcousticModelConfigType): Configuration object containing various model parameters
         n_speakers (int): Total number of speakers in the dataset
+        leaky_relu_slope (float, optional): Slope for the leaky relu. Defaults to LEAKY_RELU_SLOPE.
 
     Note:
         For more specific details on the implementation of sub-modules please refer to their individual respective modules.
@@ -55,6 +57,7 @@ class AcousticModel(Module):
         preprocess_config: PreprocessingConfig,
         model_config: AcousticModelConfigType,
         n_speakers: int,
+        leaky_relu_slope: float = LEAKY_RELU_SLOPE,
     ):
         super().__init__()
         self.emb_dim = model_config.encoder.n_hidden
@@ -73,15 +76,15 @@ class AcousticModel(Module):
             model_config,
         )
 
-        # self.energy_adaptor = EnergyAdaptor(
-        #     channels_in=model_config.encoder.n_hidden,
-        #     channels_hidden=model_config.variance_adaptor.n_hidden,
-        #     channels_out=1,
-        #     kernel_size=model_config.variance_adaptor.kernel_size,
-        #     emb_kernel_size=model_config.variance_adaptor.emb_kernel_size,
-        #     dropout=model_config.variance_adaptor.p_dropout,
-        #     leaky_relu_slope=leaky_relu_slope,
-        # )
+        self.energy_adaptor = EnergyAdaptor(
+            channels_in=model_config.encoder.n_hidden,
+            channels_hidden=model_config.variance_adaptor.n_hidden,
+            channels_out=1,
+            kernel_size=model_config.variance_adaptor.kernel_size,
+            emb_kernel_size=model_config.variance_adaptor.emb_kernel_size,
+            dropout=model_config.variance_adaptor.p_dropout,
+            leaky_relu_slope=leaky_relu_slope,
+        )
 
         self.length_regulator = LengthAdaptor(model_config)
 
@@ -301,7 +304,7 @@ class AcousticModel(Module):
         pitches_range: Tuple[float, float],
         langs: torch.Tensor,
         attn_priors: Union[torch.Tensor, None],
-        # energies: torch.Tensor,
+        energies: torch.Tensor,
         use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
         r"""Forward pass during training phase.
@@ -392,18 +395,16 @@ class AcousticModel(Module):
             use_ground_truth=use_ground_truth,
         )
 
-        # energies = energies.to(src_mask.device)
+        energies = energies.to(src_mask.device)
         attn_hard_dur = attn_hard_dur.to(src_mask.device)
 
-        # energy_pred, avg_energy_target, _ = self.energy_adaptor.get_energy_embedding_train(
-        #     x=x,
-        #     target=energies,
-        #     dr=attn_hard_dur,
-        #     mask=src_mask,
-        # )
-
         # NOTE: add the energy embedding to the encoder output
-        # x = x + energy_pred
+        x, energy_pred, avg_energy_target = self.energy_adaptor.add_energy_embedding_train(
+            x=x,
+            target=energies,
+            dr=attn_hard_dur,
+            mask=src_mask,
+        )
 
         """assert torch.equal(attn_hard_dur.sum(1).long(), mel_lens), (
             attn_hard_dur.sum(1),
@@ -425,8 +426,8 @@ class AcousticModel(Module):
             "y_pred": x,
             "pitch_prediction": pitch_prediction,
             "pitch_target": pitches,
-            # "energy_pred": energy_pred,
-            # "energy_target": avg_energy_target,
+            "energy_pred": energy_pred,
+            "energy_target": avg_energy_target,
             "log_duration_prediction": log_duration_prediction,
             "u_prosody_pred": u_prosody_pred,
             "u_prosody_ref": u_prosody_ref,
@@ -499,7 +500,12 @@ class AcousticModel(Module):
         x = self.pitch_adaptor.add_pitch(
             x=x, pitch_range=pitches_range, src_mask=src_mask, control=p_control,
         )
-        x, duration_rounded, embeddings = self.length_regulator.upsample(
+        x, _ = self.energy_adaptor.add_energy_embedding(
+            x=x,
+            mask=src_mask,
+        )
+
+        x, _, embeddings = self.length_regulator.upsample(
             x=x,
             x_res=x_res,
             src_mask=src_mask,
@@ -509,9 +515,11 @@ class AcousticModel(Module):
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
         ).to(x.device)
+
         if x.shape[1] > encoding.shape[1]:
             encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
+
         return x.permute((0, 2, 1))

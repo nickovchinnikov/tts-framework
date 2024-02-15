@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Tuple
 
 import torch
 from torch import nn
@@ -126,14 +126,46 @@ class EnergyAdaptor(nn.Module):
             mask: :math: `[B, T_src]`
         """
         energy_pred = self.energy_predictor.forward(x, mask)
-        energy_pred.unsqueeze(1)
+        energy_pred = energy_pred.unsqueeze(1)
 
         avg_energy_target = average_over_durations(target, dr)
         energy_emb = self.energy_emb(avg_energy_target)
 
         return energy_pred, avg_energy_target, energy_emb
 
-    def get_energy_embedding(self, x: torch.Tensor, mask: torch.Tensor, energy_transform: Callable) -> Tuple[torch.Tensor, torch.Tensor]:
+    def add_energy_embedding_train(
+        self,
+        x: torch.Tensor,
+        target: torch.Tensor,
+        dr: torch.IntTensor,
+        mask: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        r"""Add energy embedding during training.
+
+        This method calculates the energy embedding and adds it to the input tensor 'x'.
+        It also returns the predicted energy and the average target energy.
+
+        Args:
+            x (torch.Tensor): The input tensor to which the energy embedding will be added.
+            target (torch.Tensor): The target tensor used in the energy embedding calculation.
+            dr (torch.IntTensor): The duration tensor used in the energy embedding calculation.
+            mask (torch.Tensor): The mask tensor used in the energy embedding calculation.
+
+        Returns:
+            x (torch.Tensor): The input tensor with added energy embedding.
+            energy_pred (torch.Tensor): The predicted energy tensor.
+            avg_energy_target (torch.Tensor): The average target energy tensor.
+        """
+        energy_pred, avg_energy_target, energy_emb = self.get_energy_embedding_train(
+            x=x,
+            target=target,
+            dr=dr,
+            mask=mask,
+        )
+        x = x + energy_emb.transpose(1, 2)
+        return x, energy_pred, avg_energy_target
+
+    def get_energy_embedding(self, x: torch.Tensor, mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Function is used during inference to get the energy embedding and energy prediction.
 
         Args:
@@ -141,7 +173,6 @@ class EnergyAdaptor(nn.Module):
                             T_src is the source sequence length, and C is the number of channels.
             mask (torch.Tensor): A 2D tensor of shape [B, T_src] where B is the batch size,
                                 T_src is the source sequence length. The values represent the mask.
-            energy_transform (Callable): A function to transform the energy prediction.
 
         Returns:
             energy_emb_pred (torch.Tensor): A 3D tensor of shape [B, C, T_src] where B is the batch size,
@@ -150,10 +181,30 @@ class EnergyAdaptor(nn.Module):
                                         T_src is the source sequence length. The values represent the energy prediction.
         """
         energy_pred = self.energy_predictor.forward(x, mask)
-        energy_pred.unsqueeze(1)
-
-        if energy_transform is not None:
-            energy_pred = energy_transform(energy_pred, (~mask).sum(dim=(1, 2)), self.pitch_mean, self.pitch_std)
+        energy_pred = energy_pred.unsqueeze(1)
 
         energy_emb_pred = self.energy_emb(energy_pred)
         return energy_emb_pred, energy_pred
+
+    def add_energy_embedding(
+        self,
+        x: torch.Tensor,
+        mask: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        r"""Add energy embedding during inference.
+
+        This method calculates the energy embedding and adds it to the input tensor 'x'.
+        It also returns the predicted energy.
+
+        Args:
+            x (torch.Tensor): The input tensor to which the energy embedding will be added.
+            mask (torch.Tensor): The mask tensor used in the energy embedding calculation.
+            energy_transform (Callable): A function to transform the energy prediction.
+
+        Returns:
+            x (torch.Tensor): The input tensor with added energy embedding.
+            energy_pred (torch.Tensor): The predicted energy tensor.
+        """
+        energy_emb_pred, energy_pred = self.get_energy_embedding(x, mask)
+        x = x + energy_emb_pred.transpose(1, 2)
+        return x, energy_pred

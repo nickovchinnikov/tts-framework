@@ -64,6 +64,7 @@ nav:
           - Variance Predictor: models/tts/delightful_tts/acoustic_model/variance_predictor.md
           - Pitch Adaptor: models/tts/delightful_tts/acoustic_model/pitch_adaptor.md
           - Pitch Adaptor2: models/tts/delightful_tts/acoustic_model/pitch_adaptor2.md
+          - Energy Adaptor: models/tts/delightful_tts/acoustic_model/energy_adaptor.md
           - Length Adaptor: models/tts/delightful_tts/acoustic_model/length_adaptor.md
           - Phoneme Prosody Predictor: models/tts/delightful_tts/acoustic_model/phoneme_prosody_predictor.md
           - Aligner:

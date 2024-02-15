@@ -27,11 +27,12 @@ def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:
 
 
 class FastSpeech2LossGen(Module):
-    def __init__(self, fine_tuning: bool):
+    def __init__(self, fine_tuning: bool, bin_warmup: bool = True):
         r"""Initializes the FastSpeech2LossGen module.
 
         Args:
             fine_tuning (bool): Whether the module is used for fine-tuning.
+            bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to True. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
         """
         super().__init__()
 
@@ -40,6 +41,7 @@ class FastSpeech2LossGen(Module):
         self.ssim_loss = SSIMLoss()
         self.sum_loss = ForwardSumLoss()
         self.bin_loss = BinLoss()
+        self.bin_warmup = bin_warmup
 
         self.fine_tuning = fine_tuning
 
@@ -63,7 +65,10 @@ class FastSpeech2LossGen(Module):
         step: int,
         src_lens: torch.Tensor,
         mel_lens: torch.Tensor,
+        energy_pred: torch.Tensor,
+        energy_target: torch.Tensor,
     ) -> Tuple[
+        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -95,6 +100,8 @@ class FastSpeech2LossGen(Module):
             step (int): Current training step.
             src_lens (torch.Tensor): Lengths of the source sequences.
             mel_lens (torch.Tensor): Lengths of the mel-spectrograms.
+            energy_pred (torch.Tensor): Predicted energy.
+            energy_target (torch.Tensor): Ground-truth energy.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: The total loss and its components.
@@ -110,6 +117,7 @@ class FastSpeech2LossGen(Module):
             `pitch_loss`: This is the MSE loss between the predicted and target pitch. It measures how well the model predicts the pitch of the speech.
             `ctc_loss`: This is the Connectionist Temporal Classification (CTC) loss computed from the log-probability of attention and the lengths of the source sequences and mel-spectrograms. It measures how well the model aligns the input and output sequences.
             `bin_loss`: This is the binarization loss computed from the hard and soft attention. It measures how well the model learns to attend to the correct parts of the input sequence.
+            `energy_loss`: This is the MSE loss between the predicted and target energy. It measures how well the model predicts the energy of the speech.
         """
         log_duration_targets = torch.log(durations.float() + 1).to(src_masks.device)
 
@@ -172,25 +180,30 @@ class FastSpeech2LossGen(Module):
             attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens,
         )
 
-        binarization_loss_enable_steps = 18000
-        binarization_loss_warmup_steps = 10000
+        if self.bin_warmup:
+            binarization_loss_enable_steps = 18000
+            binarization_loss_warmup_steps = 10000
 
-        if step < binarization_loss_enable_steps:
-            bin_loss_weight = 0.0
-        else:
-            bin_loss_weight = (
-                min(
-                    (step - binarization_loss_enable_steps)
-                    / binarization_loss_warmup_steps,
-                    1.0,
+            if step < binarization_loss_enable_steps:
+                bin_loss_weight = 0.0
+            else:
+                bin_loss_weight = (
+                    min(
+                        (step - binarization_loss_enable_steps)
+                        / binarization_loss_warmup_steps,
+                        1.0,
+                    )
+                    * 1.0
                 )
-                * 1.0
-            )
 
-        bin_loss: torch.Tensor = (
-            self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
-            * bin_loss_weight
-        )
+            bin_loss: torch.Tensor = (
+                self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
+                * bin_loss_weight
+            )
+        else:
+            bin_loss: torch.Tensor = self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
+
+        energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
 
         total_loss = (
             mel_loss
@@ -201,6 +214,7 @@ class FastSpeech2LossGen(Module):
             + pitch_loss
             + ctc_loss
             + bin_loss
+            + energy_loss
         )
 
         return (
@@ -213,4 +227,5 @@ class FastSpeech2LossGen(Module):
             pitch_loss,
             ctc_loss,
             bin_loss,
+            energy_loss,
         )

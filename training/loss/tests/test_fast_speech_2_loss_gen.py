@@ -29,11 +29,11 @@ class TestFastSpeech2LossGen(unittest.TestCase):
         attn_logprob = torch.randn((1, 1, 11, 11))
         attn_soft = torch.randn((1, 11, 11))
         attn_hard = torch.randn((1, 11, 11))
-        step =20000
+        step = 20000
         src_lens = torch.ones((1,), dtype=torch.long)
         mel_lens = torch.ones((1,), dtype=torch.long)
-        # energy_pred = torch.randn((1, 11))
-        # energy_target = torch.randn((1, 11))
+        energy_pred = torch.randn((1, 11))
+        energy_target = torch.randn((1, 11))
 
         (
             total_loss,
@@ -45,6 +45,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
             pitch_loss,
             ctc_loss,
             bin_loss,
+            energy_loss,
         ) = self.loss_gen(
             src_masks,
             mel_masks,
@@ -64,8 +65,8 @@ class TestFastSpeech2LossGen(unittest.TestCase):
             step,
             src_lens,
             mel_lens,
-            # energy_pred,
-            # energy_target,
+            energy_pred,
+            energy_target,
         )
 
         self.assertIsInstance(total_loss, torch.Tensor)
@@ -77,6 +78,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
         self.assertIsInstance(pitch_loss, torch.Tensor)
         self.assertIsInstance(ctc_loss, torch.Tensor)
         self.assertIsInstance(bin_loss, torch.Tensor)
+        self.assertIsInstance(energy_loss, torch.Tensor)
 
         # Assert the value of losses
         self.assertTrue(
@@ -92,10 +94,11 @@ class TestFastSpeech2LossGen(unittest.TestCase):
                         pitch_loss,
                         ctc_loss,
                         bin_loss,
+                        energy_loss,
                     ],
                 ),
                 torch.tensor(
-                    [7.0773, 1.0965, 0.7479, 1.6295, 0.6886, 0.603, 1.9893, 0.3224, 0.0],
+                    [7.0773, 1.0965, 0.7479, 1.6295, 0.6886, 0.603, 1.9893, 0.3224, 0.0, 1.3609],
                 ),
                 atol=1e-4,
             ),
