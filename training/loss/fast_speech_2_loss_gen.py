@@ -27,11 +27,12 @@ def sample_wise_min_max(x: torch.Tensor) -> torch.Tensor:
 
 
 class FastSpeech2LossGen(Module):
-    def __init__(self, fine_tuning: bool):
+    def __init__(self, fine_tuning: bool, bin_warmup: bool = True):
         r"""Initializes the FastSpeech2LossGen module.
 
         Args:
             fine_tuning (bool): Whether the module is used for fine-tuning.
+            bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to True. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
         """
         super().__init__()
 
@@ -40,6 +41,7 @@ class FastSpeech2LossGen(Module):
         self.ssim_loss = SSIMLoss()
         self.sum_loss = ForwardSumLoss()
         self.bin_loss = BinLoss()
+        self.bin_warmup = bin_warmup
 
         self.fine_tuning = fine_tuning
 
@@ -178,25 +180,28 @@ class FastSpeech2LossGen(Module):
             attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens,
         )
 
-        binarization_loss_enable_steps = 18000
-        binarization_loss_warmup_steps = 10000
+        if self.bin_warmup:
+            binarization_loss_enable_steps = 18000
+            binarization_loss_warmup_steps = 10000
 
-        if step < binarization_loss_enable_steps:
-            bin_loss_weight = 0.0
-        else:
-            bin_loss_weight = (
-                min(
-                    (step - binarization_loss_enable_steps)
-                    / binarization_loss_warmup_steps,
-                    1.0,
+            if step < binarization_loss_enable_steps:
+                bin_loss_weight = 0.0
+            else:
+                bin_loss_weight = (
+                    min(
+                        (step - binarization_loss_enable_steps)
+                        / binarization_loss_warmup_steps,
+                        1.0,
+                    )
+                    * 1.0
                 )
-                * 1.0
-            )
 
-        bin_loss: torch.Tensor = (
-            self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
-            * bin_loss_weight
-        )
+            bin_loss: torch.Tensor = (
+                self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
+                * bin_loss_weight
+            )
+        else:
+            bin_loss: torch.Tensor = self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
 
         energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
 

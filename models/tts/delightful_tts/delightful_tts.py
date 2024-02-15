@@ -360,7 +360,7 @@ class DelightfulTTS(LightningModule):
 
     def train_dataloader(
         self,
-        batch_size: int = 7,
+        batch_size: int = 6,
         num_workers: int = 5,
         cache: bool = True,
         mem_cache: bool = True,
@@ -373,6 +373,7 @@ class DelightfulTTS(LightningModule):
             num_workers (int): The number of workers.
             cache (bool): Whether to cache the preprocessed data.
             mem_cache (bool): Whether to use memory cache.
+            url (str): The URL of the dataset.
 
         Returns:
             DataLoader: The training dataloader.
