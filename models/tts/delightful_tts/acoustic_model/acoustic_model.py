@@ -515,9 +515,11 @@ class AcousticModel(Module):
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
         ).to(x.device)
+
         if x.shape[1] > encoding.shape[1]:
             encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
+
         return x.permute((0, 2, 1))
