@@ -36,7 +36,6 @@ class DelightfulTTS(LightningModule):
     Args:
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
-        root (str): Root directory of the dataset.
         step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.generation during training.
     """
@@ -45,14 +44,12 @@ class DelightfulTTS(LightningModule):
             self,
             fine_tuning: bool = False,
             lang: str = "en",
-            root: str = "datasets_cache/LIBRITTS",
             initial_step: int = 0,
             n_speakers: int = 5392,
         ):
         super().__init__()
 
         self.lang = lang
-        self.root = root
         self.fine_tuning = fine_tuning
 
         lang_map = get_lang_map(lang)
@@ -362,8 +359,10 @@ class DelightfulTTS(LightningModule):
         self,
         batch_size: int = 6,
         num_workers: int = 5,
+        root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
-        mem_cache: bool = True,
+        cache_dir: str = "datasets_cache",
+        mem_cache: bool = False,
         url: str = "train-clean-360",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
@@ -371,7 +370,9 @@ class DelightfulTTS(LightningModule):
         Args:
             batch_size (int): The batch size.
             num_workers (int): The number of workers.
+            root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
+            cache_dir (str): The directory for the cache.
             mem_cache (bool): Whether to use memory cache.
             url (str): The URL of the dataset.
 
@@ -379,9 +380,10 @@ class DelightfulTTS(LightningModule):
             DataLoader: The training dataloader.
         """
         dataset = LibriTTSDatasetAcoustic(
-            root=self.root,
+            root=root,
             lang=self.lang,
             cache=cache,
+            cache_dir=cache_dir,
             mem_cache=mem_cache,
             url=url,
         )

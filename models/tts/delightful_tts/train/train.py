@@ -70,7 +70,12 @@ try:
 
     model = DelightfulTTS()
 
-    train_dataloader = model.train_dataloader()
+    train_dataloader = model.train_dataloader(
+        # NOTE: Preload the cached dataset into the RAM
+        cache_dir="/dev/shm/",
+        cache=True,
+        mem_cache=False,
+    )
 
     trainer.fit(
         model=model,
