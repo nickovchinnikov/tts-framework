@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import os
 import sys
 
 from lightning.pytorch import Trainer
@@ -9,6 +10,18 @@ from lightning.pytorch.strategies import DDPStrategy
 import torch
 
 from models.tts.delightful_tts import DelightfulTTS
+
+# Node runk in the cluster
+node_rank = 0
+num_nodes = 2
+
+# Setup of the training cluster
+os.environ["MASTER_PORT"] = "12355"
+# Change the IP address to the IP address of the master node
+os.environ["MASTER_ADDR"] = "10.148.0.6"
+os.environ["WORLD_SIZE"] = f"{num_nodes}"
+# Change the IP address to the IP address of the master node
+os.environ["NODE_RANK"] = f"{node_rank}"
 
 # Get the current date and time
 now = datetime.now()
@@ -52,6 +65,7 @@ try:
     trainer = Trainer(
         accelerator="cuda",
         devices=-1,
+        num_nodes=num_nodes,
         strategy=DDPStrategy(
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
@@ -60,7 +74,7 @@ try:
         logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
-        accumulate_grad_batches=8,
+        accumulate_grad_batches=5,
         max_epochs=-1,
         # Failed to find the `precision`
         # precision="16-mixed",
