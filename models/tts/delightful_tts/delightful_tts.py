@@ -83,7 +83,8 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module = self.vocoder_module.eval()
         self.vocoder_module.freeze()
 
-        self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning)
+        # NOTE: in case of training from 0 bin_warmup should be True!
+        self.loss = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
 
         self.metrics = Metrics(lang)
 
