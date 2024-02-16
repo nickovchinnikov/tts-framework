@@ -11,11 +11,13 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 import json
 
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
 from torchaudio import datasets
 from tqdm import tqdm
 
 from models.config import lang2id
+from training.datasets.libritts_dataset_acoustic import LibriTTSDatasetAcoustic
+from training.datasets.libritts_r import LIBRITTS_R
 from training.preprocess import PreprocessLibriTTS
 
 
@@ -34,16 +36,75 @@ class PreprocessedDataset(Dataset):
 # %%
 root: str = "datasets_cache/LIBRITTS"
 lang: str = "en"
+url: str = "train-clean-360"
 
-preprocess_libtts = PreprocessLibriTTS(
-    lang,
-    phonemizer_checkpoint="checkpoints/en_us_cmudict_ipa_forward.pt",
-)
-dataset = datasets.LIBRITTS(root=root, download=True)
+# preprocess_libtts = PreprocessLibriTTS(
+#     lang,
+# )
+
+dataset = LibriTTSDatasetAcoustic(root=root, url=url, download=True)
 
 # Load the id_mapping dictionary from the JSON file
-with open("speaker_id_mapping_libri.json") as f:
-    id_mapping = json.load(f)
+# with open("speaker_id_mapping_libri.json") as f:
+#     id_mapping = json.load(f)
+
+# %%
+batch_size = 8
+data_loader = DataLoader(
+    dataset,
+    batch_size=batch_size,
+    shuffle=True,
+    persistent_workers=True,
+    pin_memory=True,
+    num_workers=batch_size,
+    collate_fn=dataset.collate_fn,
+)
+
+data = []
+for i, batch in enumerate(tqdm(data_loader)):
+    data.extend(batch)
+    if (i+1) % (10000 // batch_size) == 0:
+        torch.save(
+            data,
+            f"datasets_cache/{url}_step_{i+1}_preprocessed.pt",
+        )
+        data = []
+
+# Save the remaining data
+if data:
+    torch.save(
+        data,
+        f"datasets_cache/{url}_step_99_preprocessed.pt",
+    )
+
+# %%
+from multiprocessing import Pool
+
+# Preprocess all samples and store them in lists
+data = []
+
+def process_sample(preprocessed_sample):
+    return preprocessed_sample
+    # preprocessed_sample = preprocess_libtts.acoustic(sample)
+
+with Pool(processes=10) as p:
+    # data += list(tqdm(p.imap(process_sample, dataset), total=len(dataset)))
+    for i, result in enumerate(tqdm(p.imap(process_sample, dataset), total=len(dataset))):
+        data.append(result)
+        if (i+1) % 20000 == 0:
+            torch.save(
+                data,
+                f"datasets_cache/{url}_preprocessed.pt",
+            )
+            data = []
+
+
+# %%
+# Save the PreprocessedDataset to disk
+torch.save(
+    data,
+    f"datasets_cache/{url}_preprocessed.pt",
+)
 
 # %%
 # Preprocess all samples and store them in lists
@@ -62,6 +123,7 @@ for sample in dataset:
             "pitch": preprocessed_sample.pitch,
             "text": preprocessed_sample.phones,
             "attn_prior": preprocessed_sample.attn_prior,
+            "energy": preprocessed_sample.energy,
             "raw_text": preprocessed_sample.raw_text,
             "normalized_text": preprocessed_sample.normalized_text,
             "speaker": id_mapping.get(str(preprocessed_sample.speaker_id)),
@@ -72,10 +134,24 @@ for sample in dataset:
         data.append(res)
     pbar.update(1)
 
+# %%
+# Save the PreprocessedDataset to disk
+torch.save(
+    data,
+    f"{url}_preprocessed.pt",
+)
+# %%
+
 # Create a PreprocessedDataset from the list
 preprocessed_dataset = PreprocessedDataset(data)
 
 len(preprocessed_dataset)
+
+# %%
+torch.save([1,2,3], "test.pt")
+
+# %%
+torch.load("test.pt")
 
 # %%
 # Save the PreprocessedDataset to disk
@@ -85,7 +161,6 @@ torch.save(
 )
 
 # %%
-from torch.utils.data import DataLoader
 
 preprocessed_dataset = torch.load(
     "checkpoints/libri_preprocessed_data.pt",

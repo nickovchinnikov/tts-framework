@@ -135,6 +135,17 @@ class LibriTTSDatasetAcoustic(Dataset):
 
         return result
 
+    def __iter__(self):
+        r"""Method makes the class iterable. It iterates over the `_walker` attribute
+        and for each item, it gets the corresponding item from the dataset using the 
+        `__getitem__` method.
+
+        Yields:
+        The item from the dataset corresponding to the current item in `_walker`.
+        """
+        for item in range(self.__len__()):
+            yield self.__getitem__(item)
+
     def collate_fn(self, data: List) -> List:
         r"""Collates a batch of data samples.
 
