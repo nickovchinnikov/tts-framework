@@ -84,7 +84,7 @@ try:
 
     model = DelightfulTTS()
 
-    train_dataloader = model.train_dataloader(
+    train_dataloader, val_dataloader = model.train_dataloader(
         # NOTE: Preload the cached dataset into the RAM
         cache_dir="/dev/shm/",
         cache=True,
@@ -94,6 +94,7 @@ try:
     trainer.fit(
         model=model,
         train_dataloaders=train_dataloader,
+        val_dataloaders=val_dataloader,
         # Resume training states from the checkpoint file
         ckpt_path=ckpt_acoustic,
     )

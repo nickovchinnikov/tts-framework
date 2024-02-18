@@ -1,10 +1,11 @@
 from typing import Callable, List, Tuple
 
 from lightning.pytorch.core import LightningModule
+from sklearn.model_selection import train_test_split
 import torch
 from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, SequentialSampler
 
 from models.config import (
     AcousticENModelConfig,
@@ -151,9 +152,7 @@ class DelightfulTTS(LightningModule):
         batch_idx (int): Index of the batch.
 
         Returns:
-        dict: A dictionary containing:
             - 'loss': The total loss for the training step.
-            - 'log': A dictionary of tensorboard logs.
         """
         (
             _,
@@ -233,36 +232,133 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        tensorboard_logs = {
-            "total_loss": total_loss.detach(),
-            "mel_loss": mel_loss.detach(),
-            "ssim_loss": ssim_loss.detach(),
-            "duration_loss": duration_loss.detach(),
-            "u_prosody_loss": u_prosody_loss.detach(),
-            "p_prosody_loss": p_prosody_loss.detach(),
-            "pitch_loss": pitch_loss.detach(),
-            "ctc_loss": ctc_loss.detach(),
-            "bin_loss": bin_loss.detach(),
-            "energy_loss": energy_loss.detach(),
-        }
+        self.log("total_loss", total_loss, on_step=True, on_epoch=True)
+        self.log("mel_loss", mel_loss, on_step=True, on_epoch=True)
+        self.log("ssim_loss", ssim_loss, on_step=True, on_epoch=True)
+        self.log("duration_loss", duration_loss, on_step=True, on_epoch=True)
+        self.log("u_prosody_loss", u_prosody_loss, on_step=True, on_epoch=True)
+        self.log("p_prosody_loss", p_prosody_loss, on_step=True, on_epoch=True)
+        self.log("pitch_loss", pitch_loss, on_step=True, on_epoch=True)
+        self.log("ctc_loss", ctc_loss, on_step=True, on_epoch=True)
+        self.log("bin_loss", bin_loss, on_step=True, on_epoch=True)
+        self.log("energy_loss", energy_loss, on_step=True, on_epoch=True)
 
-        # Add the logs to the tensorboard
-        if self.logger.experiment is not None: # type: ignore
-            # Generate an audio ones in a while and save to tensorboard
-            tensorboard = self.logger.experiment # type: ignore
+        return total_loss
 
-            tensorboard.add_scalar("total_loss", total_loss, self.current_epoch)
-            tensorboard.add_scalar("mel_loss", mel_loss, self.current_epoch)
-            tensorboard.add_scalar("ssim_loss", ssim_loss, self.current_epoch)
-            tensorboard.add_scalar("duration_loss", duration_loss, self.current_epoch)
-            tensorboard.add_scalar("u_prosody_loss", u_prosody_loss, self.current_epoch)
-            tensorboard.add_scalar("p_prosody_loss", p_prosody_loss, self.current_epoch)
-            tensorboard.add_scalar("pitch_loss", pitch_loss, self.current_epoch)
-            tensorboard.add_scalar("ctc_loss", ctc_loss, self.current_epoch)
-            tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
-            tensorboard.add_scalar("energy_loss", energy_loss, self.current_epoch)
 
-        return {"loss": total_loss, "log": tensorboard_logs}
+    def validation_step(self, batch: List, batch_idx: int):
+        r"""Performs a validation step for the model.
+
+        Args:
+        batch (List): The batch of data for training. The batch should contain:
+            - ids: List of indexes.
+            - raw_texts: Raw text inputs.
+            - speakers: Speaker identities.
+            - texts: Text inputs.
+            - src_lens: Lengths of the source sequences.
+            - mels: Mel spectrogram targets.
+            - pitches: Pitch targets.
+            - pitches_stat: Statistics of the pitches.
+            - mel_lens: Lengths of the mel spectrograms.
+            - langs: Language identities.
+            - attn_priors: Prior attention weights.
+            - wavs: Waveform targets.
+            - energies: Energy targets.
+        batch_idx (int): Index of the batch.
+
+        Returns:
+            - 'val_loss': The total loss for the training step.
+        """
+        (
+            _,
+            _,
+            speakers,
+            texts,
+            src_lens,
+            mels,
+            pitches,
+            pitches_stat,
+            mel_lens,
+            langs,
+            attn_priors,
+            _,
+            energies,
+        ) = batch
+
+        # Update pitches_stat (if needed)
+        self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
+        self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
+
+        outputs = self.acoustic_model.forward_train(
+            x=texts,
+            speakers=speakers,
+            src_lens=src_lens,
+            mels=mels,
+            mel_lens=mel_lens,
+            pitches=pitches,
+            pitches_range=pitches_stat,
+            langs=langs,
+            attn_priors=attn_priors,
+            energies=energies,
+        )
+
+        y_pred = outputs["y_pred"]
+        log_duration_prediction = outputs["log_duration_prediction"]
+        p_prosody_ref = outputs["p_prosody_ref"]
+        p_prosody_pred = outputs["p_prosody_pred"]
+        pitch_prediction = outputs["pitch_prediction"]
+        energy_pred = outputs["energy_pred"]
+        energy_target = outputs["energy_target"]
+
+        src_mask = get_mask_from_lengths(src_lens)
+        mel_mask = get_mask_from_lengths(mel_lens)
+
+        (
+            total_loss,
+            mel_loss,
+            ssim_loss,
+            duration_loss,
+            u_prosody_loss,
+            p_prosody_loss,
+            pitch_loss,
+            ctc_loss,
+            bin_loss,
+            energy_loss,
+        ) = self.loss.forward(
+            src_masks=src_mask,
+            mel_masks=mel_mask,
+            mel_targets=mels,
+            mel_predictions=y_pred,
+            log_duration_predictions=log_duration_prediction,
+            u_prosody_ref=outputs["u_prosody_ref"],
+            u_prosody_pred=outputs["u_prosody_pred"],
+            p_prosody_ref=p_prosody_ref,
+            p_prosody_pred=p_prosody_pred,
+            pitch_predictions=pitch_prediction,
+            p_targets=outputs["pitch_target"],
+            durations=outputs["attn_hard_dur"],
+            attn_logprob=outputs["attn_logprob"],
+            attn_soft=outputs["attn_soft"],
+            attn_hard=outputs["attn_hard"],
+            src_lens=src_lens,
+            mel_lens=mel_lens,
+            energy_pred=energy_pred,
+            energy_target=energy_target,
+            step=self.trainer.global_step,
+        )
+
+        self.log("total_loss_val", total_loss)
+        self.log("mel_loss_val", mel_loss)
+        self.log("ssim_loss_val", ssim_loss)
+        self.log("duration_loss_val", duration_loss)
+        self.log("u_prosody_loss_val", u_prosody_loss)
+        self.log("p_prosody_loss_val", p_prosody_loss)
+        self.log("pitch_loss_val", pitch_loss)
+        self.log("ctc_loss_val", ctc_loss)
+        self.log("bin_loss_val", bin_loss)
+        self.log("energy_loss_val", energy_loss)
+
+        return total_loss
 
 
     def configure_optimizers(self):
@@ -357,7 +453,8 @@ class DelightfulTTS(LightningModule):
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
         url: str = "train-clean-360",
-    ) -> DataLoader:
+        validation_split: float = 0.05,  # Percentage of data to use for validation
+    ) -> Tuple[DataLoader, DataLoader]:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
@@ -368,9 +465,10 @@ class DelightfulTTS(LightningModule):
             cache_dir (str): The directory for the cache.
             mem_cache (bool): Whether to use memory cache.
             url (str): The URL of the dataset.
+            validation_split (float): The percentage of data to use for validation.
 
         Returns:
-            DataLoader: The training dataloader.
+            Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
         """
         dataset = LibriTTSDatasetAcoustic(
             root=root,
@@ -381,18 +479,46 @@ class DelightfulTTS(LightningModule):
             url=url,
         )
 
+        # Split dataset into train and validation
+        train_indices, val_indices = train_test_split(
+            list(range(len(dataset))),
+            test_size=validation_split,
+            random_state=42,
+        )
+
+        # Create Samplers
+        train_sampler = SequentialSampler(train_indices)
+        val_sampler = SequentialSampler(val_indices)
+
         # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
-        return DataLoader(
+        train_loader = DataLoader(
             dataset,
             # 4x80Gb max 10 sec audio
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
-            # batch_size=7,
             batch_size=batch_size,
             # TODO: find the optimal num_workers
             num_workers=num_workers,
+            sampler=train_sampler,
             persistent_workers=True,
             pin_memory=True,
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )
+
+        val_loader = DataLoader(
+            dataset,
+            # 4x80Gb max 10 sec audio
+            # batch_size=20, # self.train_config.batch_size,
+            # 4*80Gb max ~20.4 sec audio
+            batch_size=batch_size,
+            # TODO: find the optimal num_workers
+            num_workers=num_workers,
+            sampler=val_sampler,
+            persistent_workers=True,
+            pin_memory=True,
+            shuffle=False,
+            collate_fn=dataset.collate_fn,
+        )
+
+        return train_loader, val_loader
