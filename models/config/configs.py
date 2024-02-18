@@ -19,8 +19,6 @@ class STFTConfig:
 class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
-    # min_seconds: float = 0.5
-    # max_seconds: float = 10.0
     min_seconds: float = 0.5
     max_seconds: float = 30.0
     sampling_rate: int = 22050
@@ -143,6 +141,20 @@ class VarianceAdaptorConfig:
 
 
 @dataclass
+class AcousticLossConfig:
+    ssim_loss_alpha: float
+    mel_loss_alpha: float
+    aligner_loss_alpha: float
+    pitch_loss_alpha: float
+    energy_loss_alpha: float
+    u_prosody_loss_alpha: float
+    p_prosody_loss_alpha: float
+    dur_loss_alpha: float
+    binary_align_loss_alpha: float
+    binary_loss_warmup_epochs: int
+
+
+@dataclass
 class AcousticENModelConfig:
     speaker_embed_dim: int = 384
     lang_embed_dim: int = 1
@@ -185,6 +197,20 @@ class AcousticENModelConfig:
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
             n_hidden=384, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
+        ),
+    )
+    loss: AcousticLossConfig = field(
+        default_factory=lambda: AcousticLossConfig(
+            ssim_loss_alpha=1.0,
+            mel_loss_alpha=1.0,
+            aligner_loss_alpha=1.0,
+            pitch_loss_alpha=1.0,
+            energy_loss_alpha=1.0,
+            u_prosody_loss_alpha=0.25,
+            p_prosody_loss_alpha=0.25,
+            dur_loss_alpha=1.0,
+            binary_align_loss_alpha=0.1,
+            binary_loss_warmup_epochs=10,
         ),
     )
 
@@ -232,6 +258,20 @@ class AcousticMultilingualModelConfig:
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
             n_hidden=512, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
+        ),
+    )
+    loss: AcousticLossConfig = field(
+        default_factory=lambda: AcousticLossConfig(
+            ssim_loss_alpha=1.0,
+            mel_loss_alpha=1.0,
+            aligner_loss_alpha=1.0,
+            pitch_loss_alpha=1.0,
+            energy_loss_alpha=1.0,
+            u_prosody_loss_alpha=0.25,
+            p_prosody_loss_alpha=0.25,
+            dur_loss_alpha=1.0,
+            binary_align_loss_alpha=0.1,
+            binary_loss_warmup_epochs=10,
         ),
     )
 

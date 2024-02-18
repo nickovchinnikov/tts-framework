@@ -36,7 +36,6 @@ class DelightfulTTS(LightningModule):
     Args:
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
-        step (int): Current training step.
         n_speakers (int): Number of speakers in the dataset.generation during training.
     """
 
@@ -44,7 +43,6 @@ class DelightfulTTS(LightningModule):
             self,
             fine_tuning: bool = False,
             lang: str = "en",
-            initial_step: int = 0,
             n_speakers: int = 5392,
         ):
         super().__init__()
@@ -64,9 +62,6 @@ class DelightfulTTS(LightningModule):
             self.train_config = AcousticFinetuningConfig()
         else:
             self.train_config = AcousticPretrainingConfig()
-
-        # TODO: check this argument!
-        self.register_buffer("initial_step", torch.tensor(initial_step))
 
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
@@ -180,9 +175,6 @@ class DelightfulTTS(LightningModule):
         self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
         self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
 
-        src_mask = get_mask_from_lengths(src_lens)
-        mel_mask = get_mask_from_lengths(mel_lens)
-
         outputs = self.acoustic_model.forward_train(
             x=texts,
             speakers=speakers,
@@ -204,6 +196,9 @@ class DelightfulTTS(LightningModule):
         energy_pred = outputs["energy_pred"]
         energy_target = outputs["energy_target"]
 
+        src_mask = get_mask_from_lengths(src_lens)
+        mel_mask = get_mask_from_lengths(mel_lens)
+
         (
             total_loss,
             mel_loss,
@@ -215,7 +210,7 @@ class DelightfulTTS(LightningModule):
             ctc_loss,
             bin_loss,
             energy_loss,
-        ) = self.loss(
+        ) = self.loss.forward(
             src_masks=src_mask,
             mel_masks=mel_mask,
             mel_targets=mels,
@@ -235,7 +230,7 @@ class DelightfulTTS(LightningModule):
             mel_lens=mel_lens,
             energy_pred=energy_pred,
             energy_target=energy_target,
-            step=batch_idx + self.initial_step.item(),
+            step=self.trainer.global_step,
         )
 
         tensorboard_logs = {
@@ -267,9 +262,6 @@ class DelightfulTTS(LightningModule):
             tensorboard.add_scalar("bin_loss", bin_loss, self.current_epoch)
             tensorboard.add_scalar("energy_loss", energy_loss, self.current_epoch)
 
-        # TODO: check the initial_step, not sure that this's correct
-        self.initial_step += torch.tensor(1)
-
         return {"loss": total_loss, "log": tensorboard_logs}
 
 
@@ -291,8 +283,8 @@ class DelightfulTTS(LightningModule):
             lr_decay = self.train_config.optimizer_config.lr_decay
             default_lr = self.train_config.optimizer_config.learning_rate
 
-            init_lr = default_lr if self.initial_step.item() == 0 \
-            else default_lr * (lr_decay ** self.initial_step.item())
+            init_lr = default_lr if self.trainer.global_step == 0 \
+            else default_lr * (lr_decay ** self.trainer.global_step)
 
             optimizer = AdamW(
                 parameters,
@@ -326,7 +318,7 @@ class DelightfulTTS(LightningModule):
         """
         init_lr = self.model_config.encoder.n_hidden ** -0.5
 
-        def lr_lambda(step: int = self.initial_step.item()) -> float:
+        def lr_lambda(step: int = self.trainer.global_step) -> float:
             r"""Computes the learning rate scale factor.
 
             Args:
