@@ -74,8 +74,9 @@ try:
         logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
-        accumulate_grad_batches=5,
+        # accumulate_grad_batches=5,
         max_epochs=-1,
+        log_every_n_steps=100,
         # Failed to find the `precision`
         # precision="16-mixed",
         # precision="bf16-mixed",

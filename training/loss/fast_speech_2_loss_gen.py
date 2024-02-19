@@ -121,11 +121,12 @@ class FastSpeech2LossGen(Module):
             mel_predictions_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
         )
 
-        if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
-            print(
-                f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
-            )
-            ssim_loss = torch.tensor([1.0], device=mel_predictions.device)
+        # Too much errors in log with precision bf16!
+        # if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
+            # print(
+            #     f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
+            # )
+            # ssim_loss = torch.tensor([1.0], device=mel_predictions.device)
 
         masked_mel_predictions = mel_predictions.masked_select(~mel_masks_expanded)
 

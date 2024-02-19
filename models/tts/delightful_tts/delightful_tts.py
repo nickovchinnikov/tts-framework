@@ -53,8 +53,8 @@ class DelightfulTTS(LightningModule):
             train_discriminator: bool = True,
             lang: str = "en",
             n_speakers: int = 5392,
-            acc_grad_steps: int = 5,
-            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder.ckpt",
+            acc_grad_steps: int = 10,
+            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
         ):
         super().__init__()
 
@@ -133,13 +133,13 @@ class DelightfulTTS(LightningModule):
         Returns:
             Tuple[dict, dict, dict, dict]: The weights for the generator and discriminator.
         """
-        ckpt_acoustic = torch.load(checkpoint_path)
+        ckpt = torch.load(checkpoint_path)
 
         return (
-            ckpt_acoustic["generator"],
-            ckpt_acoustic["discriminator"],
-            ckpt_acoustic["optim_g"],
-            ckpt_acoustic["optim_d"],
+            ckpt["generator"],
+            ckpt["discriminator"],
+            ckpt["optim_g"],
+            ckpt["optim_d"],
         )
 
 
