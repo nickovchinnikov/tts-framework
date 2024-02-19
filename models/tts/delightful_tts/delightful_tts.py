@@ -1,10 +1,10 @@
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, List, Tuple
 
 from lightning.pytorch.core import LightningModule
 from sklearn.model_selection import train_test_split
 import torch
-from torch.optim import Adam, AdamW, Optimizer
-from torch.optim.lr_scheduler import ExponentialLR, LambdaLR, LRScheduler
+from torch.optim import Adam, AdamW
+from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from torch.utils.data import DataLoader, SequentialSampler
 
 from models.config import (
@@ -21,9 +21,9 @@ from models.config import (
     lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
-from models.vocoder.univnet import Discriminator, Generator
+from models.vocoder.univnet import UnivNet
 from training.datasets import LibriTTSDatasetAcoustic
-from training.loss import FastSpeech2LossGen, Metrics, UnivnetLoss
+from training.loss import FastSpeech2LossGen, Metrics
 from training.preprocess.normalize_text import NormalizeText
 
 # Updated version of the tokenizer
@@ -40,31 +40,20 @@ class DelightfulTTS(LightningModule):
 
     Args:
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
-        train_discriminator (bool, optional): Whether to train the discriminator or not. Defaults to True.
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
-        acc_grad_steps (int): Accumulated gradient steps.
-        checkpoint_path_v1 (str, optional): The path to the checkpoint for the model. If provided, the model weights will be loaded from this checkpoint. Defaults to None.
     """
 
     def __init__(
             self,
             fine_tuning: bool = False,
-            train_discriminator: bool = True,
             lang: str = "en",
             n_speakers: int = 5392,
-            acc_grad_steps: int = 10,
-            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
         ):
         super().__init__()
 
         self.lang = lang
         self.fine_tuning = fine_tuning
-        self.acc_grad_steps = acc_grad_steps
-        self.train_discriminator = train_discriminator
-
-        # Switch to manual optimization
-        self.automatic_optimization = False
 
         lang_map = get_lang_map(lang)
         normilize_text_lang = lang_map.nemo
@@ -97,50 +86,17 @@ class DelightfulTTS(LightningModule):
 
         self.vocoder_config = VocoderModelConfig()
 
-        self.univnet = Generator(
-            model_config=self.vocoder_config,
-            preprocess_config=self.preprocess_config,
-        )
-        self.discriminator = Discriminator(model_config=self.vocoder_config)
+        self.vocoder_module = UnivNet()
+        self.vocoder_module = self.vocoder_module.eval()
+        self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
-        self.loss_univnet = UnivnetLoss()
 
         self.metrics = Metrics(lang)
 
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
-
-        # NOTE: this code is used only for the v0.1.0 checkpoint.
-        # In the future, this code will be removed!
-        self.checkpoint_path_v1 = checkpoint_path_v1
-        if checkpoint_path_v1 is not None:
-            generator, discriminator, _, _ = self.get_weights_v1(checkpoint_path_v1)
-            self.univnet.load_state_dict(generator, strict=False)
-            self.discriminator.load_state_dict(discriminator, strict=False)
-
-
-    def get_weights_v1(self, checkpoint_path: str) -> Tuple[dict, dict, dict, dict]:
-        r"""NOTE: this method is used only for the v0.1.0 checkpoint.
-        Prepares the weights for the model.
-
-        This is required for the model to be loaded from the checkpoint.
-
-        Args:
-            checkpoint_path (str): The path to the checkpoint.
-
-        Returns:
-            Tuple[dict, dict, dict, dict]: The weights for the generator and discriminator.
-        """
-        ckpt = torch.load(checkpoint_path)
-
-        return (
-            ckpt["generator"],
-            ckpt["discriminator"],
-            ckpt["optim_g"],
-            ckpt["optim_d"],
-        )
 
 
     def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
@@ -178,13 +134,7 @@ class DelightfulTTS(LightningModule):
             langs=langs,
         )
 
-        mel_lens=torch.tensor(
-            [y_pred.shape[2]], dtype=torch.int32, device=y_pred.device,
-        )
-
-        wav_prediction = self.univnet.infer(y_pred, mel_lens)
-
-        return wav_prediction
+        return self.vocoder_module.forward(y_pred)
 
 
     # TODO: don't forget about torch.no_grad() !
@@ -292,99 +242,44 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("total_loss", total_loss)
-        self.log("mel_loss", mel_loss)
-        self.log("ssim_loss", ssim_loss)
-        self.log("duration_loss", duration_loss)
-        self.log("u_prosody_loss", u_prosody_loss)
-        self.log("p_prosody_loss", p_prosody_loss)
-        self.log("pitch_loss", pitch_loss)
-        self.log("ctc_loss", ctc_loss)
-        self.log("bin_loss", bin_loss)
-        self.log("energy_loss", energy_loss)
+        self.log("train_total_loss", total_loss, sync_dist=True)
+        self.log("train_mel_loss", mel_loss, sync_dist=True)
+        self.log("train_ssim_loss", ssim_loss, sync_dist=True)
+        self.log("train_duration_loss", duration_loss, sync_dist=True)
+        self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True)
+        self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True)
+        self.log("train_pitch_loss", pitch_loss, sync_dist=True)
+        self.log("train_ctc_loss", ctc_loss, sync_dist=True)
+        self.log("train_bin_loss", bin_loss, sync_dist=True)
+        self.log("train_energy_loss", energy_loss, sync_dist=True)
 
-        # Access your optimizers
-        optimizers = self.optimizers()
-        schedulers = self.lr_schedulers()
+        return total_loss
 
-        #############################
-        # Acoustic model optimizer ##
-        #############################
-        opt_acoustic: Optimizer = optimizers[0] # type: ignore
-        sch_acoustic: LRScheduler = schedulers[0] # type: ignore
+        # # Access your optimizers
+        # optimizers = self.optimizers()
+        # schedulers = self.lr_schedulers()
 
-        # Backward pass for the acoustic model
-        # NOTE: the loss is divided by the accumulated gradient steps
-        self.manual_backward(total_loss / self.acc_grad_steps)
+        # ####################################
+        # # Acoustic model manual optimizer ##
+        # ####################################
+        # opt_acoustic: Optimizer = optimizers[0] # type: ignore
+        # sch_acoustic: LRScheduler = schedulers[0] # type: ignore
 
-        # accumulate gradients of N batches
-        if (batch_idx + 1) % self.acc_grad_steps == 0:
-            # clip gradients
-            self.clip_gradients(opt_acoustic, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+        # # Backward pass for the acoustic model
+        # # NOTE: the loss is divided by the accumulated gradient steps
+        # self.manual_backward(total_loss / self.acc_grad_steps)
 
-            # optimizer step
-            opt_acoustic.step()
-            # Scheduler step
-            sch_acoustic.step()
-            # zero the gradients
-            opt_acoustic.zero_grad()
+        # # accumulate gradients of N batches
+        # if (batch_idx + 1) % self.acc_grad_steps == 0:
+        #     # clip gradients
+        #     self.clip_gradients(opt_acoustic, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
 
-        #############################
-        # Univnet optimizer #########
-        #############################
-        if self.train_discriminator:
-            opt_univnet: Optimizer = optimizers[1] # type: ignore
-            sch_univnet: ExponentialLR = schedulers[1] # type: ignore
-
-            opt_discriminator: Optimizer = optimizers[2] # type: ignore
-            sch_discriminator: ExponentialLR = schedulers[2] # type: ignore
-
-            audio = wavs
-            fake_audio = self.univnet(mels)
-
-            res_fake, period_fake = self.discriminator(fake_audio.detach())
-            res_real, period_real = self.discriminator(audio)
-
-            (
-                total_loss_gen,
-                total_loss_disc,
-                stft_loss,
-                score_loss,
-            ) = self.loss_univnet.forward(
-                audio,
-                fake_audio,
-                res_fake,
-                period_fake,
-                res_real,
-                period_real,
-            )
-
-            self.log("total_loss_gen", total_loss_gen)
-            self.log("total_loss_disc", total_loss_disc)
-            self.log("stft_loss", stft_loss)
-            self.log("score_loss", score_loss)
-
-            # Perform manual optimization
-            self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
-            self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
-
-            # accumulate gradients of N batches
-            if (batch_idx + 1) % self.acc_grad_steps == 0:
-                # clip gradients
-                self.clip_gradients(opt_univnet, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
-                self.clip_gradients(opt_discriminator, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
-
-                # optimizer step
-                opt_univnet.step()
-                opt_discriminator.step()
-
-                # Scheduler step
-                sch_univnet.step()
-                sch_discriminator.step()
-
-                # zero the gradients
-                opt_univnet.zero_grad()
-                opt_discriminator.zero_grad()
+        #     # optimizer step
+        #     opt_acoustic.step()
+        #     # Scheduler step
+        #     sch_acoustic.step()
+        #     # zero the gradients
+        #     opt_acoustic.zero_grad()
 
 
     def validation_step(self, batch: List, batch_idx: int):
@@ -488,16 +383,16 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("total_loss_val", total_loss)
-        self.log("mel_loss_val", mel_loss)
-        self.log("ssim_loss_val", ssim_loss)
-        self.log("duration_loss_val", duration_loss)
-        self.log("u_prosody_loss_val", u_prosody_loss)
-        self.log("p_prosody_loss_val", p_prosody_loss)
-        self.log("pitch_loss_val", pitch_loss)
-        self.log("ctc_loss_val", ctc_loss)
-        self.log("bin_loss_val", bin_loss)
-        self.log("energy_loss_val", energy_loss)
+        self.log("val_total_loss", total_loss, sync_dist=True)
+        self.log("val_mel_loss", mel_loss, sync_dist=True)
+        self.log("val_ssim_loss", ssim_loss, sync_dist=True)
+        self.log("val_duration_loss", duration_loss, sync_dist=True)
+        self.log("val_u_prosody_loss", u_prosody_loss, sync_dist=True)
+        self.log("val_p_prosody_loss", p_prosody_loss, sync_dist=True)
+        self.log("val_pitch_loss", pitch_loss, sync_dist=True)
+        self.log("val_ctc_loss", ctc_loss, sync_dist=True)
+        self.log("val_bin_loss", bin_loss, sync_dist=True)
+        self.log("val_energy_loss", energy_loss, sync_dist=True)
 
         audio = wavs
         fake_audio = self.univnet(mels)
@@ -519,10 +414,10 @@ class DelightfulTTS(LightningModule):
             period_real,
         )
 
-        self.log("total_loss_gen", total_loss_gen)
-        self.log("total_loss_disc", total_loss_disc)
-        self.log("stft_loss", stft_loss)
-        self.log("score_loss", score_loss)
+        self.log("val_total_loss_gen", total_loss_gen)
+        self.log("val_total_loss_disc", total_loss_disc)
+        self.log("val_stft_loss", stft_loss)
+        self.log("val_score_loss", score_loss)
 
 
     def configure_optimizers(self):
@@ -541,24 +436,6 @@ class DelightfulTTS(LightningModule):
             tuple: A tuple containing three dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
         """
         parameters_acoustic = self.acoustic_model.parameters()
-
-        optim_univnet = AdamW(
-            self.univnet.parameters(),
-            self.train_config_vocoder.learning_rate,
-            betas=(self.train_config_vocoder.adam_b1, self.train_config_vocoder.adam_b2),
-        )
-        scheduler_univnet = ExponentialLR(
-            optim_univnet, gamma=self.train_config_vocoder.lr_decay, last_epoch=-1,
-        )
-
-        optim_discriminator = AdamW(
-            self.discriminator.parameters(),
-            self.train_config_vocoder.learning_rate,
-            betas=(self.train_config_vocoder.adam_b1, self.train_config_vocoder.adam_b2),
-        )
-        scheduler_discriminator = ExponentialLR(
-            optim_discriminator, gamma=self.train_config_vocoder.lr_decay, last_epoch=-1,
-        )
 
         # If the Learning Rate Finder is not used, the optimizer and the scheduler are used
         if self.fine_tuning:
@@ -580,8 +457,6 @@ class DelightfulTTS(LightningModule):
 
             return (
                 {"optimizer": optimizer, "lr_scheduler": scheduler},
-                {"optimizer": optim_univnet, "lr_scheduler": scheduler_univnet},
-                {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
             )
         else:
             init_lr, lr_lambda = self.get_lr_lambda()
@@ -596,8 +471,6 @@ class DelightfulTTS(LightningModule):
 
             return (
                 {"optimizer": optimizer, "lr_scheduler": scheduler},
-                {"optimizer": optim_univnet, "lr_scheduler": scheduler_univnet},
-                {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
             )
 
 

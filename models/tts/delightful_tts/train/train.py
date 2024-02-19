@@ -77,6 +77,7 @@ try:
         # accumulate_grad_batches=5,
         max_epochs=-1,
         log_every_n_steps=100,
+        check_val_every_n_epoch=20,
         # Failed to find the `precision`
         # precision="16-mixed",
         # precision="bf16-mixed",
