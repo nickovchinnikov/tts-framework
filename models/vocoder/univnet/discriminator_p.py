@@ -113,7 +113,7 @@ class DiscriminatorP(Module):
         x = x.view(b, c, t // self.period, self.period)
 
         for layers in self.convs:
-            x = layers(x)
+            x = layers(x.to(dtype=self.conv_post.weight.dtype))
             x = F.leaky_relu(x, self.LRELU_SLOPE)
             fmap.append(x)
         x = self.conv_post(x)

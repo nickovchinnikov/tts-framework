@@ -250,7 +250,7 @@ class DelightfulTTSLoss(nn.Module):
             print(
                 f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
             )
-            ssim_loss = torch.FloatTensor([1.0], device=mel_output.device)
+            ssim_loss = torch.tensor([1.0], device=mel_output.device)
 
         p_prosody_ref = p_prosody_ref.detach()
         p_prosody_loss = self.mae_loss(

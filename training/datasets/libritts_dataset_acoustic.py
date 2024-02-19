@@ -104,7 +104,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
 
-        data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
+        data.wav = data.wav.unsqueeze(0)
 
         result = {
             "id": data.utterance_id,

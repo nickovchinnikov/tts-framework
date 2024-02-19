@@ -108,7 +108,7 @@ class DiscriminatorR(Module):
 
         # Apply the convolutional layers with leaky ReLU activation
         for layer in self.convs:
-            x = layer(x)
+            x = layer(x.to(dtype=self.conv_post.weight.dtype))
             x = F.leaky_relu(x, self.LRELU_SLOPE)
             fmap.append(x)
 

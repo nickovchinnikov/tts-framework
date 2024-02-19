@@ -24,8 +24,8 @@ class TestDelightfulTTS(unittest.TestCase):
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config["optimizer"]
-        lr_scheduler = optimizer_config["lr_scheduler"]
+        optimizer = optimizer_config[0]["optimizer"]
+        lr_scheduler = optimizer_config[0]["lr_scheduler"]
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.AdamW)
@@ -60,8 +60,8 @@ class TestDelightfulTTS(unittest.TestCase):
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config["optimizer"]
-        lr_scheduler = optimizer_config["lr_scheduler"]
+        optimizer = optimizer_config[0]["optimizer"]
+        lr_scheduler = optimizer_config[0]["lr_scheduler"]
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.Adam)
@@ -77,12 +77,15 @@ class TestDelightfulTTS(unittest.TestCase):
             default_root_dir=default_root_dir,
             limit_train_batches=1,
             max_epochs=1,
-            accelerator="cuda",
+            accelerator="gpu",
+            # Precision is set to speed up training
+            # precision="bf16-mixed",
+            precision="16-mixed",
         )
 
         module = DelightfulTTS()
 
-        train_dataloader = module.train_dataloader(1, 2, cache=False, mem_cache=False)
+        train_dataloader, _ = module.train_dataloader(2, 2, cache=False, mem_cache=False)
 
         # automatically restores model, epoch, step, LR schedulers, etc...
         # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")

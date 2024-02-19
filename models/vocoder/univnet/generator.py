@@ -85,7 +85,13 @@ class Generator(Module):
         Returns:
             Tensor: the generated audio waveform (batch, 1, out_length)
         """
-        z = torch.randn(c.shape[0], self.noise_dim, c.shape[2], device=c.device)
+        z = torch.randn(
+            c.shape[0],
+            self.noise_dim,
+            c.shape[2],
+            device=c.device,
+            dtype=self.conv_pre.weight.data.dtype,
+        )
         z = self.conv_pre(z)  # (B, c_g, L)
 
         for res_block in self.res_stack:

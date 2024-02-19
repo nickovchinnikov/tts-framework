@@ -118,7 +118,7 @@ class KernelPredictor(Module):
             Tuple[Tensor, Tensor]: A tuple containing the kernel and bias tensors.
         """
         batch, _, cond_length = c.shape
-        c = self.input_conv(c)
+        c = self.input_conv(c.to(dtype=self.kernel_conv.weight.dtype))
         for residual_conv in self.residual_convs:
             c = c + residual_conv(c)
         k = self.kernel_conv(c)
