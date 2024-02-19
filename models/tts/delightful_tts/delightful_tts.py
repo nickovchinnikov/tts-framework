@@ -53,8 +53,8 @@ class DelightfulTTS(LightningModule):
             train_discriminator: bool = True,
             lang: str = "en",
             n_speakers: int = 5392,
-            acc_grad_steps: int = 10,
-            checkpoint_path_v1: Optional[str] = None,
+            acc_grad_steps: int = 5,
+            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder.ckpt",
         ):
         super().__init__()
 
