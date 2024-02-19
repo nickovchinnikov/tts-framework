@@ -25,4 +25,9 @@ class SpectralConvergengeLoss(Module):
         Returns:
             Tensor: Spectral convergence loss value.
         """
+        # Ensure that x_mag and y_mag have the same size along dimension 1
+        min_len = min(x_mag.shape[1], y_mag.shape[1])
+        x_mag = x_mag[:, :min_len]
+        y_mag = y_mag[:, :min_len]
+
         return torch.norm(y_mag - x_mag, p="fro") / torch.norm(y_mag, p="fro")

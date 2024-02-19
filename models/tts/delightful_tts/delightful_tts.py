@@ -329,46 +329,62 @@ class DelightfulTTS(LightningModule):
             # zero the gradients
             opt_acoustic.zero_grad()
 
-        # return total_loss
-
         #############################
         # Univnet optimizer #########
         #############################
-        opt_univnet: Optimizer = optimizers[1] # type: ignore
-        sch_univnet: ExponentialLR = schedulers[1] # type: ignore
+        if self.train_discriminator:
+            opt_univnet: Optimizer = optimizers[1] # type: ignore
+            sch_univnet: ExponentialLR = schedulers[1] # type: ignore
 
-        opt_discriminator: Optimizer = optimizers[2] # type: ignore
-        sch_discriminator: ExponentialLR = schedulers[2] # type: ignore
+            opt_discriminator: Optimizer = optimizers[2] # type: ignore
+            sch_discriminator: ExponentialLR = schedulers[2] # type: ignore
 
-        audio = wavs # .unsqueeze(1)
-        fake_audio = self.univnet(mels)
+            audio = wavs
+            fake_audio = self.univnet(mels)
 
-        res_fake, period_fake = self.discriminator(fake_audio.detach())
-        res_real, period_real = self.discriminator(audio)
+            res_fake, period_fake = self.discriminator(fake_audio.detach())
+            res_real, period_real = self.discriminator(audio)
 
-        # (
-        #     total_loss_gen,
-        #     total_loss_disc,
-        #     stft_loss,
-        #     score_loss,
-        # ) = self.loss_univnet.forward(
-        #     audio,
-        #     fake_audio,
-        #     res_fake,
-        #     period_fake,
-        #     res_real,
-        #     period_real,
-        # )
+            (
+                total_loss_gen,
+                total_loss_disc,
+                stft_loss,
+                score_loss,
+            ) = self.loss_univnet.forward(
+                audio,
+                fake_audio,
+                res_fake,
+                period_fake,
+                res_real,
+                period_real,
+            )
 
-        # Perform manual optimization
-        # TODO: total_loss_gen shouldn't be float! Here is a bug!
-        # opt_univnet.zero_grad()
-        # self.manual_backward(total_loss_gen)
-        # opt_univnet.step()
+            self.log("total_loss_gen", total_loss_gen)
+            self.log("total_loss_disc", total_loss_disc)
+            self.log("stft_loss", stft_loss)
+            self.log("score_loss", score_loss)
 
-        # opt_discriminator.zero_grad()
-        # self.manual_backward(total_loss_disc)
-        # opt_discriminator.step()
+            # Perform manual optimization
+            self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
+            self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
+
+            # accumulate gradients of N batches
+            if (batch_idx + 1) % self.acc_grad_steps == 0:
+                # clip gradients
+                self.clip_gradients(opt_univnet, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+                self.clip_gradients(opt_discriminator, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+
+                # optimizer step
+                opt_univnet.step()
+                opt_discriminator.step()
+
+                # Scheduler step
+                sch_univnet.step()
+                sch_discriminator.step()
+
+                # zero the gradients
+                opt_univnet.zero_grad()
+                opt_discriminator.zero_grad()
 
 
     def validation_step(self, batch: List, batch_idx: int):
@@ -406,7 +422,7 @@ class DelightfulTTS(LightningModule):
             mel_lens,
             langs,
             attn_priors,
-            _,
+            wavs,
             energies,
         ) = batch
 
@@ -483,7 +499,30 @@ class DelightfulTTS(LightningModule):
         self.log("bin_loss_val", bin_loss)
         self.log("energy_loss_val", energy_loss)
 
-        return total_loss
+        audio = wavs
+        fake_audio = self.univnet(mels)
+
+        res_fake, period_fake = self.discriminator(fake_audio.detach())
+        res_real, period_real = self.discriminator(audio)
+
+        (
+            total_loss_gen,
+            total_loss_disc,
+            stft_loss,
+            score_loss,
+        ) = self.loss_univnet.forward(
+            audio,
+            fake_audio,
+            res_fake,
+            period_fake,
+            res_real,
+            period_real,
+        )
+
+        self.log("total_loss_gen", total_loss_gen)
+        self.log("total_loss_disc", total_loss_disc)
+        self.log("stft_loss", stft_loss)
+        self.log("score_loss", score_loss)
 
 
     def configure_optimizers(self):
