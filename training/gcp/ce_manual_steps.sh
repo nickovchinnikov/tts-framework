@@ -115,6 +115,9 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib
 # After the setup
 conda activate tts_framework
 
+# First reinstall the lightning
+pip install --upgrade --force-reinstall lightning
+
 # Version 11.8
 pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 

@@ -14,7 +14,7 @@ from models.config import (
     AcousticTrainingConfig,
     PreprocessingConfig,
     VocoderFinetuningConfig,
-    VocoderModelConfig,
+    # VocoderModelConfig,
     VocoderPretrainingConfig,
     VoicoderTrainingConfig,
     get_lang_map,
@@ -42,6 +42,7 @@ class DelightfulTTS(LightningModule):
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
+        batch_size (int): The batch size.
     """
 
     def __init__(
@@ -49,11 +50,13 @@ class DelightfulTTS(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             n_speakers: int = 5392,
+            batch_size: int = 6,
         ):
         super().__init__()
 
         self.lang = lang
         self.fine_tuning = fine_tuning
+        self.batch_size = batch_size
 
         lang_map = get_lang_map(lang)
         normilize_text_lang = lang_map.nemo
@@ -84,11 +87,11 @@ class DelightfulTTS(LightningModule):
             n_speakers=n_speakers,
         )
 
-        self.vocoder_config = VocoderModelConfig()
+        # self.vocoder_config = VocoderModelConfig()
 
-        self.vocoder_module = UnivNet()
-        self.vocoder_module = self.vocoder_module.eval()
-        self.vocoder_module.freeze()
+        # self.vocoder_module = UnivNet()
+        # self.vocoder_module = self.vocoder_module.eval()
+        # self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
@@ -99,42 +102,42 @@ class DelightfulTTS(LightningModule):
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
 
 
-    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
-        r"""Performs a forward pass through the AcousticModel.
-        This code must be run only with the loaded weights from the checkpoint!
+    # def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+    #     r"""Performs a forward pass through the AcousticModel.
+    #     This code must be run only with the loaded weights from the checkpoint!
 
-        Args:
-            text (str): The input text.
-            speaker_idx (torch.Tensor): The index of the speaker.
-            lang (str): The language.
+    #     Args:
+    #         text (str): The input text.
+    #         speaker_idx (torch.Tensor): The index of the speaker.
+    #         lang (str): The language.
 
-        Returns:
-            torch.Tensor: The output of the AcousticModel.
-        """
-        normalized_text = self.normilize_text(text)
-        _, phones = self.tokenizer(normalized_text)
+    #     Returns:
+    #         torch.Tensor: The output of the AcousticModel.
+    #     """
+    #     normalized_text = self.normilize_text(text)
+    #     _, phones = self.tokenizer(normalized_text)
 
-        # Convert to tensor
-        x = torch.tensor(
-            phones, dtype=torch.int, device=speaker_idx.device,
-        ).unsqueeze(0)
+    #     # Convert to tensor
+    #     x = torch.tensor(
+    #         phones, dtype=torch.int, device=speaker_idx.device,
+    #     ).unsqueeze(0)
 
-        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = torch.tensor(
-            [lang2id[lang]],
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).repeat(x.shape[1]).unsqueeze(0)
+    #     langs = torch.tensor(
+    #         [lang2id[lang]],
+    #         dtype=torch.int,
+    #         device=speaker_idx.device,
+    #     ).repeat(x.shape[1]).unsqueeze(0)
 
-        y_pred = self.acoustic_model(
-            x=x,
-            pitches_range=self.pitches_stat,
-            speakers=speakers,
-            langs=langs,
-        )
+    #     y_pred = self.acoustic_model(
+    #         x=x,
+    #         pitches_range=self.pitches_stat,
+    #         speakers=speakers,
+    #         langs=langs,
+    #     )
 
-        return self.vocoder_module.forward(y_pred)
+    #     return self.vocoder_module.forward(y_pred)
 
 
     # TODO: don't forget about torch.no_grad() !
@@ -242,16 +245,16 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("train_total_loss", total_loss, sync_dist=True)
-        self.log("train_mel_loss", mel_loss, sync_dist=True)
-        self.log("train_ssim_loss", ssim_loss, sync_dist=True)
-        self.log("train_duration_loss", duration_loss, sync_dist=True)
-        self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True)
-        self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True)
-        self.log("train_pitch_loss", pitch_loss, sync_dist=True)
-        self.log("train_ctc_loss", ctc_loss, sync_dist=True)
-        self.log("train_bin_loss", bin_loss, sync_dist=True)
-        self.log("train_energy_loss", energy_loss, sync_dist=True)
+        self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
 
         return total_loss
 
@@ -383,41 +386,16 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("val_total_loss", total_loss, sync_dist=True)
-        self.log("val_mel_loss", mel_loss, sync_dist=True)
-        self.log("val_ssim_loss", ssim_loss, sync_dist=True)
-        self.log("val_duration_loss", duration_loss, sync_dist=True)
-        self.log("val_u_prosody_loss", u_prosody_loss, sync_dist=True)
-        self.log("val_p_prosody_loss", p_prosody_loss, sync_dist=True)
-        self.log("val_pitch_loss", pitch_loss, sync_dist=True)
-        self.log("val_ctc_loss", ctc_loss, sync_dist=True)
-        self.log("val_bin_loss", bin_loss, sync_dist=True)
-        self.log("val_energy_loss", energy_loss, sync_dist=True)
-
-        audio = wavs
-        fake_audio = self.univnet(mels)
-
-        res_fake, period_fake = self.discriminator(fake_audio.detach())
-        res_real, period_real = self.discriminator(audio)
-
-        (
-            total_loss_gen,
-            total_loss_disc,
-            stft_loss,
-            score_loss,
-        ) = self.loss_univnet.forward(
-            audio,
-            fake_audio,
-            res_fake,
-            period_fake,
-            res_real,
-            period_real,
-        )
-
-        self.log("val_total_loss_gen", total_loss_gen)
-        self.log("val_total_loss_disc", total_loss_disc)
-        self.log("val_stft_loss", stft_loss)
-        self.log("val_score_loss", score_loss)
+        self.log("val_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("val_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
 
 
     def configure_optimizers(self):
@@ -514,7 +492,6 @@ class DelightfulTTS(LightningModule):
 
     def train_dataloader(
         self,
-        batch_size: int = 6,
         num_workers: int = 5,
         root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
@@ -526,7 +503,6 @@ class DelightfulTTS(LightningModule):
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
-            batch_size (int): The batch size.
             num_workers (int): The number of workers.
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
@@ -564,7 +540,7 @@ class DelightfulTTS(LightningModule):
             # 4x80Gb max 10 sec audio
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
-            batch_size=batch_size,
+            batch_size=self.batch_size,
             # TODO: find the optimal num_workers
             num_workers=num_workers,
             sampler=train_sampler,
@@ -579,7 +555,7 @@ class DelightfulTTS(LightningModule):
             # 4x80Gb max 10 sec audio
             # batch_size=20, # self.train_config.batch_size,
             # 4*80Gb max ~20.4 sec audio
-            batch_size=batch_size,
+            batch_size=self.batch_size,
             # TODO: find the optimal num_workers
             num_workers=num_workers,
             sampler=val_sampler,

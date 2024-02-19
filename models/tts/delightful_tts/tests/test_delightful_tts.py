@@ -83,9 +83,9 @@ class TestDelightfulTTS(unittest.TestCase):
             precision="16-mixed",
         )
 
-        module = DelightfulTTS()
+        module = DelightfulTTS(batch_size=2)
 
-        train_dataloader, _ = module.train_dataloader(2, 2, cache=False, mem_cache=False)
+        train_dataloader, _ = module.train_dataloader(2, cache=False, mem_cache=False)
 
         # automatically restores model, epoch, step, LR schedulers, etc...
         # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
