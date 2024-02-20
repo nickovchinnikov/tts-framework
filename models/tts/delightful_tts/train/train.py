@@ -74,6 +74,7 @@ try:
         logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
+        enable_checkpointing=True,
         accumulate_grad_batches=10,
         max_epochs=-1,
         log_every_n_steps=50,
