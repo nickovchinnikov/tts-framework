@@ -158,6 +158,7 @@ class AcousticLossConfig:
 class AcousticENModelConfig:
     speaker_embed_dim: int = 384
     lang_embed_dim: int = 1
+    n_feats: int = 80
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=4,
@@ -219,6 +220,7 @@ class AcousticENModelConfig:
 class AcousticMultilingualModelConfig:
     speaker_embed_dim: int = 1024
     lang_embed_dim: int = 256
+    n_feats: int = 160
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=6,

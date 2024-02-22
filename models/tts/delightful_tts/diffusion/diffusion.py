@@ -31,7 +31,7 @@ class Diffusion(Module):
         self,
         n_feats: int,
         dim: int,
-        n_spks: int = 1,
+        n_speakers: int = 1,
         spk_emb_dim: int = 64,
         beta_min: float = 0.05,
         beta_max: float = 20.,
@@ -42,7 +42,7 @@ class Diffusion(Module):
         Args:
             n_feats (int): Number of features.
             dim (int): Dimension.
-            n_spks (int, optional): Number of speakers. Defaults to 1.
+            n_speakers (int, optional): Number of speakers. Defaults to 1.
             spk_emb_dim (int, optional): Speaker embedding dimension. Defaults to 64.
             beta_min (float, optional): Minimum beta value. Defaults to 0.05.
             beta_max (float, optional): Maximum beta value. Defaults to 20.
@@ -51,7 +51,7 @@ class Diffusion(Module):
         super().__init__()
         self.n_feats = n_feats
         self.dim = dim
-        self.n_spks = n_spks
+        self.n_speakers = n_speakers
         self.spk_emb_dim = spk_emb_dim
         self.beta_min = beta_min
         self.beta_max = beta_max
@@ -59,7 +59,7 @@ class Diffusion(Module):
 
         self.estimator = GradLogPEstimator2d(
             dim,
-            n_spks=n_spks,
+            n_speakers=n_speakers,
             spk_emb_dim=spk_emb_dim,
             pe_scale=pe_scale,
         )
@@ -138,7 +138,7 @@ class Diffusion(Module):
         z: Tensor,
         mask: Tensor,
         mu: Tensor,
-        n_timesteps: int,
+        n_timesteps: int = 50,
         stoc: bool = False,
         spk: Optional[torch.Tensor] = None,
     ) -> Tensor:

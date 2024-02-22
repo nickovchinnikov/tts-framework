@@ -24,7 +24,7 @@ class GradLogPEstimator2d(Module):
         dim (int): The dimensionality of the input data.
         dim_mults (Tuple[int, ...]): Multipliers for the dimensions.
         groups (int): The number of groups for the GroupNorm.
-        n_spks (int): The number of speakers.
+        n_speakers (int): The number of speakers.
         spk_emb_dim (int): The dimensionality of the speaker embeddings.
         n_feats (int): The number of features.
         pe_scale (int): The scale for the positional encoding.
@@ -35,7 +35,7 @@ class GradLogPEstimator2d(Module):
         dim: int,
         dim_mults: Tuple[int, ...] = (1, 2, 4),
         groups: int = 8,
-        n_spks: int = 1,
+        n_speakers: int = 1,
         spk_emb_dim: int = 64,
         n_feats: int = 80,
         pe_scale: int = 1000,
@@ -46,7 +46,7 @@ class GradLogPEstimator2d(Module):
             dim (int): The dimensionality of the input data.
             dim_mults (Tuple[int, ...]): Multipliers for the dimensions.
             groups (int): The number of groups for the GroupNorm.
-            n_spks (int): The number of speakers.
+            n_speakers (int): The number of speakers.
             spk_emb_dim (int): The dimensionality of the speaker embeddings.
             n_feats (int): The number of features.
             pe_scale (int): The scale for the positional encoding.
@@ -55,11 +55,11 @@ class GradLogPEstimator2d(Module):
         self.dim = dim
         self.dim_mults = dim_mults
         self.groups = groups
-        self.n_spks = n_spks # if not isinstance(n_spks, type(None)) else 1
+        self.n_speakers = n_speakers # if not isinstance(n_speakers, type(None)) else 1
         self.spk_emb_dim = spk_emb_dim
         self.pe_scale = pe_scale
 
-        if n_spks > 1:
+        if n_speakers > 1:
             self.spk_mlp = nn.Sequential(
                 nn.Linear(spk_emb_dim, spk_emb_dim * 4),
                 Mish(),
@@ -74,8 +74,8 @@ class GradLogPEstimator2d(Module):
             nn.Linear(dim * 4, dim),
         )
 
-        # dims = [2 + (1 if n_spks > 1 else 0), *map(lambda m: dim * m, dim_mults)]
-        dims = [2 + (1 if n_spks > 1 else 0), *(dim * m for m in dim_mults)]
+        # dims = [2 + (1 if n_speakers > 1 else 0), *map(lambda m: dim * m, dim_mults)]
+        dims = [2 + (1 if n_speakers > 1 else 0), *(dim * m for m in dim_mults)]
         in_out = list(zip(dims[:-1], dims[1:]))
 
         self.downs = []
@@ -136,7 +136,7 @@ class GradLogPEstimator2d(Module):
         t = self.time_pos_emb(t, scale=self.pe_scale)
         t = self.mlp(t)
 
-        if self.n_spks < 2:
+        if self.n_speakers < 2:
             x = torch.stack([mu, x], 1)
         else:
             s = s.unsqueeze(-1).repeat(1, 1, x.shape[-1])
