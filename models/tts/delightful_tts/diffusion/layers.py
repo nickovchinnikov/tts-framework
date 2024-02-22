@@ -1,9 +1,10 @@
 import math
+from typing import Optional
 
-from einops import rearrange
 import torch
 from torch import Tensor, nn
 from torch.nn import Module
+from torch.nn import functional as F
 
 
 class Mish(Module):
@@ -22,178 +23,230 @@ class Mish(Module):
         Returns:
             torch.Tensor: Output tensor after applying Mish activation.
         """
-        return x * torch.tanh(nn.functional.softplus(x))
+        return x * torch.tanh(F.softplus(x))
 
 
-class Upsample(Module):
-    r"""Upsamples the input tensor using a transposed convolution operation.
+class ConvNorm(Module):
+    r"""1D Convolution with optional batch normalization.
 
-    The transposed convolution operation effectively performs the opposite
-    operation of a regular convolution, increasing the spatial dimensions
-    of the input tensor.
-    """
-
-    def __init__(self, dim: int):
-        super().__init__()
-        self.conv = nn.ConvTranspose2d(dim, dim, 4, 2, 1)
-
-    def forward(self, x: Tensor) -> Tensor:
-        return self.conv(x)
-
-
-class Downsample(Module):
-    r"""Downsamples the input tensor using a convolution operation.
-
-    The convolution operation reduces the spatial dimensions of the input tensor.
-    """
-
-    def __init__(self, dim: int):
-        super().__init__()
-        self.conv = torch.nn.Conv2d(dim, dim, 3, 2, 1)
-
-    def forward(self, x: Tensor) -> Tensor:
-        return self.conv(x)
-
-
-class Rezero(Module):
-    r"""Applies a function to the input tensor and scales the result by a learnable parameter.
-
-    The learnable parameter is initialized to zero, hence the name "Rezero".
-    """
-
-    def __init__(self, fn: Module):
-        super().__init__()
-        self.fn = fn
-        self.g = torch.nn.Parameter(torch.zeros(1))
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fn(x) * self.g
-
-
-class Block(Module):
-    r"""Applies a sequence of operations to the input tensor.
-
-    The operations are a convolution, a group normalization, and a Mish activation function.
-    """
-
-    def __init__(self, dim: int, dim_out: int, groups: int = 8):
-        super().__init__()
-        self.block = nn.Sequential(
-            nn.Conv2d(dim, dim_out, 3, padding=1),
-            nn.GroupNorm(groups, dim_out),
-            Mish(),
-        )
-
-    def forward(self, x: Tensor, mask: Tensor) -> Tensor:
-        output = self.block(x * mask)
-        return output * mask
-
-
-class ResnetBlock(Module):
-    r"""Applies a sequence of operations to the input tensor, including a residual connection.
-
-    The operations are two Blocks and a linear transformation of a time embedding.
-    The output of these operations is added to a transformed version of the input tensor.
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        kernel_size (int, optional): Size of the convolving kernel. Defaults to 1.
+        stride (int, optional): Stride of the convolution. Defaults to 1.
+        padding (int, optional): Zero-padding added to both sides of the input. Defaults to None.
+        dilation (int, optional): Spacing between kernel elements. Defaults to 1.
+        bias (bool, optional): If True, adds a learnable bias to the output. Defaults to True.
     """
 
     def __init__(
         self,
-        dim: int,
-        dim_out: int,
-        time_emb_dim: int,
-        groups: int = 8,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 1,
+        stride: int = 1,
+        padding: Optional[int] = None,
+        dilation: int = 1,
+        bias: bool = True,
     ):
         super().__init__()
-        self.mlp = nn.Sequential(
-            Mish(),
-            nn.Linear(time_emb_dim, dim_out),
+
+        if padding is None:
+            assert kernel_size % 2 == 1
+            padding = int(dilation * (kernel_size - 1) / 2)
+
+        self.conv = nn.Conv1d(
+            in_channels,
+            out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation,
+            bias=bias,
         )
+        nn.init.kaiming_normal_(self.conv.weight)
 
-        self.block1 = Block(dim, dim_out, groups=groups)
-        self.block2 = Block(dim_out, dim_out, groups=groups)
+    def forward(self, signal: Tensor) -> Tensor:
+        r"""Forward pass through the convolutional layer.
 
-        if dim != dim_out:
-            self.res_conv = torch.nn.Conv2d(dim, dim_out, 1)
-        else:
-            self.res_conv = torch.nn.Identity()
+        Args:
+            signal (torch.Tensor): Input signal tensor.
 
-    def forward(self, x: Tensor, mask: Tensor, time_emb: Tensor) -> Tensor:
-        h = self.block1(x, mask)
-        h += self.mlp(time_emb).unsqueeze(-1).unsqueeze(-1)
-        h = self.block2(h, mask)
-        output = h + self.res_conv(x * mask)
-        return output
+        Returns:
+            torch.Tensor: Output tensor after convolution.
+        """
+        conv_signal = self.conv(signal)
+
+        return conv_signal
 
 
-class LinearAttention(Module):
-    r"""Applies the linear attention mechanism to the input tensor.
+class DiffusionEmbedding(Module):
+    r"""Diffusion Step Embedding.
 
-    The input tensor is first transformed into query, key, and value tensors.
-    These are used to compute an attention matrix, which is used to weight the value tensor.
-    The result is transformed and returned.
+    This module generates diffusion step embeddings for the given input.
+
+    Args:
+        d_denoiser (int): Dimension of the denoiser.
+
+    Attributes:
+        dim (int): Dimension of the diffusion step embedding.
     """
 
-    def __init__(self, dim: int, heads: int = 4, dim_head: int = 32):
+    def __init__(self, d_denoiser: int):
         super().__init__()
-
-        self.heads = heads
-        hidden_dim = dim_head * heads
-
-        self.to_qkv = torch.nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
-        self.to_out = torch.nn.Conv2d(hidden_dim, dim, 1)
+        self.dim = d_denoiser
 
     def forward(self, x: Tensor) -> Tensor:
-        b, c, h, w = x.shape
+        r"""Forward pass through the DiffusionEmbedding module.
 
-        qkv = self.to_qkv(x)
-        q, k, v = rearrange(qkv, "b (qkv heads c) h w -> qkv b heads c (h w)",
-                            heads = self.heads, qkv=3)
-        k = k.softmax(dim=-1)
+        Args:
+            x (torch.Tensor): Input tensor.
 
-        context = torch.einsum("bhdn,bhen->bhde", k, v)
-        out = torch.einsum("bhde,bhdn->bhen", context, q)
-
-        out = rearrange(out, "b heads c (h w) -> b (heads c) h w",
-                        heads=self.heads, h=h, w=w)
-
-        return self.to_out(out)
-
-
-class Residual(Module):
-    r"""Applies a function to the input tensor and adds the result to the input tensor.
-
-    This implements a residual connection, which can help to mitigate the vanishing gradient problem in deep networks.
-    """
-
-    def __init__(self, fn: Module):
-        super().__init__()
-        self.fn = fn
-
-    def forward(self, x: Tensor, *args, **kwargs):
-        output = self.fn(x, *args, **kwargs) + x
-        return output
-
-
-class SinusoidalPosEmb(Module):
-    r"""Applies a sinusoidal positional embedding to the input tensor.
-
-    The positional embedding is a function of the position in the input tensor and the dimension of the embedding.
-    It is designed to provide a unique, learnable representation for each position in the input tensor.
-    """
-
-    def __init__(self, dim: int):
-        super().__init__()
-
-        self.dim = dim
-
-    def forward(self, x: Tensor, scale: int = 1000):
+        Returns:
+            torch.Tensor: Diffusion step embeddings.
+        """
         device = x.device
         half_dim = self.dim // 2
 
         emb = math.log(10000) / (half_dim - 1)
-        emb = torch.exp(torch.arange(half_dim, device=device).float() * -emb)
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)
 
-        emb = scale * x.unsqueeze(1) * emb.unsqueeze(0)
+        emb = x[:, None] * emb[None, :]
         emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
 
         return emb
+
+
+class LinearNorm(Module):
+    r"""LinearNorm Projection.
+
+    This module performs a linear projection with optional bias.
+
+    Args:
+        in_features (int): Number of input features.
+        out_features (int): Number of output features.
+        bias (bool, optional): If True, adds a learnable bias to the output. Default is False.
+
+    Attributes:
+        linear (torch.nn.Linear): Linear transformation module.
+
+    """
+
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        bias: bool = False,
+    ):
+        super().__init__()
+        self.linear = nn.Linear(in_features, out_features, bias)
+
+        nn.init.xavier_uniform_(self.linear.weight)
+        if bias:
+            nn.init.constant_(self.linear.bias, 0.0)
+
+    def forward(self, x: Tensor) -> Tensor:
+        r"""Forward pass through the LinearNorm module.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor after linear projection.
+        """
+        x = self.linear(x)
+        return x
+
+
+class ResidualBlock(Module):
+    r"""Residual Block.
+
+    This module defines a residual block used in a neural network architecture. It consists of
+    several convolutional and linear projections followed by nonlinear activations.
+
+    Args:
+        d_encoder (int): Dimension of the encoder output.
+        residual_channels (int): Number of channels in the residual block.
+        dropout (float): Dropout probability.
+        d_spk_prj (int): Dimension of the speaker projection.
+        multi_speaker (bool, optional): Flag indicating if the model is trained with multiple speakers. Defaults to True.
+
+    Attributes:
+        multi_speaker (bool): Flag indicating if the model is trained with multiple speakers.
+        conv_layer (ConvNorm): Convolutional layer in the residual block.
+        diffusion_projection (LinearNorm): Linear projection for the diffusion step.
+        speaker_projection (LinearNorm): Linear projection for the speaker embedding.
+        conditioner_projection (ConvNorm): Convolutional projection for the conditioner.
+        output_projection (ConvNorm): Convolutional projection for the output.
+    """
+
+    def __init__(
+        self,
+        d_encoder: int,
+        residual_channels: int,
+        dropout: float,
+        d_spk_prj: int,
+        multi_speaker: bool = True,
+    ):
+        super().__init__()
+        self.multi_speaker = multi_speaker
+        self.conv_layer = ConvNorm(
+            residual_channels,
+            2 * residual_channels,
+            kernel_size=3,
+            stride=1,
+            padding=int((3 - 1) / 2),
+            dilation=1,
+        )
+        self.diffusion_projection = LinearNorm(residual_channels, residual_channels)
+        if multi_speaker:
+            self.speaker_projection = LinearNorm(d_spk_prj, residual_channels)
+        self.conditioner_projection = ConvNorm(
+            d_encoder, residual_channels, kernel_size=1,
+        )
+        self.output_projection = ConvNorm(
+            residual_channels, 2 * residual_channels, kernel_size=1,
+        )
+
+    def forward(
+        self,
+        x: Tensor,
+        conditioner: Tensor,
+        diffusion_step: Tensor,
+        speaker_emb: Tensor,
+        mask: Optional[Tensor] = None,
+    ):
+        r"""Forward pass through the ResidualBlock module.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+            conditioner (torch.Tensor): Conditioner tensor.
+            diffusion_step (torch.Tensor): Diffusion step tensor.
+            speaker_emb (torch.Tensor): Speaker embedding tensor.
+            mask (torch.Tensor, optional): Mask tensor. Defaults to None.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: Tuple containing the output tensor and skip tensor.
+        """
+        diffusion_step = self.diffusion_projection(diffusion_step).unsqueeze(-1)
+        # conditioner = self.conditioner_projection(conditioner)
+        conditioner = self.conditioner_projection(conditioner.transpose(1, 2))
+        if self.multi_speaker:
+            # speaker_emb = self.speaker_projection(speaker_emb).unsqueeze(1).expand(
+            #     -1, conditioner.shape[-1], -1,
+            # ).transpose(1, 2)
+            speaker_emb = self.speaker_projection(speaker_emb).expand(
+                -1, conditioner.shape[-1], -1,
+            ).transpose(1, 2)
+
+        residual = y = x + diffusion_step
+        y = self.conv_layer(
+            (y + conditioner + speaker_emb) if self.multi_speaker else (y + conditioner),
+        )
+        gate, filter = torch.chunk(y, 2, dim=1)
+        y = torch.sigmoid(gate) * torch.tanh(filter)
+
+        y = self.output_projection(y)
+        x, skip = torch.chunk(y, 2, dim=1)
+
+        return (x + residual) / math.sqrt(2.0), skip
