@@ -71,7 +71,7 @@ class Denoiser(nn.Module):
         conditioner: Tensor,
         speaker_emb: Tensor,
         mask: Optional[Tensor] = None,
-    ):
+    ) -> Tensor:
         r"""Forward pass through the Denoiser module.
 
         Args:

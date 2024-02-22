@@ -76,9 +76,10 @@ nav:
           - Utterance Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/utterance_level_prosody_encoder.md
           - Phoneme Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/phoneme_level_prosody_encoder.md
         - Duffusion:
-          - Diffusion: models/tts/delightful_tts/diffusion/diffusion.md
+          - Gaussian Diffusion: models/tts/delightful_tts/diffusion/gaussian_diffusion.md
+          - Denoiser: models/tts/delightful_tts/diffusion/denoiser.md
           - Layers: models/tts/delightful_tts/diffusion/layers.md
-          - GradLogPEstimator2d: models/tts/delightful_tts/diffusion/grad_logp_estimator2d.md
+          - Utils: models/tts/delightful_tts/diffusion/utils.md
       - StyledTTS 2:
         - References: models/tts/styledtts2/readme.md
         - Diffusion:
