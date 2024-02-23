@@ -1,87 +1,62 @@
 from typing import List, Union
 
-import numpy as np
+import torch
+from torch import Tensor, nn
 
 
-def pad_1D(inputs: List[np.ndarray], pad_value: float = 0.0) -> np.ndarray:
-    r"""Pad a list of 1D numpy arrays to the same length.
+def pad_1D(inputs: List[Tensor], pad_value: float = 0.0) -> Tensor:
+    r"""Pad a list of 1D tensor list to the same length.
 
     Args:
-        inputs (List[np.ndarray]): List of 1D numpy arrays to pad.
+        inputs (List[torch.Tensor]): List of 1D numpy arrays to pad.
         pad_value (float): Value to use for padding. Default is 0.0.
 
     Returns:
-        np.ndarray: Padded 2D numpy array of shape (len(inputs), max_len), where max_len is the length of the longest input array.
+        torch.Tensor: Padded 2D numpy array of shape (len(inputs), max_len), where max_len is the length of the longest input array.
     """
-
-    def pad_data(x: np.ndarray, length: int) -> np.ndarray:
-        r"""Pad a 1D numpy array with zeros to a specified length.
-
-        Args:
-            x (np.ndarray): 1D numpy array to pad.
-            length (int): Length to pad the array to.
-
-        Returns:
-            np.ndarray: Padded 1D numpy array of shape (length,).
-        """
-        return np.pad(
-            x, (0, length - x.shape[0]), mode="constant", constant_values=pad_value,
-        )
-
-    max_len = max(len(x) for x in inputs)
-    return np.stack([pad_data(x, max_len) for x in inputs])
+    max_len = max(x.size(0) for x in inputs)
+    padded_inputs = [nn.functional.pad(x, (0, max_len - x.size(0)), value=pad_value) for x in inputs]
+    return torch.stack(padded_inputs)
 
 
 def pad_2D(
-    inputs: List[np.ndarray], maxlen: Union[int, None] = None, pad_value: float = 0.0,
-) -> np.ndarray:
-    r"""Pad a list of 2D numpy arrays to the same length.
+    inputs: List[Tensor], maxlen: Union[int, None] = None, pad_value: float = 0.0,
+) -> Tensor:
+    r"""Pad a list of 2D tensor arrays to the same length.
 
     Args:
-        inputs (List[np.ndarray]): List of 2D numpy arrays to pad.
+        inputs (List[torch.Tensor]): List of 2D numpy arrays to pad.
         maxlen (Union[int, None]): Maximum length to pad the arrays to. If None, pad to the length of the longest array. Default is None.
         pad_value (float): Value to use for padding. Default is 0.0.
 
     Returns:
-        np.ndarray: Padded 3D numpy array of shape (len(inputs), max_len, input_dim), where max_len is the maximum length of the input arrays, and input_dim is the dimension of the input arrays.
+        torch.Tensor: Padded 3D numpy array of shape (len(inputs), max_len, input_dim), where max_len is the maximum length of the input arrays, and input_dim is the dimension of the input arrays.
     """
+    max_len = max(x.size(1) for x in inputs) if maxlen is None else maxlen
 
-    def pad(x: np.ndarray, max_len: int) -> np.ndarray:
-        r"""Pad a 2D numpy array with zeros to a specified length.
-
-        Args:
-            x (np.ndarray): 2D numpy array to pad.
-            max_len (int): Maximum length to pad the array to.
-
-        Returns:
-            np.ndarray: Padded 2D numpy array of shape (x.shape[0], max_len), where x.shape[0] is the number of rows in the input array.
-        """
-        if np.shape(x)[1] > max_len:
-            raise ValueError("not max_len")
-        padding = np.ones((x.shape[0], max_len - np.shape(x)[1])) * pad_value
-        return np.concatenate((x, padding), 1)
-
-    if maxlen:
-        output = np.stack([pad(x, maxlen) for x in inputs])
-    else:
-        max_len = max(np.shape(x)[1] for x in inputs)
-        output = np.stack([pad(x, max_len) for x in inputs])
-    return output
+    padded_inputs = [nn.functional.pad(x, (0, max_len - x.size(1), 0, 0), value=pad_value) for x in inputs]
+    return torch.stack(padded_inputs)
 
 
-def pad_3D(inputs: Union[np.ndarray, List[np.ndarray]], B: int, T: int, L: int) -> np.ndarray:
-    r"""Pad a 3D numpy array to a specified shape.
+def pad_3D(inputs: Union[Tensor, List[Tensor]], B: int, T: int, L: int) -> Tensor:
+    r"""Pad a 3D torch tensor to a specified shape.
 
     Args:
-        inputs (np.ndarray): 3D numpy array to pad.
+        inputs (torch.Tensor): 3D numpy array to pad.
         B (int): Batch size to pad the array to.
         T (int): Time steps to pad the array to.
         L (int): Length to pad the array to.
 
     Returns:
-        np.ndarray: Padded 3D numpy array of shape (B, T, L), where B is the batch size, T is the time steps, and L is the length.
+        torch.Tensor: Padded 3D numpy array of shape (B, T, L), where B is the batch size, T is the time steps, and L is the length.
     """
-    inputs_padded = np.zeros((B, T, L), dtype=np.float32)
-    for i, input_ in enumerate(inputs):
-        inputs_padded[i, : np.shape(input_)[0], : np.shape(input_)[1]] = input_
+    if isinstance(inputs, list):
+        inputs_padded = torch.zeros(B, T, L, dtype=inputs[0].dtype)
+        for i, input_ in enumerate(inputs):
+            inputs_padded[i, :input_.size(0), :input_.size(1)] = input_
+
+    elif isinstance(inputs, torch.Tensor):
+        inputs_padded = torch.zeros(B, T, L, dtype=inputs.dtype)
+        inputs_padded[:inputs.size(0), :inputs.size(1), :inputs.size(2)] = inputs
+
     return inputs_padded

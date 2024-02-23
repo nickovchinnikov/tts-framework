@@ -5,6 +5,8 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
+from models.config.configs import DiffusionConfig
+
 from .layers import ConvNorm, DiffusionEmbedding, LinearNorm, Mish, ResidualBlock
 
 
@@ -15,8 +17,7 @@ class Denoiser(nn.Module):
     It consists of several convolutional and linear projections followed by residual blocks.
 
     Args:
-        preprocess_config (dict): Preprocessing configuration dictionary.
-        model_config (dict): Model configuration dictionary.
+        model_config (DiffusionConfig): Model configuration dictionary.
 
     Attributes:
         input_projection (nn.Sequential): Sequential module for input projection.
@@ -28,15 +29,17 @@ class Denoiser(nn.Module):
 
     """
 
-    def __init__(self, preprocess_config, model_config):
+    def __init__(self, model_config: DiffusionConfig):
         super().__init__()
-        n_mel_channels = preprocess_config["preprocessing"]["mel"]["n_mel_channels"]
-        d_encoder = model_config["transformer"]["encoder_hidden"]
-        d_spk_prj = model_config["transformer"]["speaker_embed_dim"]
-        residual_channels = model_config["denoiser"]["residual_channels"]
-        residual_layers = model_config["denoiser"]["residual_layers"]
-        dropout = model_config["denoiser"]["denoiser_dropout"]
-        multi_speaker = model_config["multi_speaker"]
+
+        # Model configuration
+        multi_speaker = model_config.multi_speaker
+        n_mel_channels = model_config.n_mel_channels
+        d_encoder = model_config.encoder_hidden
+        d_spk_prj = model_config.speaker_embed_dim
+        residual_channels = model_config.residual_channels
+        residual_layers = model_config.residual_layers
+        dropout = model_config.denoiser_dropout
 
         self.input_projection = nn.Sequential(
             ConvNorm(n_mel_channels, residual_channels, kernel_size=1),
@@ -51,7 +54,11 @@ class Denoiser(nn.Module):
         self.residual_layers = nn.ModuleList(
             [
                 ResidualBlock(
-                    d_encoder, residual_channels, dropout=dropout, d_spk_prj=d_spk_prj, multi_speaker=multi_speaker,
+                    d_encoder,
+                    residual_channels,
+                    dropout=dropout,
+                    d_spk_prj=d_spk_prj,
+                    multi_speaker=multi_speaker,
                 )
                 for _ in range(residual_layers)
             ],
@@ -70,7 +77,6 @@ class Denoiser(nn.Module):
         diffusion_step: Tensor,
         conditioner: Tensor,
         speaker_emb: Tensor,
-        mask: Optional[Tensor] = None,
     ) -> Tensor:
         r"""Forward pass through the Denoiser module.
 
@@ -79,7 +85,6 @@ class Denoiser(nn.Module):
             diffusion_step (torch.Tensor): Diffusion step tensor of shape [B,].
             conditioner (torch.Tensor): Conditioner tensor of shape [B, M, T].
             speaker_emb (torch.Tensor): Speaker embedding tensor of shape [B, M].
-            mask (torch.Tensor, optional): Mask tensor. Defaults to None.
 
         Returns:
             torch.Tensor: Output mel-spectrogram tensor of shape [B, 1, M, T].

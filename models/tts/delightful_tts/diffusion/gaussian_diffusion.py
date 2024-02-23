@@ -1,10 +1,12 @@
 from functools import partial
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
 from torch import Tensor, nn
 from tqdm import tqdm
+
+from models.config.configs import DiffusionConfig
 
 from .denoiser import Denoiser
 from .utils import default, extract, get_noise_schedule_list, noise_like
@@ -43,30 +45,27 @@ class GaussianDiffusion(nn.Module):
 
     def __init__(
         self,
-        args: Dict,
-        preprocess_config: Dict,
-        model_config: Dict,
-        train_config: Dict,
+        model_config: DiffusionConfig,
     ):
         r"""Initialize the Gaussian Diffusion module.
 
         Args:
-            args (Dict): Arguments.
-            preprocess_config (Dict): Preprocessing configuration.
-            model_config (Dict): Model configuration.
-            train_config (Dict): Training configuration.
+            model_config (DiffusionConfig): Model configuration.
         """
         super().__init__()
-        self.model = args["model"]
-        self.denoise_fn = Denoiser(preprocess_config, model_config)
-        self.mel_bins = preprocess_config["preprocessing"]["mel"]["n_mel_channels"]
+
+        # Model configuration
+        self.model = model_config.model
+        self.denoise_fn = Denoiser(model_config)
+
+        self.mel_bins = model_config.n_mel_channels
 
         betas = get_noise_schedule_list(
-            schedule_mode=model_config["denoiser"]["noise_schedule_naive"],
-            timesteps=model_config["denoiser"]["timesteps" if self.model == "naive" else "shallow_timesteps"],
-            min_beta=model_config["denoiser"]["min_beta"],
-            max_beta=model_config["denoiser"]["max_beta"],
-            s=model_config["denoiser"]["s"],
+            schedule_mode=model_config.noise_schedule_naive,
+            timesteps=model_config.timesteps if self.model == "naive" else model_config.shallow_timesteps,
+            min_beta=model_config.min_beta,
+            max_beta=model_config.max_beta,
+            s=model_config.s,
         )
 
         alphas = 1. - betas
@@ -75,7 +74,7 @@ class GaussianDiffusion(nn.Module):
 
         timesteps, = betas.shape
         self.num_timesteps = int(timesteps)
-        self.loss_type = train_config["loss"]["noise_loss"]
+        self.loss_type = model_config.noise_loss
 
         to_torch = partial(torch.tensor, dtype=torch.float32)
 
@@ -100,13 +99,6 @@ class GaussianDiffusion(nn.Module):
             betas * np.sqrt(alphas_cumprod_prev) / (1. - alphas_cumprod)))
         self.register_buffer("posterior_mean_coef2", to_torch(
             (1. - alphas_cumprod_prev) * np.sqrt(alphas) / (1. - alphas_cumprod)))
-
-        # with open(
-        #         os.path.join(preprocess_config["path"]["preprocessed_path"], "stats.json"),
-        # ) as f:
-        #     stats = json.load(f)
-        #     self.register_buffer("spec_min", torch.FloatTensor(stats["spec_min"])) # [None, None, :model_config["denoiser"]["keep_bins"]])
-        #     self.register_buffer("spec_max", torch.FloatTensor(stats["spec_max"])) # [None, None, :model_config["denoiser"]["keep_bins"]])
 
     def q_mean_variance(self, x_start: Tensor, t: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """Calculate mean, variance, and log variance of the diffusion process.
@@ -156,8 +148,8 @@ class GaussianDiffusion(nn.Module):
             Tuple[Tensor, Tensor, Tensor]: Posterior mean, variance, and clipped log variance.
         """
         posterior_mean = (
-                extract(self.posterior_mean_coef1, t, x_t.shape) * x_start +
-                extract(self.posterior_mean_coef2, t, x_t.shape) * x_t
+            extract(self.posterior_mean_coef1, t, x_t.shape) * x_start +
+            extract(self.posterior_mean_coef2, t, x_t.shape) * x_t
         )
         posterior_variance = extract(self.posterior_variance, t, x_t.shape)
         posterior_log_variance_clipped = extract(self.posterior_log_variance_clipped, t, x_t.shape)
@@ -196,7 +188,6 @@ class GaussianDiffusion(nn.Module):
         cond: Tensor,
         spk_emb: Tensor,
         clip_denoised: bool = True,
-        repeat_noise: bool = False,
     ):
         r"""Sample from the distribution.
 
@@ -206,7 +197,6 @@ class GaussianDiffusion(nn.Module):
             cond (Tensor): Conditional tensor.
             spk_emb (Tensor): Speaker embedding tensor.
             clip_denoised (bool, optional): Whether to clip denoised tensor. Defaults to True.
-            repeat_noise (bool, optional): Whether to repeat noise. Defaults to False.
 
         Returns:
             Tensor: Sampled tensor.
@@ -412,8 +402,8 @@ class GaussianDiffusion(nn.Module):
             else:
                 # x_start = self.norm_spec(coarse_mel)
                 x_start = coarse_mel
-                x_start = x_start.transpose(1, 2)[:, None, :, :]  # [B, 1, M, T]
-                # x_start = x_start[:, None, :, :]  # [B, 1, T, M]
+                # x_start = x_start.transpose(1, 2)[:, None, :, :]  # [B, 1, M, T]
+                x_start = x_start[:, None, :, :]  # [B, 1, T, M]
 
             x_t_prev_pred = self.q_posterior_sample(x_start=x_start, x_t=x_t, t=t) * mel_mask
 
@@ -424,20 +414,3 @@ class GaussianDiffusion(nn.Module):
             x_t_prev_pred = x_t_prev_pred[:, 0].transpose(1, 2)
 
         return x_0_pred, x_t, x_t_prev, x_t_prev_pred, t
-
-    # def norm_spec(self, x):
-    #     return (x - self.spec_min) / (self.spec_max - self.spec_min) * 2 - 1
-
-    # def denorm_spec(self, x):
-    #     return (x + 1) / 2 * (self.spec_max - self.spec_min) + self.spec_min
-
-    # def out2mel(self, x: Tensor) -> Tensor:
-    #     r"""Convert output to Mel.
-
-    #     Args:
-    #         x (Tensor): Input tensor.
-
-    #     Returns:
-    #         Tensor: Mel tensor.
-    #     """
-    #     return x

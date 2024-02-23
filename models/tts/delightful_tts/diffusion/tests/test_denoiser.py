@@ -2,22 +2,37 @@ import unittest
 
 import torch
 
+from models.config.configs import DiffusionConfig
 from models.tts.delightful_tts.diffusion.denoiser import Denoiser
 
 
 class TestDenoiser(unittest.TestCase):
     def test_forward(self):
-        preprocess_config = {
-            "preprocessing": {
-                "mel": {"n_mel_channels": 8},
-            },
-        }
-        model_config = {
-            "transformer": {"encoder_hidden": 16, "speaker_embed_dim": 8},
-            "denoiser": {"residual_channels": 8, "residual_layers": 4, "denoiser_dropout": 0.1},
-            "multi_speaker": True,
-        }
-        denoiser = Denoiser(preprocess_config, model_config)
+        model_config = DiffusionConfig(
+            # model parameters
+            model="shallow",
+            n_mel_channels=8,
+            multi_speaker=True,
+            # denoiser parameters
+            residual_channels=8,
+            residual_layers=4,
+            denoiser_dropout=0.2,
+            noise_schedule_naive="vpsde",
+            timesteps=4,
+            shallow_timesteps=1,
+            min_beta=0.1,
+            max_beta=40,
+            s=0.008,
+            keep_bins=80,
+            # trainsformer params
+            encoder_hidden=16,
+            decoder_hidden=16,
+            speaker_embed_dim=8,
+            # loss params
+            noise_loss="l1",
+        )
+
+        denoiser = Denoiser(model_config)
 
         B = 2  # Batch size
         M = 8  # Mel channels

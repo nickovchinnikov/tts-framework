@@ -1,9 +1,9 @@
 from inspect import isfunction
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 
 import numpy as np
 import torch
-from torch import Tensor
+from torch import Size, Tensor
 
 
 def exists(x: Any) -> bool:
@@ -36,14 +36,14 @@ def default(val: Any, d: Any) -> Any:
 def extract(
     a: Tensor,
     t: Tensor,
-    x_shape: Tuple[int, ...],
+    x_shape: Size,
 ):
     r"""Extract elements from tensor 'a' using indices 't'.
 
     Args:
         a (torch.Tensor): Input tensor.
         t (torch.Tensor): Indices tensor.
-        x_shape (Tuple[int, ...]): Shape of the input tensor 'a'.
+        x_shape (Size): Shape of the input tensor 'a'.
 
     Returns:
         torch.Tensor: Extracted elements tensor.
@@ -54,14 +54,14 @@ def extract(
 
 
 def noise_like(
-    shape: Tuple[int, ...],
+    shape: Size,
     device: torch.device,
     repeat: bool = False,
 ):
     r"""Generate random noise tensor with the given shape.
 
     Args:
-        shape (Tuple[int, ...]): Shape of the noise tensor.
+        shape (Size): Shape of the noise tensor.
         device (torch.device): Device for the tensor.
         repeat (bool, optional): If True, repeat the noise tensor to match the given shape. Defaults to False.
 

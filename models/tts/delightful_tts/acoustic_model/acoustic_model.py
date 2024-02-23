@@ -145,60 +145,8 @@ class AcousticModel(Module):
             with_ff=model_config.decoder.with_ff,
         )
 
-        args = {
-            "model": "shallow",
-        }
-
-        preprocess_config_diff = {
-            "preprocessing": {
-                "mel": {
-                    "n_mel_channels": 100,
-                },
-            },
-            "path": {
-                "preprocessed_path": "./config",
-            },
-        }
-
-        model_config_diff = {
-            "multi_speaker": True,
-            "denoiser": {
-                # "residual_channels": 256,
-                "residual_channels": 96,
-                "residual_layers": 20,
-                "denoiser_dropout": 0.2,
-                "noise_schedule_naive": "vpsde",
-                "timesteps": 4,
-                "shallow_timesteps": 1,
-                "min_beta": 0.1,
-                "max_beta": 40,
-                "s": 0.008,
-                "keep_bins": 80,
-            },
-            "transformer": {
-                # "encoder_hidden": 256,
-                "encoder_hidden": 100,
-                "decoder_hidden": 96,
-                "speaker_embed_dim": 97,
-            },
-        }
-
-        train_config_diff = {
-            "loss": {
-                "noise_loss": "l1",
-            },
-        }
-
         self.diffusion = GaussianDiffusion(
-            args,
-            preprocess_config_diff,
-            model_config_diff,
-            train_config_diff,
-        )
-
-        self.mel_linear = nn.Linear(
-            model_config_diff["transformer"]["decoder_hidden"],
-            preprocess_config_diff["preprocessing"]["mel"]["n_mel_channels"],
+            model_config.diffusion,
         )
 
         self.src_word_emb = Parameter(
@@ -467,31 +415,39 @@ class AcousticModel(Module):
             attn_hard_dur.sum(1),
             mel_lens,
         )"""
-        x_, log_duration_prediction, embeddings = self.length_regulator.upsample_train(
+        x, log_duration_prediction, embeddings = self.length_regulator.upsample_train(
             x=x,
             x_res=x_res,
             duration_target=attn_hard_dur,
             src_mask=src_mask,
             embeddings=embeddings,
         )
-        x = self.decoder(x_, mel_mask, embeddings=embeddings, encoding=encoding)
+
+        # Prepare cond for the diffusion layer
+        cond = self.to_mel(
+            x.clone(),
+        ).permute((0, 2, 1))
+
+        # Decode the encoder output to pred mel spectrogram
+        x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
 
         x = x.permute((0, 2, 1))
 
         # Diffusion layer step
-        cond = x.clone()
-        coarse_mels = self.mel_linear(x_)
         (
             y_pred, # x_0_pred
             x_ts,
             x_t_prevs,
             x_t_prev_preds,
             diffusion_step,
-        ) = self.diffusion.forward(mels, cond, embeddings, mel_mask, coarse_mels) # type: ignore
-
-        # x = self.diffusion.forward <- add here the integration of the diffusion model
-        # x = self.diffusion.forward(x, embeddings, speakers, src_mask, mels) # type: ignore
+        ) = self.diffusion.forward(
+            mels,
+            cond,
+            embeddings,
+            mel_mask,
+            x,
+        )
 
         y_pred = y_pred.permute((0, 2, 1))
 
