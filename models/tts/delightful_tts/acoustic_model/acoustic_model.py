@@ -149,6 +149,12 @@ class AcousticModel(Module):
             model_config.diffusion,
         )
 
+        # Layer to create cond for the diffusion layer
+        self.to_cond = nn.Linear(
+            model_config.decoder.n_hidden,
+            preprocess_config.stft.n_mel_channels,
+        )
+
         self.src_word_emb = Parameter(
             tools.initialize_embeddings(
                 (len(symbols), model_config.encoder.n_hidden),
@@ -225,6 +231,11 @@ class AcousticModel(Module):
         """
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
+
+    def freeze_params_except_diffusion(self) -> None:
+        r"""Freeze all the layers except the diffusion layer."""
+        for name, param in self.named_parameters():
+            param.requires_grad = "diffusion" in name or "to_cond" in name
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
@@ -424,7 +435,7 @@ class AcousticModel(Module):
         )
 
         # Prepare cond for the diffusion layer
-        cond = self.to_mel(
+        cond = self.to_cond(
             x.clone(),
         ).permute((0, 2, 1))
 

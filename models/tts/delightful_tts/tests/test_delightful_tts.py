@@ -75,12 +75,13 @@ class TestDelightfulTTS(unittest.TestCase):
             logger=tensorboard,
             # Save checkpoints to the `default_root_dir` directory
             default_root_dir=default_root_dir,
+            fast_dev_run=1,
             limit_train_batches=1,
             max_epochs=1,
             accelerator="gpu",
             # Precision is set to speed up training
             # precision="bf16-mixed",
-            precision="16-mixed",
+            # precision="16-mixed",
         )
 
         module = DelightfulTTS(batch_size=2)
