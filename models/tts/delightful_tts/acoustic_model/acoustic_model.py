@@ -552,6 +552,12 @@ class AcousticModel(Module):
             control=d_control,
             embeddings=embeddings,
         )
+
+        # Prepare cond for the diffusion layer
+        cond = self.to_cond(
+            x.clone(),
+        ).permute((0, 2, 1))
+
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
         ).to(x.device)
@@ -562,4 +568,19 @@ class AcousticModel(Module):
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
 
-        return x.permute((0, 2, 1))
+        # Diffusion layer step
+        (
+            y_pred, # x_0_pred
+            _,
+            _,
+            _,
+            _,
+        ) = self.diffusion.forward(
+            None,
+            cond,
+            embeddings,
+            mel_mask,
+            x,
+        )
+
+        return y_pred.permute((0, 2, 1))

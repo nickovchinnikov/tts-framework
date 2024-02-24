@@ -23,8 +23,8 @@ class TestSpectralConvergengeLoss(unittest.TestCase):
         # Test the spectral convergence loss function with non-zero loss
         loss_fn = SpectralConvergengeLoss()
 
-        x_mag = torch.tensor([1, 4, 9, 64], dtype=torch.float32)
-        y_mag = torch.tensor([1, 8, 16, 256], dtype=torch.float32)
+        x_mag = torch.tensor([[1, 4, 9, 64], [1, 1, 1, 2]], dtype=torch.float32)
+        y_mag = torch.tensor([[1, 8, 16, 256], [1, 1, 2, 2]], dtype=torch.float32)
 
         loss = loss_fn(x_mag, y_mag)
 

@@ -285,7 +285,7 @@ class GaussianDiffusion(nn.Module):
         t = self.num_timesteps
         shape = (self.cond.shape[0], 1, self.mel_bins, self.cond.shape[2])
         xs = [torch.randn(shape, device=device) if noise is None else noise]
-        for i in tqdm(reversed(range(t)), desc="sample time step", total=t):
+        for i in reversed(range(t)):
             x = self.p_sample(
                 xs[-1],
                 torch.full((b,), i, device=device, dtype=torch.long),
@@ -315,7 +315,8 @@ class GaussianDiffusion(nn.Module):
         for t in range(self.num_timesteps):
             t = torch.full((b,), t, device=device, dtype=torch.long)
             trace.append(
-                self.diffuse_fn(x_start, t)[:, 0].transpose(1, 2) * ~mask.unsqueeze(-1),
+                # self.diffuse_fn(x_start, t)[:, 0].transpose(1, 2) * ~mask.unsqueeze(-1),
+                self.diffuse_fn(x_start, t)[:, 0] * ~mask.unsqueeze(-1),
             )
         return trace
 
@@ -347,13 +348,13 @@ class GaussianDiffusion(nn.Module):
 
     def forward(
         self,
-        mel: Tensor,
+        mel: Optional[Tensor],
         cond: Tensor,
         spk_emb: Tensor,
         mel_mask: Tensor,
         coarse_mel: Tensor,
         clip_denoised: bool = True,
-    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
+    ) -> Tuple[Tensor, Optional[Tensor], Optional[Tensor], Optional[Tensor], Optional[Tensor]]:
         r"""Forward pass.
 
         Args:
@@ -365,11 +366,9 @@ class GaussianDiffusion(nn.Module):
             clip_denoised (bool, optional): Whether to clip denoised tensor. Defaults to True.
 
         Returns:
-            Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]: Tuple containing predicted start, tensor at time step, tensor at previous time step, predicted tensor at previous time step, and time tensor.
+            Tuple[Tensor, Optional[Tensor], Optional[Tensor], Optional[Tensor], Optional[Tensor]]: Tuple containing predicted start, tensor at time step, tensor at previous time step, predicted tensor at previous time step, and time tensor.
         """
         b, *_, device = *cond.shape, cond.device
-
-        # x_t = x_t_prev = x_t_prev_pred = t = None
 
         mel_mask = ~mel_mask.unsqueeze(-1)
         cond = cond.transpose(1, 2)
@@ -381,8 +380,11 @@ class GaussianDiffusion(nn.Module):
                 noise = None
             else:
                 t = torch.full((b,), self.num_timesteps - 1, device=device, dtype=torch.long)
-                noise = self.diffuse_fn(coarse_mel, t) * mel_mask.unsqueeze(-1).transpose(1, -1)
+                # noise = self.diffuse_fn(coarse_mel, t) * mel_mask.unsqueeze(1)
+                # noise = self.diffuse_fn(coarse_mel, t) * mel_mask.unsqueeze(-1).transpose(1, -1)
+                noise = (self.diffuse_fn(coarse_mel, t) * mel_mask).transpose(-1, -2)
             x_0_pred = self.sampling(noise=noise)[-1] * mel_mask
+            return x_0_pred, None, None, None, None
         else:
             mel_mask = mel_mask.unsqueeze(-1).transpose(1, -1)
             t: Tensor = torch.randint(0, self.num_timesteps, (b,), device=device).long()

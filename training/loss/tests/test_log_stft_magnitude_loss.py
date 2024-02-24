@@ -22,15 +22,15 @@ class TestLogSTFTMagnitudeLoss(unittest.TestCase):
         # Test the log STFT magnitude loss function with non-zero loss
         loss_fn = LogSTFTMagnitudeLoss()
 
-        x_mag = torch.tensor([1, 4, 9, 64], dtype=torch.float32)
-        y_mag = torch.tensor([1, 8, 16, 256], dtype=torch.float32)
+        x_mag = torch.tensor([[1, 4, 9, 64], [1, 1, 1, 2]])
+        y_mag = torch.tensor([[1, 8, 16, 256], [1, 1, 2, 2]])
 
         loss = loss_fn(x_mag, y_mag)
 
         self.assertIsInstance(loss, torch.Tensor)
         self.assertEqual(loss.shape, torch.Size([]))
 
-        expected = torch.tensor(0.6637)
+        expected = torch.tensor(0.4185)
         self.assertTrue(torch.allclose(loss, expected, rtol=1e-4, atol=1e-4))
 
 

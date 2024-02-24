@@ -1,7 +1,10 @@
 import unittest
 
+import nltk
+
 from server.utils import sentences_split
 
+nltk.download("punkt")
 
 class TestUtils(unittest.TestCase):
     def test_sentences_split(self):
