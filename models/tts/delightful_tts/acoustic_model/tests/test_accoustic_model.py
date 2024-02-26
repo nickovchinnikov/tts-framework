@@ -2,6 +2,7 @@ import unittest
 
 import torch
 from torch.utils.data import DataLoader
+import torchaudio
 
 from models.config import AcousticENModelConfig, PreprocessingConfig
 

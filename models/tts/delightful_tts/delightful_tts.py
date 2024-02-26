@@ -13,17 +13,13 @@ from models.config import (
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
     PreprocessingConfig,
-    VocoderFinetuningConfig,
-    # VocoderModelConfig,
-    VocoderPretrainingConfig,
-    VoicoderTrainingConfig,
     get_lang_map,
     lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
 from models.vocoder.univnet import UnivNet
 from training.datasets import LibriTTSDatasetAcoustic
-from training.loss import FastSpeech2LossGen, Metrics
+from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
 
 # Updated version of the tokenizer
@@ -71,11 +67,6 @@ class DelightfulTTS(LightningModule):
         else:
             self.train_config_acoustic = AcousticPretrainingConfig()
 
-        self.train_config_vocoder: VoicoderTrainingConfig = \
-        VocoderFinetuningConfig() \
-        if fine_tuning \
-        else VocoderPretrainingConfig()
-
         self.preprocess_config = PreprocessingConfig("english_only")
         self.model_config = AcousticENModelConfig()
 
@@ -86,58 +77,58 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
+        # NOTE: freeze until the diffusion model is ready
+        self.acoustic_model.freeze_params_except_diffusion()
 
-        # self.vocoder_config = VocoderModelConfig()
-
-        # self.vocoder_module = UnivNet()
-        # self.vocoder_module = self.vocoder_module.eval()
-        # self.vocoder_module.freeze()
+        # Initialize the vocoder, freeze for the first stage of the training
+        self.vocoder = UnivNet()
+        self.vocoder.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
-
-        self.metrics = Metrics(lang)
 
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
 
 
-    # def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
-    #     r"""Performs a forward pass through the AcousticModel.
-    #     This code must be run only with the loaded weights from the checkpoint!
+    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
 
-    #     Args:
-    #         text (str): The input text.
-    #         speaker_idx (torch.Tensor): The index of the speaker.
-    #         lang (str): The language.
+        Args:
+            text (str): The input text.
+            speaker_idx (torch.Tensor): The index of the speaker.
+            lang (str): The language.
 
-    #     Returns:
-    #         torch.Tensor: The output of the AcousticModel.
-    #     """
-    #     normalized_text = self.normilize_text(text)
-    #     _, phones = self.tokenizer(normalized_text)
+        Returns:
+            torch.Tensor: The output of the AcousticModel.
+        """
+        normalized_text = self.normilize_text(text)
+        _, phones = self.tokenizer(normalized_text)
 
-    #     # Convert to tensor
-    #     x = torch.tensor(
-    #         phones, dtype=torch.int, device=speaker_idx.device,
-    #     ).unsqueeze(0)
+        # Convert to tensor
+        x = torch.tensor(
+            phones, dtype=torch.int, device=speaker_idx.device,
+        ).unsqueeze(0)
 
-    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-    #     langs = torch.tensor(
-    #         [lang2id[lang]],
-    #         dtype=torch.int,
-    #         device=speaker_idx.device,
-    #     ).repeat(x.shape[1]).unsqueeze(0)
+        langs = torch.tensor(
+            [lang2id[lang]],
+            dtype=torch.int,
+            device=speaker_idx.device,
+        ).repeat(x.shape[1]).unsqueeze(0)
 
-    #     y_pred = self.acoustic_model(
-    #         x=x,
-    #         pitches_range=self.pitches_stat,
-    #         speakers=speakers,
-    #         langs=langs,
-    #     )
+        y_pred = self.acoustic_model(
+            x=x,
+            pitches_range=self.pitches_stat,
+            speakers=speakers,
+            langs=langs,
+        )
 
-    #     return self.vocoder_module.forward(y_pred)
+        wav = self.vocoder.forward(y_pred)
+
+        return wav
 
 
     # TODO: don't forget about torch.no_grad() !
@@ -180,7 +171,7 @@ class DelightfulTTS(LightningModule):
             mel_lens,
             langs,
             attn_priors,
-            wavs,
+            _,
             energies,
         ) = batch
         # Update pitches_stat
@@ -258,6 +249,7 @@ class DelightfulTTS(LightningModule):
 
         return total_loss
 
+        # # Manual optimizer
         # # Access your optimizers
         # optimizers = self.optimizers()
         # schedulers = self.lr_schedulers()
@@ -320,7 +312,7 @@ class DelightfulTTS(LightningModule):
             mel_lens,
             langs,
             attn_priors,
-            wavs,
+            _,
             energies,
         ) = batch
 
@@ -498,7 +490,7 @@ class DelightfulTTS(LightningModule):
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
         url: str = "train-clean-360",
-        validation_split: float = 0.05,  # Percentage of data to use for validation
+        validation_split: float = 0.025,  # Percentage of data to use for validation
     ) -> Tuple[DataLoader, DataLoader]:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 

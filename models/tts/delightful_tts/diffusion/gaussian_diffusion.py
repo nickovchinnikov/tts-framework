@@ -4,7 +4,6 @@ from typing import List, Optional, Tuple
 import numpy as np
 import torch
 from torch import Tensor, nn
-from tqdm import tqdm
 
 from models.config.configs import DiffusionConfig
 
@@ -241,7 +240,7 @@ class GaussianDiffusion(nn.Module):
         xt1, xt2 = map(lambda x: self.q_sample(x, t=t_batched), (x1, x2))
 
         x = (1 - lam) * xt1 + lam * xt2
-        for i in tqdm(reversed(range(t)), desc="interpolation sample time step", total=t):
+        for i in reversed(range(t)):
             x = self.p_sample(x, torch.full((b,), i, device=device, dtype=torch.long), cond, spk_emb)
 
         x = x[:, 0].transpose(1, 2)
