@@ -280,7 +280,7 @@ class GaussianDiffusion(nn.Module):
         Returns:
             List[Tensor]: List of sampled tensors.
         """
-        b, *_, device = *self.cond.shape, self.cond.device
+        b, *_, device = *self.cond.shape, self.cond.device # type: ignore
         t = self.num_timesteps
         shape = (self.cond.shape[0], 1, self.mel_bins, self.cond.shape[2])
         xs = [torch.randn(shape, device=device) if noise is None else noise]
@@ -295,29 +295,6 @@ class GaussianDiffusion(nn.Module):
         # output = [self.denorm_spec(x[:, 0].transpose(1, 2)) for x in xs]
         output = [x[:, 0].transpose(1, 2) for x in xs]
         return output
-
-    def diffuse_trace(self, x_start: Tensor, mask: Tensor) -> List[Tensor]:
-        r"""Diffuse trace.
-
-        Args:
-            x_start (Tensor): Start tensor.
-            mask (Tensor): Mask tensor.
-
-        Returns:
-            List[Tensor]: List of diffused tensors.
-        """
-        b, *_, device = *x_start.shape, x_start.device
-
-        # trace = [self.norm_spec(x_start).clamp_(-1., 1.) * ~mask.unsqueeze(-1)]
-
-        trace = [x_start.clamp_(-1., 1.) * ~mask.unsqueeze(-1)]
-        for t in range(self.num_timesteps):
-            t = torch.full((b,), t, device=device, dtype=torch.long)
-            trace.append(
-                # self.diffuse_fn(x_start, t)[:, 0].transpose(1, 2) * ~mask.unsqueeze(-1),
-                self.diffuse_fn(x_start, t)[:, 0] * ~mask.unsqueeze(-1),
-            )
-        return trace
 
     def diffuse_fn(
         self,
@@ -386,7 +363,7 @@ class GaussianDiffusion(nn.Module):
             return x_0_pred, None, None, None, None
         else:
             mel_mask = mel_mask.unsqueeze(-1).transpose(1, -1)
-            t: Tensor = torch.randint(0, self.num_timesteps, (b,), device=device).long()
+            t = torch.randint(0, self.num_timesteps, (b,), device=device).long()
 
             # Diffusion
             x_t = self.diffuse_fn(mel, t) * mel_mask

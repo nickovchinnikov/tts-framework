@@ -446,10 +446,10 @@ class AcousticModel(Module):
         # Diffusion layer step
         (
             y_pred, # x_0_pred
-            x_ts,
-            x_t_prevs,
-            x_t_prev_preds,
-            diffusion_step,
+            _,
+            _,
+            _,
+            _,
         ) = self.diffusion.forward(
             mels,
             cond,
