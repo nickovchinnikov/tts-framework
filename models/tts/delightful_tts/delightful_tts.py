@@ -83,8 +83,8 @@ class DelightfulTTS(LightningModule):
         self.acoustic_model.freeze_params_except_diffusion()
 
         # Initialize the vocoder, freeze for the first stage of the training
-        self.vocoder = UnivNet()
-        self.vocoder.freeze()
+        # self.vocoder = UnivNet()
+        # self.vocoder.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
@@ -93,44 +93,44 @@ class DelightfulTTS(LightningModule):
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
 
 
-    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
-        r"""Performs a forward pass through the AcousticModel.
-        This code must be run only with the loaded weights from the checkpoint!
+    # def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+    #     r"""Performs a forward pass through the AcousticModel.
+    #     This code must be run only with the loaded weights from the checkpoint!
 
-        Args:
-            text (str): The input text.
-            speaker_idx (torch.Tensor): The index of the speaker.
-            lang (str): The language.
+    #     Args:
+    #         text (str): The input text.
+    #         speaker_idx (torch.Tensor): The index of the speaker.
+    #         lang (str): The language.
 
-        Returns:
-            torch.Tensor: The output of the AcousticModel.
-        """
-        normalized_text = self.normilize_text(text)
-        _, phones = self.tokenizer(normalized_text)
+    #     Returns:
+    #         torch.Tensor: The output of the AcousticModel.
+    #     """
+    #     normalized_text = self.normilize_text(text)
+    #     _, phones = self.tokenizer(normalized_text)
 
-        # Convert to tensor
-        x = torch.tensor(
-            phones, dtype=torch.int, device=speaker_idx.device,
-        ).unsqueeze(0)
+    #     # Convert to tensor
+    #     x = torch.tensor(
+    #         phones, dtype=torch.int, device=speaker_idx.device,
+    #     ).unsqueeze(0)
 
-        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = torch.tensor(
-            [lang2id[lang]],
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).repeat(x.shape[1]).unsqueeze(0)
+    #     langs = torch.tensor(
+    #         [lang2id[lang]],
+    #         dtype=torch.int,
+    #         device=speaker_idx.device,
+    #     ).repeat(x.shape[1]).unsqueeze(0)
 
-        y_pred = self.acoustic_model(
-            x=x,
-            pitches_range=self.pitches_stat,
-            speakers=speakers,
-            langs=langs,
-        )
+    #     y_pred = self.acoustic_model(
+    #         x=x,
+    #         pitches_range=self.pitches_stat,
+    #         speakers=speakers,
+    #         langs=langs,
+    #     )
 
-        wav = self.vocoder.forward(y_pred)
+    #     wav = self.vocoder.forward(y_pred)
 
-        return wav
+    #     return wav
 
 
     # TODO: don't forget about torch.no_grad() !
