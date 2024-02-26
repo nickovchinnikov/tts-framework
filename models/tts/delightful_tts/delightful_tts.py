@@ -83,8 +83,8 @@ class DelightfulTTS(LightningModule):
         self.acoustic_model.freeze_params_except_diffusion()
 
         # Initialize the vocoder, freeze for the first stage of the training
-        # self.vocoder = UnivNet()
-        # self.vocoder.freeze()
+        self.vocoder_module = UnivNet()
+        self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
@@ -128,7 +128,7 @@ class DelightfulTTS(LightningModule):
     #         langs=langs,
     #     )
 
-    #     wav = self.vocoder.forward(y_pred)
+    #     wav = self.vocoder_module.forward(y_pred)
 
     #     return wav
 
