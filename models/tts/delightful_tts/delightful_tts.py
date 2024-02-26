@@ -46,7 +46,9 @@ class DelightfulTTS(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             n_speakers: int = 5392,
-            batch_size: int = 6,
+            # batch_size: int = 6,
+            # Pretrain diffusion config
+            batch_size: int = 12,
         ):
         super().__init__()
 

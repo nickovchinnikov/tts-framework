@@ -19,8 +19,11 @@ class STFTConfig:
 class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
-    min_seconds: float = 0.5
-    max_seconds: float = 30.0
+    # min_seconds: float = 0.5
+    # max_seconds: float = 30.0
+    # Pretrain diffusion config
+    min_seconds: float = 1.0
+    max_seconds: float = 15.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11
