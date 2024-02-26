@@ -492,7 +492,7 @@ class DelightfulTTS(LightningModule):
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
         url: str = "train-clean-360",
-        validation_split: float = 0.025,  # Percentage of data to use for validation
+        validation_split: float = 0.02,  # Percentage of data to use for validation
     ) -> Tuple[DataLoader, DataLoader]:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
