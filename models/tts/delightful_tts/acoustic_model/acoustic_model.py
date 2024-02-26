@@ -435,9 +435,7 @@ class AcousticModel(Module):
         )
 
         # Prepare cond for the diffusion layer
-        cond = self.to_cond(
-            x.clone(),
-        ).permute((0, 2, 1))
+        cond = self.to_cond(x).permute((0, 2, 1))
 
         # Decode the encoder output to pred mel spectrogram
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
@@ -554,9 +552,7 @@ class AcousticModel(Module):
         )
 
         # Prepare cond for the diffusion layer
-        cond = self.to_cond(
-            x.clone(),
-        ).permute((0, 2, 1))
+        cond = self.to_cond(x).permute((0, 2, 1))
 
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
