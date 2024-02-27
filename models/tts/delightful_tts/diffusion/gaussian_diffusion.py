@@ -271,25 +271,32 @@ class GaussianDiffusion(nn.Module):
         )
 
     @torch.no_grad()
-    def sampling(self, noise: Optional[Tensor] = None) -> List[Tensor]:
+    def sampling(
+        self,
+        cond: Tensor,
+        spk_emb: Tensor,
+        noise: Optional[Tensor] = None,
+    ) -> List[Tensor]:
         r"""Perform sampling.
 
         Args:
             noise (Tensor, optional): Noise tensor. Defaults to None.
+            cond (Tensor): Conditional tensor.
+            spk_emb (Tensor): Speaker embedding tensor.
 
         Returns:
             List[Tensor]: List of sampled tensors.
         """
-        b, *_, device = *self.cond.shape, self.cond.device # type: ignore
+        b, *_, device = *cond.shape, cond.device # type: ignore
         t = self.num_timesteps
-        shape = (self.cond.shape[0], 1, self.mel_bins, self.cond.shape[2])
+        shape = (cond.shape[0], 1, self.mel_bins, cond.shape[2])
         xs = [torch.randn(shape, device=device) if noise is None else noise]
         for i in reversed(range(t)):
             x = self.p_sample(
                 xs[-1],
                 torch.full((b,), i, device=device, dtype=torch.long),
-                self.cond,
-                self.spk_emb,
+                cond,
+                spk_emb,
             )
             xs.append(x)
         # output = [self.denorm_spec(x[:, 0].transpose(1, 2)) for x in xs]
@@ -348,8 +355,6 @@ class GaussianDiffusion(nn.Module):
 
         mel_mask = ~mel_mask.unsqueeze(-1)
         cond = cond.transpose(1, 2)
-        self.cond = cond.detach()
-        self.spk_emb = spk_emb.detach()
 
         if mel is None:
             if self.model != "shallow":
@@ -359,7 +364,13 @@ class GaussianDiffusion(nn.Module):
                 # noise = self.diffuse_fn(coarse_mel, t) * mel_mask.unsqueeze(1)
                 # noise = self.diffuse_fn(coarse_mel, t) * mel_mask.unsqueeze(-1).transpose(1, -1)
                 noise = (self.diffuse_fn(coarse_mel, t) * mel_mask).transpose(-1, -2)
-            x_0_pred = self.sampling(noise=noise)[-1] * mel_mask
+
+            x_0_pred = self.sampling(
+                cond,
+                spk_emb,
+                noise=noise,
+            )[-1] * mel_mask
+
             return x_0_pred, None, None, None, None
         else:
             mel_mask = mel_mask.unsqueeze(-1).transpose(1, -1)
