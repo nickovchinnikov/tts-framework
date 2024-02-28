@@ -80,8 +80,6 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-        # NOTE: freeze until the diffusion model is ready
-        self.acoustic_model.freeze_params_except_diffusion()
 
         # Initialize the vocoder, freeze for the first stage of the training
         self.vocoder_module = UnivNet()
