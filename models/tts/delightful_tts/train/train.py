@@ -60,10 +60,6 @@ ckpt_acoustic="./checkpoints/epoch=301-step=124630.ckpt"
 ckpt_vocoder="./checkpoints/vocoder.ckpt"
 
 try:
-    tensorboard = TensorBoardLogger(
-        save_dir=default_root_dir,
-    )
-
     trainer = Trainer(
         accelerator="cuda",
         devices=-1,
@@ -72,11 +68,10 @@ try:
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
         ),
-        # logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
         enable_checkpointing=True,
-        accumulate_grad_batches=10,
+        accumulate_grad_batches=5,
         max_epochs=-1,
         log_every_n_steps=10,
         gradient_clip_val=0.5,
