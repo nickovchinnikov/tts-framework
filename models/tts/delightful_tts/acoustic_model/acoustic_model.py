@@ -221,6 +221,7 @@ class AcousticModel(Module):
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
 
+
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
         r"""Freeze the trainable parameters in the model.
@@ -417,6 +418,8 @@ class AcousticModel(Module):
             src_mask=src_mask,
             embeddings=embeddings,
         )
+
+        # Decode the encoder output to pred mel spectrogram
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
 
@@ -512,6 +515,7 @@ class AcousticModel(Module):
             control=d_control,
             embeddings=embeddings,
         )
+
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
         ).to(x.device)

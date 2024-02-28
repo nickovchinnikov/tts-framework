@@ -43,7 +43,7 @@ class Conv1dGLU(Module):
             d_model,
         )
 
-        self.register_buffer("sqrt", torch.sqrt(torch.FloatTensor([0.5])).squeeze(0))
+        self.register_buffer("sqrt", torch.sqrt(torch.tensor([0.5])).squeeze(0))
 
         self.softsign = torch.nn.Softsign()
 

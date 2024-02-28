@@ -24,4 +24,9 @@ class LogSTFTMagnitudeLoss(Module):
         Returns:
             Tensor: Log STFT magnitude loss value.
         """
+        # Ensure that x_mag and y_mag have the same size along dimension 1
+        min_len = min(x_mag.shape[1], y_mag.shape[1])
+        x_mag = x_mag[:, :min_len]
+        y_mag = y_mag[:, :min_len]
+
         return F.l1_loss(torch.log(y_mag), torch.log(x_mag))

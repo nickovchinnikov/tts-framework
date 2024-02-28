@@ -38,7 +38,7 @@ mkdir -p ./tts-framework/datasets_cache/LIBRITTS/LibriTTS/
 
 gsutil cp -r gs://tts-training-bucket/datasets_cache/** ./tts-framework/datasets_cache/LIBRITTS/LibriTTS/
 
-gsutil cp gs://tts-training-bucket/vocoder.ckpt ./tts-framework/checkpoints/
+gsutil cp gs://tts-training-bucket/vocoder_pretrained.pt ./tts-framework/checkpoints/
 gsutil cp gs://tts-training-bucket/en_us_cmudict_ipa_forward.pt ./tts-framework/checkpoints/
 
 
@@ -68,7 +68,7 @@ mv ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R/train-clean-100 ./tts-fram
 rm -r ./tts-framework/datasets_cache/LIBRITTS/LibriTTS_R
 
 # Add envs dir for conda envs
-conda config --add envs_dirs /home/jupyter/envs
+# conda config --add envs_dirs /home/jupyter/envs
 
 conda env create -f ./tts-framework/environment.yml
 # conda config --show-sources

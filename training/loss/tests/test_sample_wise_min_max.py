@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from training.loss.fast_speech_2_loss_gen import sample_wise_min_max
+from training.loss.utils import sample_wise_min_max
 
 
 class TestSampleWiseMinMax(unittest.TestCase):

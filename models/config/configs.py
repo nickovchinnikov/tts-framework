@@ -20,9 +20,10 @@ class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
     # min_seconds: float = 0.5
-    # max_seconds: float = 10.0
-    min_seconds: float = 0.5
-    max_seconds: float = 30.0
+    # max_seconds: float = 30.0
+    # Pretrain diffusion config
+    min_seconds: float = 1.0
+    max_seconds: float = 10.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11
@@ -143,9 +144,49 @@ class VarianceAdaptorConfig:
 
 
 @dataclass
+class AcousticLossConfig:
+    ssim_loss_alpha: float
+    mel_loss_alpha: float
+    aligner_loss_alpha: float
+    pitch_loss_alpha: float
+    energy_loss_alpha: float
+    u_prosody_loss_alpha: float
+    p_prosody_loss_alpha: float
+    dur_loss_alpha: float
+    binary_align_loss_alpha: float
+    binary_loss_warmup_epochs: int
+
+
+@dataclass
+class DiffusionConfig:
+    # model parameters
+    model: str
+    n_mel_channels: int
+    multi_speaker: bool
+    # denoiser parameters
+    residual_channels: int
+    residual_layers: int
+    denoiser_dropout: float
+    noise_schedule_naive: str
+    timesteps: int
+    shallow_timesteps: int
+    min_beta: float
+    max_beta: float
+    s: float
+    keep_bins: int
+    # trainsformer params
+    encoder_hidden: int
+    decoder_hidden: int
+    speaker_embed_dim: int
+    # loss params
+    noise_loss: str
+
+
+@dataclass
 class AcousticENModelConfig:
     speaker_embed_dim: int = 384
     lang_embed_dim: int = 1
+    n_feats: int = 80
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=4,
@@ -168,6 +209,35 @@ class AcousticENModelConfig:
             with_ff=False,
         ),
     )
+    diffusion: DiffusionConfig = field(
+        default_factory=lambda: DiffusionConfig(
+            # model parameters
+            model="shallow",
+            n_mel_channels=100,
+            multi_speaker=True,
+            # denoiser parameters
+            # residual_channels=256,
+            # residual_channels=384,
+            residual_channels=100,
+            residual_layers=20,
+            denoiser_dropout=0.2,
+            noise_schedule_naive="vpsde",
+            timesteps=4,
+            shallow_timesteps=1,
+            min_beta=0.1,
+            max_beta=40,
+            s=0.008,
+            keep_bins=80,
+            # trainsformer params
+            # encoder_hidden=100,
+            encoder_hidden=100,
+            decoder_hidden=384,
+            # Speaker_emb + lang_emb
+            speaker_embed_dim=385,
+            # loss params
+            noise_loss="l1",
+        ),
+    )
     reference_encoder: ReferenceEncoderConfig = field(
         default_factory=lambda: ReferenceEncoderConfig(
             bottleneck_size_p=4,
@@ -187,12 +257,27 @@ class AcousticENModelConfig:
             n_hidden=384, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
         ),
     )
+    loss: AcousticLossConfig = field(
+        default_factory=lambda: AcousticLossConfig(
+            ssim_loss_alpha=1.0,
+            mel_loss_alpha=1.0,
+            aligner_loss_alpha=1.0,
+            pitch_loss_alpha=1.0,
+            energy_loss_alpha=1.0,
+            u_prosody_loss_alpha=0.25,
+            p_prosody_loss_alpha=0.25,
+            dur_loss_alpha=1.0,
+            binary_align_loss_alpha=0.1,
+            binary_loss_warmup_epochs=10,
+        ),
+    )
 
 
 @dataclass
 class AcousticMultilingualModelConfig:
     speaker_embed_dim: int = 1024
     lang_embed_dim: int = 256
+    n_feats: int = 160
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=6,
@@ -215,6 +300,33 @@ class AcousticMultilingualModelConfig:
             with_ff=True,
         ),
     )
+    diffusion: DiffusionConfig = field(
+        default_factory=lambda: DiffusionConfig(
+            # model parameters
+            model="shallow",
+            n_mel_channels=100,
+            multi_speaker=True,
+            # denoiser parameters
+            # residual_channels=256,
+            residual_channels=100,
+            residual_layers=20,
+            denoiser_dropout=0.2,
+            noise_schedule_naive="vpsde",
+            timesteps=4,
+            shallow_timesteps=1,
+            min_beta=0.1,
+            max_beta=40,
+            s=0.008,
+            keep_bins=80,
+            # trainsformer params
+            encoder_hidden=512,
+            decoder_hidden=512,
+            # Speaker_emb + lang_emb
+            speaker_embed_dim=1280,
+            # loss params
+            noise_loss="l1",
+        ),
+    )
     reference_encoder: ReferenceEncoderConfig = field(
         default_factory=lambda: ReferenceEncoderConfig(
             bottleneck_size_p=4,
@@ -232,6 +344,20 @@ class AcousticMultilingualModelConfig:
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
             n_hidden=512, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
+        ),
+    )
+    loss: AcousticLossConfig = field(
+        default_factory=lambda: AcousticLossConfig(
+            ssim_loss_alpha=1.0,
+            mel_loss_alpha=1.0,
+            aligner_loss_alpha=1.0,
+            pitch_loss_alpha=1.0,
+            energy_loss_alpha=1.0,
+            u_prosody_loss_alpha=0.25,
+            p_prosody_loss_alpha=0.25,
+            dur_loss_alpha=1.0,
+            binary_align_loss_alpha=0.1,
+            binary_loss_warmup_epochs=10,
         ),
     )
 

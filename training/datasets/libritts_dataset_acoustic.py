@@ -104,7 +104,7 @@ class LibriTTSDatasetAcoustic(Dataset):
             rand_idx = np.random.randint(0, self.__len__())
             return self.__getitem__(rand_idx)
 
-        data.wav = torch.FloatTensor(data.wav.unsqueeze(0))
+        data.wav = data.wav.unsqueeze(0)
 
         result = {
             "id": data.utterance_id,
@@ -185,12 +185,12 @@ class LibriTTSDatasetAcoustic(Dataset):
             raw_texts.append(data_entry["raw_text"])
             mels.append(data_entry["mel"])
             pitches.append(data_entry["pitch"])
-            attn_priors.append(data_entry["attn_prior"].numpy())
+            attn_priors.append(data_entry["attn_prior"])
             langs.append(data_entry["lang"])
             src_lens.append(data_entry["text"].shape[0])
             mel_lens.append(data_entry["mel"].shape[1])
-            wavs.append(data_entry["wav"].numpy())
-            energy.append(data_entry["energy"].numpy())
+            wavs.append(data_entry["wav"])
+            energy.append(data_entry["energy"])
 
         # Convert langs, src_lens, and mel_lens to numpy arrays
         langs = np.array(langs)
@@ -220,16 +220,16 @@ class LibriTTSDatasetAcoustic(Dataset):
             ids,
             raw_texts,
             torch.from_numpy(speakers),
-            torch.from_numpy(texts).int(),
+            texts.int(),
             torch.from_numpy(src_lens),
-            torch.from_numpy(mels),
-            torch.from_numpy(pitches),
+            mels,
+            pitches,
             pitches_stat,
             torch.from_numpy(mel_lens),
             torch.from_numpy(langs),
-            torch.from_numpy(attn_priors),
-            torch.from_numpy(wavs),
-            torch.from_numpy(energy),
+            attn_priors,
+            wavs,
+            energy,
         ]
 
     def normalize_pitch(

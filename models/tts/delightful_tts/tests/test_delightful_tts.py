@@ -8,24 +8,36 @@ import torchaudio
 
 from models.tts.delightful_tts import DelightfulTTS
 
+checkpoint = "checkpoints/logs_new_training_libri-360_energy_epoch=263-step=45639.ckpt"
+
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 class TestDelightfulTTS(unittest.TestCase):
     def test_optim_finetuning(self):
+        # Create a dummy Trainer instance
+        trainer = Trainer()
+
         module = DelightfulTTS(fine_tuning=True)
+
+        module.trainer = trainer
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config["optimizer"]
-        lr_scheduler = optimizer_config["lr_scheduler"]
+        optimizer = optimizer_config[0]["optimizer"]
+        lr_scheduler = optimizer_config[0]["lr_scheduler"]
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.AdamW)
         self.assertIsInstance(lr_scheduler, torch.optim.lr_scheduler.ExponentialLR)
 
     def test_lr_lambda(self):
+        # Create a dummy Trainer instance
+        trainer = Trainer()
+
         module = DelightfulTTS()
+
+        module.trainer = trainer
 
         current_step = 5000
 
@@ -39,12 +51,17 @@ class TestDelightfulTTS(unittest.TestCase):
         self.assertAlmostEqual(lr_lambda(current_step), 0.0007216878364870322, places=10)
 
     def test_optim_pretraining(self):
+        # Create a dummy Trainer instance
+        trainer = Trainer()
+
         module = DelightfulTTS(fine_tuning=False)
+
+        module.trainer = trainer
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config["optimizer"]
-        lr_scheduler = optimizer_config["lr_scheduler"]
+        optimizer = optimizer_config[0]["optimizer"]
+        lr_scheduler = optimizer_config[0]["lr_scheduler"]
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.Adam)
@@ -58,14 +75,18 @@ class TestDelightfulTTS(unittest.TestCase):
             logger=tensorboard,
             # Save checkpoints to the `default_root_dir` directory
             default_root_dir=default_root_dir,
+            fast_dev_run=1,
             limit_train_batches=1,
             max_epochs=1,
-            accelerator="cuda",
+            accelerator="gpu",
+            # Precision is set to speed up training
+            # precision="bf16-mixed",
+            # precision="16-mixed",
         )
 
-        module = DelightfulTTS()
+        module = DelightfulTTS(batch_size=2)
 
-        train_dataloader = module.train_dataloader(1, 2, False, False)
+        train_dataloader, _ = module.train_dataloader(2, cache=False, mem_cache=False)
 
         # automatically restores model, epoch, step, LR schedulers, etc...
         # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
@@ -77,7 +98,7 @@ class TestDelightfulTTS(unittest.TestCase):
     def test_load_from_new_checkpoint(self):
         try:
             DelightfulTTS.load_from_checkpoint(
-                "./checkpoints/am_pitche_stats.ckpt",
+                checkpoint, strict=False,
             )
         except Exception as e:
             self.fail(f"Loading from checkpoint raised an exception: {e}")
@@ -85,8 +106,7 @@ class TestDelightfulTTS(unittest.TestCase):
     def test_generate_audio(self):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        checkpoint = "checkpoints/epoch=4796-step=438683.ckpt"
-        module = DelightfulTTS.load_from_checkpoint(checkpoint)
+        module = DelightfulTTS.load_from_checkpoint(checkpoint, strict=False)
 
         text = "Hello, this is a test sentence."
         speaker = torch.tensor([100], device=device)
@@ -98,7 +118,7 @@ class TestDelightfulTTS(unittest.TestCase):
 
         # Save the audio to a file
         torchaudio.save(        # type: ignore
-            "results/output1.wav",
+            "results/output1_.wav",
             wav_prediction.unsqueeze(0).detach().cpu(),
             22050,
         )

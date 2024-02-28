@@ -74,8 +74,11 @@ try:
         logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
-        accumulate_grad_batches=5,
+        enable_checkpointing=True,
+        accumulate_grad_batches=10,
         max_epochs=-1,
+        log_every_n_steps=50,
+        check_val_every_n_epoch=20,
         # Failed to find the `precision`
         # precision="16-mixed",
         # precision="bf16-mixed",
@@ -84,7 +87,7 @@ try:
 
     model = DelightfulTTS()
 
-    train_dataloader = model.train_dataloader(
+    train_dataloader, val_dataloader = model.train_dataloader(
         # NOTE: Preload the cached dataset into the RAM
         cache_dir="/dev/shm/",
         cache=True,
@@ -94,6 +97,7 @@ try:
     trainer.fit(
         model=model,
         train_dataloaders=train_dataloader,
+        val_dataloaders=val_dataloader,
         # Resume training states from the checkpoint file
         ckpt_path=ckpt_acoustic,
     )

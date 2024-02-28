@@ -271,8 +271,7 @@ class Metrics:
         )
 
     def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
-        r"""Plots the mel spectrograms for the target and the prediction.
-        """
+        r"""Plots the mel spectrograms for the target and the prediction."""
         fig, axs = plt.subplots(2, 1, sharex=True, sharey=True, dpi=80)
 
         img1 = librosa.display.specshow(mel_target, x_axis="time", y_axis="mel", sr=sr, ax=axs[0])
@@ -294,8 +293,7 @@ class Metrics:
         mel_prediction: np.ndarray,
         sr: int = 22050,
     ):
-        r"""Plots the mel spectrograms for the target and the prediction.
-        """
+        r"""Plots the mel spectrograms for the target and the prediction."""
         fig, axs = plt.subplots(2, 1, sharex=True, sharey=True)
 
         axs[0].specgram(
