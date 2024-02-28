@@ -157,6 +157,7 @@ class AcousticLossConfig:
     binary_loss_warmup_epochs: int
 
 
+# TODO: DEPRECATED!
 @dataclass
 class DiffusionConfig:
     # model parameters
@@ -209,6 +210,7 @@ class AcousticENModelConfig:
             with_ff=False,
         ),
     )
+    # TODO: DEPRECATED!
     diffusion: DiffusionConfig = field(
         default_factory=lambda: DiffusionConfig(
             # model parameters
@@ -300,6 +302,7 @@ class AcousticMultilingualModelConfig:
             with_ff=True,
         ),
     )
+    # TODO: DEPRECATED!
     diffusion: DiffusionConfig = field(
         default_factory=lambda: DiffusionConfig(
             # model parameters

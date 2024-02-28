@@ -5,11 +5,13 @@ import sys
 
 from lightning.pytorch import Trainer
 from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ignore
+from lightning.pytorch.callbacks import StochasticWeightAveraging
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
+from lightning.pytorch.tuner.tuning import Tuner
 import torch
 
-from models.tts.delightful_tts import DelightfulTTS
+from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
 
 # Node runk in the cluster
 node_rank = 0
@@ -70,24 +72,27 @@ try:
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
         ),
-        # strategy="ddp",
         logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
         enable_checkpointing=True,
         accumulate_grad_batches=10,
         max_epochs=-1,
-        log_every_n_steps=50,
-        check_val_every_n_epoch=20,
-        # Failed to find the `precision`
-        # precision="16-mixed",
-        # precision="bf16-mixed",
-        # precision="16-mixed",
+        log_every_n_steps=10,
+        gradient_clip_val=0.5,
+        callbacks=[
+            StochasticWeightAveraging(swa_lrs=1e-2),
+        ],
     )
 
-    model = DelightfulTTS()
+    # model = DelightfulTTS()
+    model = DelightfulTTS.load_from_checkpoint(ckpt_acoustic, strict=False)
 
-    train_dataloader, val_dataloader = model.train_dataloader(
+    tuner = Tuner(trainer)
+    tuner.scale_batch_size(model, mode="binsearch")
+    tuner.lr_find(model)
+
+    train_dataloader = model.train_dataloader(
         # NOTE: Preload the cached dataset into the RAM
         cache_dir="/dev/shm/",
         cache=True,
@@ -97,9 +102,8 @@ try:
     trainer.fit(
         model=model,
         train_dataloaders=train_dataloader,
-        val_dataloaders=val_dataloader,
         # Resume training states from the checkpoint file
-        ckpt_path=ckpt_acoustic,
+        # ckpt_path=ckpt_acoustic,
     )
 
 except Exception as e:
