@@ -288,6 +288,11 @@ class DelightfulTTS(LightningModule):
         self.swa_averaged_model.update_parameters(self.acoustic_model)
 
 
+    def on_train_end(self):
+        # Update SWA model after training
+        swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
+
+
     def train_dataloader(
         self,
         num_workers: int = 5,
