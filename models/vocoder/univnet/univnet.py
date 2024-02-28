@@ -1,11 +1,10 @@
 from typing import List, Optional, Tuple
 
 from lightning.pytorch.core import LightningModule
-from sklearn.model_selection import train_test_split
 import torch
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
-from torch.utils.data import DataLoader, SequentialSampler
+from torch.utils.data import DataLoader
 
 from models.config import (
     PreprocessingConfig,
@@ -14,7 +13,7 @@ from models.config import (
     VocoderPretrainingConfig,
     VoicoderTrainingConfig,
 )
-from training.datasets import LibriTTSDatasetAcoustic
+from models.helpers.dataloaders import train_dataloader
 from training.loss import UnivnetLoss
 
 from .discriminator import Discriminator
@@ -30,6 +29,7 @@ class UnivNet(LightningModule):
     def __init__(
             self,
             fine_tuning: bool = False,
+            lang: str = "en",
             acc_grad_steps: int = 10,
             root: str = "datasets_cache/LIBRITTS",
             checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
@@ -38,6 +38,7 @@ class UnivNet(LightningModule):
 
         Args:
             fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
+            lang (str): Language of the dataset.
             acc_grad_steps (int): Accumulated gradient steps.
             root (str, optional): The root directory for the dataset. Defaults to "datasets_cache/LIBRITTS".
             checkpoint_path_v1 (str, optional): The path to the checkpoint for the model. If provided, the model weights will be loaded from this checkpoint. Defaults to None.
@@ -48,6 +49,7 @@ class UnivNet(LightningModule):
         self.automatic_optimization = False
         self.acc_grad_steps = acc_grad_steps
 
+        self.lang = lang
         self.root = root
 
         model_config = VocoderModelConfig()
@@ -74,6 +76,7 @@ class UnivNet(LightningModule):
             self.univnet.load_state_dict(generator, strict=False)
             self.discriminator.load_state_dict(discriminator, strict=False)
 
+
     def get_weights_v1(self, checkpoint_path: str) -> Tuple[dict, dict, dict, dict]:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
         Prepares the weights for the model.
@@ -95,6 +98,7 @@ class UnivNet(LightningModule):
             ckpt_acoustic["optim_d"],
         )
 
+
     def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
         r"""Performs a forward pass through the UnivNet model.
 
@@ -111,6 +115,7 @@ class UnivNet(LightningModule):
         wav_prediction = self.univnet.infer(y_pred, mel_lens)
 
         return wav_prediction[0, 0]
+
 
     def training_step(self, batch: List, _: int, batch_idx: int):
         r"""Performs a training step for the model.
@@ -158,7 +163,7 @@ class UnivNet(LightningModule):
             total_loss_disc,
             stft_loss,
             score_loss,
-        ) = self.loss_univnet.forward(
+        ) = self.loss.forward(
             audio,
             fake_audio,
             res_fake,
@@ -311,6 +316,7 @@ class UnivNet(LightningModule):
             {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
         )
 
+
     def train_dataloader(
         self,
         batch_size: int = 6,
@@ -320,8 +326,7 @@ class UnivNet(LightningModule):
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
         url: str = "train-clean-360",
-        validation_split: float = 0.05,  # Percentage of data to use for validation
-    ) -> Tuple[DataLoader, DataLoader]:
+    ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
@@ -332,60 +337,17 @@ class UnivNet(LightningModule):
             cache_dir (str): The directory for the cache.
             mem_cache (bool): Whether to use memory cache.
             url (str): The URL of the dataset.
-            validation_split (float): The percentage of data to use for validation.
 
         Returns:
-            Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
+            DataLoader: The training and validation dataloaders.
         """
-        dataset = LibriTTSDatasetAcoustic(
+        return train_dataloader(
+            batch_size=batch_size,
+            num_workers=num_workers,
             root=root,
-            lang=self.lang,
             cache=cache,
             cache_dir=cache_dir,
             mem_cache=mem_cache,
             url=url,
+            lang=self.lang,
         )
-
-        # Split dataset into train and validation
-        train_indices, val_indices = train_test_split(
-            list(range(len(dataset))),
-            test_size=validation_split,
-            random_state=42,
-        )
-
-        # Create Samplers
-        train_sampler = SequentialSampler(train_indices)
-        val_sampler = SequentialSampler(val_indices)
-
-        # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
-        train_loader = DataLoader(
-            dataset,
-            # 4x80Gb max 10 sec audio
-            # batch_size=20, # self.train_config.batch_size,
-            # 4*80Gb max ~20.4 sec audio
-            batch_size=batch_size,
-            # TODO: find the optimal num_workers
-            num_workers=num_workers,
-            sampler=train_sampler,
-            persistent_workers=True,
-            pin_memory=True,
-            shuffle=False,
-            collate_fn=dataset.collate_fn,
-        )
-
-        val_loader = DataLoader(
-            dataset,
-            # 4x80Gb max 10 sec audio
-            # batch_size=20, # self.train_config.batch_size,
-            # 4*80Gb max ~20.4 sec audio
-            batch_size=batch_size,
-            # TODO: find the optimal num_workers
-            num_workers=num_workers,
-            sampler=val_sampler,
-            persistent_workers=True,
-            pin_memory=True,
-            shuffle=False,
-            collate_fn=dataset.collate_fn,
-        )
-
-        return train_loader, val_loader

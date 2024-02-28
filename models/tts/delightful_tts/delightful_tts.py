@@ -16,6 +16,7 @@ from models.config import (
     get_lang_map,
     lang2id,
 )
+from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
 from models.vocoder.univnet import UnivNet
 from training.datasets import LibriTTSDatasetAcoustic
@@ -93,44 +94,44 @@ class DelightfulTTS(LightningModule):
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
 
 
-    # def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
-    #     r"""Performs a forward pass through the AcousticModel.
-    #     This code must be run only with the loaded weights from the checkpoint!
+    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
 
-    #     Args:
-    #         text (str): The input text.
-    #         speaker_idx (torch.Tensor): The index of the speaker.
-    #         lang (str): The language.
+        Args:
+            text (str): The input text.
+            speaker_idx (torch.Tensor): The index of the speaker.
+            lang (str): The language.
 
-    #     Returns:
-    #         torch.Tensor: The output of the AcousticModel.
-    #     """
-    #     normalized_text = self.normilize_text(text)
-    #     _, phones = self.tokenizer(normalized_text)
+        Returns:
+            torch.Tensor: The output of the AcousticModel.
+        """
+        normalized_text = self.normilize_text(text)
+        _, phones = self.tokenizer(normalized_text)
 
-    #     # Convert to tensor
-    #     x = torch.tensor(
-    #         phones, dtype=torch.int, device=speaker_idx.device,
-    #     ).unsqueeze(0)
+        # Convert to tensor
+        x = torch.tensor(
+            phones, dtype=torch.int, device=speaker_idx.device,
+        ).unsqueeze(0)
 
-    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-    #     langs = torch.tensor(
-    #         [lang2id[lang]],
-    #         dtype=torch.int,
-    #         device=speaker_idx.device,
-    #     ).repeat(x.shape[1]).unsqueeze(0)
+        langs = torch.tensor(
+            [lang2id[lang]],
+            dtype=torch.int,
+            device=speaker_idx.device,
+        ).repeat(x.shape[1]).unsqueeze(0)
 
-    #     y_pred = self.acoustic_model(
-    #         x=x,
-    #         pitches_range=self.pitches_stat,
-    #         speakers=speakers,
-    #         langs=langs,
-    #     )
+        y_pred = self.acoustic_model(
+            x=x,
+            pitches_range=self.pitches_stat,
+            speakers=speakers,
+            langs=langs,
+        )
 
-    #     wav = self.vocoder_module.forward(y_pred)
+        wav = self.vocoder_module.forward(y_pred)
 
-    #     return wav
+        return wav
 
 
     # TODO: don't forget about torch.no_grad() !
@@ -486,14 +487,13 @@ class DelightfulTTS(LightningModule):
 
     def train_dataloader(
         self,
-        num_workers: int = 5,
+        num_workers: int = 15,
         root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
         url: str = "train-clean-360",
-        validation_split: float = 0.02,  # Percentage of data to use for validation
-    ) -> Tuple[DataLoader, DataLoader]:
+    ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
@@ -503,60 +503,17 @@ class DelightfulTTS(LightningModule):
             cache_dir (str): The directory for the cache.
             mem_cache (bool): Whether to use memory cache.
             url (str): The URL of the dataset.
-            validation_split (float): The percentage of data to use for validation.
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
         """
-        dataset = LibriTTSDatasetAcoustic(
+        return train_dataloader(
+            batch_size=self.batch_size,
+            num_workers=num_workers,
             root=root,
-            lang=self.lang,
             cache=cache,
             cache_dir=cache_dir,
             mem_cache=mem_cache,
             url=url,
+            lang=self.lang,
         )
-
-        # Split dataset into train and validation
-        train_indices, val_indices = train_test_split(
-            list(range(len(dataset))),
-            test_size=validation_split,
-            random_state=42,
-        )
-
-        # Create Samplers
-        train_sampler = SequentialSampler(train_indices)
-        val_sampler = SequentialSampler(val_indices)
-
-        # dataset = LibriTTSMMDatasetAcoustic("checkpoints/libri_preprocessed_data.pt")
-        train_loader = DataLoader(
-            dataset,
-            # 4x80Gb max 10 sec audio
-            # batch_size=20, # self.train_config.batch_size,
-            # 4*80Gb max ~20.4 sec audio
-            batch_size=self.batch_size,
-            # TODO: find the optimal num_workers
-            num_workers=num_workers,
-            sampler=train_sampler,
-            persistent_workers=True,
-            pin_memory=True,
-            shuffle=False,
-            collate_fn=dataset.collate_fn,
-        )
-
-        val_loader = DataLoader(
-            dataset,
-            # 4x80Gb max 10 sec audio
-            # batch_size=20, # self.train_config.batch_size,
-            # 4*80Gb max ~20.4 sec audio
-            batch_size=self.batch_size,
-            # TODO: find the optimal num_workers
-            num_workers=num_workers,
-            sampler=val_sampler,
-            persistent_workers=True,
-            pin_memory=True,
-            shuffle=False,
-            collate_fn=dataset.collate_fn,
-        )
-
-        return train_loader, val_loader

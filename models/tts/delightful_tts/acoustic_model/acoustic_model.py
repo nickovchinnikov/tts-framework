@@ -19,7 +19,6 @@ from models.helpers import (
 )
 from models.tts.delightful_tts.attention import Conformer
 from models.tts.delightful_tts.constants import LEAKY_RELU_SLOPE
-from models.tts.delightful_tts.diffusion.gaussian_diffusion import GaussianDiffusion
 from models.tts.delightful_tts.reference_encoder import (
     PhonemeLevelProsodyEncoder,
     UtteranceLevelProsodyEncoder,
@@ -145,16 +144,6 @@ class AcousticModel(Module):
             with_ff=model_config.decoder.with_ff,
         )
 
-        self.diffusion = GaussianDiffusion(
-            model_config.diffusion,
-        )
-
-        # Layer to create cond for the diffusion layer
-        self.to_cond = nn.Linear(
-            model_config.decoder.n_hidden,
-            preprocess_config.stft.n_mel_channels,
-        )
-
         self.src_word_emb = Parameter(
             tools.initialize_embeddings(
                 (len(symbols), model_config.encoder.n_hidden),
@@ -232,10 +221,6 @@ class AcousticModel(Module):
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
 
-    def freeze_params_except_diffusion(self) -> None:
-        r"""Freeze all the layers except the diffusion layer."""
-        for name, param in self.named_parameters():
-            param.requires_grad = "diffusion" in name or "to_cond" in name
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
@@ -434,34 +419,14 @@ class AcousticModel(Module):
             embeddings=embeddings,
         )
 
-        # Prepare cond for the diffusion layer
-        cond = self.to_cond(x).permute((0, 2, 1))
-
         # Decode the encoder output to pred mel spectrogram
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
 
         x = x.permute((0, 2, 1))
 
-        # Diffusion layer step
-        (
-            y_pred, # x_0_pred
-            _,
-            _,
-            _,
-            _,
-        ) = self.diffusion.forward(
-            mels,
-            cond,
-            embeddings,
-            mel_mask,
-            x,
-        )
-
-        y_pred = y_pred.permute((0, 2, 1))
-
         return {
-            "y_pred": y_pred,
+            "y_pred": x,
             "pitch_prediction": pitch_prediction,
             "pitch_target": pitches,
             "energy_pred": energy_pred,
@@ -551,9 +516,6 @@ class AcousticModel(Module):
             embeddings=embeddings,
         )
 
-        # Prepare cond for the diffusion layer
-        cond = self.to_cond(x).permute((0, 2, 1))
-
         mel_mask = tools.get_mask_from_lengths(
             torch.tensor([x.shape[1]], dtype=torch.int64),
         ).to(x.device)
@@ -564,19 +526,4 @@ class AcousticModel(Module):
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel(x)
 
-        # Diffusion layer step
-        (
-            y_pred, # x_0_pred
-            _,
-            _,
-            _,
-            _,
-        ) = self.diffusion.forward(
-            None,
-            cond,
-            embeddings,
-            mel_mask,
-            x,
-        )
-
-        return y_pred.permute((0, 2, 1))
+        return x.permute((0, 2, 1))

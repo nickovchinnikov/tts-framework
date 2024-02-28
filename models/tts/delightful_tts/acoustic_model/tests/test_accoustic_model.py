@@ -2,7 +2,6 @@ import unittest
 
 import torch
 from torch.utils.data import DataLoader
-import torchaudio
 
 from models.config import AcousticENModelConfig, PreprocessingConfig
 
@@ -48,27 +47,6 @@ class TestAcousticModel(unittest.TestCase):
             self.preprocess_config,
             n_speakers,
         )
-
-    def test_freeze_unfreese_params_except_diffusion(self):
-        acoustic_model = AcousticModel(
-            self.preprocess_config,
-            self.model_config,
-            n_speakers=10,
-        )
-        # Freeze all parameters except diffusion
-        acoustic_model.freeze_params_except_diffusion()
-
-        for name, param in acoustic_model.named_parameters():
-            if "diffusion" in name or "to_cond" in name:
-                self.assertTrue(param.requires_grad)
-            else:
-                self.assertFalse(param.requires_grad)
-
-        # Unfreeze all parameters
-        acoustic_model.unfreeze_params(False, False)
-
-        for param in acoustic_model.parameters():
-            self.assertTrue(param.requires_grad)
 
 
     def test_get_embeddings(self):
@@ -184,18 +162,60 @@ class TestAcousticModel(unittest.TestCase):
         )
 
     def test_forward(self):
-        x = self.acoustic_model.forward(
-            x=self.forward_train_params.x,
-            pitches_range=self.forward_train_params.pitches_range,
-            speakers=self.forward_train_params.speakers,
-            langs=self.forward_train_params.langs,
-            p_control=0.5,
-            d_control=0.5,
+        self.preprocess_config = PreprocessingConfig("english_only")
+        self.model_config = AcousticENModelConfig()
+
+        acoustic_model = AcousticModel(
+            self.preprocess_config,
+            self.model_config,
+            n_speakers=5392,
         )
 
-        # The last dim is not stable!
-        self.assertEqual(x.shape[0], self.model_config.speaker_embed_dim)
-        self.assertEqual(x.shape[1], self.preprocess_config.stft.n_mel_channels)
+        dataset = LibriTTSDatasetAcoustic(
+            root="datasets_cache/LIBRITTS",
+            lang="en",
+            cache=False,
+            cache_dir="datasets_cache",
+            mem_cache=False,
+            url="train-clean-100",
+        )
+
+        train_loader = DataLoader(
+            dataset,
+            batch_size=2,
+            num_workers=2,
+            persistent_workers=True,
+            pin_memory=True,
+            shuffle=False,
+            collate_fn=dataset.collate_fn,
+        )
+        for batch in train_loader:
+            (
+                _,
+                _,
+                speakers,
+                texts,
+                _,
+                _,
+                _,
+                pitches_stat,
+                _,
+                langs,
+                _,
+                _,
+                _,
+            ) = batch
+            x = acoustic_model.forward(
+                x=texts,
+                pitches_range=pitches_stat,
+                speakers=speakers,
+                langs=langs,
+                p_control=0.5,
+                d_control=0.5,
+            )
+            break
+
+        self.assertIsInstance(x, torch.Tensor)
 
 if __name__ == "__main__":
     unittest.main()

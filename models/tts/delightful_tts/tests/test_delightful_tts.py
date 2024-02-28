@@ -118,7 +118,7 @@ class TestDelightfulTTS(unittest.TestCase):
 
         # Save the audio to a file
         torchaudio.save(        # type: ignore
-            "results/output1.wav",
+            "results/output1_.wav",
             wav_prediction.unsqueeze(0).detach().cpu(),
             22050,
         )
