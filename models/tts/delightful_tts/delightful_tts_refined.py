@@ -2,7 +2,7 @@ from typing import List
 
 from lightning.pytorch.core import LightningModule
 import torch
-from torch.optim import AdamW
+from torch.optim import AdamW, swa_utils
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
@@ -44,7 +44,8 @@ class DelightfulTTS(LightningModule):
             self,
             fine_tuning: bool = False,
             lang: str = "en",
-            learning_rate: float = 0.0002,
+            # NOTE: lr finder found 1.5848931924611133e-07
+            learning_rate: float = 1.5848931924611133e-07,
             n_speakers: int = 5392,
             batch_size: int = 6,
         ):
@@ -78,6 +79,9 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
+
+        # Initialize SWA
+        self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
 
         # Initialize the vocoder, freeze for the first stage of the training
         self.vocoder_module = UnivNet()
@@ -270,9 +274,18 @@ class DelightfulTTS(LightningModule):
             patience=2,
         )
 
-        return (
-            {"optimizer": optimizer, "lr_scheduler": scheduler},
-        )
+        return ({
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "train_total_loss",
+            },
+        })
+
+
+    def on_after_optimizer_step(self):
+        r"""Updates the averaged model after each optimizer step with SWA."""
+        self.swa_averaged_model.update_parameters(self.acoustic_model)
 
 
     def train_dataloader(

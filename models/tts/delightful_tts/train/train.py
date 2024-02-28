@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 import logging
 import os
@@ -5,7 +6,6 @@ import sys
 
 from lightning.pytorch import Trainer
 from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ignore
-from lightning.pytorch.callbacks import StochasticWeightAveraging
 from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
 from lightning.pytorch.tuner.tuning import Tuner
@@ -72,7 +72,7 @@ try:
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
         ),
-        logger=tensorboard,
+        # logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
         enable_checkpointing=True,
@@ -80,17 +80,15 @@ try:
         max_epochs=-1,
         log_every_n_steps=10,
         gradient_clip_val=0.5,
-        callbacks=[
-            StochasticWeightAveraging(swa_lrs=1e-2),
-        ],
     )
 
     # model = DelightfulTTS()
     model = DelightfulTTS.load_from_checkpoint(ckpt_acoustic, strict=False)
 
     tuner = Tuner(trainer)
-    tuner.scale_batch_size(model, mode="binsearch")
     tuner.lr_find(model)
+    # ValueError: Tuning the batch size is currently not supported with distributed strategies.
+    # tuner.scale_batch_size(model, mode="binsearch")
 
     train_dataloader = model.train_dataloader(
         # NOTE: Preload the cached dataset into the RAM
