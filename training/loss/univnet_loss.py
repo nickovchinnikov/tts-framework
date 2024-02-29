@@ -1,4 +1,8 @@
+from typing import List, Tuple
+
+from auraloss.time import ESRLoss, SDSDRLoss, SISDRLoss, SNRLoss
 import torch
+from torch import Tensor
 from torch.nn import Module
 
 from models.config import VocoderBasicConfig, VocoderModelConfig
@@ -19,32 +23,54 @@ class UnivnetLoss(Module):
         self.model_config = VocoderModelConfig()
 
         self.stft_criterion = MultiResolutionSTFTLoss(self.model_config.mrd.resolutions)
+        self.esr_loss = ESRLoss()
+        self.sisdr_loss = SISDRLoss()
+        self.snr_loss = SNRLoss()
+        self.sdsdr_loss = SDSDRLoss()
 
     def forward(
         self,
-        audio: torch.Tensor,
-        fake_audio: torch.Tensor,
-        res_fake: torch.Tensor,
-        period_fake: torch.Tensor,
-        res_real: torch.Tensor,
-        period_real: torch.Tensor,
-    ):
+        audio: Tensor,
+        fake_audio: Tensor,
+        res_fake: List[Tuple[Tensor, Tensor]],
+        period_fake: List[Tuple[Tensor, Tensor]],
+        res_real: List[Tuple[Tensor, Tensor]],
+        period_real: List[Tuple[Tensor, Tensor]],
+    ) -> Tuple[
+            Tensor,
+            Tensor,
+            Tensor,
+            Tensor,
+            Tensor,
+            Tensor,
+            Tensor,
+            Tensor,
+        ]:
         r"""Calculate the losses for the generator and discriminator.
 
         Args:
             audio (torch.Tensor): The real audio samples.
             fake_audio (torch.Tensor): The generated audio samples.
-            res_fake (torch.Tensor): The discriminator's output for the fake audio.
-            period_fake (torch.Tensor): The discriminator's output for the fake audio in the period.
-            res_real (torch.Tensor): The discriminator's output for the real audio.
-            period_real (torch.Tensor): The discriminator's output for the real audio in the period.
+            res_fake (List[Tuple[Tensor, Tensor]]): The discriminator's output for the fake audio.
+            period_fake (List[Tuple[Tensor, Tensor]]): The discriminator's output for the fake audio in the period.
+            res_real (List[Tuple[Tensor, Tensor]]): The discriminator's output for the real audio.
+            period_real (List[Tuple[Tensor, Tensor]]): The discriminator's output for the real audio in the period.
 
         Returns:
-            tuple: A tuple containing the univnet loss, discriminator loss, STFT loss, and score loss.
+            tuple: A tuple containing the univnet loss, discriminator loss, STFT loss, score loss, ESR, SISDR, SNR and SDSDR losses.
         """
         # Calculate the STFT loss
         sc_loss, mag_loss = self.stft_criterion(fake_audio.squeeze(1), audio.squeeze(1))
         stft_loss = (sc_loss + mag_loss) * self.stft_lamb
+
+        # Pad the fake audio to match the length of the real audio
+        padding = audio.shape[2] - fake_audio.shape[2]
+        fake_audio_padded = torch.nn.functional.pad(fake_audio, (0, padding))
+
+        esr_loss = self.esr_loss.forward(fake_audio_padded, audio)
+        sisdr_loss = self.sisdr_loss.forward(fake_audio_padded, audio)
+        snr_loss = self.snr_loss.forward(fake_audio_padded, audio)
+        sdsdr_loss = self.sdsdr_loss.forward(fake_audio_padded, audio)
 
         # Calculate the score loss
         score_loss = torch.tensor(0.0, device=audio.device)
@@ -54,7 +80,7 @@ class UnivnetLoss(Module):
         score_loss = score_loss / len(res_fake + period_fake)
 
         # Calculate the total generator loss
-        total_loss_gen = score_loss + stft_loss
+        total_loss_gen = score_loss + stft_loss + esr_loss + sisdr_loss + snr_loss + sdsdr_loss
 
         # Calculate the discriminator loss
         total_loss_disc = torch.tensor(0.0, device=audio.device)
@@ -69,4 +95,8 @@ class UnivnetLoss(Module):
             total_loss_disc,
             stft_loss,
             score_loss,
+            esr_loss,
+            sisdr_loss,
+            snr_loss,
+            sdsdr_loss,
         )

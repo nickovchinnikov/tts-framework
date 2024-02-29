@@ -9,7 +9,7 @@ from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
 import torch
 
-from .univnet import UnivNet
+from models.vocoder.univnet import UnivNet
 
 # Node runk in the cluster
 node_rank = 0
@@ -70,19 +70,12 @@ try:
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
         ),
-        # strategy="ddp",
         logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
         enable_checkpointing=True,
-        accumulate_grad_batches=10,
         max_epochs=-1,
-        log_every_n_steps=50,
-        # check_val_every_n_epoch=20,
-        # Failed to find the `precision`
-        # precision="16-mixed",
-        # precision="bf16-mixed",
-        # precision="16-mixed",
+        log_every_n_steps=10,
     )
 
     model = UnivNet()
