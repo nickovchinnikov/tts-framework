@@ -13,8 +13,10 @@ from models.helpers.initializer import (
     init_acoustic_model,
     init_forward_trains_params,
 )
+from models.helpers.tools import get_mask_from_lengths
 from models.tts.delightful_tts.acoustic_model.acoustic_model import AcousticModel
 from training.datasets.libritts_dataset_acoustic import LibriTTSDatasetAcoustic
+from training.loss.fast_speech_2_loss_gen import FastSpeech2LossGen
 
 
 # AcousticModel test
@@ -86,12 +88,12 @@ class TestAcousticModel(unittest.TestCase):
         )
 
     def test_forward_train(self):
-        self.preprocess_config = PreprocessingConfig("english_only")
-        self.model_config = AcousticENModelConfig()
+        preprocess_config = PreprocessingConfig("english_only")
+        model_config = AcousticENModelConfig()
 
         acoustic_model = AcousticModel(
-            self.preprocess_config,
-            self.model_config,
+            preprocess_config,
+            model_config,
             n_speakers=5392,
         )
 
@@ -113,6 +115,12 @@ class TestAcousticModel(unittest.TestCase):
             shuffle=False,
             collate_fn=dataset.collate_fn,
         )
+
+        loss = FastSpeech2LossGen(
+            fine_tuning=False,
+            bin_warmup=False,
+        )
+
         for batch in train_loader:
             (
                 _,
@@ -143,7 +151,42 @@ class TestAcousticModel(unittest.TestCase):
             )
             break
 
+        src_mask = get_mask_from_lengths(src_lens)
+        mel_mask = get_mask_from_lengths(mel_lens)
+
+        y_pred = result["y_pred"]
+        log_duration_prediction = result["log_duration_prediction"]
+        p_prosody_ref = result["p_prosody_ref"]
+        p_prosody_pred = result["p_prosody_pred"]
+        pitch_prediction = result["pitch_prediction"]
+        energy_pred = result["energy_pred"]
+        energy_target = result["energy_target"]
+
+        loss_out = loss.forward(
+            src_masks=src_mask,
+            mel_masks=mel_mask,
+            mel_targets=mels,
+            mel_predictions=y_pred,
+            log_duration_predictions=log_duration_prediction,
+            u_prosody_ref=result["u_prosody_ref"],
+            u_prosody_pred=result["u_prosody_pred"],
+            p_prosody_ref=p_prosody_ref,
+            p_prosody_pred=p_prosody_pred,
+            pitch_predictions=pitch_prediction,
+            p_targets=result["pitch_target"],
+            durations=result["attn_hard_dur"],
+            attn_logprob=result["attn_logprob"],
+            attn_soft=result["attn_soft"],
+            attn_hard=result["attn_hard"],
+            src_lens=src_lens,
+            mel_lens=mel_lens,
+            energy_pred=energy_pred,
+            energy_target=energy_target,
+            step=1000,
+        )
+
         self.assertIsInstance(result, dict)
+        self.assertIsInstance(loss_out, tuple)
         self.assertEqual(len(result), 14)
 
     def test_average_utterance_prosody(self):

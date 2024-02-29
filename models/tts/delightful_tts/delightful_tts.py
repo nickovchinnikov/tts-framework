@@ -84,7 +84,10 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
+        self.loss_acoustic = FastSpeech2LossGen(
+            fine_tuning=fine_tuning,
+            bin_warmup=False,
+        )
 
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
@@ -204,6 +207,7 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
+            mel_stft_loss,
             ssim_loss,
             duration_loss,
             u_prosody_loss,
@@ -237,6 +241,7 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_mel_stft_loss", mel_stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
@@ -276,117 +281,117 @@ class DelightfulTTS(LightningModule):
         #     opt_acoustic.zero_grad()
 
 
-    def validation_step(self, batch: List, batch_idx: int):
-        r"""Performs a validation step for the model.
+    # def validation_step(self, batch: List, batch_idx: int):
+    #     r"""Performs a validation step for the model.
 
-        Args:
-        batch (List): The batch of data for training. The batch should contain:
-            - ids: List of indexes.
-            - raw_texts: Raw text inputs.
-            - speakers: Speaker identities.
-            - texts: Text inputs.
-            - src_lens: Lengths of the source sequences.
-            - mels: Mel spectrogram targets.
-            - pitches: Pitch targets.
-            - pitches_stat: Statistics of the pitches.
-            - mel_lens: Lengths of the mel spectrograms.
-            - langs: Language identities.
-            - attn_priors: Prior attention weights.
-            - wavs: Waveform targets.
-            - energies: Energy targets.
-        batch_idx (int): Index of the batch.
+    #     Args:
+    #     batch (List): The batch of data for training. The batch should contain:
+    #         - ids: List of indexes.
+    #         - raw_texts: Raw text inputs.
+    #         - speakers: Speaker identities.
+    #         - texts: Text inputs.
+    #         - src_lens: Lengths of the source sequences.
+    #         - mels: Mel spectrogram targets.
+    #         - pitches: Pitch targets.
+    #         - pitches_stat: Statistics of the pitches.
+    #         - mel_lens: Lengths of the mel spectrograms.
+    #         - langs: Language identities.
+    #         - attn_priors: Prior attention weights.
+    #         - wavs: Waveform targets.
+    #         - energies: Energy targets.
+    #     batch_idx (int): Index of the batch.
 
-        Returns:
-            - 'val_loss': The total loss for the training step.
-        """
-        (
-            _,
-            _,
-            speakers,
-            texts,
-            src_lens,
-            mels,
-            pitches,
-            pitches_stat,
-            mel_lens,
-            langs,
-            attn_priors,
-            _,
-            energies,
-        ) = batch
+    #     Returns:
+    #         - 'val_loss': The total loss for the training step.
+    #     """
+    #     (
+    #         _,
+    #         _,
+    #         speakers,
+    #         texts,
+    #         src_lens,
+    #         mels,
+    #         pitches,
+    #         pitches_stat,
+    #         mel_lens,
+    #         langs,
+    #         attn_priors,
+    #         _,
+    #         energies,
+    #     ) = batch
 
-        # Update pitches_stat (if needed)
-        self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
-        self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
+    #     # Update pitches_stat (if needed)
+    #     self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
+    #     self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
 
-        outputs = self.acoustic_model.forward_train(
-            x=texts,
-            speakers=speakers,
-            src_lens=src_lens,
-            mels=mels,
-            mel_lens=mel_lens,
-            pitches=pitches,
-            pitches_range=pitches_stat,
-            langs=langs,
-            attn_priors=attn_priors,
-            energies=energies,
-        )
+    #     outputs = self.acoustic_model.forward_train(
+    #         x=texts,
+    #         speakers=speakers,
+    #         src_lens=src_lens,
+    #         mels=mels,
+    #         mel_lens=mel_lens,
+    #         pitches=pitches,
+    #         pitches_range=pitches_stat,
+    #         langs=langs,
+    #         attn_priors=attn_priors,
+    #         energies=energies,
+    #     )
 
-        y_pred = outputs["y_pred"]
-        log_duration_prediction = outputs["log_duration_prediction"]
-        p_prosody_ref = outputs["p_prosody_ref"]
-        p_prosody_pred = outputs["p_prosody_pred"]
-        pitch_prediction = outputs["pitch_prediction"]
-        energy_pred = outputs["energy_pred"]
-        energy_target = outputs["energy_target"]
+    #     y_pred = outputs["y_pred"]
+    #     log_duration_prediction = outputs["log_duration_prediction"]
+    #     p_prosody_ref = outputs["p_prosody_ref"]
+    #     p_prosody_pred = outputs["p_prosody_pred"]
+    #     pitch_prediction = outputs["pitch_prediction"]
+    #     energy_pred = outputs["energy_pred"]
+    #     energy_target = outputs["energy_target"]
 
-        src_mask = get_mask_from_lengths(src_lens)
-        mel_mask = get_mask_from_lengths(mel_lens)
+    #     src_mask = get_mask_from_lengths(src_lens)
+    #     mel_mask = get_mask_from_lengths(mel_lens)
 
-        (
-            total_loss,
-            mel_loss,
-            ssim_loss,
-            duration_loss,
-            u_prosody_loss,
-            p_prosody_loss,
-            pitch_loss,
-            ctc_loss,
-            bin_loss,
-            energy_loss,
-        ) = self.loss_acoustic.forward(
-            src_masks=src_mask,
-            mel_masks=mel_mask,
-            mel_targets=mels,
-            mel_predictions=y_pred,
-            log_duration_predictions=log_duration_prediction,
-            u_prosody_ref=outputs["u_prosody_ref"],
-            u_prosody_pred=outputs["u_prosody_pred"],
-            p_prosody_ref=p_prosody_ref,
-            p_prosody_pred=p_prosody_pred,
-            pitch_predictions=pitch_prediction,
-            p_targets=outputs["pitch_target"],
-            durations=outputs["attn_hard_dur"],
-            attn_logprob=outputs["attn_logprob"],
-            attn_soft=outputs["attn_soft"],
-            attn_hard=outputs["attn_hard"],
-            src_lens=src_lens,
-            mel_lens=mel_lens,
-            energy_pred=energy_pred,
-            energy_target=energy_target,
-            step=self.trainer.global_step,
-        )
+    #     (
+    #         total_loss,
+    #         mel_loss,
+    #         ssim_loss,
+    #         duration_loss,
+    #         u_prosody_loss,
+    #         p_prosody_loss,
+    #         pitch_loss,
+    #         ctc_loss,
+    #         bin_loss,
+    #         energy_loss,
+    #     ) = self.loss_acoustic.forward(
+    #         src_masks=src_mask,
+    #         mel_masks=mel_mask,
+    #         mel_targets=mels,
+    #         mel_predictions=y_pred,
+    #         log_duration_predictions=log_duration_prediction,
+    #         u_prosody_ref=outputs["u_prosody_ref"],
+    #         u_prosody_pred=outputs["u_prosody_pred"],
+    #         p_prosody_ref=p_prosody_ref,
+    #         p_prosody_pred=p_prosody_pred,
+    #         pitch_predictions=pitch_prediction,
+    #         p_targets=outputs["pitch_target"],
+    #         durations=outputs["attn_hard_dur"],
+    #         attn_logprob=outputs["attn_logprob"],
+    #         attn_soft=outputs["attn_soft"],
+    #         attn_hard=outputs["attn_hard"],
+    #         src_lens=src_lens,
+    #         mel_lens=mel_lens,
+    #         energy_pred=energy_pred,
+    #         energy_target=energy_target,
+    #         step=self.trainer.global_step,
+    #     )
 
-        self.log("val_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("val_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
+    #     self.log("val_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
 
 
     def configure_optimizers(self):
