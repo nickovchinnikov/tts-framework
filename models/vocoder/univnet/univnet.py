@@ -31,7 +31,7 @@ class UnivNet(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             acc_grad_steps: int = 10,
-            batch_size: int = 12,
+            batch_size: int = 6,
             root: str = "datasets_cache/LIBRITTS",
             checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
         ):

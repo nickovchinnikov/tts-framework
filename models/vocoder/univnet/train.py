@@ -11,18 +11,6 @@ import torch
 
 from models.vocoder.univnet import UnivNet
 
-# Node runk in the cluster
-node_rank = 0
-num_nodes = 2
-
-# Setup of the training cluster
-os.environ["MASTER_PORT"] = "12355"
-# Change the IP address to the IP address of the master node
-os.environ["MASTER_ADDR"] = "10.148.0.6"
-os.environ["WORLD_SIZE"] = f"{num_nodes}"
-# Change the IP address to the IP address of the master node
-os.environ["NODE_RANK"] = f"{node_rank}"
-
 # Get the current date and time
 now = datetime.now()
 
@@ -58,19 +46,13 @@ default_root_dir="logs"
 # ckpt_vocoder="./checkpoints/vocoder.ckpt"
 
 try:
-    tensorboard = TensorBoardLogger(
-        save_dir=default_root_dir,
-    )
-
     trainer = Trainer(
         accelerator="cuda",
         devices=-1,
-        num_nodes=num_nodes,
         strategy=DDPStrategy(
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
         ),
-        logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
         enable_checkpointing=True,
