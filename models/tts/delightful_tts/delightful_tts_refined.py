@@ -45,7 +45,7 @@ class DelightfulTTS(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             # NOTE: lr finder found 1.5848931924611133e-07
-            learning_rate: float = 1.5848931924611133e-07,
+            learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
             batch_size: int = 12,
         ):
@@ -208,6 +208,7 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
+            mel_stft_loss,
             ssim_loss,
             duration_loss,
             u_prosody_loss,
@@ -241,6 +242,7 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_mel_stft_loss", mel_stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
@@ -271,7 +273,7 @@ class DelightfulTTS(LightningModule):
             optimizer,
             mode="min",
             factor=0.5,
-            patience=2,
+            patience=5,
         )
 
         return ({
@@ -284,6 +286,12 @@ class DelightfulTTS(LightningModule):
 
 
     def on_after_optimizer_step(self):
+        r"""Updates the averaged model after each optimizer step with SWA."""
+        # NOTE: try at the end of the epoch
+        # self.swa_averaged_model.update_parameters(self.acoustic_model)
+
+
+    def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""
         self.swa_averaged_model.update_parameters(self.acoustic_model)
 
