@@ -4,10 +4,10 @@ import torch
 from torch import nn
 
 from models.config.configs import DiffusionConfig
+from models.enhancer.gaussian_diffusion.gaussian_diffusion import GaussianDiffusion
 from models.helpers import (
     tools,
 )
-from models.tts.delightful_tts.diffusion.gaussian_diffusion import GaussianDiffusion
 
 
 class TestGaussianDiffusion(unittest.TestCase):
