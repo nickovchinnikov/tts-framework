@@ -10,9 +10,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
     def setUp(self):
         self.preprocessing_config = PreprocessingConfig("english_only")
 
-        self.loss_gen = FastSpeech2LossGen(
-            fine_tuning=False,
-        )
+        self.loss_gen = FastSpeech2LossGen()
 
     def test_forward(self):
         # Reproducible results
@@ -43,7 +41,8 @@ class TestFastSpeech2LossGen(unittest.TestCase):
         (
             total_loss,
             mel_loss,
-            mel_stft_loss,
+            sc_mag_loss,
+            log_mag_loss,
             ssim_loss,
             duration_loss,
             u_prosody_loss,
@@ -52,7 +51,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
             ctc_loss,
             bin_loss,
             energy_loss,
-        ) = self.loss_gen(
+        ) = self.loss_gen.forward(
             src_masks,
             mel_masks,
             mel_targets,
@@ -77,7 +76,8 @@ class TestFastSpeech2LossGen(unittest.TestCase):
 
         self.assertIsInstance(total_loss, torch.Tensor)
         self.assertIsInstance(mel_loss, torch.Tensor)
-        self.assertIsInstance(mel_stft_loss, torch.Tensor)
+        self.assertIsInstance(sc_mag_loss, torch.Tensor)
+        self.assertIsInstance(log_mag_loss, torch.Tensor)
         self.assertIsInstance(ssim_loss, torch.Tensor)
         self.assertIsInstance(duration_loss, torch.Tensor)
         self.assertIsInstance(u_prosody_loss, torch.Tensor)
@@ -94,7 +94,8 @@ class TestFastSpeech2LossGen(unittest.TestCase):
                     [
                         total_loss,
                         mel_loss,
-                        mel_stft_loss,
+                        sc_mag_loss,
+                        log_mag_loss,
                         ssim_loss,
                         duration_loss,
                         u_prosody_loss,

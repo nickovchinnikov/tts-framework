@@ -79,7 +79,7 @@ class AcousticFinetuningConfig:
     only_train_speaker_until = 5000
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.1, lr_decay=0.99999,
+            learning_rate=0.0002, weight_decay=0.001, lr_decay=0.99999,
         ),
     )
 
@@ -98,7 +98,7 @@ class AcousticPretrainingConfig:
     only_train_speaker_until = 0
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.0, lr_decay=1.0,
+            learning_rate=0.0002, weight_decay=0.01, lr_decay=1.0,
         ),
     )
 

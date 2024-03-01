@@ -171,9 +171,7 @@ class UnivNet(LightningModule):
             stft_loss,
             score_loss,
             esr_loss,
-            sisdr_loss,
             snr_loss,
-            sdsdr_loss,
         ) = self.loss.forward(
             audio,
             fake_audio,
@@ -187,9 +185,7 @@ class UnivNet(LightningModule):
         self.log("total_loss_disc", total_loss_disc, sync_dist=True, batch_size=self.batch_size)
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("esr_loss", esr_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("sisdr_loss", sisdr_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("snr_loss", snr_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("sdsdr_loss", sdsdr_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("score_loss", score_loss, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization

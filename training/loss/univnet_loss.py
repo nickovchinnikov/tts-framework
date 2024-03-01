@@ -43,8 +43,6 @@ class UnivnetLoss(Module):
             Tensor,
             Tensor,
             Tensor,
-            Tensor,
-            Tensor,
         ]:
         r"""Calculate the losses for the generator and discriminator.
 
@@ -68,9 +66,7 @@ class UnivnetLoss(Module):
         fake_audio_padded = torch.nn.functional.pad(fake_audio, (0, padding))
 
         esr_loss = self.esr_loss.forward(fake_audio_padded, audio)
-        sisdr_loss = self.sisdr_loss.forward(fake_audio_padded, audio)
         snr_loss = self.snr_loss.forward(fake_audio_padded, audio)
-        sdsdr_loss = self.sdsdr_loss.forward(fake_audio_padded, audio)
 
         # Calculate the score loss
         score_loss = torch.tensor(0.0, device=audio.device)
@@ -80,7 +76,7 @@ class UnivnetLoss(Module):
         score_loss = score_loss / len(res_fake + period_fake)
 
         # Calculate the total generator loss
-        total_loss_gen = score_loss + stft_loss + esr_loss + sisdr_loss + snr_loss + sdsdr_loss
+        total_loss_gen = score_loss + stft_loss + esr_loss + snr_loss
 
         # Calculate the discriminator loss
         total_loss_disc = torch.tensor(0.0, device=audio.device)
@@ -96,7 +92,5 @@ class UnivnetLoss(Module):
             stft_loss,
             score_loss,
             esr_loss,
-            sisdr_loss,
             snr_loss,
-            sdsdr_loss,
         )

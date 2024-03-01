@@ -16,14 +16,12 @@ from .stft_magnitude_loss import STFTMagnitudeLoss
 class FastSpeech2LossGen(Module):
     def __init__(
         self,
-        fine_tuning: bool,
-        bin_warmup: bool = True,
+        bin_warmup: bool = False,
     ):
         r"""Initializes the FastSpeech2LossGen module.
 
         Args:
-            fine_tuning (bool): Whether the module is used for fine-tuning.
-            bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to True. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
+            bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to False. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
         """
         super().__init__()
 
@@ -35,23 +33,13 @@ class FastSpeech2LossGen(Module):
 
         self.spectral_conv_loss = SpectralConvergengeLoss()
 
-        self.reduction = "mean"
-        mag_distance = "L1"
-
         self.logstft_loss = STFTMagnitudeLoss(
             log=True,
-            reduction=self.reduction,
-            distance=mag_distance,
-        )
-        self.linstft_loss = STFTMagnitudeLoss(
-            log=False,
-            reduction=self.reduction,
-            distance=mag_distance,
+            reduction="mean",
+            distance="L1",
         )
 
         self.bin_warmup = bin_warmup
-
-        self.fine_tuning = fine_tuning
 
     def forward(
         self,
@@ -76,6 +64,7 @@ class FastSpeech2LossGen(Module):
         energy_pred: torch.Tensor,
         energy_target: torch.Tensor,
     ) -> Tuple[
+        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -119,7 +108,8 @@ class FastSpeech2LossGen(Module):
             Here is the description of the returned loss components:
             `total_loss`: This is the total loss computed as the sum of all the other losses.
             `mel_loss`: This is the mean absolute error (MAE) loss between the predicted and target mel-spectrograms. It measures how well the model predicts the mel-spectrograms.
-            `mel_stft_loss`: This is the sum of the spectral convergence loss, log STFT magnitude loss, and linear STFT magnitude loss between the predicted and target mel-spectrograms. It measures how well the model predicts the mel-spectrograms in terms of their spectral structure.
+            `sc_mag_loss`: This is the spectral convergence loss between the predicted and target mel-spectrograms. It measures how well the model predicts the mel-spectrograms in terms of their spectral structure.
+            `log_mag_loss`: This is the log STFT magnitude loss between the predicted and target mel-spectrograms. It measures how well the model predicts the mel-spectrograms in terms of their spectral structure.
             `ssim_loss`: This is the Structural Similarity Index (SSIM) loss between the predicted and target mel-spectrograms. It measures the similarity between the two mel-spectrograms in terms of their structure, contrast, and luminance.
             `duration_loss`: This is the mean squared error (MSE) loss between the predicted and target log-durations. It measures how well the model predicts the durations of the phonemes.
             `u_prosody_loss`: This is the MAE loss between the predicted and reference unvoiced prosody. It measures how well the model predicts the prosody (rhythm, stress, and intonation) of the unvoiced parts of the speech.
@@ -162,9 +152,6 @@ class FastSpeech2LossGen(Module):
 
         sc_mag_loss = self.spectral_conv_loss(mel_predictions, mel_targets)
         log_mag_loss = self.logstft_loss(mel_predictions, mel_targets)
-        lin_mag_loss = self.linstft_loss(mel_predictions, mel_targets)
-
-        mel_stft_loss = sc_mag_loss + log_mag_loss + lin_mag_loss
 
         p_prosody_ref = p_prosody_ref.permute((0, 2, 1))
         p_prosody_pred = p_prosody_pred.permute((0, 2, 1))
@@ -224,7 +211,8 @@ class FastSpeech2LossGen(Module):
 
         total_loss = (
             mel_loss
-            + mel_stft_loss
+            + sc_mag_loss
+            + log_mag_loss
             + duration_loss
             + u_prosody_loss
             + p_prosody_loss
@@ -238,7 +226,8 @@ class FastSpeech2LossGen(Module):
         return (
             total_loss,
             mel_loss,
-            mel_stft_loss,
+            sc_mag_loss,
+            log_mag_loss,
             ssim_loss,
             duration_loss,
             u_prosody_loss,

@@ -27,27 +27,23 @@ class TestUnivnetLoss(unittest.TestCase):
         # Check that the output is a tuple with the expected lens
         self.assertIsInstance(output, tuple)
 
-        self.assertEqual(len(output), 8)
+        self.assertEqual(len(output), 6)
 
         (
             total_loss_gen,
             total_loss_disc,
-            mel_loss,
+            stft_loss,
             score_loss,
             esr_loss,
-            sisdr_loss,
             snr_loss,
-            sdsdr_loss,
         ) = output
 
         self.assertIsInstance(total_loss_gen, torch.Tensor)
         self.assertIsInstance(total_loss_disc, torch.Tensor)
-        self.assertIsInstance(mel_loss, torch.Tensor)
+        self.assertIsInstance(stft_loss, torch.Tensor)
         self.assertIsInstance(score_loss, torch.Tensor)
         self.assertIsInstance(esr_loss, torch.Tensor)
-        self.assertIsInstance(sisdr_loss, torch.Tensor)
         self.assertIsInstance(snr_loss, torch.Tensor)
-        self.assertIsInstance(sdsdr_loss, torch.Tensor)
 
         # Assert the value of losses
         self.assertTrue(
@@ -56,12 +52,10 @@ class TestUnivnetLoss(unittest.TestCase):
                     [
                         total_loss_gen,
                         total_loss_disc,
-                        mel_loss,
+                        stft_loss,
                         score_loss,
                         esr_loss,
-                        sisdr_loss,
                         snr_loss,
-                        sdsdr_loss,
                     ],
                 ) >= 0,
             ),

@@ -88,7 +88,7 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
+        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
 
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
@@ -208,7 +208,8 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
-            mel_stft_loss,
+            sc_mag_loss,
+            log_mag_loss,
             ssim_loss,
             duration_loss,
             u_prosody_loss,
@@ -242,7 +243,8 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_mel_stft_loss", mel_stft_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_sc_mag_loss", sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_log_mag_loss", log_mag_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)

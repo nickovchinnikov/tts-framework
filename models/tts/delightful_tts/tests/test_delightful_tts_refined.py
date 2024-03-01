@@ -25,8 +25,8 @@ class TestDelightfulTTS(unittest.TestCase):
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config[0]["optimizer"]
-        lr_scheduler = optimizer_config[0]["lr_scheduler"]
+        optimizer = optimizer_config[0]["optimizer"] # type: ignore
+        lr_scheduler = optimizer_config[0]["lr_scheduler"] # type: ignore
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.AdamW)
@@ -61,8 +61,8 @@ class TestDelightfulTTS(unittest.TestCase):
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config[0]["optimizer"]
-        lr_scheduler = optimizer_config[0]["lr_scheduler"]
+        optimizer = optimizer_config[0]["optimizer"] # type: ignore
+        lr_scheduler = optimizer_config[0]["lr_scheduler"] # type: ignore
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.Adam)
