@@ -21,7 +21,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         lang: str = "en",
         root: str = "datasets_cache/LIBRITTS",
         url: str = "train-clean-360",
-        download: bool = True,
+        download: bool = False,
         cache: bool = False,
         mem_cache: bool = False,
         cache_dir: str = "datasets_cache",

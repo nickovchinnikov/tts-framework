@@ -117,7 +117,6 @@ class TestAcousticModel(unittest.TestCase):
         )
 
         loss = FastSpeech2LossGen(
-            fine_tuning=False,
             bin_warmup=False,
         )
 

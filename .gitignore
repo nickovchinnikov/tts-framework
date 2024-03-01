@@ -168,6 +168,7 @@ lightning_logs
 
 # Checkpoints ignore (too large for lfs)
 **/checkpoints/**/*.pt
+**/checkpoints/**/*.pth
 **/checkpoints/**/*.ckpt
 **/checkpoints/**/*.json
 **/checkpoints/**/*.bin
@@ -182,6 +183,7 @@ datasets_cache/**/*
 
 notebooks/**/*.wav
 notebooks/**/*.mp3
+notebooks/**/*.pth
 
 # Mock audio
 mocks/wav2vec_aligner/audio

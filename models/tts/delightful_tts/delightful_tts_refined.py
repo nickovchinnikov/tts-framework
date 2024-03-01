@@ -3,7 +3,7 @@ from typing import List
 from lightning.pytorch.core import LightningModule
 import torch
 from torch.optim import AdamW, swa_utils
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
 from models.config import (
@@ -45,7 +45,7 @@ class DelightfulTTS(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             # NOTE: lr finder found 1.5848931924611133e-07
-            learning_rate: float = 1.5848931924611133e-05,
+            # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
             batch_size: int = 12,
         ):
@@ -54,7 +54,6 @@ class DelightfulTTS(LightningModule):
         self.lang = lang
         self.fine_tuning = fine_tuning
         self.batch_size = batch_size
-        self.learning_rate = learning_rate
 
         lang_map = get_lang_map(lang)
         normilize_text_lang = lang_map.nemo
@@ -79,6 +78,8 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
+        # Freeze all layers except the mel conv layers
+        self.acoustic_model.freeze_except_to_mel_conv()
 
         # Initialize SWA
         self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
@@ -262,36 +263,26 @@ class DelightfulTTS(LightningModule):
         Returns
             tuple: A tuple containing three dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
         """
-        parameters_acoustic = self.acoustic_model.parameters()
+        lr_decay = self.train_config_acoustic.optimizer_config.lr_decay
+        default_lr = self.train_config_acoustic.optimizer_config.learning_rate
 
-        optimizer = AdamW(
-            parameters_acoustic,
-            lr = self.learning_rate,
-            betas = (0.8, 0.99),
-            eps = 1e-9,
-            weight_decay = 0.01,
+        init_lr = default_lr if self.trainer.global_step == 0 \
+        else default_lr * (lr_decay ** self.trainer.global_step)
+
+        optimizer_acoustic = AdamW(
+            self.acoustic_model.parameters(),
+            lr=init_lr,
+            betas=self.train_config_acoustic.optimizer_config.betas,
+            eps=self.train_config_acoustic.optimizer_config.eps,
+            weight_decay=self.train_config_acoustic.optimizer_config.weight_decay,
         )
-        scheduler = ReduceLROnPlateau(
-            optimizer,
-            mode="min",
-            factor=0.5,
-            patience=5,
-        )
+
+        scheduler_acoustic = ExponentialLR(optimizer_acoustic, gamma=lr_decay)
 
         return ({
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "train_total_loss",
-            },
+            "optimizer": optimizer_acoustic,
+            "lr_scheduler": scheduler_acoustic,
         })
-
-
-    def on_after_optimizer_step(self):
-        r"""Updates the averaged model after each optimizer step with SWA."""
-        # NOTE: try at the end of the epoch
-        # self.swa_averaged_model.update_parameters(self.acoustic_model)
-
 
     def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""

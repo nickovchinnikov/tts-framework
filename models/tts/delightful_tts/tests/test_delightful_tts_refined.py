@@ -70,20 +70,14 @@ class TestDelightfulTTS(unittest.TestCase):
 
     def test_train_steps(self):
         default_root_dir = "checkpoints/acoustic"
-        tensorboard = TensorBoardLogger(save_dir=default_root_dir)
 
         trainer = Trainer(
-            logger=tensorboard,
             # Save checkpoints to the `default_root_dir` directory
             default_root_dir=default_root_dir,
             fast_dev_run=1,
             limit_train_batches=1,
             max_epochs=1,
             accelerator="cpu",
-            # accelerator="gpu",
-            # Precision is set to speed up training
-            # precision="bf16-mixed",
-            # precision="16-mixed",
         )
 
         module = DelightfulTTS(batch_size=2)
@@ -135,7 +129,7 @@ class TestDelightfulTTS(unittest.TestCase):
 
         # Save the audio to a file
         torchaudio.save(        # type: ignore
-            "results/output1_.wav",
+            "results/output1_2.wav",
             wav_prediction.unsqueeze(0).detach().cpu(),
             22050,
         )

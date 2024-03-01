@@ -150,9 +150,12 @@ class AcousticModel(Module):
             ),
         )
 
-        self.to_mel = nn.Linear(
+        # NOTE: Instead of linear layer, we use 1D convolution
+        self.to_mel_conv = nn.Conv1d(
             model_config.decoder.n_hidden,
             preprocess_config.stft.n_mel_channels,
+            kernel_size=7,
+            padding=3,
         )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
@@ -221,6 +224,12 @@ class AcousticModel(Module):
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
 
+    def freeze_except_to_mel_conv(self) -> None:
+        r"""Freeze all parameters except for the ones in the to_mel_conv module."""
+        # Freeze all parameters except for the ones in to_mel_conv
+        for name, param in self.named_parameters():
+            if "to_mel_conv" not in name:
+                param.requires_grad = False
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
@@ -421,9 +430,9 @@ class AcousticModel(Module):
 
         # Decode the encoder output to pred mel spectrogram
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
-        x = self.to_mel(x)
+        x = self.to_mel_conv(x.permute((1, 2, 0)))
 
-        x = x.permute((0, 2, 1))
+        x = x.permute((2, 1, 0))
 
         return {
             "y_pred": x,
@@ -524,6 +533,6 @@ class AcousticModel(Module):
             encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
-        x = self.to_mel(x)
 
-        return x.permute((0, 2, 1))
+        x = self.to_mel_conv(x.permute((1, 2, 0)))
+        return x.permute((2, 1, 0))
