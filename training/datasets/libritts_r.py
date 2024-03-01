@@ -118,6 +118,7 @@ class LIBRITTS_R(Dataset):
             "test-other",
             "train-clean-100",
             "train-clean-360",
+            "train-clean-460",
             "train-other-500",
         ]:
 
@@ -140,7 +141,7 @@ class LIBRITTS_R(Dataset):
         if download:
             if not os.path.isdir(self._path):
                 if not os.path.isfile(archive):
-                    checksum = _CHECKSUMS.get(url, None)
+                    checksum = _CHECKSUMS.get(url)
                     download_url_to_file(url, archive, hash_prefix=checksum)
                 _extract_tar(archive)
         else:
