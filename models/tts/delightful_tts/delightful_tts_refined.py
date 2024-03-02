@@ -78,7 +78,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-        self.acoustic_model.freeze_exept_conformer_blocks_ff()
+        # self.acoustic_model.freeze_exept_conformer_blocks_ff()
 
         # Initialize SWA
         self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
