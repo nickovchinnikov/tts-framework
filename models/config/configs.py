@@ -36,6 +36,8 @@ class PreprocessingConfig:
     )
     forced_alignment_batch_size: int = 200000
     skip_on_error: bool = True
+    pitch_fmin: int = 1
+    pitch_fmax: int = 640
 
 
 @dataclass

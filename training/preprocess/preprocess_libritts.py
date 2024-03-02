@@ -3,7 +3,7 @@ import math
 import random
 from typing import Any, List, Tuple, Union
 
-from dp.phonemizer import Phonemizer
+from librosa import pyin
 import numpy as np
 from scipy.stats import betabinom
 import torch
@@ -73,6 +73,7 @@ class PreprocessLibriTTS:
         self.vocoder_train_config = VocoderBasicConfig()
 
         preprocess_config = PreprocessingConfig(processing_lang_type)
+        self.preprocess_config = preprocess_config
 
         self.sampling_rate = preprocess_config.sampling_rate
         self.use_audio_normalization = preprocess_config.use_audio_normalization
@@ -185,23 +186,31 @@ class PreprocessLibriTTS:
         if phones.shape[0] >= mel_spectrogram.shape[1]:
             return None
 
-        pitch, _, _, _ = compute_yin(
-            wav,
-            sr=sampling_rate,
-            w_len=self.filter_length,
-            w_step=self.hop_length,
-            f0_min=50,
-            f0_max=1000,
-            harmo_thresh=0.25,
+        f0, voiced_mask, _ = pyin(
+            y=wav.numpy().astype(np.double),
+            fmin=self.preprocess_config.pitch_fmin,
+            fmax=self.preprocess_config.pitch_fmax,
+            sr=self.preprocess_config.sampling_rate,
+            frame_length=self.preprocess_config.stft.win_length,
+            win_length=self.preprocess_config.stft.win_length // 2,
+            hop_length=self.preprocess_config.stft.hop_length,
+            pad_mode="reflect",
+            center=True,
+            n_thresholds=100,
+            beta_parameters=(2, 18),
+            boltzmann_parameter=2,
+            resolution=0.1,
+            max_transition_rate=35.92,
+            switch_prob=0.01,
+            no_trough_prob=0.01,
         )
 
+        voiced_mask = torch.from_numpy(voiced_mask)
+        pitch = torch.from_numpy(f0)[voiced_mask]
+
         # Skipping pitch that sum less or equal to 1
-        if np.sum(pitch != 0) <= 1:
+        if sum(pitch != 0) <= 1:
             return None
-
-        pitch, _ = norm_interp_f0(pitch)
-
-        pitch = torch.from_numpy(pitch)
 
         # TODO this shouldnt be necessary, currently pitch sometimes has 1 less frame than spectrogram,
         # We should find out why

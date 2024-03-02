@@ -124,6 +124,7 @@ class FastSpeech2LossGen(Module):
         log_duration_targets.requires_grad = False
         mel_targets.requires_grad = False
         p_targets.requires_grad = False
+        energy_target.requires_grad = False
 
         log_duration_predictions = log_duration_predictions.masked_select(~src_masks)
         log_duration_targets = log_duration_targets.masked_select(~src_masks)

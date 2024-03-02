@@ -13,7 +13,7 @@ from models.config import (
     symbols,
 )
 from models.helpers import (
-    pitch_phoneme_averaging,
+    # pitch_phoneme_averaging,
     positional_encoding,
     tools,
 )
@@ -32,7 +32,8 @@ from .length_adaptor import LengthAdaptor
 from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 
 # from .pitch_adaptor import PitchAdaptor
-from .pitch_adaptor2 import PitchAdaptor
+# from .pitch_adaptor2 import PitchAdaptor
+from .pitch_adaptor_conv import PitchAdaptorConv
 
 
 class AcousticModel(Module):
@@ -72,8 +73,18 @@ class AcousticModel(Module):
             with_ff=model_config.encoder.with_ff,
         )
 
-        self.pitch_adaptor = PitchAdaptor(
-            model_config,
+        # self.pitch_adaptor = PitchAdaptor(
+        #     model_config,
+        # )
+
+        self.pitch_adaptor_conv = PitchAdaptorConv(
+            channels_in=model_config.encoder.n_hidden,
+            channels_hidden=model_config.variance_adaptor.n_hidden,
+            channels_out=1,
+            kernel_size=model_config.variance_adaptor.kernel_size,
+            emb_kernel_size=model_config.variance_adaptor.emb_kernel_size,
+            dropout=model_config.variance_adaptor.p_dropout,
+            leaky_relu_slope=leaky_relu_slope,
         )
 
         self.energy_adaptor = EnergyAdaptor(
@@ -224,6 +235,14 @@ class AcousticModel(Module):
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
 
+    def freeze_exept_pitch_adaptor_conv(self) -> None:
+        r"""Freeze all parameters except for the ones in the pitch adaptor."""
+        for name, param in self.named_parameters():
+            if "pitch_adaptor_conv" in name:
+                param.requires_grad = True
+            else:
+                param.requires_grad = False
+
     def freeze_exept_conformer_blocks_ff(self) -> None:
         r"""Freeze all parameters except for the ones in the conformer blocks and feed-forward layers."""
         # Freeze all parameters
@@ -255,7 +274,7 @@ class AcousticModel(Module):
             par.requires_grad = False
         self.speaker_embed.requires_grad = True
         # NOTE: requires_grad prop
-        self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
+        # self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
@@ -402,19 +421,29 @@ class AcousticModel(Module):
             enc_mask=src_mask,
             attn_prior=attn_priors,
         )
-        pitches = pitch_phoneme_averaging(
-            durations=attn_hard_dur, pitches=pitches, max_phoneme_len=x.shape[1],
-        )
-        x, pitch_prediction, _, _ = self.pitch_adaptor.add_pitch_train(
+
+        # NOTE: changed the pitch adaptor to the new one
+        # pitches = pitch_phoneme_averaging(
+        #     durations=attn_hard_dur, pitches=pitches, max_phoneme_len=x.shape[1],
+        # )
+        # x, pitch_prediction, _, _ = self.pitch_adaptor.add_pitch_train(
+        #     x=x,
+        #     pitch_range=pitches_range,
+        #     pitch_target=pitches,
+        #     src_mask=src_mask,
+        #     use_ground_truth=use_ground_truth,
+        # )
+
+        attn_hard_dur = attn_hard_dur.to(src_mask.device)
+
+        x, pitch_prediction, avg_pitch_target = self.pitch_adaptor_conv.add_pitch_embedding_train(
             x=x,
-            pitch_range=pitches_range,
-            pitch_target=pitches,
-            src_mask=src_mask,
-            use_ground_truth=use_ground_truth,
+            target=pitches,
+            dr=attn_hard_dur,
+            mask=src_mask,
         )
 
         energies = energies.to(src_mask.device)
-        attn_hard_dur = attn_hard_dur.to(src_mask.device)
 
         # NOTE: add the energy embedding to the encoder output
         x, energy_pred, avg_energy_target = self.energy_adaptor.add_energy_embedding_train(
@@ -445,7 +474,7 @@ class AcousticModel(Module):
         return {
             "y_pred": x,
             "pitch_prediction": pitch_prediction,
-            "pitch_target": pitches,
+            "pitch_target": avg_pitch_target,
             "energy_pred": energy_pred,
             "energy_target": avg_energy_target,
             "log_duration_prediction": log_duration_prediction,
@@ -517,9 +546,17 @@ class AcousticModel(Module):
         x = x + self.u_bottle_out(u_prosody_pred).expand_as(x)
         x = x + self.p_bottle_out(p_prosody_pred).expand_as(x)
         x_res = x
-        x = self.pitch_adaptor.add_pitch(
-            x=x, pitch_range=pitches_range, src_mask=src_mask, control=p_control,
+
+        # NOTE: changed the pitch adaptor to the new one
+        # x = self.pitch_adaptor.add_pitch(
+        #     x=x, pitch_range=pitches_range, src_mask=src_mask, control=p_control,
+        # )
+
+        x, _ = self.pitch_adaptor_conv.add_pitch_embedding(
+            x=x,
+            mask=src_mask,
         )
+
         x, _ = self.energy_adaptor.add_energy_embedding(
             x=x,
             mask=src_mask,
