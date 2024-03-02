@@ -193,7 +193,7 @@ class AcousticENModelConfig:
             p_dropout=0.1,
             kernel_size_conv_mod=7,
             kernel_size_depthwise=7,
-            with_ff=False,
+            with_ff=True,
         ),
     )
     decoder: ConformerConfig = field(
@@ -204,7 +204,7 @@ class AcousticENModelConfig:
             p_dropout=0.1,
             kernel_size_conv_mod=11,
             kernel_size_depthwise=11,
-            with_ff=False,
+            with_ff=True,
         ),
     )
     # TODO: DEPRECATED!

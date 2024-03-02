@@ -224,12 +224,20 @@ class AcousticModel(Module):
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
 
-    def freeze_except_to_mel_conv(self) -> None:
-        r"""Freeze all parameters except for the ones in the to_mel_conv module."""
-        # Freeze all parameters except for the ones in to_mel_conv
-        for name, param in self.named_parameters():
-            if "to_mel_conv" not in name:
+    def freeze_exept_conformer_blocks_ff(self) -> None:
+        r"""Freeze all parameters except for the ones in the conformer blocks and feed-forward layers."""
+        # Freeze all parameters
+        for _, param in self.named_parameters():
                 param.requires_grad = False
+
+        # unfreeze the feed-forward layers in conformer blocks
+        for _, module in self.named_modules():
+            if isinstance(module, Conformer):
+                for block in module.layer_stack:
+                    for name, param in block.named_parameters():
+                        if "ff" in name:
+                            param.requires_grad = True
+
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
