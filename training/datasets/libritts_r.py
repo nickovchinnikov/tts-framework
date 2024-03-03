@@ -120,6 +120,7 @@ class LIBRITTS_R(Dataset):
             "train-clean-360",
             "train-clean-460",
             "train-other-500",
+            "train-960",
         ]:
 
             ext_archive = ".tar.gz"

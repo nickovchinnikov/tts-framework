@@ -300,7 +300,7 @@ class DelightfulTTS(LightningModule):
         cache: bool = True,
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
-        url: str = "train-clean-360",
+        url: str = "train-960",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
