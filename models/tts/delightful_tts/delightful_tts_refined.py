@@ -78,7 +78,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-        # self.acoustic_model.freeze_exept_pitch_adaptor_conv()
+        self.acoustic_model.freeze_exept_post_net()
 
         # Initialize SWA
         self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
@@ -122,7 +122,7 @@ class DelightfulTTS(LightningModule):
             device=speaker_idx.device,
         ).repeat(x.shape[1]).unsqueeze(0)
 
-        y_pred = self.acoustic_model(
+        y_pred = self.acoustic_model.forward(
             x=x,
             pitches_range=self.pitches_stat,
             speakers=speakers,
@@ -195,6 +195,7 @@ class DelightfulTTS(LightningModule):
         )
 
         y_pred = outputs["y_pred"]
+        postnet_output = outputs["postnet_output"]
         log_duration_prediction = outputs["log_duration_prediction"]
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
@@ -208,9 +209,9 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
-            sc_mag_loss,
-            log_mag_loss,
+            mel_loss_postnet,
             ssim_loss,
+            ssim_loss_postnet,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,
@@ -223,6 +224,7 @@ class DelightfulTTS(LightningModule):
             mel_masks=mel_mask,
             mel_targets=mels,
             mel_predictions=y_pred,
+            postnet_outputs=postnet_output,
             log_duration_predictions=log_duration_prediction,
             u_prosody_ref=outputs["u_prosody_ref"],
             u_prosody_pred=outputs["u_prosody_pred"],
@@ -243,9 +245,9 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_sc_mag_loss", sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_log_mag_loss", log_mag_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_mel_loss_postnet", mel_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_ssim_loss_postnet", ssim_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
@@ -290,7 +292,8 @@ class DelightfulTTS(LightningModule):
 
     def on_train_end(self):
         # Update SWA model after training
-        swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
+        # swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
+        pass
 
 
     def train_dataloader(

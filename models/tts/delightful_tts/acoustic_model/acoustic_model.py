@@ -34,6 +34,7 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 # from .pitch_adaptor import PitchAdaptor
 # from .pitch_adaptor2 import PitchAdaptor
 from .pitch_adaptor_conv import PitchAdaptorConv
+from .post_net import PostNet
 
 
 class AcousticModel(Module):
@@ -72,10 +73,6 @@ class AcousticModel(Module):
             kernel_size_conv_mod=model_config.encoder.kernel_size_conv_mod,
             with_ff=model_config.encoder.with_ff,
         )
-
-        # self.pitch_adaptor = PitchAdaptor(
-        #     model_config,
-        # )
 
         self.pitch_adaptor_conv = PitchAdaptorConv(
             channels_in=model_config.encoder.n_hidden,
@@ -169,6 +166,12 @@ class AcousticModel(Module):
             padding=3,
         )
 
+        # Post net improve the quality of the mel spectrogram
+        # It is a stack of 5 1D convolutional layers with 512 channels and kernel size 5
+        self.post_net = PostNet(
+            n_mel_channels=preprocess_config.stft.n_mel_channels,
+        )
+
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
         # NOTE: flexibility of the model binded by the n_speaker parameter, maybe I can find another way?
         # NOTE: in LIBRITTS there are 2477 speakers, we can add more, just extend the speaker_embed matrix
@@ -239,6 +242,14 @@ class AcousticModel(Module):
         r"""Freeze all parameters except for the ones in the pitch adaptor."""
         for name, param in self.named_parameters():
             if "pitch_adaptor_conv" in name:
+                param.requires_grad = True
+            else:
+                param.requires_grad = False
+
+    def freeze_exept_post_net(self) -> None:
+        r"""Freeze all parameters except for the ones in the post net."""
+        for name, param in self.named_parameters():
+            if "post_net" in name:
                 param.requires_grad = True
             else:
                 param.requires_grad = False
@@ -469,10 +480,14 @@ class AcousticModel(Module):
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel_conv(x.permute((1, 2, 0)))
 
+        postnet_output = self.post_net.forward(x) + x
+        postnet_output = postnet_output.permute((2, 1, 0))
+
         x = x.permute((2, 1, 0))
 
         return {
             "y_pred": x,
+            "postnet_output": postnet_output,
             "pitch_prediction": pitch_prediction,
             "pitch_target": avg_pitch_target,
             "energy_pred": energy_pred,
