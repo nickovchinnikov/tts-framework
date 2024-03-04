@@ -480,7 +480,7 @@ class AcousticModel(Module):
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         x = self.to_mel_conv(x.permute((1, 2, 0)))
 
-        postnet_output = self.post_net.forward(x) + x
+        postnet_output = self.post_net.forward(x)
         postnet_output = postnet_output.permute((2, 1, 0))
 
         x = x.permute((2, 1, 0))

@@ -62,6 +62,7 @@ class PostNet(nn.Module):
         postnet_embedding_dim (int): PostNet embedding dimension
         postnet_kernel_size (int): PostNet kernel size
         postnet_n_convolutions (int): Number of PostNet convolutions
+        upsampling_factor (int): Upsampling factor for mel-spectrogram
     """
 
     def __init__(
@@ -70,9 +71,24 @@ class PostNet(nn.Module):
         postnet_embedding_dim: int = 512,
         postnet_kernel_size: int = 5,
         postnet_n_convolutions: int = 5,
+        upsampling_factor: int = 4,
     ):
-
         super().__init__()
+
+        # Upsampling layer
+        self.upsample = nn.Sequential(
+            nn.ConvTranspose1d(
+                n_mel_channels,
+                n_mel_channels,
+                kernel_size=upsampling_factor * 2,
+                stride=upsampling_factor,
+                padding=upsampling_factor // 2,
+                output_padding=upsampling_factor % 2,
+            ),
+            nn.BatchNorm1d(n_mel_channels),
+            nn.ReLU(inplace=True),
+        )
+
         self.convolutions = nn.ModuleList()
 
         self.convolutions.append(
@@ -90,7 +106,7 @@ class PostNet(nn.Module):
             ),
         )
 
-        for i in range(1, postnet_n_convolutions - 1):
+        for _ in range(1, postnet_n_convolutions - 1):
             self.convolutions.append(
                 nn.Sequential(
                     ConvNorm(
@@ -103,6 +119,8 @@ class PostNet(nn.Module):
                         w_init_gain="tanh",
                     ),
                     nn.BatchNorm1d(postnet_embedding_dim),
+                    nn.Tanh(),
+                    nn.Dropout(0.5),
                 ),
             )
 
@@ -118,11 +136,25 @@ class PostNet(nn.Module):
                     w_init_gain="linear",
                 ),
                 nn.BatchNorm1d(n_mel_channels),
+                nn.Dropout(0.5),
             ),
         )
 
+        # Downsampling layer
+        self.downsample = nn.Conv1d(
+            n_mel_channels,
+            n_mel_channels,
+            kernel_size=upsampling_factor,
+            stride=upsampling_factor,
+        )
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        for i in range(len(self.convolutions) - 1):
-            x = F.dropout(torch.tanh(self.convolutions[i](x)), 0.5, self.training)
-        x = F.dropout(self.convolutions[-1](x), 0.5, self.training)
+        # Upsample the input
+        x = self.upsample(x)
+
+        for conv in self.convolutions:
+            x = conv(x)
+
+        # Downsample the output
+        x = self.downsample(x)
         return x

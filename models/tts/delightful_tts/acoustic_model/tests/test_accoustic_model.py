@@ -171,6 +171,7 @@ class TestAcousticModel(unittest.TestCase):
         mel_mask = get_mask_from_lengths(mel_lens)
 
         y_pred = result["y_pred"]
+        postnet_output = result["postnet_output"]
         log_duration_prediction = result["log_duration_prediction"]
         p_prosody_ref = result["p_prosody_ref"]
         p_prosody_pred = result["p_prosody_pred"]
@@ -183,6 +184,7 @@ class TestAcousticModel(unittest.TestCase):
             mel_masks=mel_mask,
             mel_targets=mels,
             mel_predictions=y_pred,
+            postnet_outputs=postnet_output,
             log_duration_predictions=log_duration_prediction,
             u_prosody_ref=result["u_prosody_ref"],
             u_prosody_pred=result["u_prosody_pred"],
@@ -203,7 +205,7 @@ class TestAcousticModel(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertIsInstance(loss_out, tuple)
-        self.assertEqual(len(result), 14)
+        self.assertEqual(len(result), 15)
 
     def test_average_utterance_prosody(self):
         u_prosody_pred = torch.randn(2, 5, self.model_config.encoder.n_hidden)
