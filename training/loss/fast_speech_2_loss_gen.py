@@ -77,6 +77,8 @@ class FastSpeech2LossGen(Module):
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
     ]:
         r"""Computes the loss for the FastSpeech2 model.
 
@@ -159,8 +161,8 @@ class FastSpeech2LossGen(Module):
         mel_loss: torch.Tensor = self.mae_loss(masked_mel_predictions, masked_mel_targets)
         mel_loss_postnet: torch.Tensor = self.mae_loss(masked_postnet_outputs, masked_mel_targets)
 
-        # sc_mag_loss = self.spectral_conv_loss(mel_predictions, mel_targets)
-        # log_mag_loss = self.logstft_loss(mel_predictions, mel_targets)
+        sc_mag_loss = self.spectral_conv_loss(mel_predictions, postnet_outputs)
+        log_mag_loss = self.logstft_loss(mel_predictions, postnet_outputs)
 
         p_prosody_ref = p_prosody_ref.permute((0, 2, 1))
         p_prosody_pred = p_prosody_pred.permute((0, 2, 1))
@@ -226,6 +228,8 @@ class FastSpeech2LossGen(Module):
             + p_prosody_loss
             + ssim_loss
             + ssim_loss_postnet
+            + sc_mag_loss
+            + log_mag_loss
             + pitch_loss
             + ctc_loss
             + bin_loss
@@ -238,6 +242,8 @@ class FastSpeech2LossGen(Module):
             mel_loss_postnet,
             ssim_loss,
             ssim_loss_postnet,
+            sc_mag_loss,
+            log_mag_loss,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,

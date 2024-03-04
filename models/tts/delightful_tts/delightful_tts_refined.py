@@ -212,6 +212,8 @@ class DelightfulTTS(LightningModule):
             mel_loss_postnet,
             ssim_loss,
             ssim_loss_postnet,
+            sc_mag_loss,
+            log_mag_loss,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,
@@ -248,6 +250,8 @@ class DelightfulTTS(LightningModule):
         self.log("train_mel_loss_postnet", mel_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss_postnet", ssim_loss_postnet, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_sc_mag_loss", sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("train_log_mag_loss", log_mag_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)

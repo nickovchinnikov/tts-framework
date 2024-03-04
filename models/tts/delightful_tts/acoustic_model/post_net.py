@@ -67,34 +67,20 @@ class PostNet(nn.Module):
 
     def __init__(
         self,
+        n_hidden: int,
         n_mel_channels: int = 100,
         postnet_embedding_dim: int = 512,
         postnet_kernel_size: int = 5,
         postnet_n_convolutions: int = 5,
-        upsampling_factor: int = 4,
     ):
         super().__init__()
-
-        # Upsampling layer
-        self.upsample = nn.Sequential(
-            nn.ConvTranspose1d(
-                n_mel_channels,
-                n_mel_channels,
-                kernel_size=upsampling_factor * 2,
-                stride=upsampling_factor,
-                padding=upsampling_factor // 2,
-                output_padding=upsampling_factor % 2,
-            ),
-            nn.BatchNorm1d(n_mel_channels),
-            nn.ReLU(inplace=True),
-        )
 
         self.convolutions = nn.ModuleList()
 
         self.convolutions.append(
             nn.Sequential(
                 ConvNorm(
-                    n_mel_channels,
+                    n_hidden,
                     postnet_embedding_dim,
                     kernel_size=postnet_kernel_size,
                     stride=1,
@@ -140,21 +126,7 @@ class PostNet(nn.Module):
             ),
         )
 
-        # Downsampling layer
-        self.downsample = nn.Conv1d(
-            n_mel_channels,
-            n_mel_channels,
-            kernel_size=upsampling_factor,
-            stride=upsampling_factor,
-        )
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Upsample the input
-        x = self.upsample(x)
-
         for conv in self.convolutions:
             x = conv(x)
-
-        # Downsample the output
-        x = self.downsample(x)
         return x
