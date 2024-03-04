@@ -481,15 +481,15 @@ class AcousticModel(Module):
         decoder_output = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         decoder_output = decoder_output.permute((1, 2, 0))
 
-        x = self.to_mel_conv(decoder_output)
-        x = x.permute((2, 1, 0))
+        # x = self.to_mel_conv(decoder_output)
+        # x = x.permute((2, 1, 0))
 
         postnet_output = self.post_net.forward(decoder_output)
         postnet_output = postnet_output.permute((2, 1, 0))
 
         return {
-            "y_pred": x,
-            "postnet_output": postnet_output,
+            "y_pred": postnet_output,
+            # "postnet_output": postnet_output,
             "pitch_prediction": pitch_prediction,
             "pitch_target": avg_pitch_target,
             "energy_pred": energy_pred,
