@@ -47,7 +47,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: lr finder found 1.5848931924611133e-07
             # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
-            batch_size: int = 28,
+            batch_size: int = 25,
         ):
         super().__init__()
 
@@ -302,7 +302,7 @@ class DelightfulTTS(LightningModule):
 
     def train_dataloader(
         self,
-        num_workers: int = 5,
+        num_workers: int = 6,
         root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
         cache_dir: str = "datasets_cache",
