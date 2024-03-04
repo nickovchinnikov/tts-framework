@@ -2,7 +2,6 @@ from typing import Optional
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 
 
 class ConvNorm(nn.Module):

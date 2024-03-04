@@ -20,7 +20,7 @@ class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 30.0
+    max_seconds: float = 6.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11
@@ -156,6 +156,13 @@ class AcousticLossConfig:
     binary_loss_warmup_epochs: int
 
 
+@dataclass
+class PostNetConfig:
+    postnet_embedding_dim: int
+    postnet_kernel_size: int
+    postnet_n_convolutions: int
+
+
 # TODO: DEPRECATED!
 @dataclass
 class DiffusionConfig:
@@ -184,14 +191,14 @@ class DiffusionConfig:
 
 @dataclass
 class AcousticENModelConfig:
-    speaker_embed_dim: int = 384
+    speaker_embed_dim: int = 1024
     lang_embed_dim: int = 1
-    n_feats: int = 80
+    n_feats: int = 160
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
-            n_layers=4,
-            n_heads=6,
-            n_hidden=384,
+            n_layers=6,
+            n_heads=8,
+            n_hidden=512,
             p_dropout=0.1,
             kernel_size_conv_mod=7,
             kernel_size_depthwise=7,
@@ -201,12 +208,19 @@ class AcousticENModelConfig:
     decoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=6,
-            n_heads=6,
-            n_hidden=384,
+            n_heads=8,
+            n_hidden=512,
             p_dropout=0.1,
             kernel_size_conv_mod=11,
             kernel_size_depthwise=11,
             with_ff=True,
+        ),
+    )
+    postnet: PostNetConfig = field(
+        default_factory=lambda: PostNetConfig(
+            postnet_embedding_dim=512,
+            postnet_kernel_size=5,
+            postnet_n_convolutions=5,
         ),
     )
     # TODO: DEPRECATED!
@@ -255,7 +269,7 @@ class AcousticENModelConfig:
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=384, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
+            n_hidden=512, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
         ),
     )
     loss: AcousticLossConfig = field(
@@ -299,6 +313,13 @@ class AcousticMultilingualModelConfig:
             kernel_size_conv_mod=11,
             kernel_size_depthwise=11,
             with_ff=True,
+        ),
+    )
+    postnet: PostNetConfig = field(
+        default_factory=lambda: PostNetConfig(
+            postnet_embedding_dim=512,
+            postnet_kernel_size=5,
+            postnet_n_convolutions=5,
         ),
     )
     # TODO: DEPRECATED!

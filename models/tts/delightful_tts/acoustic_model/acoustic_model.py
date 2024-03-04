@@ -171,6 +171,9 @@ class AcousticModel(Module):
         self.post_net = PostNet(
             n_hidden=model_config.decoder.n_hidden,
             n_mel_channels=preprocess_config.stft.n_mel_channels,
+            postnet_embedding_dim=model_config.postnet.postnet_embedding_dim,
+            postnet_kernel_size=model_config.postnet.postnet_kernel_size,
+            postnet_n_convolutions=model_config.postnet.postnet_n_convolutions,
         )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
@@ -268,7 +271,6 @@ class AcousticModel(Module):
                     for name, param in block.named_parameters():
                         if "ff" in name:
                             param.requires_grad = True
-
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
@@ -481,15 +483,16 @@ class AcousticModel(Module):
         decoder_output = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
         decoder_output = decoder_output.permute((1, 2, 0))
 
-        # x = self.to_mel_conv(decoder_output)
-        # x = x.permute((2, 1, 0))
+        x = self.to_mel_conv(decoder_output)
+        x = x.permute((2, 1, 0))
 
-        postnet_output = self.post_net.forward(decoder_output)
-        postnet_output = postnet_output.permute((2, 1, 0))
+        # Post net synthesis of the mel spectrogram
+        x_postnet = self.post_net.forward(decoder_output)
+        x_postnet = x_postnet.permute((2, 1, 0))
 
         return {
-            "y_pred": postnet_output,
-            # "postnet_output": postnet_output,
+            "y_pred": x,
+            "y_postnet": x_postnet,
             "pitch_prediction": pitch_prediction,
             "pitch_target": avg_pitch_target,
             "energy_pred": energy_pred,
