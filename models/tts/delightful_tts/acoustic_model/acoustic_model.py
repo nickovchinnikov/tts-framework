@@ -173,7 +173,7 @@ class AcousticModel(Module):
 
         # Post net improve the quality of the mel spectrogram
         # It is a stack of 5 1D convolutional layers with 512 channels and kernel size 5
-        self.post_net = PostNet(
+        self.mel_post_net = PostNet(
             n_hidden=model_config.decoder.n_hidden,
             n_mel_channels=preprocess_config.stft.n_mel_channels,
             postnet_embedding_dim=model_config.postnet.postnet_embedding_dim,
@@ -494,7 +494,7 @@ class AcousticModel(Module):
         # x = self.to_mel_conv(decoder_output)
 
         # Post net synthesis of the mel spectrogram
-        x_postnet = self.post_net.forward(decoder_output.permute((1, 2, 0)))
+        x_postnet = self.mel_post_net.forward(decoder_output.permute((1, 2, 0)))
         x_postnet = x_postnet.permute((2, 1, 0))
 
         return {
