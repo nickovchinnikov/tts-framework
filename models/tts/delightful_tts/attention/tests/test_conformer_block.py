@@ -92,7 +92,7 @@ class TestConformerBlock(unittest.TestCase):
                 [
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
-                    self.model_config.speaker_embed_dim,
+                    self.model_config.speaker_embed_dim // 2,
                 ],
             ),
         )

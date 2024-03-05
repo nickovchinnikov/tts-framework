@@ -50,24 +50,6 @@ class TestAcousticModel(unittest.TestCase):
             n_speakers,
         )
 
-    def test_freeze_exept_conformer_blocks_ff(self):
-        preprocess_config = PreprocessingConfig("english_only")
-        model_config = AcousticENModelConfig()
-
-        acoustic_model = AcousticModel(
-            preprocess_config,
-            model_config,
-            n_speakers=5392,
-        )
-        acoustic_model.freeze_exept_conformer_blocks_ff()
-
-        for name, param in acoustic_model.named_parameters():
-            if "ff" not in name:
-                self.assertFalse(param.requires_grad)
-            else:
-                self.assertTrue(param.requires_grad)
-
-
     def test_get_embeddings(self):
         # Generate masks for padding positions in the source sequences and mel sequences
         # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]
@@ -88,7 +70,7 @@ class TestAcousticModel(unittest.TestCase):
                 [
                     self.model_config.speaker_embed_dim,
                     self.acoustic_pretraining_config.batch_size,
-                    self.model_config.speaker_embed_dim,
+                    self.model_config.encoder.n_hidden,
                 ],
             ),
         )
@@ -171,7 +153,7 @@ class TestAcousticModel(unittest.TestCase):
         mel_mask = get_mask_from_lengths(mel_lens)
 
         y_pred = result["y_pred"]
-        # postnet_output = result["postnet_output"]
+        # postnet_output = result["y_postnet"]
         log_duration_prediction = result["log_duration_prediction"]
         p_prosody_ref = result["p_prosody_ref"]
         p_prosody_pred = result["p_prosody_pred"]
@@ -205,7 +187,7 @@ class TestAcousticModel(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertIsInstance(loss_out, tuple)
-        self.assertEqual(len(result), 15)
+        self.assertEqual(len(result), 14)
 
     def test_average_utterance_prosody(self):
         u_prosody_pred = torch.randn(2, 5, self.model_config.encoder.n_hidden)

@@ -5,7 +5,7 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from models.config.configs import DiffusionConfig
+from models.config.experimental_configs import DiffusionConfig
 
 from .layers import ConvNorm, DiffusionEmbedding, LinearNorm, Mish, ResidualBlock
 

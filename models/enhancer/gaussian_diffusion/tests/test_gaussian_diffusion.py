@@ -3,7 +3,7 @@ import unittest
 import torch
 from torch import nn
 
-from models.config.configs import DiffusionConfig
+from models.config.experimental_configs import DiffusionConfig
 from models.enhancer.gaussian_diffusion.gaussian_diffusion import GaussianDiffusion
 from models.helpers import (
     tools,
@@ -28,6 +28,7 @@ class TestGaussianDiffusion(unittest.TestCase):
             max_beta=40,
             s=0.008,
             keep_bins=80,
+            pe_scale=1000,
             # trainsformer params
             encoder_hidden=8,
             decoder_hidden=8,

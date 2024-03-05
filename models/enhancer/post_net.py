@@ -2,7 +2,6 @@ from typing import Optional
 
 import torch
 from torch import nn
-import torch.nn.functional as F
 
 
 class ConvNorm(nn.Module):
@@ -16,8 +15,6 @@ class ConvNorm(nn.Module):
         padding (int): Padding
         dilation (int): Dilation
         bias (bool): Whether to use bias
-        w_init_gain (str): Weight initialization gain
-        transpose (bool): Whether to use transposed convolution
     """
 
     def __init__(
@@ -29,7 +26,6 @@ class ConvNorm(nn.Module):
         padding: Optional[int] = None,
         dilation: int = 1,
         bias: bool = True,
-        w_init_gain: str = "linear",
     ):
         super().__init__()
 
@@ -47,12 +43,9 @@ class ConvNorm(nn.Module):
             bias=bias,
         )
 
-        torch.nn.init.xavier_uniform_(
-            self.conv.weight, gain=torch.nn.init.calculate_gain(w_init_gain),
-        )
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.conv(x)
+
 
 class PostNet(nn.Module):
     """PostNet: Five 1-d convolution with 512 channels and kernel size 5
@@ -63,6 +56,7 @@ class PostNet(nn.Module):
         postnet_kernel_size (int): PostNet kernel size
         postnet_n_convolutions (int): Number of PostNet convolutions
         upsampling_factor (int): Upsampling factor for mel-spectrogram
+        p_dropout (float): Dropout probability
     """
 
     def __init__(
@@ -71,7 +65,8 @@ class PostNet(nn.Module):
         n_mel_channels: int = 100,
         postnet_embedding_dim: int = 512,
         postnet_kernel_size: int = 5,
-        postnet_n_convolutions: int = 5,
+        postnet_n_convolutions: int = 3,
+        p_dropout: float = 0.1,
     ):
         super().__init__()
 
@@ -86,13 +81,13 @@ class PostNet(nn.Module):
                     stride=1,
                     padding=int((postnet_kernel_size - 1) / 2),
                     dilation=1,
-                    w_init_gain="tanh",
                 ),
                 nn.BatchNorm1d(postnet_embedding_dim),
+                nn.Dropout(p_dropout),
             ),
         )
 
-        for _ in range(1, postnet_n_convolutions - 1):
+        for _ in range(postnet_n_convolutions):
             self.convolutions.append(
                 nn.Sequential(
                     ConvNorm(
@@ -102,31 +97,21 @@ class PostNet(nn.Module):
                         stride=1,
                         padding=int((postnet_kernel_size - 1) / 2),
                         dilation=1,
-                        w_init_gain="tanh",
                     ),
-                    nn.BatchNorm1d(postnet_embedding_dim),
-                    nn.Tanh(),
-                    nn.Dropout(0.5),
+                    nn.LayerNorm(
+                        postnet_embedding_dim,
+                    ),
+                    nn.Dropout(p_dropout),
                 ),
             )
 
-        self.convolutions.append(
-            nn.Sequential(
-                ConvNorm(
-                    postnet_embedding_dim,
-                    n_mel_channels,
-                    kernel_size=postnet_kernel_size,
-                    stride=1,
-                    padding=int((postnet_kernel_size - 1) / 2),
-                    dilation=1,
-                    w_init_gain="linear",
-                ),
-                nn.BatchNorm1d(n_mel_channels),
-                nn.Dropout(0.5),
-            ),
+        self.to_mel = nn.Linear(
+            postnet_embedding_dim,
+            n_mel_channels,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for conv in self.convolutions:
             x = conv(x)
-        return x
+
+        return self.to_mel(x)

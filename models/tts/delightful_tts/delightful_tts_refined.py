@@ -47,7 +47,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: lr finder found 1.5848931924611133e-07
             # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
-            batch_size: int = 6,
+            batch_size: int = 13,
         ):
         super().__init__()
 
@@ -78,7 +78,6 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-        self.acoustic_model.freeze_exept_post_net()
 
         # Initialize SWA
         self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
@@ -195,7 +194,7 @@ class DelightfulTTS(LightningModule):
         )
 
         y_pred = outputs["y_pred"]
-        # postnet_output = outputs["postnet_output"]
+        # postnet_output = outputs["y_postnet"]
         log_duration_prediction = outputs["log_duration_prediction"]
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
@@ -302,7 +301,7 @@ class DelightfulTTS(LightningModule):
 
     def train_dataloader(
         self,
-        num_workers: int = 5,
+        num_workers: int = 6,
         root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
         cache_dir: str = "datasets_cache",

@@ -148,6 +148,12 @@ class FastSpeech2LossGen(Module):
             # )
             ssim_loss = torch.tensor([1.0], device=mel_predictions.device)
 
+        # if ssim_loss_postnet.item() > 1.0 or ssim_loss_postnet.item() < 0.0:
+        #     # print(
+        #     #     f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
+        #     # )
+        #     ssim_loss_postnet = torch.tensor([1.0], device=mel_predictions.device)
+
         masked_mel_predictions = mel_predictions.masked_select(~mel_masks_expanded)
 
         masked_mel_targets = mel_targets.masked_select(~mel_masks_expanded)
@@ -157,8 +163,8 @@ class FastSpeech2LossGen(Module):
         mel_loss: torch.Tensor = self.mae_loss(masked_mel_predictions, masked_mel_targets)
         # mel_loss_postnet: torch.Tensor = self.mae_loss(masked_postnet_outputs, masked_mel_targets)
 
-        # sc_mag_loss = self.spectral_conv_loss(mel_predictions, postnet_outputs)
-        # log_mag_loss = self.logstft_loss(mel_predictions, postnet_outputs)
+        # sc_mag_loss = self.spectral_conv_loss(mel_predictions, mel_targets)
+        # log_mag_loss = self.logstft_loss(mel_predictions, mel_targets)
 
         p_prosody_ref = p_prosody_ref.permute((0, 2, 1))
         p_prosody_pred = p_prosody_pred.permute((0, 2, 1))

@@ -229,8 +229,8 @@ class ResidualBlock(Module):
             Tuple[torch.Tensor, torch.Tensor]: Tuple containing the output tensor and skip tensor.
         """
         diffusion_step = self.diffusion_projection(diffusion_step).unsqueeze(-1)
-        # conditioner = self.conditioner_projection(conditioner)
-        conditioner = self.conditioner_projection(conditioner.transpose(1, 2))
+        conditioner = self.conditioner_projection(conditioner)
+        # conditioner = self.conditioner_projection(conditioner.transpose(1, 2))
         if self.multi_speaker:
             # speaker_emb = self.speaker_projection(speaker_emb).unsqueeze(1).expand(
             #     -1, conditioner.shape[-1], -1,

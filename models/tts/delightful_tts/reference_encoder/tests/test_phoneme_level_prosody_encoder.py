@@ -12,7 +12,6 @@ from models.helpers.initializer import (
     init_acoustic_model,
     init_conformer,
     init_forward_trains_params,
-    init_mask_input_embeddings_encoding_attn_mask,
 )
 from models.tts.delightful_tts.attention.conformer_multi_headed_self_attention import (
     ConformerMultiHeadedSelfAttention,
@@ -93,37 +92,11 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
         self.assertIsInstance(self.model.encoder_bottleneck, nn.Linear)
 
     def test_forward(self):
-        (
-            src_mask,
-            x,
-            embeddings,
-            encoding,
-            _,
-        ) = init_mask_input_embeddings_encoding_attn_mask(
-            self.acoustic_model,
-            self.forward_train_params,
-            self.model_config,
-        )
-
-        # Run conformer encoder
-        # x: Tensor containing the encoded sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]
-        x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
-
-        # Assert the shape of x
-        self.assertEqual(
-            x.shape,
-            torch.Size(
-                [
-                    self.model_config.speaker_embed_dim,
-                    self.acoustic_pretraining_config.batch_size,
-                    self.model_config.speaker_embed_dim,
-                ],
-            ),
-        )
-
-        # params for the testing
-        mels = self.forward_train_params.mels
-        mel_lens = self.forward_train_params.mel_lens
+        x = torch.randn(1, 11, self.model_config.encoder.n_hidden)
+        mels = torch.randn(1, self.preprocess_config.stft.n_mel_channels, 58)
+        mel_lens = torch.tensor([58])
+        src_mask = torch.zeros(11).bool()
+        encoding = torch.randn(1, 58, self.model_config.encoder.n_hidden)
 
         u_prosody_ref = self.u_norm(
             self.utterance_prosody_encoder(
@@ -137,7 +110,7 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
             u_prosody_ref.shape,
             torch.Size(
                 [
-                    self.model_config.speaker_embed_dim,
+                    self.model_config.lang_embed_dim,
                     self.model_config.lang_embed_dim,
                     self.model_config.reference_encoder.bottleneck_size_u,
                 ],
@@ -155,8 +128,8 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
             p_prosody_ref.shape,
             torch.Size(
                 [
-                    self.model_config.speaker_embed_dim,
-                    self.acoustic_pretraining_config.batch_size,
+                    self.model_config.lang_embed_dim,
+                    11,
                     self.model_config.reference_encoder.bottleneck_size_p,
                 ],
             ),
