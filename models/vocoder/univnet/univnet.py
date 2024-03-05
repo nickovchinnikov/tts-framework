@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 
 from lightning.pytorch.core import LightningModule
 import torch
-from torch.optim import AdamW, Optimizer
+from torch.optim import AdamW, Optimizer, swa_utils
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
@@ -31,8 +31,9 @@ class UnivNet(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             acc_grad_steps: int = 10,
+            batch_size: int = 6,
             root: str = "datasets_cache/LIBRITTS",
-            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
+            checkpoint_path_v1: Optional[str] = None, # = "checkpoints/vocoder_pretrained.pt",
         ):
         r"""Initializes the `VocoderModule`.
 
@@ -40,6 +41,7 @@ class UnivNet(LightningModule):
             fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
             lang (str): Language of the dataset.
             acc_grad_steps (int): Accumulated gradient steps.
+            batch_size (int): The batch size.
             root (str, optional): The root directory for the dataset. Defaults to "datasets_cache/LIBRITTS".
             checkpoint_path_v1 (str, optional): The path to the checkpoint for the model. If provided, the model weights will be loaded from this checkpoint. Defaults to None.
         """
@@ -48,6 +50,7 @@ class UnivNet(LightningModule):
         # Switch to manual optimization
         self.automatic_optimization = False
         self.acc_grad_steps = acc_grad_steps
+        self.batch_size = batch_size
 
         self.lang = lang
         self.root = root
@@ -60,6 +63,10 @@ class UnivNet(LightningModule):
             preprocess_config=preprocess_config,
         )
         self.discriminator = Discriminator(model_config=model_config)
+
+        # Initialize SWA
+        self.swa_averaged_univnet = swa_utils.AveragedModel(self.univnet)
+        self.swa_averaged_discriminator = swa_utils.AveragedModel(self.discriminator)
 
         self.loss = UnivnetLoss()
 
@@ -117,7 +124,7 @@ class UnivNet(LightningModule):
         return wav_prediction[0, 0]
 
 
-    def training_step(self, batch: List, _: int, batch_idx: int):
+    def training_step(self, batch: List, batch_idx: int):
         r"""Performs a training step for the model.
 
         Args:
@@ -146,11 +153,11 @@ class UnivNet(LightningModule):
         # Access your optimizers
         optimizers = self.optimizers()
         schedulers = self.lr_schedulers()
-        opt_univnet: Optimizer = optimizers[1] # type: ignore
-        sch_univnet: ExponentialLR = schedulers[1] # type: ignore
+        opt_univnet: Optimizer = optimizers[0] # type: ignore
+        sch_univnet: ExponentialLR = schedulers[0] # type: ignore
 
-        opt_discriminator: Optimizer = optimizers[2] # type: ignore
-        sch_discriminator: ExponentialLR = schedulers[2] # type: ignore
+        opt_discriminator: Optimizer = optimizers[1] # type: ignore
+        sch_discriminator: ExponentialLR = schedulers[1] # type: ignore
 
         audio = wavs
         fake_audio = self.univnet(mels)
@@ -163,6 +170,8 @@ class UnivNet(LightningModule):
             total_loss_disc,
             stft_loss,
             score_loss,
+            esr_loss,
+            snr_loss,
         ) = self.loss.forward(
             audio,
             fake_audio,
@@ -172,10 +181,12 @@ class UnivNet(LightningModule):
             period_real,
         )
 
-        self.log("total_loss_gen", total_loss_gen)
-        self.log("total_loss_disc", total_loss_disc)
-        self.log("stft_loss", stft_loss)
-        self.log("score_loss", score_loss)
+        self.log("total_loss_gen", total_loss_gen, sync_dist=True, batch_size=self.batch_size)
+        self.log("total_loss_disc", total_loss_disc, sync_dist=True, batch_size=self.batch_size)
+        self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("esr_loss", esr_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("snr_loss", snr_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("score_loss", score_loss, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
         self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
@@ -198,71 +209,6 @@ class UnivNet(LightningModule):
             # zero the gradients
             opt_univnet.zero_grad()
             opt_discriminator.zero_grad()
-
-
-    def validation_step(self, batch: List, batch_idx: int):
-        r"""Performs a validation step for the model.
-
-        Args:
-        batch (List): The batch of data for training. The batch should contain:
-            - ids: List of indexes.
-            - raw_texts: Raw text inputs.
-            - speakers: Speaker identities.
-            - texts: Text inputs.
-            - src_lens: Lengths of the source sequences.
-            - mels: Mel spectrogram targets.
-            - pitches: Pitch targets.
-            - pitches_stat: Statistics of the pitches.
-            - mel_lens: Lengths of the mel spectrograms.
-            - langs: Language identities.
-            - attn_priors: Prior attention weights.
-            - wavs: Waveform targets.
-            - energies: Energy targets.
-        batch_idx (int): Index of the batch.
-
-        Returns:
-            - 'val_loss': The total loss for the training step.
-        """
-        (
-            _,
-            _,
-            _,
-            _,
-            _,
-            mels,
-            _,
-            _,
-            _,
-            _,
-            _,
-            wavs,
-            _,
-        ) = batch
-
-        audio = wavs
-        fake_audio = self.univnet(mels)
-
-        res_fake, period_fake = self.discriminator(fake_audio.detach())
-        res_real, period_real = self.discriminator(audio)
-
-        (
-            total_loss_gen,
-            total_loss_disc,
-            stft_loss,
-            score_loss,
-        ) = self.loss.forward(
-            audio,
-            fake_audio,
-            res_fake,
-            period_fake,
-            res_real,
-            period_real,
-        )
-
-        self.log("val_total_loss_gen", total_loss_gen)
-        self.log("val_total_loss_disc", total_loss_disc)
-        self.log("val_stft_loss", stft_loss)
-        self.log("val_score_loss", score_loss)
 
 
     def configure_optimizers(self):
@@ -317,9 +263,20 @@ class UnivNet(LightningModule):
         )
 
 
+    def on_train_epoch_end(self):
+        r"""Updates the averaged model after each optimizer step with SWA."""
+        self.swa_averaged_univnet.update_parameters(self.univnet)
+        self.swa_averaged_discriminator.update_parameters(self.discriminator)
+
+
+    def on_train_end(self):
+        # Update SWA model after training
+        swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_univnet)
+        swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_discriminator)
+
+
     def train_dataloader(
         self,
-        batch_size: int = 6,
         num_workers: int = 5,
         root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
@@ -330,7 +287,6 @@ class UnivNet(LightningModule):
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
-            batch_size (int): The batch size.
             num_workers (int): The number of workers.
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
@@ -342,7 +298,7 @@ class UnivNet(LightningModule):
             DataLoader: The training and validation dataloaders.
         """
         return train_dataloader(
-            batch_size=batch_size,
+            batch_size=self.batch_size,
             num_workers=num_workers,
             root=root,
             cache=cache,

@@ -20,10 +20,7 @@ class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 15.0
-    # Pretrain diffusion config
-    # min_seconds: float = 0.5
-    # max_seconds: float = 10.0
+    max_seconds: float = 30.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11
@@ -39,6 +36,8 @@ class PreprocessingConfig:
     )
     forced_alignment_batch_size: int = 200000
     skip_on_error: bool = True
+    pitch_fmin: int = 1
+    pitch_fmax: int = 640
 
 
 @dataclass
@@ -82,7 +81,7 @@ class AcousticFinetuningConfig:
     only_train_speaker_until = 5000
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.1, lr_decay=0.99999,
+            learning_rate=0.0002, weight_decay=0.001, lr_decay=0.99999,
         ),
     )
 
@@ -101,7 +100,7 @@ class AcousticPretrainingConfig:
     only_train_speaker_until = 0
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.0, lr_decay=1.0,
+            learning_rate=0.0002, weight_decay=0.01, lr_decay=1.0,
         ),
     )
 
@@ -196,7 +195,7 @@ class AcousticENModelConfig:
             p_dropout=0.1,
             kernel_size_conv_mod=7,
             kernel_size_depthwise=7,
-            with_ff=False,
+            with_ff=True,
         ),
     )
     decoder: ConformerConfig = field(
@@ -207,7 +206,7 @@ class AcousticENModelConfig:
             p_dropout=0.1,
             kernel_size_conv_mod=11,
             kernel_size_depthwise=11,
-            with_ff=False,
+            with_ff=True,
         ),
     )
     # TODO: DEPRECATED!

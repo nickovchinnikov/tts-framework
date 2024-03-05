@@ -3,7 +3,7 @@ from typing import List
 from lightning.pytorch.core import LightningModule
 import torch
 from torch.optim import AdamW, swa_utils
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
 from models.config import (
@@ -45,16 +45,15 @@ class DelightfulTTS(LightningModule):
             fine_tuning: bool = False,
             lang: str = "en",
             # NOTE: lr finder found 1.5848931924611133e-07
-            learning_rate: float = 1.5848931924611133e-05,
+            # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
-            batch_size: int = 12,
+            batch_size: int = 6,
         ):
         super().__init__()
 
         self.lang = lang
         self.fine_tuning = fine_tuning
         self.batch_size = batch_size
-        self.learning_rate = learning_rate
 
         lang_map = get_lang_map(lang)
         normilize_text_lang = lang_map.nemo
@@ -79,6 +78,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
+        self.acoustic_model.freeze_exept_post_net()
 
         # Initialize SWA
         self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
@@ -88,7 +88,7 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(fine_tuning=fine_tuning, bin_warmup=False)
+        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
 
         # Initialize pitches_stat with large/small values for min/max
         self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
@@ -122,7 +122,7 @@ class DelightfulTTS(LightningModule):
             device=speaker_idx.device,
         ).repeat(x.shape[1]).unsqueeze(0)
 
-        y_pred = self.acoustic_model(
+        y_pred = self.acoustic_model.forward(
             x=x,
             pitches_range=self.pitches_stat,
             speakers=speakers,
@@ -195,6 +195,7 @@ class DelightfulTTS(LightningModule):
         )
 
         y_pred = outputs["y_pred"]
+        # postnet_output = outputs["postnet_output"]
         log_duration_prediction = outputs["log_duration_prediction"]
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
@@ -208,8 +209,11 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
-            mel_stft_loss,
+            # mel_loss_postnet,
             ssim_loss,
+            # ssim_loss_postnet,
+            # sc_mag_loss,
+            # log_mag_loss,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,
@@ -222,6 +226,7 @@ class DelightfulTTS(LightningModule):
             mel_masks=mel_mask,
             mel_targets=mels,
             mel_predictions=y_pred,
+            # postnet_outputs=postnet_output,
             log_duration_predictions=log_duration_prediction,
             u_prosody_ref=outputs["u_prosody_ref"],
             u_prosody_pred=outputs["u_prosody_pred"],
@@ -242,8 +247,11 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_mel_stft_loss", mel_stft_loss, sync_dist=True, batch_size=self.batch_size)
+        # self.log("train_mel_loss_postnet", mel_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
+        # self.log("train_ssim_loss_postnet", ssim_loss_postnet, sync_dist=True, batch_size=self.batch_size)
+        # self.log("train_sc_mag_loss", sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
+        # self.log("train_log_mag_loss", log_mag_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
@@ -260,36 +268,26 @@ class DelightfulTTS(LightningModule):
         Returns
             tuple: A tuple containing three dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
         """
-        parameters_acoustic = self.acoustic_model.parameters()
+        lr_decay = self.train_config_acoustic.optimizer_config.lr_decay
+        default_lr = self.train_config_acoustic.optimizer_config.learning_rate
 
-        optimizer = AdamW(
-            parameters_acoustic,
-            lr = self.learning_rate,
-            betas = (0.8, 0.99),
-            eps = 1e-9,
-            weight_decay = 0.01,
+        init_lr = default_lr if self.trainer.global_step == 0 \
+        else default_lr * (lr_decay ** self.trainer.global_step)
+
+        optimizer_acoustic = AdamW(
+            self.acoustic_model.parameters(),
+            lr=init_lr,
+            betas=self.train_config_acoustic.optimizer_config.betas,
+            eps=self.train_config_acoustic.optimizer_config.eps,
+            weight_decay=self.train_config_acoustic.optimizer_config.weight_decay,
         )
-        scheduler = ReduceLROnPlateau(
-            optimizer,
-            mode="min",
-            factor=0.5,
-            patience=5,
-        )
+
+        scheduler_acoustic = ExponentialLR(optimizer_acoustic, gamma=lr_decay)
 
         return ({
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "train_total_loss",
-            },
+            "optimizer": optimizer_acoustic,
+            "lr_scheduler": scheduler_acoustic,
         })
-
-
-    def on_after_optimizer_step(self):
-        r"""Updates the averaged model after each optimizer step with SWA."""
-        # NOTE: try at the end of the epoch
-        # self.swa_averaged_model.update_parameters(self.acoustic_model)
-
 
     def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""
@@ -298,7 +296,8 @@ class DelightfulTTS(LightningModule):
 
     def on_train_end(self):
         # Update SWA model after training
-        swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
+        # swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
+        pass
 
 
     def train_dataloader(
@@ -308,7 +307,7 @@ class DelightfulTTS(LightningModule):
         cache: bool = True,
         cache_dir: str = "datasets_cache",
         mem_cache: bool = False,
-        url: str = "train-clean-360",
+        url: str = "train-960",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 

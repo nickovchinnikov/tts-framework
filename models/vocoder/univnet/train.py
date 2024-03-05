@@ -9,19 +9,7 @@ from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
 import torch
 
-from .univnet import UnivNet
-
-# Node runk in the cluster
-node_rank = 0
-num_nodes = 2
-
-# Setup of the training cluster
-os.environ["MASTER_PORT"] = "12355"
-# Change the IP address to the IP address of the master node
-os.environ["MASTER_ADDR"] = "10.148.0.6"
-os.environ["WORLD_SIZE"] = f"{num_nodes}"
-# Change the IP address to the IP address of the master node
-os.environ["NODE_RANK"] = f"{node_rank}"
+from models.vocoder.univnet import UnivNet
 
 # Get the current date and time
 now = datetime.now()
@@ -58,31 +46,18 @@ default_root_dir="logs"
 # ckpt_vocoder="./checkpoints/vocoder.ckpt"
 
 try:
-    tensorboard = TensorBoardLogger(
-        save_dir=default_root_dir,
-    )
-
     trainer = Trainer(
         accelerator="cuda",
         devices=-1,
-        num_nodes=num_nodes,
         strategy=DDPStrategy(
             gradient_as_bucket_view=True,
             find_unused_parameters=True,
         ),
-        # strategy="ddp",
-        logger=tensorboard,
         # Save checkpoints to the `default_root_dir` directory
         default_root_dir=default_root_dir,
         enable_checkpointing=True,
-        accumulate_grad_batches=10,
         max_epochs=-1,
-        log_every_n_steps=50,
-        # check_val_every_n_epoch=20,
-        # Failed to find the `precision`
-        # precision="16-mixed",
-        # precision="bf16-mixed",
-        # precision="16-mixed",
+        log_every_n_steps=10,
     )
 
     model = UnivNet()

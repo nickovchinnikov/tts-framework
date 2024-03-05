@@ -3,7 +3,7 @@ import unittest
 import torch
 
 from models.config.configs import DiffusionConfig
-from models.tts.delightful_tts.diffusion.denoiser import Denoiser
+from models.enhancer.gaussian_diffusion.denoiser import Denoiser
 
 
 class TestDenoiser(unittest.TestCase):

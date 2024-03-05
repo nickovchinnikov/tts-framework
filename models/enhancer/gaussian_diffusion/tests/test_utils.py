@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import torch
 
-from models.tts.delightful_tts.diffusion.utils import (
+from models.enhancer.gaussian_diffusion.utils import (
     default,
     exists,
     extract,

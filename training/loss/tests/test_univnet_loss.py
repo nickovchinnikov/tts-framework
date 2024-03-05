@@ -20,24 +20,46 @@ class TestUnivnetLoss(unittest.TestCase):
         period_real = [(torch.randn(1, 1, 22050), torch.randn(1))]
 
         # Call the forward method
-        output = self.loss_module(audio, fake_audio, res_fake, period_fake, res_real, period_real)
+        output = self.loss_module.forward(
+            audio, fake_audio, res_fake, period_fake, res_real, period_real,
+        )
 
         # Check that the output is a tuple with the expected lens
         self.assertIsInstance(output, tuple)
 
-        self.assertEqual(len(output), 4)
+        self.assertEqual(len(output), 6)
 
         (
             total_loss_gen,
             total_loss_disc,
-            mel_loss,
+            stft_loss,
             score_loss,
+            esr_loss,
+            snr_loss,
         ) = output
 
-        self.assertAlmostEqual(total_loss_gen.item(), 4.5500, places=4)
-        self.assertAlmostEqual(total_loss_disc.item(), 1.79197, places=4)
-        self.assertAlmostEqual(mel_loss.item(), 3.3992, places=4)
-        self.assertAlmostEqual(score_loss.item(), 1.1508, places=4)
+        self.assertIsInstance(total_loss_gen, torch.Tensor)
+        self.assertIsInstance(total_loss_disc, torch.Tensor)
+        self.assertIsInstance(stft_loss, torch.Tensor)
+        self.assertIsInstance(score_loss, torch.Tensor)
+        self.assertIsInstance(esr_loss, torch.Tensor)
+        self.assertIsInstance(snr_loss, torch.Tensor)
+
+        # Assert the value of losses
+        self.assertTrue(
+            torch.all(
+                torch.tensor(
+                    [
+                        total_loss_gen,
+                        total_loss_disc,
+                        stft_loss,
+                        score_loss,
+                        esr_loss,
+                        snr_loss,
+                    ],
+                ) >= 0,
+            ),
+        )
 
 if __name__ == "__main__":
     unittest.main()

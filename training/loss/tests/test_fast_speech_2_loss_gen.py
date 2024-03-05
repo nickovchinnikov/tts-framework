@@ -10,9 +10,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
     def setUp(self):
         self.preprocessing_config = PreprocessingConfig("english_only")
 
-        self.loss_gen = FastSpeech2LossGen(
-            fine_tuning=False,
-        )
+        self.loss_gen = FastSpeech2LossGen()
 
     def test_forward(self):
         # Reproducible results
@@ -22,6 +20,7 @@ class TestFastSpeech2LossGen(unittest.TestCase):
         src_masks = torch.zeros((1, 11), dtype=torch.bool)
         mel_masks = torch.zeros((1, 11), dtype=torch.bool)
         mel_targets = torch.randn((1, 11, 11))
+        postnet = torch.randn((1, 11, 11))
         mel_predictions = torch.randn((1, 11, 11))
         log_duration_predictions = torch.randn((1, 11))
         u_prosody_ref = torch.randn((1, 11))
@@ -43,8 +42,9 @@ class TestFastSpeech2LossGen(unittest.TestCase):
         (
             total_loss,
             mel_loss,
-            mel_stft_loss,
+            mel_loss_postnet,
             ssim_loss,
+            ssim_loss_postnet,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,
@@ -52,11 +52,12 @@ class TestFastSpeech2LossGen(unittest.TestCase):
             ctc_loss,
             bin_loss,
             energy_loss,
-        ) = self.loss_gen(
+        ) = self.loss_gen.forward(
             src_masks,
             mel_masks,
             mel_targets,
             mel_predictions,
+            postnet,
             log_duration_predictions,
             u_prosody_ref,
             u_prosody_pred,
@@ -77,8 +78,9 @@ class TestFastSpeech2LossGen(unittest.TestCase):
 
         self.assertIsInstance(total_loss, torch.Tensor)
         self.assertIsInstance(mel_loss, torch.Tensor)
-        self.assertIsInstance(mel_stft_loss, torch.Tensor)
+        self.assertIsInstance(mel_loss_postnet, torch.Tensor)
         self.assertIsInstance(ssim_loss, torch.Tensor)
+        self.assertIsInstance(ssim_loss_postnet, torch.Tensor)
         self.assertIsInstance(duration_loss, torch.Tensor)
         self.assertIsInstance(u_prosody_loss, torch.Tensor)
         self.assertIsInstance(p_prosody_loss, torch.Tensor)
@@ -94,8 +96,9 @@ class TestFastSpeech2LossGen(unittest.TestCase):
                     [
                         total_loss,
                         mel_loss,
-                        mel_stft_loss,
+                        mel_loss_postnet,
                         ssim_loss,
+                        ssim_loss_postnet,
                         duration_loss,
                         u_prosody_loss,
                         p_prosody_loss,

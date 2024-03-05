@@ -3,7 +3,7 @@ import unittest
 import torch
 from torch.nn.functional import softplus
 
-from models.tts.delightful_tts.diffusion.layers import (
+from models.enhancer.gaussian_diffusion.layers import (
     ConvNorm,
     DiffusionEmbedding,
     LinearNorm,
