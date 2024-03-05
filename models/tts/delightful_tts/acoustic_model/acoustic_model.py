@@ -158,13 +158,18 @@ class AcousticModel(Module):
             ),
         )
 
-        # NOTE: Instead of linear layer, we use 1D convolution
-        self.to_mel_conv = nn.Conv1d(
+        self.to_mel = nn.Linear(
             model_config.decoder.n_hidden,
             preprocess_config.stft.n_mel_channels,
-            kernel_size=7,
-            padding=3,
         )
+
+        # NOTE: Instead of linear layer, we use 1D convolution
+        # self.to_mel_conv = nn.Conv1d(
+        #     model_config.decoder.n_hidden,
+        #     preprocess_config.stft.n_mel_channels,
+        #     kernel_size=7,
+        #     padding=3,
+        # )
 
         # Post net improve the quality of the mel spectrogram
         # It is a stack of 5 1D convolutional layers with 512 channels and kernel size 5
@@ -481,13 +486,15 @@ class AcousticModel(Module):
 
         # Decode the encoder output to pred mel spectrogram
         decoder_output = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
-        decoder_output = decoder_output.permute((1, 2, 0))
 
-        x = self.to_mel_conv(decoder_output)
-        x = x.permute((2, 1, 0))
+        x = self.to_mel(decoder_output)
+        x = x.permute((0, 2, 1))
+
+        # decoder_output = decoder_output.permute((1, 2, 0))
+        # x = self.to_mel_conv(decoder_output)
 
         # Post net synthesis of the mel spectrogram
-        x_postnet = self.post_net.forward(decoder_output)
+        x_postnet = self.post_net.forward(decoder_output.permute((1, 2, 0)))
         x_postnet = x_postnet.permute((2, 1, 0))
 
         return {
@@ -599,5 +606,6 @@ class AcousticModel(Module):
 
         x = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
 
-        x = self.to_mel_conv(x.permute((1, 2, 0)))
+        # x = self.to_mel_conv(x.permute((1, 2, 0)))
+        x = self.to_mel(x.permute((1, 2, 0)))
         return x.permute((2, 1, 0))

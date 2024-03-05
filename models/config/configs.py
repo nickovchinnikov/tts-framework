@@ -20,7 +20,7 @@ class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 6.0
+    max_seconds: float = 12.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11
@@ -220,7 +220,7 @@ class AcousticENModelConfig:
         default_factory=lambda: PostNetConfig(
             postnet_embedding_dim=512,
             postnet_kernel_size=5,
-            postnet_n_convolutions=5,
+            postnet_n_convolutions=3,
         ),
     )
     # TODO: DEPRECATED!
@@ -319,7 +319,7 @@ class AcousticMultilingualModelConfig:
         default_factory=lambda: PostNetConfig(
             postnet_embedding_dim=512,
             postnet_kernel_size=5,
-            postnet_n_convolutions=5,
+            postnet_n_convolutions=3,
         ),
     )
     # TODO: DEPRECATED!

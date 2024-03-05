@@ -15,8 +15,6 @@ class ConvNorm(nn.Module):
         padding (int): Padding
         dilation (int): Dilation
         bias (bool): Whether to use bias
-        w_init_gain (str): Weight initialization gain
-        transpose (bool): Whether to use transposed convolution
     """
 
     def __init__(
@@ -28,7 +26,6 @@ class ConvNorm(nn.Module):
         padding: Optional[int] = None,
         dilation: int = 1,
         bias: bool = True,
-        w_init_gain: str = "linear",
     ):
         super().__init__()
 
@@ -46,12 +43,9 @@ class ConvNorm(nn.Module):
             bias=bias,
         )
 
-        torch.nn.init.xavier_uniform_(
-            self.conv.weight, gain=torch.nn.init.calculate_gain(w_init_gain),
-        )
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.conv(x)
+
 
 class PostNet(nn.Module):
     """PostNet: Five 1-d convolution with 512 channels and kernel size 5
@@ -70,7 +64,7 @@ class PostNet(nn.Module):
         n_mel_channels: int = 100,
         postnet_embedding_dim: int = 512,
         postnet_kernel_size: int = 5,
-        postnet_n_convolutions: int = 5,
+        postnet_n_convolutions: int = 3,
     ):
         super().__init__()
 
@@ -85,7 +79,6 @@ class PostNet(nn.Module):
                     stride=1,
                     padding=int((postnet_kernel_size - 1) / 2),
                     dilation=1,
-                    w_init_gain="tanh",
                 ),
                 nn.BatchNorm1d(postnet_embedding_dim),
             ),
@@ -101,11 +94,7 @@ class PostNet(nn.Module):
                         stride=1,
                         padding=int((postnet_kernel_size - 1) / 2),
                         dilation=1,
-                        w_init_gain="tanh",
                     ),
-                    nn.BatchNorm1d(postnet_embedding_dim),
-                    nn.Tanh(),
-                    nn.Dropout(0.5),
                 ),
             )
 
@@ -118,9 +107,7 @@ class PostNet(nn.Module):
                     stride=1,
                     padding=int((postnet_kernel_size - 1) / 2),
                     dilation=1,
-                    w_init_gain="linear",
                 ),
-                nn.BatchNorm1d(n_mel_channels),
                 nn.Dropout(0.5),
             ),
         )
