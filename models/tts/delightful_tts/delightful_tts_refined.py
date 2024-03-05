@@ -194,7 +194,7 @@ class DelightfulTTS(LightningModule):
         )
 
         y_pred = outputs["y_pred"]
-        postnet_output = outputs["y_postnet"]
+        # postnet_output = outputs["y_postnet"]
         log_duration_prediction = outputs["log_duration_prediction"]
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
@@ -208,9 +208,9 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
-            mel_loss_postnet,
+            # mel_loss_postnet,
             ssim_loss,
-            ssim_loss_postnet,
+            # ssim_loss_postnet,
             # sc_mag_loss,
             # log_mag_loss,
             duration_loss,
@@ -225,7 +225,7 @@ class DelightfulTTS(LightningModule):
             mel_masks=mel_mask,
             mel_targets=mels,
             mel_predictions=y_pred,
-            postnet_outputs=postnet_output,
+            # postnet_outputs=postnet_output,
             log_duration_predictions=log_duration_prediction,
             u_prosody_ref=outputs["u_prosody_ref"],
             u_prosody_pred=outputs["u_prosody_pred"],
@@ -246,9 +246,9 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_mel_loss_postnet", mel_loss_postnet, sync_dist=True, batch_size=self.batch_size)
+        # self.log("train_mel_loss_postnet", mel_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_ssim_loss_postnet", ssim_loss_postnet, sync_dist=True, batch_size=self.batch_size)
+        # self.log("train_ssim_loss_postnet", ssim_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         # self.log("train_sc_mag_loss", sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
         # self.log("train_log_mag_loss", log_mag_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)

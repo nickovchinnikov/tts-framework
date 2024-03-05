@@ -12,7 +12,8 @@ from models.config import (
     PreprocessingConfig,
     symbols,
 )
-from models.enhancer.gaussian_diffusion import GaussianDiffusion
+
+# from models.enhancer.gaussian_diffusion import GaussianDiffusion
 from models.helpers import (
     # pitch_phoneme_averaging,
     positional_encoding,
@@ -183,9 +184,9 @@ class AcousticModel(Module):
         #     postnet_n_convolutions=model_config.postnet.postnet_n_convolutions,
         # )
 
-        self.diff_refiner = GaussianDiffusion(
-            model_config.diffusion,
-        )
+        # self.diff_refiner = GaussianDiffusion(
+        #     model_config.diffusion,
+        # )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
         # NOTE: flexibility of the model binded by the n_speaker parameter, maybe I can find another way?
@@ -502,18 +503,18 @@ class AcousticModel(Module):
         # Post net synthesis of the mel spectrogram
         # x_postnet = self.mel_post_net.forward(decoder_output.permute((1, 2, 0)))
         # x_postnet = x_postnet.permute((0, 2, 1))
-        x_postnet, _, _, _, _ = self.diff_refiner.forward(
-            mel=mels,
-            cond=cond,
-            spk_emb=embeddings,
-            mel_mask=mel_mask,
-            coarse_mel=x,
-        )
-        x_postnet = x_postnet.permute((0, 2, 1))
+        # x_postnet, _, _, _, _ = self.diff_refiner.forward(
+        #     mel=mels,
+        #     cond=cond,
+        #     spk_emb=embeddings,
+        #     mel_mask=mel_mask,
+        #     coarse_mel=x,
+        # )
+        # x_postnet = x_postnet.permute((0, 2, 1))
 
         return {
             "y_pred": x,
-            "y_postnet": x_postnet,
+            # "y_postnet": x_postnet,
             "pitch_prediction": pitch_prediction,
             "pitch_target": avg_pitch_target,
             "energy_pred": energy_pred,

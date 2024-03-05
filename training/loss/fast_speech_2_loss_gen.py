@@ -47,7 +47,7 @@ class FastSpeech2LossGen(Module):
         mel_masks: torch.Tensor,
         mel_targets: torch.Tensor,
         mel_predictions: torch.Tensor,
-        postnet_outputs: torch.Tensor,
+        # postnet_outputs: torch.Tensor,
         log_duration_predictions: torch.Tensor,
         u_prosody_ref: torch.Tensor,
         u_prosody_pred: torch.Tensor,
@@ -65,8 +65,6 @@ class FastSpeech2LossGen(Module):
         energy_pred: torch.Tensor,
         energy_target: torch.Tensor,
     ) -> Tuple[
-        torch.Tensor,
-        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -134,15 +132,15 @@ class FastSpeech2LossGen(Module):
 
         mel_predictions_normalized = sample_wise_min_max(mel_predictions).float().to(mel_predictions.device)
         mel_targets_normalized = sample_wise_min_max(mel_targets).float().to(mel_predictions.device)
-        postnet_outputs_normalized = sample_wise_min_max(postnet_outputs).float().to(mel_predictions.device)
+        # postnet_outputs_normalized = sample_wise_min_max(postnet_outputs).float().to(mel_predictions.device)
 
         ssim_loss: torch.Tensor = self.ssim_loss(
             mel_predictions_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
         )
 
-        ssim_loss_postnet: torch.Tensor = self.ssim_loss(
-            postnet_outputs_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
-        )
+        # ssim_loss_postnet: torch.Tensor = self.ssim_loss(
+        #     postnet_outputs_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
+        # )
 
         if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
             # print(
@@ -150,20 +148,20 @@ class FastSpeech2LossGen(Module):
             # )
             ssim_loss = torch.tensor([1.0], device=mel_predictions.device)
 
-        if ssim_loss_postnet.item() > 1.0 or ssim_loss_postnet.item() < 0.0:
-            # print(
-            #     f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
-            # )
-            ssim_loss_postnet = torch.tensor([1.0], device=mel_predictions.device)
+        # if ssim_loss_postnet.item() > 1.0 or ssim_loss_postnet.item() < 0.0:
+        #     # print(
+        #     #     f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
+        #     # )
+        #     ssim_loss_postnet = torch.tensor([1.0], device=mel_predictions.device)
 
         masked_mel_predictions = mel_predictions.masked_select(~mel_masks_expanded)
 
         masked_mel_targets = mel_targets.masked_select(~mel_masks_expanded)
 
-        masked_postnet_outputs = postnet_outputs.masked_select(~mel_masks_expanded)
+        # masked_postnet_outputs = postnet_outputs.masked_select(~mel_masks_expanded)
 
         mel_loss: torch.Tensor = self.mae_loss(masked_mel_predictions, masked_mel_targets)
-        mel_loss_postnet: torch.Tensor = self.mae_loss(masked_postnet_outputs, masked_mel_targets)
+        # mel_loss_postnet: torch.Tensor = self.mae_loss(masked_postnet_outputs, masked_mel_targets)
 
         # sc_mag_loss = self.spectral_conv_loss(mel_predictions, mel_targets)
         # log_mag_loss = self.logstft_loss(mel_predictions, mel_targets)
@@ -226,12 +224,12 @@ class FastSpeech2LossGen(Module):
 
         total_loss = (
             mel_loss
-            + mel_loss_postnet
+            # + mel_loss_postnet
             + duration_loss
             + u_prosody_loss
             + p_prosody_loss
             + ssim_loss
-            + ssim_loss_postnet
+            # + ssim_loss_postnet
             # + sc_mag_loss
             # + log_mag_loss
             + pitch_loss
@@ -243,9 +241,9 @@ class FastSpeech2LossGen(Module):
         return (
             total_loss,
             mel_loss,
-            mel_loss_postnet,
+            # mel_loss_postnet,
             ssim_loss,
-            ssim_loss_postnet,
+            # ssim_loss_postnet,
             # sc_mag_loss,
             # log_mag_loss,
             duration_loss,
