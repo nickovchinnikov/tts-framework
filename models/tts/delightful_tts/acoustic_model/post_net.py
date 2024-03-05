@@ -56,6 +56,7 @@ class PostNet(nn.Module):
         postnet_kernel_size (int): PostNet kernel size
         postnet_n_convolutions (int): Number of PostNet convolutions
         upsampling_factor (int): Upsampling factor for mel-spectrogram
+        p_dropout (float): Dropout probability
     """
 
     def __init__(
@@ -65,6 +66,7 @@ class PostNet(nn.Module):
         postnet_embedding_dim: int = 512,
         postnet_kernel_size: int = 5,
         postnet_n_convolutions: int = 3,
+        p_dropout: float = 0.1,
     ):
         super().__init__()
 
@@ -81,10 +83,11 @@ class PostNet(nn.Module):
                     dilation=1,
                 ),
                 nn.BatchNorm1d(postnet_embedding_dim),
+                nn.Dropout(p_dropout),
             ),
         )
 
-        for _ in range(1, postnet_n_convolutions - 1):
+        for _ in range(postnet_n_convolutions):
             self.convolutions.append(
                 nn.Sequential(
                     ConvNorm(
@@ -95,24 +98,20 @@ class PostNet(nn.Module):
                         padding=int((postnet_kernel_size - 1) / 2),
                         dilation=1,
                     ),
+                    nn.LayerNorm(
+                        postnet_embedding_dim,
+                    ),
+                    nn.Dropout(p_dropout),
                 ),
             )
 
-        self.convolutions.append(
-            nn.Sequential(
-                ConvNorm(
-                    postnet_embedding_dim,
-                    n_mel_channels,
-                    kernel_size=postnet_kernel_size,
-                    stride=1,
-                    padding=int((postnet_kernel_size - 1) / 2),
-                    dilation=1,
-                ),
-                nn.Dropout(0.5),
-            ),
+        self.to_mel = nn.Linear(
+            postnet_embedding_dim,
+            n_mel_channels,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         for conv in self.convolutions:
             x = conv(x)
-        return x
+
+        return self.to_mel(x)

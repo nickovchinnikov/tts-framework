@@ -12,6 +12,7 @@ from models.config import (
     PreprocessingConfig,
     symbols,
 )
+from models.enhancer.gaussian_diffusion import GaussianDiffusion
 from models.helpers import (
     # pitch_phoneme_averaging,
     positional_encoding,
@@ -34,7 +35,8 @@ from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 # from .pitch_adaptor import PitchAdaptor
 # from .pitch_adaptor2 import PitchAdaptor
 from .pitch_adaptor_conv import PitchAdaptorConv
-from .post_net import PostNet
+
+# from .post_net import PostNet
 
 
 class AcousticModel(Module):
@@ -173,12 +175,16 @@ class AcousticModel(Module):
 
         # Post net improve the quality of the mel spectrogram
         # It is a stack of 5 1D convolutional layers with 512 channels and kernel size 5
-        self.mel_post_net = PostNet(
-            n_hidden=model_config.decoder.n_hidden,
-            n_mel_channels=preprocess_config.stft.n_mel_channels,
-            postnet_embedding_dim=model_config.postnet.postnet_embedding_dim,
-            postnet_kernel_size=model_config.postnet.postnet_kernel_size,
-            postnet_n_convolutions=model_config.postnet.postnet_n_convolutions,
+        # self.mel_post_net = PostNet(
+        #     n_hidden=model_config.decoder.n_hidden,
+        #     n_mel_channels=preprocess_config.stft.n_mel_channels,
+        #     postnet_embedding_dim=model_config.postnet.postnet_embedding_dim,
+        #     postnet_kernel_size=model_config.postnet.postnet_kernel_size,
+        #     postnet_n_convolutions=model_config.postnet.postnet_n_convolutions,
+        # )
+
+        self.diff_refiner = GaussianDiffusion(
+            model_config.diffusion,
         )
 
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
@@ -476,7 +482,7 @@ class AcousticModel(Module):
             attn_hard_dur.sum(1),
             mel_lens,
         )"""
-        x, log_duration_prediction, embeddings = self.length_regulator.upsample_train(
+        cond, log_duration_prediction, embeddings = self.length_regulator.upsample_train(
             x=x,
             x_res=x_res,
             duration_target=attn_hard_dur,
@@ -485,7 +491,7 @@ class AcousticModel(Module):
         )
 
         # Decode the encoder output to pred mel spectrogram
-        decoder_output = self.decoder(x, mel_mask, embeddings=embeddings, encoding=encoding)
+        decoder_output = self.decoder(cond, mel_mask, embeddings=embeddings, encoding=encoding)
 
         x = self.to_mel(decoder_output)
         x = x.permute((0, 2, 1))
@@ -494,8 +500,16 @@ class AcousticModel(Module):
         # x = self.to_mel_conv(decoder_output)
 
         # Post net synthesis of the mel spectrogram
-        x_postnet = self.mel_post_net.forward(decoder_output.permute((1, 2, 0)))
-        x_postnet = x_postnet.permute((2, 1, 0))
+        # x_postnet = self.mel_post_net.forward(decoder_output.permute((1, 2, 0)))
+        # x_postnet = x_postnet.permute((0, 2, 1))
+        x_postnet, _, _, _, _ = self.diff_refiner.forward(
+            mel=mels,
+            cond=cond,
+            spk_emb=embeddings,
+            mel_mask=mel_mask,
+            coarse_mel=x,
+        )
+        x_postnet = x_postnet.permute((0, 2, 1))
 
         return {
             "y_pred": x,
