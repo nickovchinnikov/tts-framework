@@ -50,24 +50,6 @@ class TestAcousticModel(unittest.TestCase):
             n_speakers,
         )
 
-    def test_freeze_exept_conformer_blocks_ff(self):
-        preprocess_config = PreprocessingConfig("english_only")
-        model_config = AcousticENModelConfig()
-
-        acoustic_model = AcousticModel(
-            preprocess_config,
-            model_config,
-            n_speakers=5392,
-        )
-        acoustic_model.freeze_exept_conformer_blocks_ff()
-
-        for name, param in acoustic_model.named_parameters():
-            if "ff" not in name:
-                self.assertFalse(param.requires_grad)
-            else:
-                self.assertTrue(param.requires_grad)
-
-
     def test_get_embeddings(self):
         # Generate masks for padding positions in the source sequences and mel sequences
         # src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]

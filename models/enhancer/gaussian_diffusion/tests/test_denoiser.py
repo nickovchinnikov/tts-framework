@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from models.config.configs import DiffusionConfig
+from models.config.experimental_configs import DiffusionConfig
 from models.enhancer.gaussian_diffusion.denoiser import Denoiser
 
 

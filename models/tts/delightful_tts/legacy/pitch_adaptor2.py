@@ -10,7 +10,7 @@ from .variance_predictor import VariancePredictor
 
 
 class PitchAdaptor(Module):
-    r"""The PitchAdaptor class is a pitch adaptor network in the model.
+    r"""DEPRECATED: The PitchAdaptor class is a pitch adaptor network in the model.
     Updated version of the PitchAdaptor pull the values from the batch insted of the config file.
 
     It has methods to get the pitch embeddings for train and test,

@@ -3,7 +3,7 @@ import unittest
 import torch
 from torch import nn
 
-from models.config.configs import DiffusionConfig
+from models.config.experimental_configs import DiffusionConfig
 from models.enhancer.gaussian_diffusion.gaussian_diffusion import GaussianDiffusion
 from models.helpers import (
     tools,

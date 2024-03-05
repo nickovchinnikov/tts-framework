@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch import Tensor, nn
 
-from models.config.configs import DiffusionConfig
+from models.config.experimental_configs import DiffusionConfig
 
 from .denoiser import Denoiser
 from .utils import default, extract, get_noise_schedule_list, noise_like
