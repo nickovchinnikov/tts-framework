@@ -60,7 +60,7 @@ class TestYourModule(unittest.TestCase):
         block = ResidualBlock(d_encoder, residual_channels, dropout, d_spk_prj, multi_speaker)
 
         x = torch.randn(1, 16)
-        conditioner = torch.randn(1, 1, 16)
+        conditioner = torch.randn(1, 16, 1)
         diffusion_step = torch.randn(1, 8)
         speaker_emb = torch.randn(1, 1, 8)
 

@@ -28,6 +28,7 @@ class TestGaussianDiffusion(unittest.TestCase):
             max_beta=40,
             s=0.008,
             keep_bins=80,
+            pe_scale=1000,
             # trainsformer params
             encoder_hidden=8,
             decoder_hidden=8,

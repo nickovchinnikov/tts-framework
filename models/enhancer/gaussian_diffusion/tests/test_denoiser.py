@@ -24,6 +24,7 @@ class TestDenoiser(unittest.TestCase):
             max_beta=40,
             s=0.008,
             keep_bins=80,
+            pe_scale=1000,
             # trainsformer params
             encoder_hidden=16,
             decoder_hidden=16,
@@ -40,7 +41,7 @@ class TestDenoiser(unittest.TestCase):
 
 
         mel = torch.randn(M, M, 16)
-        conditioner = torch.randn(T, T, 16)
+        conditioner = torch.randn(T, 16, T)
         diffusion_step = torch.randn(B)
         speaker_emb = torch.randn(T, T, 8)
 

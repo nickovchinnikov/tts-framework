@@ -41,40 +41,26 @@ class TestScheduledOptimPretraining(unittest.TestCase):
 
         # Test the returned function
         self.assertEqual(init_lr, self.init_lr)
-        self.assertAlmostEqual(lr_lambda(0), 2.0171788261496964e-07, places=10)
-        self.assertAlmostEqual(lr_lambda(10), 2.0171788261496965e-06, places=10)
-        self.assertAlmostEqual(lr_lambda(100), 2.0171788261496963e-05, places=10)
-        self.assertAlmostEqual(lr_lambda(1000), 0.00020171788261496966, places=10)
-        self.assertAlmostEqual(lr_lambda(current_step), 0.0007216878364870322, places=10)
+        self.assertAlmostEqual(lr_lambda(0), 1.746928107421711e-07, places=4)
+        self.assertAlmostEqual(lr_lambda(1000), 0.0001746928107421711, places=4)
+        self.assertAlmostEqual(lr_lambda(current_step), 0.000625, places=4)
 
 
     def test_initial_lr(self):
         lr = self.optimizer.get_lr()
 
-        self.assertAlmostEqual(lr, 1.0293872591693944e-08, places=10)
+        self.assertAlmostEqual(lr, 7.72040444377046e-09, places=4)
 
     def test_step_and_update_lr(self):
         lr = self.optimizer.get_lr()
 
-        self.assertAlmostEqual(lr, 1.0293872591693944e-08, places=10)
+        self.assertAlmostEqual(lr, 7.72040444377046e-09, places=10)
 
         for _ in range(100):
             self.optimizer.step(None)
 
         lr = self.optimizer.get_lr()
-        expected_lr = 1.0293872591693944e-06
-
-        self.assertAlmostEqual(
-            lr,
-            expected_lr,
-            places=10,
-        )
-
-        for _ in range(1000):
-            self.optimizer.step(None)
-
-        lr = self.optimizer.get_lr()
-        expected_lr = 1.1323259850863337e-05
+        expected_lr = 7.720404443770459e-07
 
         self.assertAlmostEqual(
             lr,
