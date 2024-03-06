@@ -34,7 +34,9 @@ from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as Token
 
 
 class DelightfulUnivnet(LightningModule):
-    r"""Trainer for the acoustic model.
+    r"""DEPRECATED: This idea is basically wrong. The model should synthesis pretty well mel spectrograms and then use them to generate the waveform based on the good quality mel-spec.
+
+    Trainer for the acoustic model.
 
     Args:
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
