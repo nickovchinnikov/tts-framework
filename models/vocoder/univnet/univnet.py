@@ -33,7 +33,7 @@ class UnivNet(LightningModule):
             acc_grad_steps: int = 10,
             batch_size: int = 6,
             root: str = "datasets_cache/LIBRITTS",
-            checkpoint_path_v1: Optional[str] = None, # = "checkpoints/vocoder_pretrained.pt",
+            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
         ):
         r"""Initializes the `VocoderModule`.
 

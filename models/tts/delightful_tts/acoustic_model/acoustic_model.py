@@ -12,8 +12,6 @@ from models.config import (
     PreprocessingConfig,
     symbols,
 )
-
-# from models.enhancer.gaussian_diffusion import GaussianDiffusion
 from models.helpers import (
     positional_encoding,
     tools,
@@ -209,6 +207,7 @@ class AcousticModel(Module):
 
         return token_embeddings, embeddings
 
+
     def prepare_for_export(self) -> None:
         r"""Prepare the model for export.
 
@@ -223,6 +222,7 @@ class AcousticModel(Module):
         """
         del self.phoneme_prosody_encoder
         del self.utterance_prosody_encoder
+
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def freeze_params(self) -> None:
@@ -241,6 +241,7 @@ class AcousticModel(Module):
         self.speaker_embed.requires_grad = True
         # NOTE: requires_grad prop
         # self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
+
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
@@ -271,6 +272,7 @@ class AcousticModel(Module):
         if freeze_lang_embed:
             self.lang_embed.requires_grad = False
 
+
     def average_utterance_prosody(
         self, u_prosody_pred: torch.Tensor, src_mask: torch.Tensor,
     ) -> torch.Tensor:
@@ -296,6 +298,7 @@ class AcousticModel(Module):
         # Return the averaged prosody prediction
         return u_prosody_pred.sum(1, keepdim=True) / lengths.view(-1, 1, 1)
 
+
     def forward_train(
         self,
         x: torch.Tensor,
@@ -304,7 +307,6 @@ class AcousticModel(Module):
         mels: torch.Tensor,
         mel_lens: torch.Tensor,
         pitches: torch.Tensor,
-        pitches_range: Tuple[float, float],
         langs: torch.Tensor,
         attn_priors: Union[torch.Tensor, None],
         energies: torch.Tensor,
@@ -323,7 +325,6 @@ class AcousticModel(Module):
             mels (torch.Tensor): Tensor of mel spectrograms.
             mel_lens (torch.Tensor): Long tensor representing the lengths of mel sequences.
             pitches (torch.Tensor): Tensor of pitch values.
-            pitches_range (Tuple[float, float]): The pitch min/max range.
             langs (torch.Tensor): Tensor of language identities.
             attn_priors (torch.Tensor): Prior attention values.
             energies (torch.Tensor): Tensor of energy values.
@@ -372,13 +373,17 @@ class AcousticModel(Module):
                 mask=src_mask,
             ),
         )
+
         if use_ground_truth:
             x = x + self.u_bottle_out(u_prosody_ref)
             x = x + self.p_bottle_out(p_prosody_ref)
         else:
             x = x + self.u_bottle_out(u_prosody_pred)
             x = x + self.p_bottle_out(p_prosody_pred)
+
+        # Save the residual for later use
         x_res = x
+
         attn_logprob, attn_soft, attn_hard, attn_hard_dur = self.aligner(
             enc_in=x_res.permute((0, 2, 1)),
             dec_in=mels,
@@ -437,13 +442,12 @@ class AcousticModel(Module):
             "attn_hard_dur": attn_hard_dur,
         }
 
+
     def forward(
         self,
         x: torch.Tensor,
-        pitches_range: Tuple[float, float],
         speakers: torch.Tensor,
         langs: torch.Tensor,
-        p_control: float = 1.0,
         d_control: float = 1.0,
     ) -> torch.Tensor:
         r"""Forward pass during model inference.
@@ -454,10 +458,8 @@ class AcousticModel(Module):
 
         Args:
             x (torch.Tensor): Tensor of phoneme sequences.
-            pitches_range (Tuple[float, float]): The pitch min/max range.
             speakers (torch.Tensor): Tensor of speaker identities.
             langs (torch.Tensor): Tensor of language identities.
-            p_control (float): Pitch control parameter. Defaults to 1.0.
             d_control (float): Duration control parameter. Defaults to 1.0.
 
         Returns:
@@ -492,8 +494,10 @@ class AcousticModel(Module):
                 mask=src_mask,
             ),
         )
+
         x = x + self.u_bottle_out(u_prosody_pred).expand_as(x)
         x = x + self.p_bottle_out(p_prosody_pred).expand_as(x)
+
         x_res = x
 
         x, _ = self.pitch_adaptor_conv.add_pitch_embedding(

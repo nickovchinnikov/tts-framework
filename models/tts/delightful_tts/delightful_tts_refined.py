@@ -89,9 +89,6 @@ class DelightfulTTS(LightningModule):
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
 
-        # Initialize pitches_stat with large/small values for min/max
-        self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
-
 
     def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
         r"""Performs a forward pass through the AcousticModel.
@@ -123,7 +120,6 @@ class DelightfulTTS(LightningModule):
 
         y_pred = self.acoustic_model.forward(
             x=x,
-            pitches_range=self.pitches_stat,
             speakers=speakers,
             langs=langs,
         )
@@ -138,7 +134,7 @@ class DelightfulTTS(LightningModule):
     # trainer = Trainer(inference_mode=True)
     # Use `torch.no_grad` instead
     # trainer = Trainer(inference_mode=False)
-    def training_step(self, batch: List, batch_idx: int):
+    def training_step(self, batch: List, _: int):
         r"""Performs a training step for the model.
 
         Args:
@@ -169,16 +165,13 @@ class DelightfulTTS(LightningModule):
             src_lens,
             mels,
             pitches,
-            pitches_stat,
+            _,
             mel_lens,
             langs,
             attn_priors,
             _,
             energies,
         ) = batch
-        # Update pitches_stat
-        self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
-        self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
 
         outputs = self.acoustic_model.forward_train(
             x=texts,
@@ -187,14 +180,12 @@ class DelightfulTTS(LightningModule):
             mels=mels,
             mel_lens=mel_lens,
             pitches=pitches,
-            pitches_range=pitches_stat,
             langs=langs,
             attn_priors=attn_priors,
             energies=energies,
         )
 
         y_pred = outputs["y_pred"]
-        # postnet_output = outputs["y_postnet"]
         log_duration_prediction = outputs["log_duration_prediction"]
         p_prosody_ref = outputs["p_prosody_ref"]
         p_prosody_pred = outputs["p_prosody_pred"]
@@ -208,11 +199,7 @@ class DelightfulTTS(LightningModule):
         (
             total_loss,
             mel_loss,
-            # mel_loss_postnet,
             ssim_loss,
-            # ssim_loss_postnet,
-            # sc_mag_loss,
-            # log_mag_loss,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,
@@ -225,7 +212,6 @@ class DelightfulTTS(LightningModule):
             mel_masks=mel_mask,
             mel_targets=mels,
             mel_predictions=y_pred,
-            # postnet_outputs=postnet_output,
             log_duration_predictions=log_duration_prediction,
             u_prosody_ref=outputs["u_prosody_ref"],
             u_prosody_pred=outputs["u_prosody_pred"],
@@ -246,11 +232,7 @@ class DelightfulTTS(LightningModule):
 
         self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("train_mel_loss_postnet", mel_loss_postnet, sync_dist=True, batch_size=self.batch_size)
         self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("train_ssim_loss_postnet", ssim_loss_postnet, sync_dist=True, batch_size=self.batch_size)
-        # self.log("train_sc_mag_loss", sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("train_log_mag_loss", log_mag_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
