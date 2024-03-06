@@ -32,6 +32,12 @@ nav:
     - Config:
       - References: models/config/readme.md
       - Langs: models/config/langs.md
+    - Enhancer:
+      - Gaussian Diffusion:
+        - Gaussian Diffusion: models/enhancer/gaussian_diffusion/gaussian_diffusion.md
+        - Denoiser: models/enhancer/gaussian_diffusion/denoiser.md
+        - Layers: models/enhancer/gaussian_diffusion/layers.md
+        - Utils: models/enhancer/gaussian_diffusion/utils.md
     - TTS:
       - Delightful TTS:
         - References: models/tts/delightful_tts/readme.md
@@ -62,8 +68,7 @@ nav:
           - Embedding: models/tts/delightful_tts/acoustic_model/embedding.md
           - Helpers: models/tts/delightful_tts/acoustic_model/helpers.md
           - Variance Predictor: models/tts/delightful_tts/acoustic_model/variance_predictor.md
-          - Pitch Adaptor: models/tts/delightful_tts/acoustic_model/pitch_adaptor.md
-          - Pitch Adaptor2: models/tts/delightful_tts/acoustic_model/pitch_adaptor2.md
+          - Pitch Adaptor Conv: models/tts/delightful_tts/acoustic_model/pitch_adaptor_conv.md
           - Energy Adaptor: models/tts/delightful_tts/acoustic_model/energy_adaptor.md
           - Length Adaptor: models/tts/delightful_tts/acoustic_model/length_adaptor.md
           - Phoneme Prosody Predictor: models/tts/delightful_tts/acoustic_model/phoneme_prosody_predictor.md
@@ -75,11 +80,6 @@ nav:
           - Reference Encoder: models/tts/delightful_tts/reference_encoder/reference_encoder.md
           - Utterance Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/utterance_level_prosody_encoder.md
           - Phoneme Level Prosody Encoder: models/tts/delightful_tts/reference_encoder/phoneme_level_prosody_encoder.md
-        - Duffusion:
-          - Gaussian Diffusion: models/tts/delightful_tts/diffusion/gaussian_diffusion.md
-          - Denoiser: models/tts/delightful_tts/diffusion/denoiser.md
-          - Layers: models/tts/delightful_tts/diffusion/layers.md
-          - Utils: models/tts/delightful_tts/diffusion/utils.md
       - StyledTTS 2:
         - References: models/tts/styledtts2/readme.md
         - Diffusion:

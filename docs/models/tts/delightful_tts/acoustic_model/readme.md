@@ -20,13 +20,9 @@ Acoustic model helpers methods
 
 This is a Duration and Pitch predictor neural network module in PyTorch.
 
-### [Pitch Adaptor](pitch_adaptor.md)
+### [Pitch Adaptor Conv](pitch_adaptor_conv.md)
 
-The PitchAdaptor class is a pitch adaptor network in the model.
-
-### [Pitch Adaptor2](pitch_adaptor2.md)
-
-Updated version of PitchAdaptor that used the batch pitch insted of the pitch from the whole dataset
+Variance Adaptor with an added 1D conv layer. Used to get pitch embeddings.
 
 ## [Energy Adaptor](energy_adaptor.md)
 
