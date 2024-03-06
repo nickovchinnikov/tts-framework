@@ -27,5 +27,4 @@ class TestDelightfulUnivnet(unittest.TestCase):
         train_dataloader = module.train_dataloader(2, cache=False, mem_cache=False)
 
         result = trainer.fit(model=module, train_dataloaders=train_dataloader)
-        # module.pitches_stat tensor([ 51.6393, 408.3333])
         self.assertIsNone(result)

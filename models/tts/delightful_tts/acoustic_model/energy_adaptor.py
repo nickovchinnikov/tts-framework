@@ -58,7 +58,7 @@ class EnergyAdaptor(nn.Module):
         )
 
     def get_energy_embedding_train(
-        self, x: torch.Tensor, target: torch.Tensor, dr: torch.IntTensor, mask: torch.Tensor,
+        self, x: torch.Tensor, target: torch.Tensor, dr: torch.Tensor, mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""Function is used during training to get the energy prediction, average energy target, and energy embedding.
 
@@ -67,7 +67,7 @@ class EnergyAdaptor(nn.Module):
                             T_src is the source sequence length, and C is the number of channels.
             target (torch.Tensor): A 3D tensor of shape [B, 1, T_max2] where B is the batch size,
                                 T_max2 is the maximum target sequence length.
-            dr (torch.IntTensor): A 2D tensor of shape [B, T_src] where B is the batch size,
+            dr (torch.Tensor): A 2D tensor of shape [B, T_src] where B is the batch size,
                                 T_src is the source sequence length. The values represent the durations.
             mask (torch.Tensor): A 2D tensor of shape [B, T_src] where B is the batch size,
                                 T_src is the source sequence length. The values represent the mask.
@@ -97,7 +97,7 @@ class EnergyAdaptor(nn.Module):
         self,
         x: torch.Tensor,
         target: torch.Tensor,
-        dr: torch.IntTensor,
+        dr: torch.Tensor,
         mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""Add energy embedding during training.
@@ -108,7 +108,7 @@ class EnergyAdaptor(nn.Module):
         Args:
             x (torch.Tensor): The input tensor to which the energy embedding will be added.
             target (torch.Tensor): The target tensor used in the energy embedding calculation.
-            dr (torch.IntTensor): The duration tensor used in the energy embedding calculation.
+            dr (torch.Tensor): The duration tensor used in the energy embedding calculation.
             mask (torch.Tensor): The mask tensor used in the energy embedding calculation.
 
         Returns:

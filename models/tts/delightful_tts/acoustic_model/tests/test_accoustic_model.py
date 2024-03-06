@@ -128,7 +128,7 @@ class TestAcousticModel(unittest.TestCase):
                 src_lens,
                 mels,
                 pitches,
-                pitches_stat,
+                _,
                 mel_lens,
                 langs,
                 attn_priors,
@@ -142,7 +142,6 @@ class TestAcousticModel(unittest.TestCase):
                 mels=mels,
                 mel_lens=mel_lens,
                 pitches=pitches,
-                pitches_range=pitches_stat,
                 langs=langs,
                 attn_priors=attn_priors,
                 energies=energies,
@@ -153,7 +152,6 @@ class TestAcousticModel(unittest.TestCase):
         mel_mask = get_mask_from_lengths(mel_lens)
 
         y_pred = result["y_pred"]
-        # postnet_output = result["y_postnet"]
         log_duration_prediction = result["log_duration_prediction"]
         p_prosody_ref = result["p_prosody_ref"]
         p_prosody_pred = result["p_prosody_pred"]
@@ -166,7 +164,6 @@ class TestAcousticModel(unittest.TestCase):
             mel_masks=mel_mask,
             mel_targets=mels,
             mel_predictions=y_pred,
-            # postnet_outputs=postnet_output,
             log_duration_predictions=log_duration_prediction,
             u_prosody_ref=result["u_prosody_ref"],
             u_prosody_pred=result["u_prosody_pred"],
@@ -241,7 +238,7 @@ class TestAcousticModel(unittest.TestCase):
                 _,
                 _,
                 _,
-                pitches_stat,
+                _,
                 _,
                 langs,
                 _,
@@ -250,10 +247,8 @@ class TestAcousticModel(unittest.TestCase):
             ) = batch
             x = acoustic_model.forward(
                 x=texts,
-                pitches_range=pitches_stat,
                 speakers=speakers,
                 langs=langs,
-                p_control=0.5,
                 d_control=0.5,
             )
             break
