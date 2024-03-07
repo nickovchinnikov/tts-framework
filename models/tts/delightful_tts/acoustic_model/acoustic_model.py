@@ -310,7 +310,6 @@ class AcousticModel(Module):
         langs: torch.Tensor,
         attn_priors: Union[torch.Tensor, None],
         energies: torch.Tensor,
-        use_ground_truth: bool = True,
     ) -> Dict[str, torch.Tensor]:
         r"""Forward pass during training phase.
 
@@ -328,8 +327,6 @@ class AcousticModel(Module):
             langs (torch.Tensor): Tensor of language identities.
             attn_priors (torch.Tensor): Prior attention values.
             energies (torch.Tensor): Tensor of energy values.
-            use_ground_truth (bool, optional): Flag indicating whether ground truth should be used.
-                                               Defaults to True.
 
         Returns:
             Dict[str, torch.Tensor]: Returns the prediction outputs as a dictionary.
@@ -374,12 +371,16 @@ class AcousticModel(Module):
             ),
         )
 
-        if use_ground_truth:
-            x = x + self.u_bottle_out(u_prosody_ref)
-            x = x + self.p_bottle_out(p_prosody_ref)
-        else:
-            x = x + self.u_bottle_out(u_prosody_pred)
-            x = x + self.p_bottle_out(p_prosody_pred)
+        # NOTE: use_ground_truth is a boolshit!
+        # if use_ground_truth:
+        #     x = x + self.u_bottle_out(u_prosody_ref)
+        #     x = x + self.p_bottle_out(p_prosody_ref)
+        # else:
+        #     x = x + self.u_bottle_out(u_prosody_pred)
+        #     x = x + self.p_bottle_out(p_prosody_pred)
+
+        x = x + self.u_bottle_out(u_prosody_pred)
+        x = x + self.p_bottle_out(p_prosody_pred)
 
         # Save the residual for later use
         x_res = x
@@ -476,7 +477,9 @@ class AcousticModel(Module):
         )
 
         # Generate positional encodings
-        encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
+        encoding = positional_encoding(
+            self.emb_dim, x.shape[1],
+        ).to(x.device)
 
         # Process the embeddings through the encoder
         x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
@@ -495,8 +498,8 @@ class AcousticModel(Module):
             ),
         )
 
-        x = x + self.u_bottle_out(u_prosody_pred).expand_as(x)
-        x = x + self.p_bottle_out(p_prosody_pred).expand_as(x)
+        x = x + self.u_bottle_out(u_prosody_pred)
+        x = x + self.p_bottle_out(p_prosody_pred)
 
         x_res = x
 
