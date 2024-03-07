@@ -33,7 +33,8 @@ class LibriTTSDatasetAcoustic(Dataset):
             lang (str): The language of the dataset.
             url (str): The dataset url, default "train-clean-360".
             download (bool, optional): Whether to download the dataset if it is not found. Defaults to True.
-            cache (bool, optional): Whether to cache the preprocessed data. Defaults to False.
+            cache (bool, optional): Whether to cache the preprocessed data to RAM. Defaults to False.
+            mem_cache (bool, optional): Whether to cache the preprocessed data. Defaults to False.
             cache_dir (str, optional): Path to the directory where the cache is stored. Defaults to "datasets_cache".
         """
         # self.dataset = datasets.LIBRITTS(

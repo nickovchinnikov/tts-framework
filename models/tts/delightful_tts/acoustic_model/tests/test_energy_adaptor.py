@@ -48,7 +48,7 @@ class TestEnergyAdaptor(unittest.TestCase):
         # Check shapes of output tensors
         self.assertEqual(energy_pred.shape, (self.batch_size, 1, self.seq_length))
         self.assertEqual(avg_energy_target.shape, (self.batch_size, 1, self.seq_length))
-        self.assertEqual(energy_emb.shape, (self.batch_size, self.channels_hidden, 10))
+        self.assertEqual(energy_emb.shape, (self.batch_size, self.channels_hidden, self.seq_length))
 
     def test_add_energy_embedding_train(self):
         # Test add_energy_embedding_train method

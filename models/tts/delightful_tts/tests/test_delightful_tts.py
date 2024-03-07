@@ -8,7 +8,7 @@ import torchaudio
 
 from models.tts.delightful_tts import DelightfulTTS
 
-checkpoint = "checkpoints/logs_new_training_libri-360_energy_epoch=263-step=45639.ckpt"
+checkpoint = "checkpoints/logs_new_training_libri-360-swa_multilingual_conf_epoch=146-step=33516.ckpt"
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -44,11 +44,9 @@ class TestDelightfulTTS(unittest.TestCase):
         _, lr_lambda = module.get_lr_lambda()
 
         # Test the returned function
-        self.assertAlmostEqual(lr_lambda(0), 2.0171788261496964e-07, places=10)
-        self.assertAlmostEqual(lr_lambda(10), 2.0171788261496965e-06, places=10)
-        self.assertAlmostEqual(lr_lambda(100), 2.0171788261496963e-05, places=10)
-        self.assertAlmostEqual(lr_lambda(1000), 0.00020171788261496966, places=10)
-        self.assertAlmostEqual(lr_lambda(current_step), 0.0007216878364870322, places=10)
+        self.assertAlmostEqual(lr_lambda(0), 1.746928107421711e-07, places=10)
+        self.assertAlmostEqual(lr_lambda(10), 1.7469281074217108e-06, places=10)
+        self.assertAlmostEqual(lr_lambda(current_step), 0.000625, places=10)
 
     def test_optim_pretraining(self):
         # Create a dummy Trainer instance
@@ -86,7 +84,7 @@ class TestDelightfulTTS(unittest.TestCase):
 
         module = DelightfulTTS(batch_size=2)
 
-        train_dataloader, _ = module.train_dataloader(2, cache=False, mem_cache=False)
+        train_dataloader = module.train_dataloader(2, cache=False, mem_cache=False)
 
         # automatically restores model, epoch, step, LR schedulers, etc...
         # trainer.fit(model, ckpt_path="some/path/to/my_checkpoint.ckpt")
