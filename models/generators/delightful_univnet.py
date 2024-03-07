@@ -34,7 +34,9 @@ from training.preprocess.tokenizer_ipa_espeak import TokenizerIpaEspeak as Token
 
 
 class DelightfulUnivnet(LightningModule):
-    r"""Trainer for the acoustic model.
+    r"""DEPRECATED: This idea is basically wrong. The model should synthesis pretty well mel spectrograms and then use them to generate the waveform based on the good quality mel-spec.
+
+    Trainer for the acoustic model.
 
     Args:
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
@@ -96,9 +98,6 @@ class DelightfulUnivnet(LightningModule):
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
 
-        # Initialize pitches_stat with large/small values for min/max
-        self.register_buffer("pitches_stat", torch.tensor([float("inf"), float("-inf")]))
-
         # Vocoder models
         self.model_config_vocoder = VocoderModelConfig()
 
@@ -148,7 +147,6 @@ class DelightfulUnivnet(LightningModule):
 
         y_pred = self.acoustic_model.forward(
             x=x,
-            pitches_range=self.pitches_stat,
             speakers=speakers,
             langs=langs,
         )
@@ -197,7 +195,7 @@ class DelightfulUnivnet(LightningModule):
             src_lens,
             mels,
             pitches,
-            pitches_stat,
+            _,
             mel_lens,
             langs,
             attn_priors,
@@ -209,10 +207,6 @@ class DelightfulUnivnet(LightningModule):
         ##    Acoustic model train step    ##
         #####################################
 
-        # Update pitches_stat
-        self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
-        self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
-
         outputs = self.acoustic_model.forward_train(
             x=texts,
             speakers=speakers,
@@ -220,7 +214,6 @@ class DelightfulUnivnet(LightningModule):
             mels=mels,
             mel_lens=mel_lens,
             pitches=pitches,
-            pitches_range=pitches_stat,
             langs=langs,
             attn_priors=attn_priors,
             energies=energies,
@@ -240,8 +233,6 @@ class DelightfulUnivnet(LightningModule):
         (
             acc_total_loss,
             acc_mel_loss,
-            acc_sc_mag_loss,
-            acc_log_mag_loss,
             acc_ssim_loss,
             acc_duration_loss,
             acc_u_prosody_loss,
@@ -275,8 +266,6 @@ class DelightfulUnivnet(LightningModule):
 
         self.log("acc_total_loss", acc_total_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("acc_mel_loss", acc_mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_sc_mag_loss", acc_sc_mag_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_log_mag_loss", acc_log_mag_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("acc_ssim_loss", acc_ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("acc_duration_loss", acc_duration_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("acc_u_prosody_loss", acc_u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
