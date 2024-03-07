@@ -20,7 +20,7 @@ class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 25.0
+    max_seconds: float = 30.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 11
