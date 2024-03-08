@@ -371,14 +371,6 @@ class AcousticModel(Module):
             ),
         )
 
-        # NOTE: use_ground_truth is a boolshit!
-        # if use_ground_truth:
-        #     x = x + self.u_bottle_out(u_prosody_ref)
-        #     x = x + self.p_bottle_out(p_prosody_ref)
-        # else:
-        #     x = x + self.u_bottle_out(u_prosody_pred)
-        #     x = x + self.p_bottle_out(p_prosody_pred)
-
         x = x + self.u_bottle_out(u_prosody_pred)
         x = x + self.p_bottle_out(p_prosody_pred)
 
