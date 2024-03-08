@@ -24,8 +24,8 @@ class TestDelightfulTTS(unittest.TestCase):
 
         optimizer_config = module.configure_optimizers()
 
-        optimizer = optimizer_config["optimizer"] # type: ignore
-        lr_scheduler = optimizer_config["lr_scheduler"] # type: ignore
+        optimizer = optimizer_config["optimizer"]
+        lr_scheduler = optimizer_config["lr_scheduler"]
 
         # Test the optimizer
         self.assertIsInstance(optimizer, torch.optim.AdamW)
