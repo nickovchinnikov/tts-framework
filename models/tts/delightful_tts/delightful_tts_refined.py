@@ -47,7 +47,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: lr finder found 1.5848931924611133e-07
             # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
-            batch_size: int = 13,
+            batch_size: int = 8,
         ):
         super().__init__()
 
