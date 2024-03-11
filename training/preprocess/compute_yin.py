@@ -199,3 +199,45 @@ def norm_interp_f0(f0: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     elif sum(uv) > 0:
         f0[uv] = np.interp(np.where(uv)[0], np.where(~uv)[0], f0[~uv])
     return f0, uv
+
+
+def compute_pitch(
+    sig_torch: torch.Tensor,
+    sr: int,
+    w_len: int = 1024,
+    w_step: int = 256,
+    f0_min: int = 50,
+    f0_max: int = 1000,
+    harmo_thresh: float = 0.25,
+):
+    r"""Compute the pitch of an audio signal using the Yin algorithm.
+
+    The Yin algorithm is a widely used method for pitch detection in speech and music signals. This function uses the
+    Yin algorithm to compute the pitch of the input audio signal, and then normalizes and interpolates the pitch values.
+    Returns the normalized and interpolated pitch values.
+
+    Args:
+        sig_torch (torch.Tensor): The audio signal as a 1D numpy array of floats.
+        sr (int): The sampling rate of the signal.
+        w_len (int, optional): The size of the analysis window in samples.
+        w_step (int, optional): The size of the lag between two consecutive windows in samples.
+        f0_min (int, optional): The minimum fundamental frequency that can be detected in Hz.
+        f0_max (int, optional): The maximum fundamental frequency that can be detected in Hz.
+        harmo_thresh (float, optional): The threshold of detection. The algorithm returns the first minimum of the CMND function below this threshold.
+
+    Returns:
+        np.ndarray: The normalized and interpolated pitch values of the audio signal.
+    """
+    pitch, _, _, _ = compute_yin(
+        sig_torch,
+        sr=sr,
+        w_len=w_len,
+        w_step=w_step,
+        f0_min=f0_min,
+        f0_max=f0_max,
+        harmo_thresh=harmo_thresh,
+    )
+
+    pitch, _ = norm_interp_f0(pitch)
+
+    return pitch
