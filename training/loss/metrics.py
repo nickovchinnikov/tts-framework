@@ -10,6 +10,7 @@ from torchmetrics.audio import (
     ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
+    SpeechReverberationModulationEnergyRatio,
 )
 
 from models.config import PreprocessingConfig, get_lang_map
@@ -58,7 +59,10 @@ class Metrics:
         c_si_snr (ComplexScaleInvariantSignalNoiseRatio): The complex scale-invariant signal-to-noise ratio.
     """
 
-    def __init__(self, lang: str = "en"):
+    def __init__(
+        self,
+        lang: str = "en",
+    ):
         lang_map = get_lang_map(lang)
         preprocess_config = PreprocessingConfig(lang_map.processing_lang_type)
 
@@ -73,6 +77,7 @@ class Metrics:
         self.si_sdr = ScaleInvariantSignalDistortionRatio()
         self.si_snr = ScaleInvariantSignalNoiseRatio()
         self.c_si_snr = ComplexScaleInvariantSignalNoiseRatio(zero_mean=False)
+        self.reverb_modulation_energy_ratio = SpeechReverberationModulationEnergyRatio(self.sample_rate)
 
     def calculate_mcd(
         self,
@@ -171,40 +176,67 @@ class Metrics:
     def calculate_jitter_shimmer(
         self,
         audio: torch.Tensor,
-        frame_length: int = 2048,
-        hop_length: int = 512,
     ) -> tuple[float, float]:
-        """Calculate jitter and shimmer."""
-        audio_ = audio.detach().cpu().numpy()
+        r"""Calculate jitter and shimmer of an audio signal.
 
-        # Compute the F0 contour
-        f0 = torch.from_numpy(
-            librosa.yin(
-                audio_,
-                fmin=float(librosa.note_to_hz("C2")),
-                fmax=float(librosa.note_to_hz("C7")),
-                sr=self.sample_rate,
-                frame_length=frame_length,
-                hop_length=hop_length,
-            ),
-        )
+        Jitter and shimmer are two metrics used in speech signal processing to measure the quality of voice signals.
 
-        spec_transform = T.Spectrogram(
-            n_fft=frame_length,
-            hop_length=hop_length,
+        Jitter refers to the short-term variability of a signal's fundamental frequency (F0). It is often used as an indicator of voice disorders, as high levels of jitter can indicate a lack of control over the vocal folds.
+
+        Shimmer, on the other hand, refers to the short-term variability in amplitude of the voice signal. Like jitter, high levels of shimmer can be indicative of voice disorders, as they can suggest a lack of control over the vocal tract.
+
+        Summary:
+        Jitter is the short-term variability of a signal's fundamental frequency (F0).
+        Shimmer is the short-term variability in amplitude of the voice signal.
+
+        Args:
+            audio (torch.Tensor): The audio signal to analyze.
+
+        Returns:
+            tuple[float, float]: The calculated jitter and shimmer values.
+        """
+        # Create a transformation to calculate the spectrogram
+        spectrogram = T.Spectrogram(
+            n_fft=self.filter_length * 2,
+            hop_length=self.hop_length * 2,
             power=None,
-        ).to(audio.device)
-
-        # Compute the amplitude contour
-        amplitude = torch.abs(
-            spec_transform(audio),
         )
 
-        # Compute the relative changes
-        jitter = torch.mean(torch.abs(torch.diff(f0)) / f0[:-1]).item()
-        shimmer = torch.mean(torch.abs(torch.diff(amplitude, dim=-1)) / amplitude[:,:-1]).item()
+        # Calculate the spectrogram of the audio signal
+        amplitude = spectrogram(audio)
+
+        # Calculate the F0 contour using the yin method
+        f0 = T.Vad(sample_rate=self.sample_rate)(audio)
+
+        # Calculate the relative changes in the F0 and amplitude contours
+        jitter = torch.mean(
+            torch.abs(torch.diff(f0, dim=-1)) / torch.diff(f0, dim=-1),
+        ).item()
+        shimmer = torch.mean(
+            torch.abs(torch.diff(amplitude, dim=-1)) / torch.diff(amplitude, dim=-1),
+        )
+
+        shimmer = torch.abs(shimmer).item()
 
         return jitter, shimmer
+
+    def wav_metrics(self, wav_predictions: torch.Tensor):
+        r"""Compute the metrics for the waveforms.
+
+        Args:
+            wav_predictions (torch.Tensor): The predicted waveforms.
+
+        Returns:
+            tuple[float, float, float]: The computed metrics.
+        """
+        ermr = self.reverb_modulation_energy_ratio(wav_predictions).item()
+        jitter, shimmer = self.calculate_jitter_shimmer(wav_predictions)
+
+        return (
+            ermr,
+            jitter,
+            shimmer,
+        )
 
     def __call__(
         self,
