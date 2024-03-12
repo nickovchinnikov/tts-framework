@@ -3,12 +3,10 @@ import math
 import random
 from typing import Any, List, Tuple, Union
 
-from librosa import pyin
 import numpy as np
 from scipy.stats import betabinom
 import torch
 import torch.nn.functional as F
-import torchaudio
 
 from models.config import PreprocessingConfig, VocoderBasicConfig, get_lang_map
 
@@ -17,9 +15,6 @@ from .audio_processor import AudioProcessor
 from .compute_yin import compute_yin, norm_interp_f0
 from .normalize_text import NormalizeText
 from .tacotron_stft import TacotronSTFT
-
-# from .tokenizer_ipa import TokenizerIPA
-# Updated version of the tokenizer
 from .tokenizer_ipa_espeak import TokenizerIpaEspeak as TokenizerIPA
 
 
