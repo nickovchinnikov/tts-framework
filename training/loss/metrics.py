@@ -202,18 +202,22 @@ class Metrics:
             power=None,
         )
 
+        spectrogram = spectrogram.to(audio.device)
+
         # Calculate the spectrogram of the audio signal
         amplitude = spectrogram(audio)
 
         # Calculate the F0 contour using the yin method
         f0 = T.Vad(sample_rate=self.sample_rate)(audio)
 
+        # Episilon to avoid division by zero
+        epsilon = 1e-10
         # Calculate the relative changes in the F0 and amplitude contours
         jitter = torch.mean(
-            torch.abs(torch.diff(f0, dim=-1)) / torch.diff(f0, dim=-1),
+            torch.abs(torch.diff(f0, dim=-1)) / (torch.diff(f0, dim=-1) + epsilon),
         ).item()
         shimmer = torch.mean(
-            torch.abs(torch.diff(amplitude, dim=-1)) / torch.diff(amplitude, dim=-1),
+            torch.abs(torch.diff(amplitude, dim=-1)) / (torch.diff(amplitude, dim=-1) + epsilon),
         )
 
         shimmer = torch.abs(shimmer).item()
