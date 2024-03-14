@@ -15,7 +15,7 @@ from models.config import (
     get_lang_map,
     lang2id,
 )
-from models.config.speakers import selected_speakers
+from models.config.speakers import dataset_speaker_ids
 from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
 from models.vocoder.univnet import UnivNet
@@ -311,5 +311,5 @@ class DelightfulTTS(LightningModule):
             mem_cache=mem_cache,
             url=url,
             lang=self.lang,
-            selected_speaker_ids=selected_speakers,
+            selected_speaker_ids=dataset_speaker_ids,
         )

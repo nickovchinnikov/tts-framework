@@ -1,6 +1,15 @@
+import json
+from typing import Dict, List
+
+# Load the ID mapping
+with open("training/datasets/speaker_id_mapping_libri.json") as f:
+    id_mapping = json.load(f)
+
+# Create a reverse mapping
+reverse_mapping: Dict[int, int] = {int(v): int(k) for k, v in id_mapping.items()}
+
 # Selected for the fine-tuning
 # train-960 subset of LibriTTS
-
 selected_speakers = [
     574, #	Daniel Shorten 	M 	train-clean-100
     242, #	J. Hall 	M 	train-other-500
@@ -333,3 +342,9 @@ selected_speakers = [
     2032, # 	doonaboon 	M 	train-other-500
     2075, #	Joy S Grape 	F 	train-clean-360
 ]
+
+# Convert the model speaker IDs back to the dataset speaker IDs
+dataset_speaker_ids: List[int] = [
+    reverse_mapping.get(int(speaker_id))
+    for speaker_id in selected_speakers
+] # type: ignore
