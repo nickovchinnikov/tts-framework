@@ -36,6 +36,7 @@ dependencies:
       - datasets==2.14.5
       - deep-phonemizer==0.0.19
       - phonemizer==3.2.1
+      - resemblyzer==0.1.4
       - nemo-text-processing==0.2.0rc0
       - piq==0.8.0
       - soundfile==0.12.1
