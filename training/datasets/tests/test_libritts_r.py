@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from training.datasets.libritts_r import load_libritts_item
+from training.datasets.libritts_r import LIBRITTS_R, load_libritts_item
 
 
 class TestLibriTTS(unittest.TestCase):
@@ -47,8 +47,51 @@ class TestLibriTTS(unittest.TestCase):
             ),
         )
 
-        # Add any other assertions you want to make about the return values
+    def test_selected_speaker_ids(self):
+        # Initialize the dataset with selected speaker IDs
+        dataset = LIBRITTS_R(root="datasets_cache/LIBRITTS", url="train-clean-100", selected_speaker_ids=[19, 26])
 
+        # Iterate over the dataset and check the speaker IDs
+        for _, _, _, _, speaker_id, _, _ in dataset:
+            # Assert that the speaker ID is in the list of selected speaker IDs
+            self.assertIn(speaker_id, [19, 26])
+
+    def test_max_audio_length(self):
+        # Initialize the dataset with a maximum audio length
+        dataset = LIBRITTS_R(
+            root="datasets_cache/LIBRITTS",
+            url="train-clean-100",
+            max_audio_length=3.0,
+            selected_speaker_ids=[19, 26],
+        )
+
+        # Iterate over the dataset and check the audio lengths
+        for waveform, sample_rate, _, _, speaker_id, _, _ in dataset:
+            # Get the duration of the waveform in seconds
+            duration = waveform.shape[1] / sample_rate
+
+            # Assert that the speaker ID is in the list of selected speaker IDs
+            self.assertIn(speaker_id, [19, 26])
+            # Assert that the duration is less than or equal to the maximum length
+            self.assertLessEqual(duration, 3.0)
+
+    def test_min_audio_length(self):
+        # Initialize the dataset with a minimum audio length
+        dataset = LIBRITTS_R(
+            root="datasets_cache/LIBRITTS",
+            url="train-clean-100",
+            min_audio_length=30.0,
+        )
+
+        # Iterate over the dataset and check the audio lengths
+        for waveform, sample_rate, _, _, _, _, _ in dataset:
+            # Get the duration of the waveform in seconds
+            duration = waveform.shape[1] / sample_rate
+
+            # Assert that the duration is greater than or equal to the minimum length
+            self.assertGreaterEqual(duration, 30.0)
+
+    # Add any other assertions you want to make about the return values
     def tearDown(self):
         speaker_id, chapter_id, _, _ = self.fileid.split("_")
 
@@ -63,7 +106,6 @@ class TestLibriTTS(unittest.TestCase):
             os.remove(normalized_text_path)
         if os.path.exists(original_text_path):
             os.remove(original_text_path)
-
 
 if __name__ == "__main__":
     unittest.main()

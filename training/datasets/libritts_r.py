@@ -97,6 +97,9 @@ class LIBRITTS_R(Dataset):
             The top-level directory of the dataset. (default: ``"LibriTTS"``)
         download (bool, optional):
             Whether to download the dataset if it is not found at root path. (default: ``False``).
+        selected_speaker_ids (list, optional): List of speaker IDs to be selected. (default: ``None``)
+        min_audio_length (float, optional): Minimum audio length in seconds. (default: ``0.0``)
+        max_audio_length (float, optional): Maximum audio length in seconds. (default: ``None``)
     """
 
     _ext_original_txt = ".original.txt"
@@ -109,6 +112,9 @@ class LIBRITTS_R(Dataset):
         url: str = URL,
         folder_in_archive: str = FOLDER_IN_ARCHIVE,
         download: bool = False,
+        selected_speaker_ids: Union[None, list] = None,
+        min_audio_length: float = 0.0,
+        max_audio_length: Union[None, float] = None,
     ) -> None:
 
         if url in [
@@ -153,6 +159,31 @@ class LIBRITTS_R(Dataset):
                 )
 
         self._walker = sorted(str(p.stem) for p in Path(self._path).glob("*/*/*" + self._ext_audio))
+
+        # Filter the walker based on the selected speaker IDs
+        if selected_speaker_ids is not None:
+            self._walker = [w for w in self._walker if int(w.split("_")[0]) in selected_speaker_ids]
+
+        # Filter the walker based on the maximum audio length
+        if max_audio_length is not None or min_audio_length > 0.0:
+            new_walker = []
+            for fileid in self._walker:
+                waveform, sample_rate, _, _, _, _, _ = load_libritts_item(
+                    fileid,
+                    self._path,
+                    self._ext_audio,
+                    self._ext_original_txt,
+                    self._ext_normalized_txt,
+                )
+                duration = waveform.shape[1] / sample_rate
+
+                min_length_condition = duration > min_audio_length if min_audio_length > 0.0 else True
+                max_length_condition = duration <= max_audio_length if max_audio_length is not None else True
+
+                if min_length_condition and max_length_condition:
+                    new_walker.append(fileid)
+            self._walker = new_walker
+
 
     def __getitem__(self, n: int) -> Tuple[Tensor, int, str, str, int, int, str]:
         """Load the n-th sample from the dataset.
