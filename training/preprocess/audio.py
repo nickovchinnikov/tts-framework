@@ -44,7 +44,7 @@ def safe_load(path: str, sr: Union[int, None]) -> Tuple[np.ndarray, int]:
         Tuple[np.ndarray, int]: A tuple containing the audio content as a numpy array and the actual sampling rate.
     """
     try:
-        audio, sr_actual = torchaudio.load(path)
+        audio, sr_actual = torchaudio.load(path) # type: ignore
         if audio.shape[0] > 0:
             audio = stereo_to_mono(audio)
         audio = audio.squeeze(0)

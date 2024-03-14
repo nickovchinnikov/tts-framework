@@ -1,12 +1,12 @@
 import json
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from models.config import lang2id
+from models.config import PreprocessingConfig, get_lang_map, lang2id
 from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
@@ -25,6 +25,7 @@ class LibriTTSDatasetAcoustic(Dataset):
         cache: bool = False,
         mem_cache: bool = False,
         cache_dir: str = "datasets_cache",
+        selected_speaker_ids: Optional[List[int]] = None,
     ):
         r"""A PyTorch dataset for loading preprocessed acoustic data.
 
@@ -36,16 +37,19 @@ class LibriTTSDatasetAcoustic(Dataset):
             cache (bool, optional): Whether to cache the preprocessed data to RAM. Defaults to False.
             mem_cache (bool, optional): Whether to cache the preprocessed data. Defaults to False.
             cache_dir (str, optional): Path to the directory where the cache is stored. Defaults to "datasets_cache".
+            selected_speaker_ids (Optional[List[int]], optional): A list of selected speakers. Defaults to None.
         """
-        # self.dataset = datasets.LIBRITTS(
-        #     root=root,
-        #     download=download,
-        #     url=url,
-        # )
+        lang_map = get_lang_map(lang)
+        processing_lang_type = lang_map.processing_lang_type
+        preprocess_config = PreprocessingConfig(processing_lang_type)
+
         self.dataset = LIBRITTS_R(
             root=root,
             download=download,
             url=url,
+            selected_speaker_ids=selected_speaker_ids,
+            min_audio_length=preprocess_config.min_seconds,
+            max_audio_length=preprocess_config.max_seconds,
         )
         self.cache = cache
 

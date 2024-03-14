@@ -158,8 +158,8 @@ class PreprocessLibriTTS:
 
         # TODO: check this, maybe you need to move it to some other place
         # TODO: maybe we can increate the max_samples ?
-        if wav.shape[0] < self.min_samples or wav.shape[0] > self.max_samples:
-            return None
+        # if wav.shape[0] < self.min_samples or wav.shape[0] > self.max_samples:
+        #     return None
 
         if self.use_audio_normalization:
             wav = normalize_loudness(wav)
@@ -175,8 +175,8 @@ class PreprocessLibriTTS:
         mel_spectrogram = self.tacotronSTFT.get_mel_from_wav(wav)
 
         # Skipping small sample due to the mel-spectrogram containing less than self.mel_fmin frames
-        if mel_spectrogram.shape[1] < self.mel_fmin:
-            return None
+        # if mel_spectrogram.shape[1] < self.mel_fmin:
+        #     return None
 
         # Text is longer than mel, will be skipped due to monotonic alignment search
         if phones.shape[0] >= mel_spectrogram.shape[1]:
@@ -199,33 +199,6 @@ class PreprocessLibriTTS:
 
         pitch = torch.from_numpy(pitch)
 
-        # f0, voiced_mask, _ = pyin(
-        #     y=wav.numpy().astype(np.double),
-        #     fmin=self.preprocess_config.pitch_fmin,
-        #     fmax=self.preprocess_config.pitch_fmax,
-        #     sr=self.preprocess_config.sampling_rate,
-        #     frame_length=self.preprocess_config.stft.win_length,
-        #     win_length=self.preprocess_config.stft.win_length // 2,
-        #     hop_length=self.preprocess_config.stft.hop_length,
-        #     pad_mode="reflect",
-        #     center=True,
-        #     n_thresholds=100,
-        #     beta_parameters=(2, 18),
-        #     boltzmann_parameter=2,
-        #     resolution=0.1,
-        #     max_transition_rate=35.92,
-        #     switch_prob=0.01,
-        #     no_trough_prob=0.01,
-        # )
-
-        # voiced_mask = torch.from_numpy(voiced_mask)
-        # pitch = torch.from_numpy(f0)[voiced_mask]
-        # pitch = torchaudio.functional.detect_pitch_frequency(wav, sampling_rate)
-
-        # # Skipping pitch that sum less or equal to 1
-        # if sum(pitch != 0) <= 1:
-        #     return None
-
         # TODO this shouldnt be necessary, currently pitch sometimes has 1 less frame than spectrogram,
         # We should find out why
         mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
@@ -245,7 +218,6 @@ class PreprocessLibriTTS:
             self.hop_length,
             self.win_length,
         )
-        # energy = energy.unsqueeze(1)
 
         return PreprocessForAcousticResult(
             wav=wav,
