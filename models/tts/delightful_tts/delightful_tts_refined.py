@@ -15,6 +15,7 @@ from models.config import (
     get_lang_map,
     lang2id,
 )
+from models.config.speakers import selected_speakers
 from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
 from models.vocoder.univnet import UnivNet
@@ -47,7 +48,7 @@ class DelightfulTTS(LightningModule):
             # NOTE: lr finder found 1.5848931924611133e-07
             # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
-            batch_size: int = 8,
+            batch_size: int = 5,
         ):
         super().__init__()
 
@@ -283,7 +284,6 @@ class DelightfulTTS(LightningModule):
 
     def train_dataloader(
         self,
-        num_workers: int = 6,
         root: str = "datasets_cache/LIBRITTS",
         cache: bool = True,
         cache_dir: str = "datasets_cache",
@@ -293,7 +293,6 @@ class DelightfulTTS(LightningModule):
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
-            num_workers (int): The number of workers.
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
             cache_dir (str): The directory for the cache.
@@ -305,11 +304,12 @@ class DelightfulTTS(LightningModule):
         """
         return train_dataloader(
             batch_size=self.batch_size,
-            num_workers=num_workers,
+            num_workers=self.preprocess_config.workers,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
             mem_cache=mem_cache,
             url=url,
             lang=self.lang,
+            selected_speaker_ids=selected_speakers,
         )

@@ -20,10 +20,10 @@ class PreprocessingConfig:
     language: PreprocessLangType
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 19.0
+    max_seconds: float = 35.0
     sampling_rate: int = 22050
     use_audio_normalization: bool = True
-    workers: int = 11
+    workers: int = 5
     stft: STFTConfig = field(
         default_factory=lambda: STFTConfig(
             filter_length=1024,
@@ -88,7 +88,7 @@ class AcousticFinetuningConfig:
 
 @dataclass
 class AcousticPretrainingConfig:
-    batch_size = 3
+    batch_size = 5
     grad_acc_step = 5
     train_steps = 500000
     log_step = 20

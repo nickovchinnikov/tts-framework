@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, SequentialSampler
@@ -15,6 +15,7 @@ def train_dataloader(
     mem_cache: bool = False,
     url: str = "train-clean-360",
     lang: str = "en",
+    selected_speaker_ids: Optional[List[int]] = None,
 ) -> DataLoader:
     r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
@@ -27,6 +28,7 @@ def train_dataloader(
         mem_cache (bool): Whether to use memory cache.
         url (str): The URL of the dataset.
         lang (str): The language of the dataset.
+        selected_speaker_ids (Optional[List[int]]): A list of selected speakers.
 
     Returns:
         DataLoader: The training and validation dataloaders.
@@ -38,6 +40,7 @@ def train_dataloader(
         cache_dir=cache_dir,
         mem_cache=mem_cache,
         url=url,
+        selected_speaker_ids=selected_speaker_ids,
     )
 
     train_loader = DataLoader(
