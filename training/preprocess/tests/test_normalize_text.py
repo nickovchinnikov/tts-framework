@@ -100,6 +100,18 @@ class TestTextPreprocess(unittest.TestCase):
         expected_output = r"""The alarm went off at ten AM I received one hundred and twenty three dollars. It's twelve thirty PM. I paid one hundred and twenty three dollars forty five cents for this desk."""
         self.assertEqual(self.normalizer(input_text), expected_output)
 
+    def test_normalize2(self):
+        input_text = """
+        The Wizard of Oz: “Lions? And Tigers? And Bears?”.
+        Toy Story: “Buzz, you’re flying!”.
+        As the snake shook its head, a deafening shout behind Harry made both of them jump.
+        ‘DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON’T BELIEVE WHAT IT’S DOING!’.
+        """
+
+        expected_output = 'The Wizard of Oz: "Lions? And Tigers? And Bears?". Toy Story: "Buzz, you\'re flying!". As the snake shook its head, a deafening shout behind Harry made both of them jump. \'DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON\'T BELIEVE WHAT IT\'S DOING!\'.'
+
+        self.assertEqual(self.normalizer(input_text), expected_output)
+
 
 if __name__ == "__main__":
     unittest.main()
