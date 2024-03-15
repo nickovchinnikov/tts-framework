@@ -39,6 +39,7 @@ class DelightfulTTS(LightningModule):
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
         batch_size (int): The batch size.
+        swa_avg (bool): Whether to use SWA or not. Defaults to False. NOTE: When fine-tuning, SWA should be used!
     """
 
     def __init__(
@@ -49,6 +50,7 @@ class DelightfulTTS(LightningModule):
             # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
             batch_size: int = 4,
+            swa_avg: bool = False,
         ):
         super().__init__()
 
@@ -80,6 +82,7 @@ class DelightfulTTS(LightningModule):
             n_speakers=n_speakers,
         )
 
+        self.swa_avg = swa_avg
         # Initialize SWA
         self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
 
@@ -91,7 +94,12 @@ class DelightfulTTS(LightningModule):
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
 
 
-    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+    def forward(
+        self,
+        text: str,
+        speaker_idx: torch.Tensor,
+        lang: str = "en",
+    ) -> torch.Tensor:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
@@ -273,12 +281,14 @@ class DelightfulTTS(LightningModule):
 
     def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""
-        self.swa_averaged_model.update_parameters(self.acoustic_model)
+        if self.swa_avg:
+            self.swa_averaged_model.update_parameters(self.acoustic_model)
 
 
     def on_train_end(self):
         # Update SWA model after training
-        # swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
+        # if self.swa_avg:
+        #     swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
         pass
 
 
