@@ -50,7 +50,7 @@ class DelightfulTTS(LightningModule):
             # learning_rate: float = 1.5848931924611133e-05,
             n_speakers: int = 5392,
             batch_size: int = 4,
-            swa_avg: bool = False,
+            swa_avg: bool = True,
         ):
         super().__init__()
 
