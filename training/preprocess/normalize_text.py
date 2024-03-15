@@ -100,4 +100,4 @@ class NormalizeText:
 
         """
         result = self.normalize_chars(text)
-        return self.model.normalize(result, punct_post_process=True)
+        return self.model.normalize(result)
