@@ -7,7 +7,7 @@ from models.config import get_lang_map
 
 
 class TokenizerIPA:
-    r"""TokenizerIPA is a class for tokenizing International Phonetic Alphabet (IPA) phonemes.
+    r"""DEPRECATED: TokenizerIPA is a class for tokenizing International Phonetic Alphabet (IPA) phonemes.
 
     Attributes:
         lang (str): Language to be used. Default is "en".
@@ -17,9 +17,9 @@ class TokenizerIPA:
     """
 
     def __init__(
-            self,
-            lang: str = "en",
-            phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
+        self,
+        lang: str = "en",
+        phonemizer_checkpoint: str = "checkpoints/en_us_cmudict_ipa_forward.pt",
     ):
         r"""Initializes TokenizerIPA with the given language and phonemizer checkpoint.
 
@@ -34,16 +34,84 @@ class TokenizerIPA:
 
         phoneme_symbols = [
             # IPA symbols
-            "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "v", "w", "x", "y", "z", "æ", "ç", "ð", "ø", "ŋ", "œ", "ɐ", "ɑ", "ɔ", "ə", "ɛ", "ɝ", "ɹ", "ɡ", "ɪ", "ʁ", "ʃ", "ʊ", "ʌ", "ʏ", "ʒ", "ʔ", "ˈ", "ˌ", "ː", "̃", "̍", "̥", "̩", "̯", "͡", "θ",
+            "a",
+            "b",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j",
+            "k",
+            "l",
+            "m",
+            "n",
+            "o",
+            "p",
+            "r",
+            "s",
+            "t",
+            "u",
+            "v",
+            "w",
+            "x",
+            "y",
+            "z",
+            "æ",
+            "ç",
+            "ð",
+            "ø",
+            "ŋ",
+            "œ",
+            "ɐ",
+            "ɑ",
+            "ɔ",
+            "ə",
+            "ɛ",
+            "ɝ",
+            "ɹ",
+            "ɡ",
+            "ɪ",
+            "ʁ",
+            "ʃ",
+            "ʊ",
+            "ʌ",
+            "ʏ",
+            "ʒ",
+            "ʔ",
+            "ˈ",
+            "ˌ",
+            "ː",
+            "̃",
+            "̍",
+            "̥",
+            "̩",
+            "̯",
+            "͡",
+            "θ",
             # Punctuation
-            "!", "?", ",", ".", "-", ":", ";", '"', "'", "(", ")", " ",
+            "!",
+            "?",
+            ",",
+            ".",
+            "-",
+            ":",
+            ";",
+            '"',
+            "'",
+            "(",
+            ")",
+            " ",
         ]
 
-        self.tokenizer = SequenceTokenizer(phoneme_symbols,
-                                        languages=["de", "en_us"],
-                                        lowercase=True,
-                                        char_repeats=1,
-                                        append_start_end=True)
+        self.tokenizer = SequenceTokenizer(
+            phoneme_symbols,
+            languages=["de", "en_us"],
+            lowercase=True,
+            char_repeats=1,
+            append_start_end=True,
+        )
 
         # test_text = "Hello, World!"
         # print("Initializing TokenizerIPA, check on: ", test_text)
