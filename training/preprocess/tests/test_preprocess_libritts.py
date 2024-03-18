@@ -29,7 +29,9 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         raw_text = "Hello, world!"
 
-        output = self.preprocess_libritts.acoustic((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts.acoustic(
+            (audio, sr_actual, raw_text, raw_text, 0, 0, "0"),
+        )
 
         self.assertIsNotNone(output)
 
@@ -49,10 +51,28 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
             torch.testing.assert_close(
                 output.phones,
-                torch.tensor([
-                    2., 10., 37., 14., 50., 17., 45., 62., 71.,
-                    24., 50., 118., 52., 14.,  6., 60., 71., 3.,
-                ]),
+                torch.tensor(
+                    [
+                        2.0,
+                        10.0,
+                        37.0,
+                        14.0,
+                        50.0,
+                        17.0,
+                        45.0,
+                        62.0,
+                        71.0,
+                        24.0,
+                        50.0,
+                        118.0,
+                        52.0,
+                        14.0,
+                        6.0,
+                        60.0,
+                        71.0,
+                        3.0,
+                    ],
+                ),
             )
 
             self.assertEqual(output.raw_text, "Hello, world!")
@@ -62,7 +82,9 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         audio = torch.randn(1, 22050)
         sr_actual = 22050
         raw_text = "Hello, world!"
-        output = self.preprocess_libritts.acoustic((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts.acoustic(
+            (audio, sr_actual, raw_text, raw_text, 0, 0, "0"),
+        )
 
         self.assertIsNone(output)
 
@@ -86,18 +108,23 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk.
         """
 
-        output = self.preprocess_libritts.acoustic((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts.acoustic(
+            (audio, sr_actual, raw_text, raw_text, 0, 0, "0"),
+        )
 
         self.assertIsNotNone(output)
 
         if output is not None:
-            self.assertEqual(output.attn_prior.shape, torch.Size([222, 861]))
+            self.assertEqual(output.attn_prior.shape, torch.Size([224, 861]))
             self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
-            self.assertEqual(output.normalized_text, "Hello, world! Wow! This is amazing?It's a beautiful day.mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.")
+            self.assertEqual(
+                output.normalized_text,
+                "Hello, world! Wow! This is amazing? It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.",
+            )
 
-            self.assertEqual(output.phones.shape, torch.Size([222]))
-            self.assertEqual(len(output.phones_ipa), 220)
+            self.assertEqual(output.phones.shape, torch.Size([224]))
+            self.assertEqual(len(output.phones_ipa), 222)
 
             self.assertEqual(output.wav.shape, torch.Size([220500]))
 
@@ -105,7 +132,9 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         audio = torch.randn(1, 88200)
         sr_actual = 44100
         raw_text = "Hello, world!"
-        output = self.preprocess_libritts.acoustic((audio, sr_actual, raw_text, raw_text, 0, 0, "0"))
+        output = self.preprocess_libritts.acoustic(
+            (audio, sr_actual, raw_text, raw_text, 0, 0, "0"),
+        )
 
         self.assertIsNone(output)
 
@@ -113,7 +142,8 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         phoneme_count = 10
         mel_count = 20
         prior_dist = self.preprocess_libritts.beta_binomial_prior_distribution(
-            phoneme_count, mel_count,
+            phoneme_count,
+            mel_count,
         )
         self.assertIsInstance(prior_dist, torch.Tensor)
         self.assertEqual(prior_dist.shape, (mel_count, phoneme_count))
@@ -134,7 +164,9 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         speaker_id = 10
 
-        output = self.preprocess_libritts.univnet((audio, sr_actual, "", "", speaker_id, 0, ""))
+        output = self.preprocess_libritts.univnet(
+            (audio, sr_actual, "", "", speaker_id, 0, ""),
+        )
 
         self.assertIsNotNone(output)
 
@@ -150,6 +182,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
             self.assertEqual(mel.shape, torch.Size([100, 64]))
             self.assertEqual(speaker_id_output, speaker_id)
+
 
 if __name__ == "__main__":
     unittest.main()
