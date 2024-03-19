@@ -10,12 +10,12 @@ from pydub import AudioSegment
 import torch
 import uvicorn
 
+from config.best_speakers_list import selected_speakers
+from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
 from server.utils import (
     returnAudioBuffer,
     sentences_split,
-    speakers_info,
 )
-from training.modules.acoustic_module import AcousticModule
 
 nltk.download("punkt")
 
@@ -24,17 +24,17 @@ os.environ["NUMBA_DISABLE_INTEL_SVML"] = "1"
 
 
 # Load the pretrained weights from the checkpoint
-checkpoint = "checkpoints/epoch=5482-step=601951.ckpt"
+checkpoint = "checkpoints/epoch=1192-step=215491.ckpt"
 
 
 device = torch.device("cuda")
-module = AcousticModule.load_from_checkpoint(checkpoint).to(device)
+module = DelightfulTTS.load_from_checkpoint(checkpoint).to(device)
 # Set the module to eval mode
 module.eval()
 
 
 # Load the speaker information
-existed_speakers = speakers_info()
+existed_speakers = set(selected_speakers)
 
 BIT_RATE = 320
 SAMPLING_RATE = 22050
@@ -45,7 +45,7 @@ FRAME_SIZE = int((144 * BIT_RATE) / (SAMPLING_RATE * 0.001))
 
 class TransformerParams(BaseModel):
     text: str
-    speaker: str = Field(default="122") # Default speaker "carnright"
+    speaker: str = Field(default="122")  # Default speaker "carnright"
 
 
 async def async_gen(text: str, speaker: torch.Tensor):
@@ -57,12 +57,18 @@ async def async_gen(text: str, speaker: torch.Tensor):
         total_buffer = io.BytesIO()
 
         for paragraph in paragraphs:
-            if paragraph.strip() == "": continue
+            if paragraph.strip() == "":
+                continue
             with torch.no_grad():
-                wav_prediction = module(
-                    paragraph,
-                    speaker,
-                ).detach().cpu().numpy()
+                wav_prediction = (
+                    module.forward(
+                        paragraph,
+                        speaker,
+                    )
+                    .detach()
+                    .cpu()
+                    .numpy()
+                )
 
                 buffer_ = returnAudioBuffer(
                     wav_prediction,
@@ -102,15 +108,16 @@ def read_root():
         "existed_speakers": existed_speakers,
     }
 
+
 @app.post("/generate/")
 def generate(params: TransformerParams):
     try:
-        if params.speaker not in existed_speakers:
+        speaker_id = int(params.speaker)
+
+        if speaker_id not in existed_speakers:
             raise HTTPException(status_code=400, detail="Speaker not found")
 
-        speaker = torch.tensor([
-            int(params.speaker),
-        ], device=device)
+        speaker = torch.tensor([speaker_id], device=device)
 
         return StreamingResponse(
             async_gen(params.text, speaker),
