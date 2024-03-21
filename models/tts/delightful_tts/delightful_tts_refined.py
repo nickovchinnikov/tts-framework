@@ -1,10 +1,15 @@
-from typing import List
+import tempfile
+from typing import List, Tuple
 
 from lightning.pytorch.core import LightningModule
+import soundfile as sf
 import torch
+from torch import Tensor
 from torch.optim import AdamW, swa_utils
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
+from torchaudio.transforms import Resample
+from voicefixer import VoiceFixer
 
 from models.config import (
     AcousticENModelConfig,
@@ -43,15 +48,15 @@ class DelightfulTTS(LightningModule):
     """
 
     def __init__(
-            self,
-            fine_tuning: bool = False,
-            lang: str = "en",
-            # NOTE: lr finder found 1.5848931924611133e-07
-            # learning_rate: float = 1.5848931924611133e-05,
-            n_speakers: int = 5392,
-            batch_size: int = 4,
-            swa_avg: bool = True,
-        ):
+        self,
+        fine_tuning: bool = False,
+        lang: str = "en",
+        # NOTE: lr finder found 1.5848931924611133e-07
+        # learning_rate: float = 1.5848931924611133e-05,
+        n_speakers: int = 5392,
+        batch_size: int = 4,
+        swa_avg: bool = True,
+    ):
         super().__init__()
 
         self.lang = lang
@@ -90,53 +95,90 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module = UnivNet()
         self.vocoder_module.freeze()
 
+        # Move to config
+        self.prod_sr = 44100
+
+        # Resampler for the VoiceFixer
+        self.resample = Resample(
+            orig_freq=self.preprocess_config.sampling_rate,
+            # Prod quality
+            new_freq=self.prod_sr,
+        )
+        # VoiceFixer is the shortest way to the maximum audio quality
+        self.voicefixer = VoiceFixer()
+
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
-
 
     def forward(
         self,
         text: str,
-        speaker_idx: torch.Tensor,
+        speaker_idx: Tensor,
         lang: str = "en",
-    ) -> torch.Tensor:
+    ) -> Tuple[Tensor, Tensor]:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
         Args:
             text (str): The input text.
-            speaker_idx (torch.Tensor): The index of the speaker.
+            speaker_idx (Tensor): The index of the speaker.
             lang (str): The language.
 
         Returns:
-            torch.Tensor: The output of the AcousticModel.
+            Tuple[Tensor, Tensor]: The generated waveform with univnet and the predicted mel spectrogram.
         """
         normalized_text = self.normilize_text(text)
         _, phones = self.tokenizer(normalized_text)
 
         # Convert to tensor
         x = torch.tensor(
-            phones, dtype=torch.int, device=speaker_idx.device,
+            phones,
+            dtype=torch.int,
+            device=speaker_idx.device,
         ).unsqueeze(0)
 
         speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = torch.tensor(
-            [lang2id[lang]],
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).repeat(x.shape[1]).unsqueeze(0)
+        langs = (
+            torch.tensor(
+                [lang2id[lang]],
+                dtype=torch.int,
+                device=speaker_idx.device,
+            )
+            .repeat(x.shape[1])
+            .unsqueeze(0)
+        )
 
-        y_pred = self.acoustic_model.forward(
+        mel_pred = self.acoustic_model.forward(
             x=x,
             speakers=speakers,
             langs=langs,
         )
 
-        wav = self.vocoder_module.forward(y_pred)
+        wav = self.vocoder_module.forward(mel_pred)
 
-        return wav
+        # Resample the audio to prod SR
+        wav_prod = self.resample(wav)
 
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as input_file:
+            sf.write(
+                input_file.name,
+                wav_prod.detach().cpu().numpy(),
+                self.prod_sr,
+            )
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as output_file:
+                self.voicefixer.restore(
+                    input=input_file.name,  # low quality .wav/.flac file
+                    output=output_file.name,  # save file path
+                    cuda=True,  # GPU acceleration
+                    mode=0,
+                )
+                # Read the wav file back into a numpy array
+                wav_vf, _ = sf.read(output_file.name)
+
+        wav_vf = torch.from_numpy(wav_vf).to(wav_prod.device)
+
+        return wav_prod, wav_vf
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -239,16 +281,51 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "train_total_loss",
+            total_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "train_ssim_loss",
+            ssim_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_duration_loss",
+            duration_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_u_prosody_loss",
+            u_prosody_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_p_prosody_loss",
+            p_prosody_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_pitch_loss",
+            pitch_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
         self.log("train_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "train_energy_loss",
+            energy_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
 
         return total_loss
 
@@ -261,8 +338,11 @@ class DelightfulTTS(LightningModule):
         lr_decay = self.train_config_acoustic.optimizer_config.lr_decay
         default_lr = self.train_config_acoustic.optimizer_config.learning_rate
 
-        init_lr = default_lr if self.trainer.global_step == 0 \
-        else default_lr * (lr_decay ** self.trainer.global_step)
+        init_lr = (
+            default_lr
+            if self.trainer.global_step == 0
+            else default_lr * (lr_decay**self.trainer.global_step)
+        )
 
         optimizer_acoustic = AdamW(
             self.acoustic_model.parameters(),
@@ -274,23 +354,21 @@ class DelightfulTTS(LightningModule):
 
         scheduler_acoustic = ExponentialLR(optimizer_acoustic, gamma=lr_decay)
 
-        return ({
+        return {
             "optimizer": optimizer_acoustic,
             "lr_scheduler": scheduler_acoustic,
-        })
+        }
 
     def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""
         if self.swa_avg:
             self.swa_averaged_model.update_parameters(self.acoustic_model)
 
-
     def on_train_end(self):
         # Update SWA model after training
         # if self.swa_avg:
         #     swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
         pass
-
 
     def train_dataloader(
         self,
