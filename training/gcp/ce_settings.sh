@@ -4,6 +4,8 @@ sudo apt update -y && sudo apt upgrade -y
 # Install deps
 sudo apt install ffmpeg libasound2-dev -y
 
+sudo apt install build-essential -y
+
 # espeak-ng
 sudo apt-get install espeak-ng -y
 

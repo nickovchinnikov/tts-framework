@@ -129,6 +129,10 @@ pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url
 
 python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.backends.cudnn.version())"
 
+python -c "import torchaudio; print(torchaudio.__version__);"
+python -c "import torchvision; print(torchvision.__version__);"
+python -c "import lightning; print(lightning.__version__);"
+
 # Add conda env to jupyter notebook kernel
 python -m ipykernel install --user --name tts_framework --display-name "TTS-Framework"
 
