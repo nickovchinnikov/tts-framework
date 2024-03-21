@@ -36,6 +36,19 @@ MEL_SPEC_EVERY_N_STEPS = 1000
 AUDIO_EVERY_N_STEPS = 100
 
 
+# Move to config
+prod_sr = 44100
+
+# Resampler for the VoiceFixer
+resample = Resample(
+    orig_freq=22050,
+    # Prod quality
+    new_freq=prod_sr,
+)
+# VoiceFixer is the shortest way to the maximum audio quality
+voicefixer = VoiceFixer()
+
+
 class DelightfulTTS(LightningModule):
     r"""Trainer for the acoustic model.
 
@@ -95,18 +108,6 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module = UnivNet()
         self.vocoder_module.freeze()
 
-        # Move to config
-        self.prod_sr = 44100
-
-        # Resampler for the VoiceFixer
-        self.resample = Resample(
-            orig_freq=self.preprocess_config.sampling_rate,
-            # Prod quality
-            new_freq=self.prod_sr,
-        )
-        # VoiceFixer is the shortest way to the maximum audio quality
-        self.voicefixer = VoiceFixer()
-
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
 
@@ -158,16 +159,16 @@ class DelightfulTTS(LightningModule):
         wav = self.vocoder_module.forward(mel_pred)
 
         # Resample the audio to prod SR
-        wav_prod = self.resample(wav)
+        wav_prod = resample(wav)
 
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as input_file:
             sf.write(
                 input_file.name,
                 wav_prod.detach().cpu().numpy(),
-                self.prod_sr,
+                prod_sr,
             )
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as output_file:
-                self.voicefixer.restore(
+                voicefixer.restore(
                     input=input_file.name,  # low quality .wav/.flac file
                     output=output_file.name,  # save file path
                     cuda=True,  # GPU acceleration
