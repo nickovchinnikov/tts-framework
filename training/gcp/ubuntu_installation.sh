@@ -15,6 +15,8 @@ sudo apt install nvidia-cuda-toolkit -y
 
 sudo apt-get install gcc -y
 
+sudo apt install build-essential -y
+
 curl -O https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh
 
 bash ./Anaconda3-2023.09-0-Linux-x86_64.sh

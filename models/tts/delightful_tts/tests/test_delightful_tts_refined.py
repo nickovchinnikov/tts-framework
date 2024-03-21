@@ -13,6 +13,7 @@ checkpoint = "checkpoints/logs_new_training_libri-360-swa_multilingual_conf_epoc
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
+
 class TestDelightfulTTS(unittest.TestCase):
     def test_optim_finetuning(self):
         # Create a dummy Trainer instance
@@ -56,7 +57,8 @@ class TestDelightfulTTS(unittest.TestCase):
     def test_load_from_new_checkpoint(self):
         try:
             DelightfulTTS.load_from_checkpoint(
-                checkpoint, strict=False,
+                checkpoint,
+                strict=False,
             )
         except Exception as e:
             self.fail(f"Loading from checkpoint raised an exception: {e}")
@@ -65,7 +67,11 @@ class TestDelightfulTTS(unittest.TestCase):
         # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         device = torch.device("cpu")
 
-        module = DelightfulTTS.load_from_checkpoint(checkpoint, strict=False, map_location=device)
+        module = DelightfulTTS.load_from_checkpoint(
+            checkpoint,
+            strict=False,
+            map_location=device,
+        )
         univnet = UnivNet()
         univnet = univnet.to(device)
 
@@ -78,13 +84,13 @@ class TestDelightfulTTS(unittest.TestCase):
 
         speaker = torch.tensor([2071], device=device)
 
-        wav_prediction = module(
+        wav_prediction, _ = module(
             text,
             speaker,
         )
 
         # Save the audio to a file
-        torchaudio.save(        # type: ignore
+        torchaudio.save(  # type: ignore
             "results/output1_2_d.wav",
             wav_prediction.unsqueeze(0).detach().cpu(),
             22050,

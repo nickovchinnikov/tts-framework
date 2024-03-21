@@ -1,0 +1,331 @@
+id	name	Nikita	Andrey	Alexey	Result OR	Result AND	Count Yes > 1
+574	Daniel Shorten	Yes	No	Yes	TRUE	FALSE	TRUE
+242	J. Hall	No	No	No	FALSE	FALSE	FALSE
+536	Robert Flach	Yes	No	No	TRUE	FALSE	FALSE
+82	Andy Minter	No	No	No	FALSE	FALSE	FALSE
+672	Stuart Bell	Yes	No	No	TRUE	FALSE	FALSE
+315	Jean Crevier	Yes	No	No	TRUE	FALSE	FALSE
+628	Bryan Ness	Yes	No	No	TRUE	FALSE	FALSE
+61	John Greenman	No	No	No	FALSE	FALSE	FALSE
+649	Scarlett!	Yes	Yes	Yes	TRUE	TRUE	TRUE
+105	Marian Brown	No	No	No	FALSE	FALSE	FALSE
+399	entada	No	No	No	FALSE	FALSE	FALSE
+89	Paula Berinstein	No	No	Yes	TRUE	FALSE	FALSE
+502	Lee Elliott	No	No	No	FALSE	FALSE	FALSE
+102	Maureen S. O'Brien	Yes	Yes	No	TRUE	FALSE	TRUE
+544	Miranda Stinson	Yes	Yes	Yes	TRUE	TRUE	TRUE
+653	cucciasv	Yes	Yes	Yes	TRUE	TRUE	TRUE
+465	Leonie Rose	No	No	No	FALSE	FALSE	FALSE
+96	Kymm Zuckert	Yes	No	No	TRUE	FALSE	FALSE
+447	Lee Ann Howlett	No	No	No	FALSE	FALSE	FALSE
+165	Elisabeth Shields	Yes	No	No	TRUE	FALSE	FALSE
+430	Millbeach	No	No	No	FALSE	FALSE	FALSE
+214	Scott Splavec	No	Yes	No	TRUE	FALSE	FALSE
+666	Kelly Dougherty	Yes	Yes	No	TRUE	FALSE	TRUE
+481	Scott Sherris	Yes	No	Yes	TRUE	FALSE	TRUE
+463	Chris Hughes	No	No	No	FALSE	FALSE	FALSE
+273	Andrew Lebrun	Yes	No	No	TRUE	FALSE	FALSE
+172	Harvey Chinn	Yes	No	No	TRUE	FALSE	FALSE
+83	Graham Williams	No	No	No	FALSE	FALSE	FALSE
+523	Michael Loftus	No	No	No	FALSE	FALSE	FALSE
+38	Kurt Copeland	No	No	No	FALSE	FALSE	FALSE
+248	fieldsofgold	Yes	Yes	No	TRUE	FALSE	TRUE
+234	Menno	No	No	No	FALSE	FALSE	FALSE
+145	Mr. Baby Man	Yes	No	No	TRUE	FALSE	FALSE
+250	Quentin	No	No	No	FALSE	FALSE	FALSE
+498	Chris Gladis	No	No	No	FALSE	FALSE	FALSE
+123	Sean McGaughey	Yes	Yes	No	TRUE	FALSE	TRUE
+171	Paul Harvey	Yes	Yes	No	TRUE	FALSE	TRUE
+49	Kristen McQuillin	No	No	No	FALSE	FALSE	FALSE
+588	Kalynda	No	No	No	FALSE	FALSE	FALSE
+117	Caitlin Kelly	Yes	No	No	TRUE	FALSE	FALSE
+657	Shannon	No	No	No	FALSE	FALSE	FALSE
+275	Zale Schafer (Rose May Chamberlin Memorial Foundat	No	No	No	FALSE	FALSE	FALSE
+604	Anne-Marie	Yes	Yes	Yes	TRUE	TRUE	TRUE
+64	Christiane Levesque	Yes	Yes	No	TRUE	FALSE	TRUE
+685	Nikki Sullivan	Yes	No	Yes	TRUE	FALSE	TRUE
+355	Lana Taylor	No	No	No	FALSE	FALSE	FALSE
+185	Kim Braun	No	No	No	FALSE	FALSE	FALSE
+52	Cori Samuel	Yes	No	Yes	TRUE	FALSE	TRUE
+218	Joy Chan	Yes	Yes	Yes	TRUE	TRUE	TRUE
+549	AmyAG	No	No	No	FALSE	FALSE	FALSE
+617	PJ	Yes	Yes	Yes	TRUE	TRUE	TRUE
+414	Christabel	Yes	No	Yes	TRUE	FALSE	TRUE
+382	Kelli Robinson	No	No	No	FALSE	FALSE	FALSE
+76	ML Cohen	No	No	Yes	TRUE	FALSE	FALSE
+176	Micah Sheppard	Yes	No	No	TRUE	FALSE	FALSE
+233	mikenkat	No	Yes	No	TRUE	FALSE	FALSE
+390	JimmyLogan	Yes	No	No	TRUE	FALSE	FALSE
+393	Tim Lundeen	No	No	No	FALSE	FALSE	FALSE
+425	RedToby	Yes	No	Yes	TRUE	FALSE	TRUE
+398	Sam Fold	No	No	No	FALSE	FALSE	FALSE
+372	Jim Mullins	Yes	No	No	TRUE	FALSE	FALSE
+99	Stewart Wills	No	No	No	FALSE	FALSE	FALSE
+340	Nick Gallant	No	No	No	FALSE	FALSE	FALSE
+40	JemmaBlythe	No	No	No	FALSE	FALSE	FALSE
+118	Brenda Dayne	Yes	Yes	Yes	TRUE	TRUE	TRUE
+640	David A. Stokely	Yes	No	No	TRUE	FALSE	FALSE
+50	Dan Threetrees	Yes	No	Yes	TRUE	FALSE	TRUE
+373	Brooks Seveer	Yes	Yes	No	TRUE	FALSE	TRUE
+124	Steve Karafit	No	No	No	FALSE	FALSE	FALSE
+314	Carl Vonnoh, III	Yes	Yes	Yes	TRUE	TRUE	TRUE
+531	Fr. Richard Zeile of Detroit	Yes	No	No	TRUE	FALSE	FALSE
+383	Mike Roop	Yes	No	No	TRUE	FALSE	FALSE
+710	Sheila Morton	Yes	No	Yes	TRUE	FALSE	TRUE
+450	Heather Duncan	Yes	No	Yes	TRUE	FALSE	TRUE
+645	Micah	Yes	Yes	No	TRUE	FALSE	TRUE
+517	Madame Tusk	Yes	Yes	No	TRUE	FALSE	TRUE
+479	Wina Hathaway	Yes	No	No	TRUE	FALSE	FALSE
+30	Ophelia Darcy	No	No	No	FALSE	FALSE	FALSE
+220	Tina Tilney	No	No	No	FALSE	FALSE	FALSE
+63	Linda Wilcox	Yes	Yes	No	TRUE	FALSE	TRUE
+283	Bethany Simpson	Yes	No	No	TRUE	FALSE	FALSE
+644	Cynthia Zocca	Yes	Yes	No	TRUE	FALSE	TRUE
+677	Allyson Hester	No	No	No	FALSE	FALSE	FALSE
+21	Kelly Bescherer	Yes	No	No	TRUE	FALSE	FALSE
+552	Mim Ritty	No	No	No	FALSE	FALSE	FALSE
+80	Fox in the Stars	Yes	No	Yes	TRUE	FALSE	TRUE
+394	swroot	Yes	Yes	No	TRUE	FALSE	TRUE
+426	Megan Stemm-Wade	Yes	No	No	TRUE	FALSE	FALSE
+91	Chris Goringe	Yes	No	Yes	TRUE	FALSE	TRUE
+108	Kevin McAsh	Yes	No	Yes	TRUE	FALSE	TRUE
+130	Peter of Buckinghamshire England	Yes	No	No	TRUE	FALSE	FALSE
+661	James Gladwin	Yes	Yes	Yes	TRUE	TRUE	TRUE
+216	Dave Ranson	No	No	No	FALSE	FALSE	FALSE
+164	Ed Good	Yes	Yes	Yes	TRUE	TRUE	TRUE
+308	Eric Connover	Yes	Yes	Yes	TRUE	TRUE	TRUE
+569	Arouet	Yes	No	No	TRUE	FALSE	FALSE
+313	Tim Bulkeley	No	No	No	FALSE	FALSE	FALSE
+212	Glen Hallstrom	No	No	No	FALSE	FALSE	FALSE
+15	Chip	Yes	No	No	TRUE	FALSE	FALSE
+469	Christian Pecaut	Yes	Yes	No	TRUE	FALSE	TRUE
+294	Diana Kiesners	No	No	No	FALSE	FALSE	FALSE
+192	Nocturna	Yes	Yes	No	TRUE	FALSE	TRUE
+73	Claire Goget	Yes	No	No	TRUE	FALSE	FALSE
+417	Kiki Baessell	Yes	No	Yes	TRUE	FALSE	TRUE
+636	Matthew Howell	Yes	No	No	TRUE	FALSE	FALSE
+36	chriss the girl	Yes	No	No	TRUE	FALSE	FALSE
+668	Jan Baxter	Yes	Yes	Yes	TRUE	TRUE	TRUE
+403	Igor Teaforay	No	No	No	FALSE	FALSE	FALSE
+618	Linnea	No	No	No	FALSE	FALSE	FALSE
+596	Jo	Yes	No	Yes	TRUE	FALSE	TRUE
+499	Tammy Sanders	No	No	No	FALSE	FALSE	FALSE
+207	Sage Tyrtle	No	No	No	FALSE	FALSE	FALSE
+1346	Jeanie	No	No	No	FALSE	FALSE	FALSE
+1109	Martin Geeson	Yes	No	Yes	TRUE	FALSE	TRUE
+770	Pete Williams, Pittsburgh, PA	Yes	No	Yes	TRUE	FALSE	TRUE
+1247	Sarah LuAnn	Yes	Yes	No	TRUE	FALSE	TRUE
+1526	Mike Harris	No	No	No	FALSE	FALSE	FALSE
+908	Quentin Manuel	Yes	No	Yes	TRUE	FALSE	TRUE
+1183	Evelyn Clarke	Yes	No	No	TRUE	FALSE	FALSE
+1438	Tom Barron	Yes	No	No	TRUE	FALSE	FALSE
+1022	peac	No	No	No	FALSE	FALSE	FALSE
+1603	Christine Rodriguez	No	No	No	FALSE	FALSE	FALSE
+1425	Jonah Cummings	No	No	No	FALSE	FALSE	FALSE
+731	Priya, India	Yes	No	No	TRUE	FALSE	FALSE
+782	Alec Daitsman	Yes	Yes	No	TRUE	FALSE	TRUE
+1090	Termin Dyan	Yes	No	No	TRUE	FALSE	FALSE
+995	Parrot	Yes	Yes	No	TRUE	FALSE	TRUE
+923	Jane Greensmith	Yes	No	Yes	TRUE	FALSE	TRUE
+766	Clive Catterall	No	No	No	FALSE	FALSE	FALSE
+822	kristiface	Yes	Yes	Yes	TRUE	TRUE	TRUE
+897	Jan Dawn Doronila	Yes	No	No	TRUE	FALSE	FALSE
+1579	Linda Velwest	No	No	No	FALSE	FALSE	FALSE
+964	Utek	No	No	No	FALSE	FALSE	FALSE
+1414	Preston Scrape	Yes	No	Yes	TRUE	FALSE	TRUE
+834	Serin	No	No	No	FALSE	FALSE	FALSE
+1302	davidb	Yes	No	Yes	TRUE	FALSE	TRUE
+1135	Linda Andrus	Yes	No	Yes	TRUE	FALSE	TRUE
+1440	P Moscato	Yes	Yes	No	TRUE	FALSE	TRUE
+870	Barbara Bulkeley	No	Yes	No	TRUE	FALSE	FALSE
+1256	Graeme Dunlop	Yes	No	No	TRUE	FALSE	FALSE
+1255	Daniel Paashaus	No	No	No	FALSE	FALSE	FALSE
+1157	Bev J Stevens	No	No	No	FALSE	FALSE	FALSE
+934	Darla	No	No	Yes	TRUE	FALSE	FALSE
+1281	garbageman99	Yes	No	Yes	TRUE	FALSE	TRUE
+819	n8evv	Yes	No	No	TRUE	FALSE	FALSE
+1041	mjbrichant	Yes	No	Yes	TRUE	FALSE	TRUE
+863	K Hindall	No	No	No	FALSE	FALSE	FALSE
+1303	kiwafruit	No	No	No	FALSE	FALSE	FALSE
+1115	Rachel Gatwood	No	No	No	FALSE	FALSE	FALSE
+1539	Nathan Jordan	No	No	No	FALSE	FALSE	FALSE
+1428	Gary Dzierlenga	No	No	No	FALSE	FALSE	FALSE
+1049	Diana Solomon	No	No	No	FALSE	FALSE	FALSE
+1546	Carrie Heyes	No	No	No	FALSE	FALSE	FALSE
+1089	Bill Ruhsam	No	No	No	FALSE	FALSE	FALSE
+1142	Jonathan Burchard	Yes	No	Yes	TRUE	FALSE	TRUE
+1375	Frank Adams	Yes	No	No	TRUE	FALSE	FALSE
+881	mpetranech	Yes	No	Yes	TRUE	FALSE	TRUE
+798	Wyatt	No	No	No	FALSE	FALSE	FALSE
+1647	Patrick Reinhart	No	No	No	FALSE	FALSE	FALSE
+1587	Claudia Wilson	Yes	No	No	TRUE	FALSE	FALSE
+830	musici123	Yes	No	No	TRUE	FALSE	FALSE
+1592	jerryB	No	No	No	FALSE	FALSE	FALSE
+839	Ben Dutton	No	No	No	FALSE	FALSE	FALSE
+835	Rachel Lintern	Yes	No	Yes	TRUE	FALSE	TRUE
+1273	gmiteva	Yes	No	No	TRUE	FALSE	FALSE
+932	Raerity	Yes	Yes	No	TRUE	FALSE	TRUE
+1108	Paul McCartan	No	No	No	FALSE	FALSE	FALSE
+732	Tysto	Yes	Yes	No	TRUE	FALSE	TRUE
+781	Megan Kunkel	No	No	No	FALSE	FALSE	FALSE
+1555	Andrew Nelson	No	No	No	FALSE	FALSE	FALSE
+1437	Charles RUHE	No	No	No	FALSE	FALSE	FALSE
+1402	Angel5	Yes	No	Yes	TRUE	FALSE	TRUE
+963	MichelleHarris	No	No	No	FALSE	FALSE	FALSE
+1181	J. Rebecca Franklin	No	No	No	FALSE	FALSE	FALSE
+818	Matt Warzel	No	No	No	FALSE	FALSE	FALSE
+1285	Ric F	Yes	No	No	TRUE	FALSE	FALSE
+797	Chris Jones	Yes	No	No	TRUE	FALSE	FALSE
+1505	Rom Maczka	Yes	No	No	TRUE	FALSE	FALSE
+1214	David Baldwin	No	No	No	FALSE	FALSE	FALSE
+1636	jessecoy	No	No	No	FALSE	FALSE	FALSE
+929	Petra	Yes	Yes	No	TRUE	FALSE	TRUE
+1171	Roberta Carlisle	No	No	No	FALSE	FALSE	FALSE
+817	texttalker	Yes	Yes	No	TRUE	FALSE	TRUE
+1433	browneyedgirl32382	Yes	Yes	Yes	TRUE	TRUE	TRUE
+1158	StarrDog	Yes	No	No	TRUE	FALSE	FALSE
+1000	artos	No	No	No	FALSE	FALSE	FALSE
+848	senshisteph	Yes	No	No	TRUE	FALSE	FALSE
+1596	Joyce Couch	Yes	Yes	No	TRUE	FALSE	TRUE
+757	Roger Melin	Yes	No	No	TRUE	FALSE	FALSE
+1168	Epistomolus	Yes	No	No	TRUE	FALSE	FALSE
+741	Nick Marsh	Yes	No	No	TRUE	FALSE	FALSE
+1649	Phineas Redux	No	No	No	FALSE	FALSE	FALSE
+851	Jennifer Lott	Yes	Yes	Yes	TRUE	TRUE	TRUE
+808	M. J. Boyle	No	No	No	FALSE	FALSE	FALSE
+1595	Matthew Reece	No	No	No	FALSE	FALSE	FALSE
+1370	Savanna Herrold	Yes	Yes	Yes	TRUE	TRUE	TRUE
+1565	bryan.peterson	No	Yes	No	TRUE	FALSE	FALSE
+944	Sarafina Suransky	Yes	No	No	TRUE	FALSE	FALSE
+1268	A. Janelle Risa	Yes	No	No	TRUE	FALSE	FALSE
+771	Isosceles	No	No	No	FALSE	FALSE	FALSE
+752	Cat Schirf	No	No	No	FALSE	FALSE	FALSE
+800	Jack Farrell	No	No	No	FALSE	FALSE	FALSE
+1005	Beatrice	Yes	No	No	TRUE	FALSE	FALSE
+1229	RoseA	No	No	No	FALSE	FALSE	FALSE
+943	Matthew C. Heckel	No	No	No	FALSE	FALSE	FALSE
+891	anoldfashiongirl	Yes	No	No	TRUE	FALSE	FALSE
+1226	serenitylee	No	No	No	FALSE	FALSE	FALSE
+1253	Caroline Shapiro	Yes	No	No	TRUE	FALSE	FALSE
+1204	Dale A. Bade	Yes	No	Yes	TRUE	FALSE	TRUE
+1230	Troy Bond	Yes	Yes	No	TRUE	FALSE	TRUE
+791	David Kleparek	Yes	Yes	No	TRUE	FALSE	TRUE
+1184	Joseph Couves	No	No	No	FALSE	FALSE	FALSE
+1001	TriciaG	No	No	No	FALSE	FALSE	FALSE
+804	FirstKnight	Yes	Yes	No	TRUE	FALSE	TRUE
+1641	Kirsten Wever	No	No	No	FALSE	FALSE	FALSE
+1259	Megan Argo	No	No	No	FALSE	FALSE	FALSE
+1231	Abigail Bartels	No	No	No	FALSE	FALSE	FALSE
+1410	Zachary Johnson	Yes	No	No	TRUE	FALSE	FALSE
+1030	Ancient mariner	Yes	No	No	TRUE	FALSE	FALSE
+1093	Katie Riley	No	No	No	FALSE	FALSE	FALSE
+1254	Rosie	No	No	No	FALSE	FALSE	FALSE
+1365	Eric Leach	Yes	No	No	TRUE	FALSE	FALSE
+831	David Federman	No	No	No	FALSE	FALSE	FALSE
+1989	Joannemmp	No	No	No	FALSE	FALSE	FALSE
+1707	David Olson	No	No	No	FALSE	FALSE	FALSE
+1849	Fred DeBerardinis	Yes	No	No	TRUE	FALSE	FALSE
+1808	Rebecca King	Yes	No	Yes	TRUE	FALSE	TRUE
+2292	Arnold	No	No	No	FALSE	FALSE	FALSE
+2415	Patrick Eaton	No	No	No	FALSE	FALSE	FALSE
+1656	Sharon Omi	Yes	Yes	No	TRUE	FALSE	TRUE
+1676	Gargoyle	No	Yes	No	TRUE	FALSE	FALSE
+1881	Julienne	No	No	Yes	TRUE	FALSE	FALSE
+2036	T.K. Kirven	No	No	No	FALSE	FALSE	FALSE
+1761	EliMarieHK	Yes	No	No	TRUE	FALSE	FALSE
+2115	Pete Milan	Yes	Yes	Yes	TRUE	TRUE	TRUE
+1803	Susan Hanfield	Yes	No	No	TRUE	FALSE	FALSE
+1798	C. L. W. Rollins	Yes	No	No	TRUE	FALSE	FALSE
+1723	Rachel Bossier	Yes	No	No	TRUE	FALSE	FALSE
+2341	Haili	Yes	No	Yes	TRUE	FALSE	TRUE
+2468	Erin Schellhase	Yes	Yes	No	TRUE	FALSE	TRUE
+1725	Ruth Kidson	Yes	No	No	TRUE	FALSE	FALSE
+2010	Peggy	Yes	No	No	TRUE	FALSE	FALSE
+1853	Ron Altman	Yes	No	No	TRUE	FALSE	FALSE
+2359	Doug Reed	No	No	No	FALSE	FALSE	FALSE
+2422	Jude Somers	No	No	No	FALSE	FALSE	FALSE
+2234	Coreena	No	No	No	FALSE	FALSE	FALSE
+2156	C F de Rosset	No	No	Yes	TRUE	FALSE	FALSE
+2483	Tammy Porter	No	No	No	FALSE	FALSE	FALSE
+1781	humanode	No	No	No	FALSE	FALSE	FALSE
+2275	NatalieOram	No	No	No	FALSE	FALSE	FALSE
+2390	sdaeley17	No	No	No	FALSE	FALSE	FALSE
+2314	Cheri Jordan	No	No	No	FALSE	FALSE	FALSE
+2413	Joanne Rochon	No	No	No	FALSE	FALSE	FALSE
+1697	Lonelle Yoder	No	No	No	FALSE	FALSE	FALSE
+1718	Caroline Driggs	Yes	Yes	No	TRUE	FALSE	TRUE
+2387	Brett G. Hirsch	No	No	No	FALSE	FALSE	FALSE
+2331	Madam Fickle	No	No	No	FALSE	FALSE	FALSE
+1783	Sarah Crampton	Yes	Yes	Yes	TRUE	TRUE	TRUE
+2397	Rebecca Braunert-Plunkett	No	No	No	FALSE	FALSE	FALSE
+2357	William Gavula	No	No	No	FALSE	FALSE	FALSE
+1670	dmbrought	No	No	No	FALSE	FALSE	FALSE
+1987	Andrew White	No	No	No	FALSE	FALSE	FALSE
+1755	Yvonne Smith	Yes	Yes	No	TRUE	FALSE	TRUE
+2192	Sammy Bean	Yes	Yes	No	TRUE	FALSE	TRUE
+1716	EyeBones	Yes	No	No	TRUE	FALSE	FALSE
+1828	David Wales	No	No	No	FALSE	FALSE	FALSE
+2251	Wiley Combs	No	No	No	FALSE	FALSE	FALSE
+2065	Muriel	No	No	No	FALSE	FALSE	FALSE
+2017	CaprishaPage	Yes	No	No	TRUE	FALSE	FALSE
+1947	Barbara Edelman	No	No	Yes	TRUE	FALSE	FALSE
+1738	Lois C. Johnson	No	No	No	FALSE	FALSE	FALSE
+1791	David Cummings	No	Yes	No	TRUE	FALSE	FALSE
+2045	Linda Ciano	No	No	No	FALSE	FALSE	FALSE
+2452	Walt Allan	No	No	Yes	TRUE	FALSE	FALSE
+2040	MJ Franck	No	No	No	FALSE	FALSE	FALSE
+1831	Nigel Boydell	Yes	No	No	TRUE	FALSE	FALSE
+2371	Alexander Hatton	Yes	Yes	No	TRUE	FALSE	TRUE
+1954	Szindbad	No	No	No	FALSE	FALSE	FALSE
+1836	Kendall Ashyby	Yes	Yes	No	TRUE	FALSE	TRUE
+2436	josembi	No	No	No	FALSE	FALSE	FALSE
+2383	Emma Joyce	No	No	No	FALSE	FALSE	FALSE
+2278	Jake Woldstad	No	No	No	FALSE	FALSE	FALSE
+1741	anjieliu	Yes	Yes	No	TRUE	FALSE	TRUE
+1857	Amanda Friday	Yes	No	No	TRUE	FALSE	FALSE
+2370	gloriousjob	No	No	No	FALSE	FALSE	FALSE
+1907	Snapdragon	No	No	No	FALSE	FALSE	FALSE
+2225	nomorejeffs	No	Yes	No	TRUE	FALSE	FALSE
+2439	KHand	Yes	Yes	No	TRUE	FALSE	TRUE
+2239	amaskill	No	Yes	No	TRUE	FALSE	FALSE
+2007	Art Leung	No	No	No	FALSE	FALSE	FALSE
+2283	Tim Cote	No	No	No	FALSE	FALSE	FALSE
+1712	Steve Belleguelle	Yes	Yes	Yes	TRUE	TRUE	TRUE
+2094	Meg Cowan	Yes	No	No	TRUE	FALSE	FALSE
+1772	haggisreflux	No	No	No	FALSE	FALSE	FALSE
+2317	helengraves	Yes	No	No	TRUE	FALSE	FALSE
+2241	Steven Reynolds	No	No	No	FALSE	FALSE	FALSE
+2011	pekein	Yes	No	No	TRUE	FALSE	FALSE
+1826	John Hoerr	Yes	No	No	TRUE	FALSE	FALSE
+1695	Tina Nuzzi	Yes	No	No	TRUE	FALSE	FALSE
+2451	DeanOBuchanan	Yes	No	No	TRUE	FALSE	FALSE
+1771	Chelsea S.	Yes	No	No	TRUE	FALSE	FALSE
+2441	Alison Stewart	No	No	No	FALSE	FALSE	FALSE
+1745	Janet	No	No	No	FALSE	FALSE	FALSE
+2358	Betty Perry	No	No	No	FALSE	FALSE	FALSE
+2197	Mike Nelson	Yes	Yes	Yes	TRUE	TRUE	TRUE
+2014	Eden Rea-Hedrick	Yes	No	No	TRUE	FALSE	FALSE
+1672	Mike Wajda	No	No	No	FALSE	FALSE	FALSE
+2394	TinaNygard2	No	Yes	No	TRUE	FALSE	FALSE
+1657	alwpoe	No	No	No	FALSE	FALSE	FALSE
+1728	Vinnie Tesla	Yes	Yes	No	TRUE	FALSE	TRUE
+1805	Vince Dee	Yes	No	Yes	TRUE	FALSE	TRUE
+2143	Suebee	Yes	Yes	No	TRUE	FALSE	TRUE
+2084	Eberle Thomas	Yes	No	Yes	TRUE	FALSE	TRUE
+2479	Daisy Flaim	No	No	No	FALSE	FALSE	FALSE
+2152	Kristel Tretter	No	No	No	FALSE	FALSE	FALSE
+2268	Greg Giordano	No	No	No	FALSE	FALSE	FALSE
+1839	James E. Carson	No	No	No	FALSE	FALSE	FALSE
+2056	acloward	Yes	Yes	No	TRUE	FALSE	TRUE
+1814	polkadotish	No	No	No	FALSE	FALSE	FALSE
+2127	Ron Lockhart	No	No	No	FALSE	FALSE	FALSE
+2114	Larry Beasley	No	Yes	Yes	TRUE	FALSE	TRUE
+2469	Kevin Owens	Yes	No	No	TRUE	FALSE	FALSE
+2447	Deena Rhoads	Yes	Yes	No	TRUE	FALSE	TRUE
+1724	Juliana M.	Yes	No	No	TRUE	FALSE	FALSE
+1869	NastassiaS	Yes	Yes	Yes	TRUE	TRUE	TRUE
+2209	Samantha J Gubitz	Yes	Yes	Yes	TRUE	TRUE	TRUE
+2171	Carolyne	No	Yes	No	TRUE	FALSE	FALSE
+2403	Ian Quinlan	Yes	No	No	TRUE	FALSE	FALSE
+2032	doonaboon	Yes	No	No	TRUE	FALSE	FALSE
+x	Joy S Grape	No	No	No	FALSE	FALSE	FALSE

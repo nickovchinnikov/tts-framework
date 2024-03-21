@@ -5,6 +5,7 @@ import torch
 
 PreprocessLangType = Literal["english_only", "multilingual"]
 
+
 @dataclass
 class STFTConfig:
     filter_length: int
@@ -54,6 +55,7 @@ class CleaningRunConfig:
     device: torch.device
     skip_on_error: bool
 
+
 @dataclass
 class AcousticTrainingOptimizerConfig:
     learning_rate: float
@@ -81,7 +83,9 @@ class AcousticFinetuningConfig:
     only_train_speaker_until = 5000
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.001, lr_decay=0.99999,
+            learning_rate=0.0002,
+            weight_decay=0.001,
+            lr_decay=0.99999,
         ),
     )
 
@@ -100,7 +104,9 @@ class AcousticPretrainingConfig:
     only_train_speaker_until = 0
     optimizer_config: AcousticTrainingOptimizerConfig = field(
         default_factory=lambda: AcousticTrainingOptimizerConfig(
-            learning_rate=0.0002, weight_decay=0.01, lr_decay=1.0,
+            learning_rate=0.0002,
+            weight_decay=0.01,
+            lr_decay=1.0,
         ),
     )
 
@@ -199,7 +205,11 @@ class AcousticENModelConfig:
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=512, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
+            n_hidden=512,
+            kernel_size=5,
+            emb_kernel_size=3,
+            p_dropout=0.5,
+            n_bins=256,
         ),
     )
     loss: AcousticLossConfig = field(
@@ -261,7 +271,11 @@ class AcousticMultilingualModelConfig:
     )
     variance_adaptor: VarianceAdaptorConfig = field(
         default_factory=lambda: VarianceAdaptorConfig(
-            n_hidden=512, kernel_size=5, emb_kernel_size=3, p_dropout=0.5, n_bins=256,
+            n_hidden=512,
+            kernel_size=5,
+            emb_kernel_size=3,
+            p_dropout=0.5,
+            n_bins=256,
         ),
     )
     loss: AcousticLossConfig = field(
@@ -282,6 +296,7 @@ class AcousticMultilingualModelConfig:
 
 AcousticModelConfigType = Union[AcousticENModelConfig, AcousticMultilingualModelConfig]
 
+
 @dataclass
 class VocoderBasicConfig:
     segment_size: int = 16384
@@ -292,6 +307,7 @@ class VocoderBasicConfig:
     synth_interval: int = 250
     checkpoint_interval: int = 250
     stft_lamb: float = 2.5
+
 
 @dataclass
 class VocoderPretrainingConfig(VocoderBasicConfig):
