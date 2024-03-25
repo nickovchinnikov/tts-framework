@@ -159,7 +159,7 @@ class DelightfulTTS(LightningModule):
         wav = self.vocoder_module.forward(mel_pred)
 
         # Resample the audio to prod SR
-        wav_prod = resample(wav)
+        wav_prod = resample.to(wav.device).forward(wav)
 
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as input_file:
             sf.write(

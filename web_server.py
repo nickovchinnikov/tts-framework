@@ -24,7 +24,7 @@ os.environ["NUMBA_DISABLE_INTEL_SVML"] = "1"
 
 
 # Load the pretrained weights from the checkpoint
-checkpoint = "checkpoints/epoch=1192-step=215491.ckpt"
+checkpoint = "checkpoints/epoch=3265-step=313888.ckpt"
 
 
 device = torch.device("cuda")
@@ -60,19 +60,16 @@ async def async_gen(text: str, speaker: torch.Tensor):
             if paragraph.strip() == "":
                 continue
             with torch.no_grad():
-                wav_prediction = (
-                    module.forward(
-                        paragraph,
-                        speaker,
-                    )
-                    .detach()
-                    .cpu()
-                    .numpy()
+                wav_prediction, wav_vf = module.forward(
+                    paragraph,
+                    speaker,
                 )
 
+                wav_vf = wav_vf.detach().cpu().numpy()
+
                 buffer_ = returnAudioBuffer(
-                    wav_prediction,
-                    SAMPLING_RATE,
+                    wav_vf,
+                    44100,
                     AUDIO_FORMAT,
                 )
 
