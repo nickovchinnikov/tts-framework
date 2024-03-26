@@ -19,10 +19,10 @@ class STFTConfig:
 @dataclass
 class PreprocessingConfig:
     language: PreprocessLangType
+    sampling_rate: int = 22050
     val_size: float = 0.05
     min_seconds: float = 0.5
     max_seconds: float = 35.0
-    sampling_rate: int = 22050
     use_audio_normalization: bool = True
     workers: int = 5
     stft: STFTConfig = field(
@@ -39,6 +39,29 @@ class PreprocessingConfig:
     skip_on_error: bool = True
     pitch_fmin: int = 1
     pitch_fmax: int = 640
+
+    def __post_init__(self):
+        r"""Post-initialization method for the `PreprocessingConfig` dataclass.
+
+        This method is automatically called after the instance is initialized.
+        It modifies the 'stft' attribute based on the 'sampling_rate' attribute.
+        If 'sampling_rate' is 44100, 'stft' is set with specific values for this rate.
+        If 'sampling_rate' is not 22050 or 44100, a ValueError is raised.
+
+        Raises:
+            ValueError: If 'sampling_rate' is not 22050 or 44100.
+        """
+        if self.sampling_rate == 44100:
+            self.stft = STFTConfig(
+                filter_length=2048,
+                hop_length=512,  # NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
+                win_length=2048,
+                n_mel_channels=160,
+                mel_fmin=20,
+                mel_fmax=11025,
+            )
+        if self.sampling_rate not in [22050, 44100]:
+            raise ValueError("Sampling rate must be 22050 or 44100")
 
 
 @dataclass
@@ -384,3 +407,30 @@ class VocoderModelConfig:
             lReLU_slope=0.2,
         ),
     )
+
+
+#####################
+# HI-FI GAN CONFIGS #
+#####################
+
+
+@dataclass
+class HifiGanPretrainingConfig(VocoderBasicConfig):
+    segment_size: int = 16384
+    learning_rate: float = 0.0002
+    adam_b1: float = 0.8
+    adam_b2: float = 0.99
+    lr_decay: float = 0.9995
+    lReLU_slope: float = 0.1
+
+
+@dataclass
+class HifiGanConfig:
+    resblock: str = "1"
+    upsample_rates: List[int] = [8, 8, 2, 2, 2]
+    upsample_kernel_sizes: List[int] = [16, 16, 4, 4, 4]
+    upsample_initial_channel: int = 512
+    resblock_kernel_sizes: List[int] = [3, 7, 11]
+    resblock_dilation_sizes: List[List[int]] = [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+    # NOTE: The following attributes are not used in the codebase
+    discriminator_periods: List[int] = [3, 5, 7, 11, 17, 23, 37]
