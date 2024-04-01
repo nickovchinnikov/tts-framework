@@ -10,7 +10,7 @@ from .mas import b_mas
 
 
 class Aligner(Module):
-    r"""Aligner class represents a PyTorch module responsible for alignment tasks
+    r"""DEPRECATED: Aligner class represents a PyTorch module responsible for alignment tasks
     in a sequence-to-sequence model. It uses convolutional layers combined with
     LeakyReLU activation functions to project inputs to a hidden representation.
     The class utilizes both softmax and log-softmax to calculate softmax
@@ -87,7 +87,10 @@ class Aligner(Module):
         )
 
     def binarize_attention_parallel(
-        self, attn: torch.Tensor, in_lens: torch.Tensor, out_lens: torch.Tensor,
+        self,
+        attn: torch.Tensor,
+        in_lens: torch.Tensor,
+        out_lens: torch.Tensor,
     ) -> torch.Tensor:
         r"""For training purposes only! Binarizes attention with MAS.
         Binarizes the attention tensor using Maximum Attention Strategy (MAS).
@@ -111,7 +114,10 @@ class Aligner(Module):
         with torch.no_grad():
             attn_cpu = attn.data.cpu().numpy()
             attn_out = b_mas(
-                attn_cpu, in_lens.cpu().numpy(), out_lens.cpu().numpy(), width=1,
+                attn_cpu,
+                in_lens.cpu().numpy(),
+                out_lens.cpu().numpy(),
+                width=1,
             )
         return torch.from_numpy(attn_out)
 

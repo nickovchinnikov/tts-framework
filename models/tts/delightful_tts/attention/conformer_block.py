@@ -85,14 +85,18 @@ class ConformerBlock(Module):
         Returns:
             Tensor: The output tensor of shape (batch_size, seq_len, num_features).
         """
-        x = self.conditioning(x, embeddings=embeddings)
+        x = self.conditioning.forward(x, embeddings=embeddings)
         if self.with_ff:
             x = self.ff(x) + x
         x = self.conformer_conv_1(x) + x
         res = x
         x = self.ln(x)
         x, _ = self.slf_attn(
-            query=x, key=x, value=x, mask=slf_attn_mask, encoding=encoding,
+            query=x,
+            key=x,
+            value=x,
+            mask=slf_attn_mask,
+            encoding=encoding,
         )
         x = x + res
         x = x.masked_fill(mask.unsqueeze(-1), 0)

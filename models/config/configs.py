@@ -56,7 +56,7 @@ class PreprocessingConfig:
                 filter_length=2048,
                 hop_length=512,  # NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
                 win_length=2048,
-                n_mel_channels=160,
+                n_mel_channels=128,
                 mel_fmin=20,
                 mel_fmax=11025,
             )
@@ -189,7 +189,6 @@ class AcousticLossConfig:
 class AcousticENModelConfig:
     speaker_embed_dim: int = 1024
     lang_embed_dim: int = 1
-    n_feats: int = 160
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=6,
@@ -255,7 +254,6 @@ class AcousticENModelConfig:
 class AcousticMultilingualModelConfig:
     speaker_embed_dim: int = 1024
     lang_embed_dim: int = 256
-    n_feats: int = 160
     encoder: ConformerConfig = field(
         default_factory=lambda: ConformerConfig(
             n_layers=6,
@@ -427,10 +425,20 @@ class HifiGanPretrainingConfig(VocoderBasicConfig):
 @dataclass
 class HifiGanConfig:
     resblock: str = "1"
-    upsample_rates: List[int] = [8, 8, 2, 2, 2]
-    upsample_kernel_sizes: List[int] = [16, 16, 4, 4, 4]
+    upsample_rates: List[int] = field(
+        default_factory=lambda: [8, 8, 2, 2, 2],
+    )
+    upsample_kernel_sizes: List[int] = field(
+        default_factory=lambda: [16, 16, 4, 4, 4],
+    )
     upsample_initial_channel: int = 512
-    resblock_kernel_sizes: List[int] = [3, 7, 11]
-    resblock_dilation_sizes: List[List[int]] = [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+    resblock_kernel_sizes: List[int] = field(
+        default_factory=lambda: [3, 7, 11],
+    )
+    resblock_dilation_sizes: List[List[int]] = field(
+        default_factory=lambda: [[1, 3, 5], [1, 3, 5], [1, 3, 5]],
+    )
     # NOTE: The following attributes are not used in the codebase
-    discriminator_periods: List[int] = [3, 5, 7, 11, 17, 23, 37]
+    discriminator_periods: List[int] = field(
+        default_factory=lambda: [3, 5, 7, 11, 17, 23, 37],
+    )

@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from torchaudio.datasets import LJSPEECH, MUSDB_HQ, VCTK_092
 
 from models.config import PreprocessingConfig, get_lang_map, lang2id
 from training.preprocess import PreprocessLibriTTS
@@ -142,7 +143,7 @@ class LibriTTSDatasetAcoustic(Dataset):
 
     def __iter__(self):
         r"""Method makes the class iterable. It iterates over the `_walker` attribute
-        and for each item, it gets the corresponding item from the dataset using the 
+        and for each item, it gets the corresponding item from the dataset using the
         `__getitem__` method.
 
         Yields:
@@ -212,10 +213,14 @@ class LibriTTSDatasetAcoustic(Dataset):
         attn_priors = pad_3D(attn_priors, len(idxs), max(src_lens), max(mel_lens))
 
         speakers = np.repeat(
-            np.expand_dims(np.array(speakers), axis=1), texts.shape[1], axis=1,
+            np.expand_dims(np.array(speakers), axis=1),
+            texts.shape[1],
+            axis=1,
         )
         langs = np.repeat(
-            np.expand_dims(np.array(langs), axis=1), texts.shape[1], axis=1,
+            np.expand_dims(np.array(langs), axis=1),
+            texts.shape[1],
+            axis=1,
         )
 
         wavs = pad_2D(wavs)
@@ -238,7 +243,8 @@ class LibriTTSDatasetAcoustic(Dataset):
         ]
 
     def normalize_pitch(
-        self, pitches: List[torch.Tensor],
+        self,
+        pitches: List[torch.Tensor],
     ) -> Tuple[float, float, float, float]:
         r"""Normalizes the pitch values.
 

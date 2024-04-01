@@ -58,7 +58,11 @@ class EnergyAdaptor(nn.Module):
         )
 
     def get_energy_embedding_train(
-        self, x: torch.Tensor, target: torch.Tensor, dr: torch.Tensor, mask: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        target: torch.Tensor,
+        dr: torch.Tensor,
+        mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""Function is used during training to get the energy prediction, average energy target, and energy embedding.
 
@@ -122,10 +126,14 @@ class EnergyAdaptor(nn.Module):
             dr=dr,
             mask=mask,
         )
-        x = x + energy_emb.transpose(1, 2)
-        return x, energy_pred, avg_energy_target
+        x_energy = x + energy_emb.transpose(1, 2)
+        return x_energy, energy_pred, avg_energy_target
 
-    def get_energy_embedding(self, x: torch.Tensor, mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_energy_embedding(
+        self,
+        x: torch.Tensor,
+        mask: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Function is used during inference to get the energy embedding and energy prediction.
 
         Args:
@@ -166,5 +174,5 @@ class EnergyAdaptor(nn.Module):
             energy_pred (torch.Tensor): The predicted energy tensor.
         """
         energy_emb_pred, energy_pred = self.get_energy_embedding(x, mask)
-        x = x + energy_emb_pred.transpose(1, 2)
-        return x, energy_pred
+        x_energy = x + energy_emb_pred.transpose(1, 2)
+        return x_energy, energy_pred

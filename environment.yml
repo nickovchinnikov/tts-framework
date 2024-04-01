@@ -57,6 +57,4 @@ dependencies:
       - pydub==0.25.1
       - simpleaudio==1.0.4
       - onnx==1.15.0
-      - neural-compressor==2.4.1
       - voicefixer==0.1.3
-      - vocos==0.1.0
