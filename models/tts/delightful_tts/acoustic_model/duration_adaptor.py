@@ -207,12 +207,13 @@ class DurationAdaptor(Module):
             attn.transpose(1, 2),
         )
 
-    def forward(self, encoder_output: Tensor, src_mask: Tensor):
+    def forward(self, encoder_output: Tensor, src_mask: Tensor, d_control: float = 1.0):
         r"""Forward pass of the DurationAdaptor.
 
         Args:
             encoder_output (Tensor): Encoder output.
             src_mask (Tensor): Source mask.
+            d_control (float): Duration control. Defaults to 1.0.
 
         Returns:
             Tuple: Tuple containing the expanded encoder output, log durations, predicted durations, mask for the output sequence, and the attention mask.
@@ -223,7 +224,7 @@ class DurationAdaptor(Module):
         )  # [B, C_hidden, T_src] -> [B, T_src]
 
         duration_pred = (
-            (torch.exp(log_duration_pred) - 1) * (~src_mask) * self.length_scale
+            (torch.exp(log_duration_pred) - 1) * (~src_mask) * d_control
         )  # -> [B, T_src]
 
         # duration_pred[duration_pred < 1] = 1.0  # -> [B, T_src]

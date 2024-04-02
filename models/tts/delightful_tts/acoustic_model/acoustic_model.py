@@ -242,69 +242,6 @@ class AcousticModel(Module):
 
         return token_embeddings, embeddings
 
-    def prepare_for_export(self) -> None:
-        r"""Prepare the model for export.
-
-        This method is called when the model is about to be exported, such as for deployment
-        or serializing for later use. The method removes unnecessary components that are
-        not needed during inference. Specifically, it removes the phoneme and utterance
-        prosody encoders for this acoustic model. These components are typically used during
-        training and are not needed when the model is used for making predictions.
-
-        Returns
-            None
-        """
-        del self.phoneme_prosody_encoder
-        del self.utterance_prosody_encoder
-
-    # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
-    def freeze_params(self) -> None:
-        r"""Freeze the trainable parameters in the model.
-
-        By freezing, the parameters are no longer updated by gradient descent.
-        This is typically done when you want to keep parts of your model fixed while training other parts.
-        For this model, it freezes all parameters and then selectively unfreezes the
-        speaker embeddings and the pitch adaptor's pitch embeddings to allow these components to update during training.
-
-        Returns
-            None
-        """
-        for par in self.parameters():
-            par.requires_grad = False
-
-        # self.speaker_embed.requires_grad = True
-        # NOTE: requires_grad prop
-        # self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
-
-    # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
-    def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
-        r"""Unfreeze the trainable parameters in the model, allowing them to be updated during training.
-
-        This method is typically used to 'unfreeze' previously 'frozen' parameters, making them trainable again.
-        For this model, it unfreezes all parameters and then selectively freezes the
-        text embeddings and language embeddings, if required.
-
-        Args:
-            freeze_text_embed (bool): Flag to indicate if text embeddings should remain frozen.
-            freeze_lang_embed (bool): Flag to indicate if language embeddings should remain frozen.
-
-        Returns:
-            None
-        """
-        # Iterate through all model parameters and make them trainable
-        for par in self.parameters():
-            par.requires_grad = True
-
-        # # If freeze_text_embed flag is True, keep the source word embeddings frozen
-        # if freeze_text_embed:
-        #     # @fixed self.src_word_emb.parameters has no parameters() method!
-        #     # for par in self.src_word_emb.parameters():
-        #     self.src_word_emb.requires_grad = False
-
-        # If freeze_lang_embed flag is True, keep the language embeddings frozen
-        if freeze_lang_embed:
-            self.lang_embed.requires_grad = False
-
     def average_utterance_prosody(
         self,
         u_prosody_pred: torch.Tensor,
@@ -562,8 +499,6 @@ class AcousticModel(Module):
         x = x + self.u_bottle_out(u_prosody_pred)
         x = x + self.p_bottle_out(p_prosody_pred)
 
-        x_res = x
-
         x, _ = self.pitch_adaptor_conv.add_pitch_embedding(
             x=x,
             mask=src_mask,
@@ -574,25 +509,33 @@ class AcousticModel(Module):
             mask=src_mask,
         )
 
-        x, _, embeddings = self.length_regulator.upsample(
-            x=x,
-            x_res=x_res,
+        _, x, _, _ = self.duration_predictor.forward(
+            encoder_output=x,
             src_mask=src_mask,
-            control=d_control,
-            embeddings=embeddings,
+            d_control=d_control,
         )
 
         mel_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64),
+            torch.tensor(
+                [x.shape[2]],
+                dtype=torch.int64,
+            ),
         ).to(x.device)
 
         if x.shape[1] > encoding.shape[1]:
             encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
 
+        # Change the embedding shape to match the decoder output
+        embeddings_out = embeddings.repeat(
+            1,
+            mel_mask.shape[1] // embeddings.shape[1] + 1,
+            1,
+        )[:, : mel_mask.shape[1], :]
+
         decoder_output = self.decoder(
-            x,
+            x.transpose(1, 2),
             mel_mask,
-            embeddings=embeddings,
+            embeddings=embeddings_out,
             encoding=encoding,
         )
 

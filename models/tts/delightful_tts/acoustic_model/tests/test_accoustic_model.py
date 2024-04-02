@@ -205,7 +205,10 @@ class TestAcousticModel(unittest.TestCase):
         )
 
     def test_forward(self):
-        self.preprocess_config = PreprocessingConfig("english_only")
+        self.preprocess_config = PreprocessingConfig(
+            language="english_only",
+            sampling_rate=44100,
+        )
         self.model_config = AcousticENModelConfig()
 
         acoustic_model = AcousticModel(
