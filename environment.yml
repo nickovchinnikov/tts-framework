@@ -58,3 +58,4 @@ dependencies:
       - simpleaudio==1.0.4
       - onnx==1.15.0
       - voicefixer==0.1.3
+      - lhotse==1.22.0
