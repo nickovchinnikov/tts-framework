@@ -22,7 +22,7 @@ class PreprocessingConfig:
     sampling_rate: int = 22050
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 35.0
+    max_seconds: float = 21.0
     use_audio_normalization: bool = True
     workers: int = 5
     stft: STFTConfig = field(

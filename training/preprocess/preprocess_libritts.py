@@ -101,7 +101,10 @@ class PreprocessLibriTTS:
         self.audio_processor = AudioProcessor()
 
     def beta_binomial_prior_distribution(
-        self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0,
+        self,
+        phoneme_count: int,
+        mel_count: int,
+        scaling_factor: float = 1.0,
     ) -> torch.Tensor:
         r"""Computes the beta-binomial prior distribution for the attention mechanism.
 
@@ -204,7 +207,8 @@ class PreprocessLibriTTS:
         mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
 
         attn_prior = self.beta_binomial_prior_distribution(
-            phones.shape[0], mel_spectrogram.shape[1],
+            phones.shape[0],
+            mel_spectrogram.shape[1],
         ).T
 
         assert pitch.shape[0] == mel_spectrogram.shape[1], (
