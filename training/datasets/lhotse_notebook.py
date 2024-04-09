@@ -325,14 +325,14 @@ cuts_train.to_file(root_dir / "./libri_selected.json.gz")
 # %%
 from lhotse import CutSet, SupervisionSet
 
-libri_selected = CutSet.from_file(root_dir / "./libri_selected.json.gz")
+libri_selected = CutSet.from_file(root_dir / "libri.json.gz")
 libri_selected
 
 # %%
 
-pprint.pp(libri_selected[0])
+pprint(libri_selected[0])
 
-print(libri_selected[0].supervisions[0].text)
+print(libri_selected[0].recording.sources[0].source)
 
 # %%
 libri_selected[0].play_audio()

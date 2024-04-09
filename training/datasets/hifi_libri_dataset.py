@@ -1,15 +1,18 @@
 from dataclasses import asdict, dataclass
 import os
 from pathlib import Path
-from typing import Dict, List, Tuple
+import tempfile
+from typing import Dict, List, Literal, Tuple
 
 from lhotse import CutSet, RecordingSet, SupervisionSet
-from lhotse.cut import Cut
+from lhotse.cut import MonoCut
 from lhotse.recipes import hifitts, libritts
 import numpy as np
+import soundfile as sf
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
+from voicefixer import VoiceFixer
 
 from models.config import PreprocessingConfig, get_lang_map, lang2id
 from training.preprocess import PreprocessLibriTTS
@@ -92,6 +95,9 @@ def prep_2_cutset(prep: Dict[str, Dict[str, RecordingSet | SupervisionSet]]) -> 
     )
 
 
+DATASET_TYPES = Literal["hifitts", "libritts"]
+
+
 @dataclass
 class HifiLibriItem:
     """Dataset row for the HiFiTTS and LibriTTS datasets combined in this code.
@@ -109,6 +115,7 @@ class HifiLibriItem:
         speaker (int): The speaker ID.
         pitch_is_normalized (bool): Whether the pitch is normalized.
         lang (int): The language ID.
+        dataset_type (DATASET_TYPES): The type of dataset.
     """
 
     id: str
@@ -123,6 +130,7 @@ class HifiLibriItem:
     speaker: int
     pitch_is_normalized: bool
     lang: int
+    dataset_type: DATASET_TYPES
 
 
 class HifiLibriDataset(Dataset):
@@ -159,9 +167,10 @@ class HifiLibriDataset(Dataset):
         processing_lang_type = lang_map.processing_lang_type
         preprocess_config = PreprocessingConfig(processing_lang_type)
         self.root_dir = Path(root)
+        self.voicefixer = VoiceFixer()
 
         # Map the speaker ids to string and list of selected speaker ids to set
-        selected_speakers_libri_ids_ = set(selected_speakers_libri_ids)
+        self.selected_speakers_libri_ids_ = set(selected_speakers_libri_ids)
 
         self.cache = cache
         self.cache_dir = Path(cache_dir) / f"cache-{hifitts_path}-{libritts_path}"
@@ -182,6 +191,8 @@ class HifiLibriDataset(Dataset):
 
             # Add the recordings and supervisions to the CutSet
             self.cutset_hifi = prep_2_cutset(prepared_hifi)
+            # Save the prepared HiFiTTS dataset cutset
+            self.cutset_hifi.to_file(hifi_cutset_file_path)
 
         # Prepare the LibriTTS dataset
         self.libritts_path = self.root_dir / libritts_path
@@ -203,18 +214,25 @@ class HifiLibriDataset(Dataset):
 
             # Add the recordings and supervisions to the CutSet
             self.cutset_libri = prep_2_cutset(prepared_libri)
+            # Save the prepared cutset for LibriTTS
+            self.cutset_libri.to_file(libritts_cutset_file_path)
 
         # Filter the libri cutset to only include the selected speakers
         self.cutset_libri = self.cutset_libri.filter(
-            lambda cut: isinstance(cut, Cut)
-            and str(cut.supervisions[0].speaker) in selected_speakers_libri_ids_,
+            lambda cut: isinstance(cut, MonoCut)
+            and str(cut.supervisions[0].speaker) in self.selected_speakers_libri_ids_,
         )
 
         # Final cutset for the dataset
-        self.cutset = (self.cutset_hifi + self.cutset_libri).filter(
-            lambda cut: isinstance(cut, Cut)
-            and cut.duration >= preprocess_config.min_seconds
-            and cut.duration <= preprocess_config.max_seconds,
+        # to_eager() is used to evaluates all lazy operations on this manifest
+        self.cutset = (
+            (self.cutset_hifi + self.cutset_libri)
+            .filter(
+                lambda cut: isinstance(cut, MonoCut)
+                and cut.duration >= preprocess_config.min_seconds
+                and cut.duration <= preprocess_config.max_seconds,
+            )
+            .to_eager()
         )
 
         self.preprocess_libtts = PreprocessLibriTTS(lang)
@@ -266,16 +284,39 @@ class HifiLibriDataset(Dataset):
             result = HifiLibriItem(**cached_data)
             return result
 
-        cutset: Cut = self.cutset[idx]
+        cutset = self.cutset[idx]
 
-        if isinstance(cutset, Cut):
-            # return cutset
-            audio = torch.from_numpy(cutset.load_audio())
-            text: str = str(cutset.supervisions[0].text)
+        if isinstance(cutset, MonoCut) and cutset.recording is not None:
+            dataset_speaker_id = str(cutset.supervisions[0].speaker)
+
+            # Map the dataset speaker id to the speaker id in the model
             speaker_id = selected_speakers_ids.get(
-                str(cutset.supervisions[0].speaker),
+                dataset_speaker_id,
                 len(selected_speakers_ids) + 1,
             )
+
+            # Run voicefixer only for the libri speakers
+            if str(dataset_speaker_id) in self.selected_speakers_libri_ids_:
+                audio_path = cutset.recording.sources[0].source
+                # Restore LibriTTS-R audio
+                with tempfile.NamedTemporaryFile(
+                    suffix=".wav",
+                    delete=True,
+                ) as out_file:
+                    self.voicefixer.restore(
+                        input=audio_path,  # low quality .wav/.flac file
+                        output=out_file.name,  # save file path
+                        cuda=True,  # GPU acceleration
+                        mode=0,
+                    )
+                    audio, _ = sf.read(out_file.name)
+                    # Convert the np audio to a tensor
+                    audio = torch.from_numpy(audio).float().unsqueeze(0)
+            else:
+                # Load the audio from the cutset
+                audio = torch.from_numpy(cutset.load_audio())
+
+            text: str = str(cutset.supervisions[0].text)
 
             fileid = str(cutset.supervisions[0].recording_id)
             _, chapter_id, _, utterance_id = fileid.split("_")
@@ -316,6 +357,7 @@ class HifiLibriDataset(Dataset):
                 speaker=speaker_id,
                 pitch_is_normalized=data.pitch_is_normalized,
                 lang=lang2id["en"],
+                dataset_type="hifitts" if idx < len(self.cutset_hifi) else "libritts",
             )
 
             if self.cache:
