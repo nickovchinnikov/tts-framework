@@ -11,7 +11,7 @@ import numpy as np
 import soundfile as sf
 import torch
 from torch import Tensor
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
 from voicefixer import VoiceFixer
 
 from models.config import PreprocessingConfig, get_lang_map, lang2id
@@ -496,3 +496,65 @@ class HifiLibriDataset(Dataset):
         std = torch.std(pitches_t).item()
 
         return min_value, max_value, mean, std
+
+
+def train_dataloader(
+    batch_size: int = 6,
+    num_workers: int = 5,
+    shuffle: bool = False,
+    lang: str = "en",
+    root: str = "datasets_cache",
+    hifitts_path: str = "hifitts",
+    hifi_cutset_file_name: str = "hifi.json.gz",
+    libritts_path: str = "librittsr",
+    libritts_cutset_file_name: str = "libri.json.gz",
+    libritts_subsets: List[str] | str = "all",
+    cache: bool = False,
+    cache_dir: str = "/dev/shm",
+) -> DataLoader:
+    r"""Returns the training dataloader, that is using the HifiLibriDataset dataset.
+
+    Args:
+        batch_size (int): The batch size.
+        num_workers (int): The number of workers.
+        shuffle (bool): Whether to shuffle the dataset.
+        lang (str): The language of the dataset.
+        root (str): The root directory of the dataset.
+        hifitts_path (str): The path to the HiFiTTS dataset.
+        hifi_cutset_file_name (str): The file name of the HiFiTTS cutset.
+        libritts_path (str): The path to the LibriTTS dataset.
+        libritts_cutset_file_name (str): The file name of the LibriTTS cutset.
+        libritts_subsets (List[str] | str): The subsets of the LibriTTS dataset to use.
+        cache (bool): Whether to cache the dataset.
+        cache_dir (str): The directory to cache the dataset in.
+
+    Returns:
+        DataLoader: The training dataloader.
+    """
+    dataset = HifiLibriDataset(
+        root=root,
+        hifitts_path=hifitts_path,
+        hifi_cutset_file_name=hifi_cutset_file_name,
+        libritts_path=libritts_path,
+        libritts_cutset_file_name=libritts_cutset_file_name,
+        libritts_subsets=libritts_subsets,
+        cache=cache,
+        cache_dir=cache_dir,
+        lang=lang,
+    )
+
+    train_loader = DataLoader(
+        dataset,
+        # 4x80Gb max 10 sec audio
+        # batch_size=20, # self.train_config.batch_size,
+        # 4*80Gb max ~20.4 sec audio
+        batch_size=batch_size,
+        # TODO: find the optimal num_workers
+        num_workers=num_workers,
+        persistent_workers=True,
+        pin_memory=True,
+        shuffle=shuffle,
+        collate_fn=dataset.collate_fn,
+    )
+
+    return train_loader

@@ -25,7 +25,7 @@ class NormalizeText:
         >>> from training.preprocess.normilize_text import NormalizeText
         >>> normilize_text = NormalizeText()
         >>> normilize_text("It’s a beautiful day…")
-        "It's a beautiful day..."
+        "It's a beautiful day."
     """
 
     def __init__(self, lang: str = "en"):
@@ -63,31 +63,29 @@ class NormalizeText:
 
         Examples:
             >>> normalize_chars("It’s a beautiful day…")
-            "It's a beautiful day..."
+            "It's a beautiful day."
 
         """
         # Define the character mapping
         char_mapping = {
             ord("’"): ord("'"),
-            ord("”"): ord('"'),
+            ord("”"): ord("'"),
             ord("…"): ord("."),
-            ord("„"): ord('"'),
-            ord("“"): ord('"'),
+            ord("„"): ord("'"),
+            ord("“"): ord("'"),
+            ord('"'): ord("'"),
             ord("–"): ord("-"),
-            ord("«"): ord('"'),
-            ord("»"): ord('"'),
+            ord("—"): ord("-"),
+            ord("«"): ord("'"),
+            ord("»"): ord("'"),
         }
 
-        # Normalize the characters using translate() method
-        normalized_string = text.translate(char_mapping)
-
-        # Add unicode normalization as additional garanty
-        normalized_string = unidecode(normalized_string)
+        # Add unicode normalization as additional garanty and normalize the characters using translate() method
+        normalized_string = unidecode(text).translate(char_mapping)
 
         # Remove redundant multiple characters
         # TODO: Maybe there is some effect on duplication?
-        # re.sub(r"(\.|\!|\?)\1{2,}", r"\1\1\1", normalized_string)
-        return re.sub(r"(\.|\!|\?|\-)\1+", r"\1",normalized_string)
+        return re.sub(r"(\.|\!|\?|\-)\1+", r"\1", normalized_string)
 
     def __call__(self, text: str) -> str:
         r"""Normalize the input text with the `nemo_text_processing`.
@@ -99,5 +97,13 @@ class NormalizeText:
             str: The normalized text.
 
         """
-        result = self.normalize_chars(text)
-        return self.model.normalize(result)
+        text = self.normalize_chars(text)
+
+        # Split the text into lines
+        lines = text.split("\n")
+        normalized_lines = self.model.normalize_list(lines)
+
+        # TODO: check this after training!
+        # Join the normalized lines, replace \n with ;; and return the result
+        result = ";; ".join(normalized_lines)
+        return result

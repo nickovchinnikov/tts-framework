@@ -42,5 +42,6 @@ class TestTokenizerIPA(unittest.TestCase):
         self.assertNotEqual(phones_ipa, phones_ipa2)
         self.assertNotEqual(tokens, tokens2)
 
+
 if __name__ == "__main__":
     unittest.main()

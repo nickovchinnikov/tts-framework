@@ -5,7 +5,7 @@ from lightning.pytorch.core import LightningModule
 import soundfile as sf
 import torch
 from torch import Tensor
-from torch.optim import AdamW, swa_utils
+from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 from torchaudio.transforms import Resample
@@ -20,10 +20,9 @@ from models.config import (
     get_lang_map,
     lang2id,
 )
-from models.config.speakers import dataset_speaker_ids
-from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
 from models.vocoder.univnet import UnivNet
+from training.datasets.hifi_libri_dataset import train_dataloader
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
 
@@ -57,18 +56,14 @@ class DelightfulTTS(LightningModule):
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
         batch_size (int): The batch size.
-        swa_avg (bool): Whether to use SWA or not. Defaults to False. NOTE: When fine-tuning, SWA should be used!
     """
 
     def __init__(
         self,
         fine_tuning: bool = False,
         lang: str = "en",
-        # NOTE: lr finder found 1.5848931924611133e-07
-        # learning_rate: float = 1.5848931924611133e-05,
         n_speakers: int = 5392,
         batch_size: int = 4,
-        swa_avg: bool = True,
     ):
         super().__init__()
 
@@ -99,10 +94,6 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-
-        self.swa_avg = swa_avg
-        # Initialize SWA
-        self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
 
         # Initialize the vocoder, freeze for the first stage of the training
         self.vocoder_module = UnivNet()
@@ -360,33 +351,18 @@ class DelightfulTTS(LightningModule):
             "lr_scheduler": scheduler_acoustic,
         }
 
-    def on_train_epoch_end(self):
-        r"""Updates the averaged model after each optimizer step with SWA."""
-        if self.swa_avg:
-            self.swa_averaged_model.update_parameters(self.acoustic_model)
-
-    def on_train_end(self):
-        # Update SWA model after training
-        # if self.swa_avg:
-        #     swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
-        pass
-
     def train_dataloader(
         self,
-        root: str = "datasets_cache/LIBRITTS",
+        root: str = "datasets_cache",
         cache: bool = True,
-        cache_dir: str = "datasets_cache",
-        mem_cache: bool = False,
-        url: str = "train-960",
+        cache_dir: str = "/dev/shm",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
-            cache_dir (str): The directory for the cache.
-            mem_cache (bool): Whether to use memory cache.
-            url (str): The URL of the dataset.
+            cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
@@ -397,8 +373,5 @@ class DelightfulTTS(LightningModule):
             root=root,
             cache=cache,
             cache_dir=cache_dir,
-            mem_cache=mem_cache,
-            url=url,
             lang=self.lang,
-            selected_speaker_ids=dataset_speaker_ids,
         )
