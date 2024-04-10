@@ -140,6 +140,7 @@ class HifiLibriDataset(Dataset):
         self,
         lang: str = "en",
         root: str = "datasets_cache",
+        sampling_rate: int = 44100,
         hifitts_path: str = "hifitts",
         hifi_cutset_file_name: str = "hifi.json.gz",
         libritts_path: str = "librittsr",
@@ -154,6 +155,7 @@ class HifiLibriDataset(Dataset):
         Args:
             lang (str, optional): The language of the dataset. Defaults to "en".
             root (str, optional): The root directory of the dataset. Defaults to "datasets_cache".
+            sampling_rate (int, optional): The sampling rate of the audio. Defaults to 44100.
             hifitts_path (str, optional): The path to the HiFiTTS dataset. Defaults to "hifitts".
             hifi_cutset_file_name (str, optional): The file name of the HiFiTTS cutset. Defaults to "hifi.json.gz".
             libritts_path (str, optional): The path to the LibriTTS dataset. Defaults to "librittsr".
@@ -165,7 +167,14 @@ class HifiLibriDataset(Dataset):
         """
         lang_map = get_lang_map(lang)
         processing_lang_type = lang_map.processing_lang_type
-        preprocess_config = PreprocessingConfig(processing_lang_type)
+        preprocess_config = PreprocessingConfig(
+            processing_lang_type,
+            sampling_rate=sampling_rate,
+        )
+        self.preprocess_libtts = PreprocessLibriTTS(
+            lang,
+            preprocess_config,
+        )
         self.root_dir = Path(root)
         self.voicefixer = VoiceFixer()
 
@@ -234,8 +243,6 @@ class HifiLibriDataset(Dataset):
             )
             .to_eager()
         )
-
-        self.preprocess_libtts = PreprocessLibriTTS(lang)
 
     def get_cache_subdir_path(self, idx: int) -> Path:
         r"""Calculate the path to the cache subdirectory.

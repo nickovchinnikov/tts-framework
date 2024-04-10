@@ -2,6 +2,8 @@ from pathlib import Path
 import unittest
 
 from torch import Tensor
+import torchaudio
+from voicefixer import Vocoder
 
 from training.datasets.hifi_libri_dataset import HifiLibriDataset, HifiLibriItem
 
@@ -9,6 +11,7 @@ from training.datasets.hifi_libri_dataset import HifiLibriDataset, HifiLibriItem
 class TestHifiLibriDataset(unittest.TestCase):
     def setUp(self):
         self.dataset = HifiLibriDataset(cache_dir="datasets_cache", cache=True)
+        self.vocoder_vf = Vocoder(44100)
 
     def test_init(self):
         self.assertEqual(len(self.dataset.cutset), 327197)
@@ -30,6 +33,14 @@ class TestHifiLibriDataset(unittest.TestCase):
         item = self.dataset[0]
         self.assertIsInstance(item, HifiLibriItem)
         self.assertEqual(item.dataset_type, "hifitts")
+
+        # Convert mel spectrogram to waveform and save it to a file
+        # NOTE: Vocoder expects the mel spectrogram to be prepared in a specific way
+        # wav = self.vocoder_vf.forward(item.mel.permute((1, 0)).unsqueeze(0))
+        # wav_path = Path(f"results/{item.id}.wav")
+
+        # torchaudio.save(str(wav_path), wav, 44100)
+
         # Check that the cache file is created
         cache_file = self.dataset.get_cache_file_path(0)
         self.assertTrue(cache_file.exists())

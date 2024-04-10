@@ -1,19 +1,15 @@
-import tempfile
-from typing import List, Tuple
+from typing import List
 
 from lightning.pytorch.core import LightningModule
-import soundfile as sf
 import torch
 from torch import Tensor
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
-from torchaudio.transforms import Resample
-from voicefixer import VoiceFixer
 
 from models.config import (
-    AcousticENModelConfig,
     AcousticFinetuningConfig,
+    AcousticMultilingualModelConfig,
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
     PreprocessingConfig,
@@ -35,19 +31,6 @@ MEL_SPEC_EVERY_N_STEPS = 1000
 AUDIO_EVERY_N_STEPS = 100
 
 
-# Move to config
-prod_sr = 44100
-
-# Resampler for the VoiceFixer
-resample = Resample(
-    orig_freq=22050,
-    # Prod quality
-    new_freq=prod_sr,
-)
-# VoiceFixer is the shortest way to the maximum audio quality
-voicefixer = VoiceFixer()
-
-
 class DelightfulTTS(LightningModule):
     r"""Trainer for the acoustic model.
 
@@ -56,6 +39,7 @@ class DelightfulTTS(LightningModule):
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
         batch_size (int): The batch size.
+        sampling_rate (int): The sample rate of the audio.
     """
 
     def __init__(
@@ -63,7 +47,8 @@ class DelightfulTTS(LightningModule):
         fine_tuning: bool = False,
         lang: str = "en",
         n_speakers: int = 5392,
-        batch_size: int = 4,
+        batch_size: int = 6,
+        sampling_rate: int = 44100,
     ):
         super().__init__()
 
@@ -84,8 +69,13 @@ class DelightfulTTS(LightningModule):
         else:
             self.train_config_acoustic = AcousticPretrainingConfig()
 
-        self.preprocess_config = PreprocessingConfig("english_only")
-        self.model_config = AcousticENModelConfig()
+        self.preprocess_config = PreprocessingConfig(
+            "english_only",
+            sampling_rate=sampling_rate,
+        )
+
+        # NOTE: try Multilingual model config
+        self.model_config = AcousticMultilingualModelConfig()
 
         # TODO: fix the arguments!
         self.acoustic_model = AcousticModel(
@@ -100,14 +90,14 @@ class DelightfulTTS(LightningModule):
         self.vocoder_module.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
+        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=True)
 
     def forward(
         self,
         text: str,
         speaker_idx: Tensor,
         lang: str = "en",
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> Tensor:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
@@ -117,7 +107,7 @@ class DelightfulTTS(LightningModule):
             lang (str): The language.
 
         Returns:
-            Tuple[Tensor, Tensor]: The generated waveform with univnet and the predicted mel spectrogram.
+            Tensor: The generated waveform with hifi-gan.
         """
         normalized_text = self.normilize_text(text)
         _, phones = self.tokenizer(normalized_text)
@@ -149,28 +139,7 @@ class DelightfulTTS(LightningModule):
 
         wav = self.vocoder_module.forward(mel_pred)
 
-        # Resample the audio to prod SR
-        wav_prod = resample.to(wav.device).forward(wav)
-
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as input_file:
-            sf.write(
-                input_file.name,
-                wav_prod.detach().cpu().numpy(),
-                prod_sr,
-            )
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as output_file:
-                voicefixer.restore(
-                    input=input_file.name,  # low quality .wav/.flac file
-                    output=output_file.name,  # save file path
-                    cuda=True,  # GPU acceleration
-                    mode=0,
-                )
-                # Read the wav file back into a numpy array
-                wav_vf, _ = sf.read(output_file.name)
-
-        wav_vf = torch.from_numpy(wav_vf).to(wav_prod.device)
-
-        return wav_prod, wav_vf
+        return wav
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer

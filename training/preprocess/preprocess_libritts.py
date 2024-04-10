@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import math
 import random
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 from scipy.stats import betabinom
@@ -40,6 +40,7 @@ class PreprocessLibriTTS:
 
     Args:
         lang (str): The language of the input text.
+        preprocess_config (Optional[PreprocessingConfig]): The preprocessing configuration.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -55,6 +56,7 @@ class PreprocessLibriTTS:
     def __init__(
         self,
         lang: str = "en",
+        preprocess_config: Optional[PreprocessingConfig] = None,
     ):
         super().__init__()
 
@@ -68,31 +70,34 @@ class PreprocessLibriTTS:
         self.tokenizer = TokenizerIPA(lang)
         self.vocoder_train_config = VocoderBasicConfig()
 
-        preprocess_config = PreprocessingConfig(processing_lang_type)
-        self.preprocess_config = preprocess_config
+        self.preprocess_config = (
+            PreprocessingConfig(processing_lang_type)
+            if preprocess_config is None
+            else preprocess_config
+        )
 
-        self.sampling_rate = preprocess_config.sampling_rate
-        self.use_audio_normalization = preprocess_config.use_audio_normalization
+        self.sampling_rate = self.preprocess_config.sampling_rate
+        self.use_audio_normalization = self.preprocess_config.use_audio_normalization
 
-        self.hop_length = preprocess_config.stft.hop_length
-        self.filter_length = preprocess_config.stft.filter_length
-        self.mel_fmin = preprocess_config.stft.mel_fmin
-        self.win_length = preprocess_config.stft.win_length
+        self.hop_length = self.preprocess_config.stft.hop_length
+        self.filter_length = self.preprocess_config.stft.filter_length
+        self.mel_fmin = self.preprocess_config.stft.mel_fmin
+        self.win_length = self.preprocess_config.stft.win_length
 
         self.tacotronSTFT = TacotronSTFT(
             filter_length=self.filter_length,
             hop_length=self.hop_length,
-            win_length=preprocess_config.stft.win_length,
-            n_mel_channels=preprocess_config.stft.n_mel_channels,
+            win_length=self.preprocess_config.stft.win_length,
+            n_mel_channels=self.preprocess_config.stft.n_mel_channels,
             sampling_rate=self.sampling_rate,
             mel_fmin=self.mel_fmin,
-            mel_fmax=preprocess_config.stft.mel_fmax,
+            mel_fmax=self.preprocess_config.stft.mel_fmax,
             center=False,
         )
 
         min_seconds, max_seconds = (
-            preprocess_config.min_seconds,
-            preprocess_config.max_seconds,
+            self.preprocess_config.min_seconds,
+            self.preprocess_config.max_seconds,
         )
 
         self.min_samples = int(self.sampling_rate * min_seconds)
