@@ -66,7 +66,7 @@ class DelightfulTTS(LightningModule):
             self.train_config_acoustic = AcousticPretrainingConfig()
 
         self.preprocess_config = PreprocessingConfig(
-            "english_only",
+            "multilingual",
             sampling_rate=sampling_rate,
         )
 
