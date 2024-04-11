@@ -338,7 +338,7 @@ class HifiLibriDataset(Dataset):
                 text,
                 text,
                 speaker_id,
-                int(chapter_id),
+                chapter_id,
                 utterance_id,
             )
             data = self.preprocess_libtts.acoustic(libri_row)
