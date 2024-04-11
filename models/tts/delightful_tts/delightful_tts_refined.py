@@ -17,7 +17,8 @@ from models.config import (
     lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
-from models.vocoder.univnet import UnivNet
+
+# from models.vocoder.hifigan import HifiGan
 from training.datasets.hifi_libri_dataset import train_dataloader
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
@@ -86,60 +87,60 @@ class DelightfulTTS(LightningModule):
         )
 
         # Initialize the vocoder, freeze for the first stage of the training
-        self.vocoder_module = UnivNet()
-        self.vocoder_module.freeze()
+        # self.vocoder = HifiGan()
+        # self.vocoder.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=True)
 
-    def forward(
-        self,
-        text: str,
-        speaker_idx: Tensor,
-        lang: str = "en",
-    ) -> Tensor:
-        r"""Performs a forward pass through the AcousticModel.
-        This code must be run only with the loaded weights from the checkpoint!
+    # def forward(
+    #     self,
+    #     text: str,
+    #     speaker_idx: Tensor,
+    #     lang: str = "en",
+    # ) -> Tensor:
+    #     r"""Performs a forward pass through the AcousticModel.
+    #     This code must be run only with the loaded weights from the checkpoint!
 
-        Args:
-            text (str): The input text.
-            speaker_idx (Tensor): The index of the speaker.
-            lang (str): The language.
+    #     Args:
+    #         text (str): The input text.
+    #         speaker_idx (Tensor): The index of the speaker.
+    #         lang (str): The language.
 
-        Returns:
-            Tensor: The generated waveform with hifi-gan.
-        """
-        normalized_text = self.normilize_text(text)
-        _, phones = self.tokenizer(normalized_text)
+    #     Returns:
+    #         Tensor: The generated waveform with hifi-gan.
+    #     """
+    #     normalized_text = self.normilize_text(text)
+    #     _, phones = self.tokenizer(normalized_text)
 
-        # Convert to tensor
-        x = torch.tensor(
-            phones,
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).unsqueeze(0)
+    #     # Convert to tensor
+    #     x = torch.tensor(
+    #         phones,
+    #         dtype=torch.int,
+    #         device=speaker_idx.device,
+    #     ).unsqueeze(0)
 
-        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = (
-            torch.tensor(
-                [lang2id[lang]],
-                dtype=torch.int,
-                device=speaker_idx.device,
-            )
-            .repeat(x.shape[1])
-            .unsqueeze(0)
-        )
+    #     langs = (
+    #         torch.tensor(
+    #             [lang2id[lang]],
+    #             dtype=torch.int,
+    #             device=speaker_idx.device,
+    #         )
+    #         .repeat(x.shape[1])
+    #         .unsqueeze(0)
+    #     )
 
-        mel_pred = self.acoustic_model.forward(
-            x=x,
-            speakers=speakers,
-            langs=langs,
-        )
+    #     mel_pred = self.acoustic_model.forward(
+    #         x=x,
+    #         speakers=speakers,
+    #         langs=langs,
+    #     )
 
-        wav = self.vocoder_module.forward(mel_pred)
+    #     wav = self.vocoder.forward(mel_pred)
 
-        return wav
+    #     return wav
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer

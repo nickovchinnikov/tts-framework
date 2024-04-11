@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from torch import Tensor
 from torch.nn import Module
 
@@ -27,13 +29,25 @@ class Discriminator(Module):
         self.MPD = MultiScaleDiscriminator()
         self.MSD = MultiPeriodDiscriminator()
 
-    def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:
+    def forward(
+        self,
+        x: Tensor,
+        x_hat: Tensor,
+    ) -> Tuple[
+        Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+        Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+    ]:
         r"""Computes the forward pass of the discriminator.
 
         Args:
             x (Tensor): Input tensor of shape [B, C, T].
+            x_hat (Tensor): Input tensor of shape [B, C, T].
 
         Returns:
-            tuple(Tensor, Tensor): Tuple containing the output tensors of the `MultiScaleDiscriminator` and `MultiPeriodDiscriminator` instances.
+            Tuple[
+                Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+                Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]
+            ]:
+            Tuple containing the output tensors of the `MultiResolutionDiscriminator` and `MultiPeriodDiscriminator` instances.
         """
-        return self.MPD(x), self.MSD(x)
+        return self.MPD.forward(x, x_hat), self.MSD.forward(x, x_hat)
