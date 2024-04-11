@@ -4,6 +4,16 @@ from pathlib import Path
 import tempfile
 from typing import Dict, List, Literal, Tuple
 
+os.environ["TQDM_DISABLE"] = "1"
+import tqdm
+
+
+def nop(it, *a, **k):
+    return it
+
+
+tqdm.tqdm = nop
+
 from lhotse import CutSet, RecordingSet, SupervisionSet
 from lhotse.cut import MonoCut
 from lhotse.recipes import hifitts, libritts
@@ -24,15 +34,15 @@ NUM_JOBS = (os.cpu_count() or 2) - 1
 # The selected speakers from the HiFiTTS dataset
 selected_speakers_hi_fi_ids = [
     "Cori Samuel",  # 92,
-    "Phil Benson",  # 6097,
-    "Mike Pelton",  # 6670,
+    # "Phil Benson",  # 6097,
+    # "Mike Pelton",  # 6670,
     "Tony Oliva",  # 6671,
-    "Maria Kasper",  # 8051,
+    # "Maria Kasper",  # 8051,
     "John Van Stan",  # 9017,
     "Helen Taylor",  # 9136,
-    "Sylviamb",  # 11614,
-    "Celine Major",  # 11697,
-    "LikeManyWaters",  # 12787,
+    # "Sylviamb",  # 11614,
+    # "Celine Major",  # 11697,
+    # "LikeManyWaters",  # 12787,
 ]
 
 # The selected speakers from the LibriTTS dataset
@@ -180,6 +190,7 @@ class HifiLibriDataset(Dataset):
 
         # Map the speaker ids to string and list of selected speaker ids to set
         self.selected_speakers_libri_ids_ = set(selected_speakers_libri_ids)
+        self.selected_speakers_hi_fi_ids_ = set(selected_speakers_hi_fi_ids)
 
         self.cache = cache
         self.cache_dir = Path(cache_dir) / f"cache-{hifitts_path}-{libritts_path}"
@@ -202,6 +213,11 @@ class HifiLibriDataset(Dataset):
             self.cutset_hifi = prep_2_cutset(prepared_hifi)
             # Save the prepared HiFiTTS dataset cutset
             self.cutset_hifi.to_file(hifi_cutset_file_path)
+
+        self.cutset_hifi = self.cutset_hifi.filter(
+            lambda cut: isinstance(cut, MonoCut)
+            and str(cut.supervisions[0].speaker) in self.selected_speakers_hi_fi_ids_,
+        )
 
         # Prepare the LibriTTS dataset
         self.libritts_path = self.root_dir / libritts_path
@@ -313,7 +329,7 @@ class HifiLibriDataset(Dataset):
                     self.voicefixer.restore(
                         input=audio_path,  # low quality .wav/.flac file
                         output=out_file.name,  # save file path
-                        cuda=True,  # GPU acceleration
+                        cuda=False,  # GPU acceleration
                         mode=0,
                     )
                     audio, _ = sf.read(out_file.name)

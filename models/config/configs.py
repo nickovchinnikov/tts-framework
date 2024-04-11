@@ -24,7 +24,7 @@ class PreprocessingConfig:
     min_seconds: float = 0.5
     max_seconds: float = 21.0
     use_audio_normalization: bool = True
-    workers: int = 5
+    workers: int = 8
     stft: STFTConfig = field(
         default_factory=lambda: STFTConfig(
             filter_length=1024,

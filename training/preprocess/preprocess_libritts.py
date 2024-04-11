@@ -30,7 +30,7 @@ class PreprocessForAcousticResult:
     raw_text: str
     normalized_text: str
     speaker_id: int
-    chapter_id: int
+    chapter_id: str
     utterance_id: str
     pitch_is_normalized: bool
 
@@ -133,12 +133,12 @@ class PreprocessLibriTTS:
 
     def acoustic(
         self,
-        row: Tuple[torch.Tensor, int, str, str, int, int, str],
+        row: Tuple[torch.Tensor, int, str, str, int, str, str],
     ) -> Union[None, PreprocessForAcousticResult]:
         r"""Preprocesses audio and text data for use with a TacotronSTFT model.
 
         Args:
-            row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
+            row (Tuple[torch.FloatTensor, int, str, str, int, str, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
 
         Returns:
             dict: A dictionary containing the preprocessed audio and text data.
@@ -245,14 +245,14 @@ class PreprocessLibriTTS:
             pitch_is_normalized=False,
         )
 
-    def univnet(self, row: Tuple[torch.Tensor, int, str, str, int, int, str]):
+    def univnet(self, row: Tuple[torch.Tensor, int, str, str, int, str, str]):
         r"""Preprocesses audio data for use with a UnivNet model.
 
         This method takes a row of data, extracts the audio and preprocesses it.
         It then selects a random segment from the preprocessed audio and its corresponding mel spectrogram.
 
         Args:
-            row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
+            row (Tuple[torch.FloatTensor, int, str, str, int, str, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, int]: A tuple containing the selected segment of the mel spectrogram, the corresponding audio segment, and the speaker ID.

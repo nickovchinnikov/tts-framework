@@ -1,8 +1,6 @@
 from typing import List
 
 from lightning.pytorch.core import LightningModule
-import torch
-from torch import Tensor
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
@@ -14,11 +12,8 @@ from models.config import (
     AcousticTrainingConfig,
     PreprocessingConfig,
     get_lang_map,
-    lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
-
-# from models.vocoder.hifigan import HifiGan
 from training.datasets.hifi_libri_dataset import train_dataloader
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
@@ -48,7 +43,7 @@ class DelightfulTTS(LightningModule):
         fine_tuning: bool = False,
         lang: str = "en",
         n_speakers: int = 5392,
-        batch_size: int = 6,
+        batch_size: int = 10,
         sampling_rate: int = 44100,
     ):
         super().__init__()
@@ -85,10 +80,6 @@ class DelightfulTTS(LightningModule):
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )
-
-        # Initialize the vocoder, freeze for the first stage of the training
-        # self.vocoder = HifiGan()
-        # self.vocoder.freeze()
 
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=True)
