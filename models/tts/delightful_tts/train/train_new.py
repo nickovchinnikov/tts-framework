@@ -79,7 +79,7 @@ trainer = Trainer(
     gradient_clip_val=0.5,
 )
 
-model = DelightfulTTS(batch_size=10)
+model = DelightfulTTS(batch_size=12)
 # model = DelightfulTTS(batch_size=10)
 # model = DelightfulTTS.load_from_checkpoint(ckpt_acoustic, strict=False)
 
