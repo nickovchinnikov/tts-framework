@@ -326,7 +326,11 @@ class HifiLibriDataset(Dataset):
             text: str = str(cutset.supervisions[0].text)
 
             fileid = str(cutset.supervisions[0].recording_id)
-            _, chapter_id, _, utterance_id = fileid.split("_")
+
+            # _, chapter_id, _, utterance_id = fileid.split("_")
+            split_fileid = fileid.split("_")
+            chapter_id = split_fileid[1]
+            utterance_id = split_fileid[-1]
 
             libri_row = (
                 audio,
