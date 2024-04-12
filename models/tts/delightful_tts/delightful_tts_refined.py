@@ -1,29 +1,20 @@
-import tempfile
-from typing import List, Tuple
+from typing import List
 
 from lightning.pytorch.core import LightningModule
-import soundfile as sf
-import torch
-from torch import Tensor
-from torch.optim import AdamW, swa_utils
+from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
-from torchaudio.transforms import Resample
-from voicefixer import VoiceFixer
 
 from models.config import (
-    AcousticENModelConfig,
     AcousticFinetuningConfig,
+    AcousticMultilingualModelConfig,
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
     PreprocessingConfig,
     get_lang_map,
-    lang2id,
 )
-from models.config.speakers import dataset_speaker_ids
-from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
-from models.vocoder.univnet import UnivNet
+from training.datasets.hifi_libri_dataset import train_dataloader
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
 
@@ -36,19 +27,6 @@ MEL_SPEC_EVERY_N_STEPS = 1000
 AUDIO_EVERY_N_STEPS = 100
 
 
-# Move to config
-prod_sr = 44100
-
-# Resampler for the VoiceFixer
-resample = Resample(
-    orig_freq=22050,
-    # Prod quality
-    new_freq=prod_sr,
-)
-# VoiceFixer is the shortest way to the maximum audio quality
-voicefixer = VoiceFixer()
-
-
 class DelightfulTTS(LightningModule):
     r"""Trainer for the acoustic model.
 
@@ -57,18 +35,16 @@ class DelightfulTTS(LightningModule):
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
         batch_size (int): The batch size.
-        swa_avg (bool): Whether to use SWA or not. Defaults to False. NOTE: When fine-tuning, SWA should be used!
+        sampling_rate (int): The sample rate of the audio.
     """
 
     def __init__(
         self,
         fine_tuning: bool = False,
         lang: str = "en",
-        # NOTE: lr finder found 1.5848931924611133e-07
-        # learning_rate: float = 1.5848931924611133e-05,
         n_speakers: int = 5392,
-        batch_size: int = 4,
-        swa_avg: bool = True,
+        batch_size: int = 10,
+        sampling_rate: int = 44100,
     ):
         super().__init__()
 
@@ -89,8 +65,13 @@ class DelightfulTTS(LightningModule):
         else:
             self.train_config_acoustic = AcousticPretrainingConfig()
 
-        self.preprocess_config = PreprocessingConfig("english_only")
-        self.model_config = AcousticENModelConfig()
+        self.preprocess_config = PreprocessingConfig(
+            "multilingual",
+            sampling_rate=sampling_rate,
+        )
+
+        # NOTE: try Multilingual model config
+        self.model_config = AcousticMultilingualModelConfig()
 
         # TODO: fix the arguments!
         self.acoustic_model = AcousticModel(
@@ -100,86 +81,57 @@ class DelightfulTTS(LightningModule):
             n_speakers=n_speakers,
         )
 
-        self.swa_avg = swa_avg
-        # Initialize SWA
-        self.swa_averaged_model = swa_utils.AveragedModel(self.acoustic_model)
-
-        # Initialize the vocoder, freeze for the first stage of the training
-        self.vocoder_module = UnivNet()
-        self.vocoder_module.freeze()
-
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=False)
+        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=True)
 
-    def forward(
-        self,
-        text: str,
-        speaker_idx: Tensor,
-        lang: str = "en",
-    ) -> Tuple[Tensor, Tensor]:
-        r"""Performs a forward pass through the AcousticModel.
-        This code must be run only with the loaded weights from the checkpoint!
+    # def forward(
+    #     self,
+    #     text: str,
+    #     speaker_idx: Tensor,
+    #     lang: str = "en",
+    # ) -> Tensor:
+    #     r"""Performs a forward pass through the AcousticModel.
+    #     This code must be run only with the loaded weights from the checkpoint!
 
-        Args:
-            text (str): The input text.
-            speaker_idx (Tensor): The index of the speaker.
-            lang (str): The language.
+    #     Args:
+    #         text (str): The input text.
+    #         speaker_idx (Tensor): The index of the speaker.
+    #         lang (str): The language.
 
-        Returns:
-            Tuple[Tensor, Tensor]: The generated waveform with univnet and the predicted mel spectrogram.
-        """
-        normalized_text = self.normilize_text(text)
-        _, phones = self.tokenizer(normalized_text)
+    #     Returns:
+    #         Tensor: The generated waveform with hifi-gan.
+    #     """
+    #     normalized_text = self.normilize_text(text)
+    #     _, phones = self.tokenizer(normalized_text)
 
-        # Convert to tensor
-        x = torch.tensor(
-            phones,
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).unsqueeze(0)
+    #     # Convert to tensor
+    #     x = torch.tensor(
+    #         phones,
+    #         dtype=torch.int,
+    #         device=speaker_idx.device,
+    #     ).unsqueeze(0)
 
-        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = (
-            torch.tensor(
-                [lang2id[lang]],
-                dtype=torch.int,
-                device=speaker_idx.device,
-            )
-            .repeat(x.shape[1])
-            .unsqueeze(0)
-        )
+    #     langs = (
+    #         torch.tensor(
+    #             [lang2id[lang]],
+    #             dtype=torch.int,
+    #             device=speaker_idx.device,
+    #         )
+    #         .repeat(x.shape[1])
+    #         .unsqueeze(0)
+    #     )
 
-        mel_pred = self.acoustic_model.forward(
-            x=x,
-            speakers=speakers,
-            langs=langs,
-        )
+    #     mel_pred = self.acoustic_model.forward(
+    #         x=x,
+    #         speakers=speakers,
+    #         langs=langs,
+    #     )
 
-        wav = self.vocoder_module.forward(mel_pred)
+    #     wav = self.vocoder.forward(mel_pred)
 
-        # Resample the audio to prod SR
-        wav_prod = resample.to(wav.device).forward(wav)
-
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as input_file:
-            sf.write(
-                input_file.name,
-                wav_prod.detach().cpu().numpy(),
-                prod_sr,
-            )
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as output_file:
-                voicefixer.restore(
-                    input=input_file.name,  # low quality .wav/.flac file
-                    output=output_file.name,  # save file path
-                    cuda=True,  # GPU acceleration
-                    mode=0,
-                )
-                # Read the wav file back into a numpy array
-                wav_vf, _ = sf.read(output_file.name)
-
-        wav_vf = torch.from_numpy(wav_vf).to(wav_prod.device)
-
-        return wav_prod, wav_vf
+    #     return wav
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -360,33 +312,18 @@ class DelightfulTTS(LightningModule):
             "lr_scheduler": scheduler_acoustic,
         }
 
-    def on_train_epoch_end(self):
-        r"""Updates the averaged model after each optimizer step with SWA."""
-        if self.swa_avg:
-            self.swa_averaged_model.update_parameters(self.acoustic_model)
-
-    def on_train_end(self):
-        # Update SWA model after training
-        # if self.swa_avg:
-        #     swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_model)
-        pass
-
     def train_dataloader(
         self,
-        root: str = "datasets_cache/LIBRITTS",
+        root: str = "datasets_cache",
         cache: bool = True,
-        cache_dir: str = "datasets_cache",
-        mem_cache: bool = False,
-        url: str = "train-960",
+        cache_dir: str = "/dev/shm",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
-            cache_dir (str): The directory for the cache.
-            mem_cache (bool): Whether to use memory cache.
-            url (str): The URL of the dataset.
+            cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
@@ -397,8 +334,5 @@ class DelightfulTTS(LightningModule):
             root=root,
             cache=cache,
             cache_dir=cache_dir,
-            mem_cache=mem_cache,
-            url=url,
             lang=self.lang,
-            selected_speaker_ids=dataset_speaker_ids,
         )

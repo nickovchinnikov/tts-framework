@@ -50,7 +50,7 @@ class TestTextPreprocess(unittest.TestCase):
 
         # Test case 5: Test character normalization with multiple quotes
         input_text = "He said, “I don’t know…”"
-        expected_output = 'He said, "I don\'t know."'
+        expected_output = "He said, 'I don't know.'"
         self.assertEqual(self.normalizer.normalize_chars(input_text), expected_output)
 
         # Test case 6: Test character normalization with multiple dashes
@@ -67,7 +67,7 @@ class TestTextPreprocess(unittest.TestCase):
         # Test case 1: Test basic text normalization
         input_text = r"""It’s a beautiful day… Hello..... World!!!! Wow!!!!! This is amazing????? He said, “I don’t know…”. It’s a beautiful day… What????? I don't understand!!!!!"""
 
-        expected_output = r"""It's a beautiful day. Hello. World! Wow! This is amazing? He said, "I don't know.". It's a beautiful day. What? I don't understand!"""
+        expected_output = r"""It's a beautiful day. Hello. World! Wow! This is amazing? He said, 'I don't know.'. It's a beautiful day. What? I don't understand!"""
         self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 2: Test text normalization with multiple dots
@@ -81,7 +81,9 @@ class TestTextPreprocess(unittest.TestCase):
         self.assertEqual(self.normalizer(input_text), expected_output)
 
         # Test case 4: Complicated case
-        input_text = "Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk."
+        input_text = (
+            "Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk."
+        )
         expected_output = r"""mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk."""
         self.assertEqual(self.normalizer(input_text), expected_output)
 
@@ -95,22 +97,47 @@ class TestTextPreprocess(unittest.TestCase):
         expected_output = r"""For example it normalizes 'medic' into 'm e d i c' or 'yeah' into 'y e a h'."""
         self.assertEqual(self.normalizer(input_text), expected_output)
 
-        # Test case 7: Time and currency
+        # Test case 7: Time, currency, line-break
         input_text = "The alarm went off at 10:00a.m. \nI received $123. It's 12:30pm. I paid $123.45 for this desk."
-        expected_output = r"""The alarm went off at ten AM I received one hundred and twenty three dollars. It's twelve thirty PM. I paid one hundred and twenty three dollars forty five cents for this desk."""
+        expected_output = r"""The alarm went off at ten AM;; I received one hundred and twenty three dollars. It's twelve thirty PM. I paid one hundred and twenty three dollars forty five cents for this desk."""
         self.assertEqual(self.normalizer(input_text), expected_output)
 
     def test_normalize2(self):
-        input_text = """
-        The Wizard of Oz: “Lions? And Tigers? And Bears?”.
+        input_text = r"""The Wizard of Oz: “Lions? And Tigers? And Bears?”.
         Toy Story: “Buzz, you’re flying!”.
         As the snake shook its head, a deafening shout behind Harry made both of them jump.
         ‘DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON’T BELIEVE WHAT IT’S DOING!’.
         """
 
-        expected_output = 'The Wizard of Oz: "Lions? And Tigers? And Bears?". Toy Story: "Buzz, you\'re flying!". As the snake shook its head, a deafening shout behind Harry made both of them jump. \'DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON\'T BELIEVE WHAT IT\'S DOING!\'.'
+        expected_output = r"The Wizard of Oz: 'Lions? And Tigers? And Bears?'.;; Toy Story: 'Buzz, you're flying!'.;; As the snake shook its head, a deafening shout behind Harry made both of them jump.;; 'DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON'T BELIEVE WHAT IT'S DOING!'.;; "
 
         self.assertEqual(self.normalizer(input_text), expected_output)
+
+    def test_normilize_numbers(self):
+        input_text = "1234"
+        result = self.normalizer(input_text)
+        expected_output = "twelve thirty four"
+        self.assertEqual(result, expected_output)
+
+    def test_punctuation(self):
+        input_text = r"""Hello, World! How are you?
+        Victor — why did you do that?
+        As the old saying goes, "The early bird catches the worm."
+        (Some people say that the early bird gets the worm.)
+        """
+        result = self.normalizer(input_text)
+        expected_output = r"""Hello, World! How are you?;; Victor - why did you do that?;; As the old saying goes, 'The early bird catches the worm.';; (Some people say that the early bird gets the worm.);; """
+        self.assertEqual(result, expected_output)
+
+        # Double punctuation
+        input_text2 = r"""Hello, World!!!! How are you????
+        Victor – why did you do that?
+        As the old saying goes, "The early bird catches the worm."
+        (Some people say that the early bird gets the worm.)
+        """
+        result2 = self.normalizer(input_text2)
+        expected_output2 = r"""Hello, World! How are you?;; Victor - why did you do that?;; As the old saying goes, 'The early bird catches the worm.';; (Some people say that the early bird gets the worm.);; """
+        self.assertEqual(result2, expected_output2)
 
 
 if __name__ == "__main__":

@@ -135,7 +135,10 @@ class TacotronSTFT(Module):
         return self.dynamic_range_compression_torch(magnitudes)
 
     def dynamic_range_compression_torch(
-        self, x: torch.Tensor, C: int = 1, clip_val: float = 1e-5,
+        self,
+        x: torch.Tensor,
+        C: int = 1,
+        clip_val: float = 1e-5,
     ) -> torch.Tensor:
         r"""Applies dynamic range compression to x.
 

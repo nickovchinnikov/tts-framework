@@ -10,7 +10,7 @@ from .variance_predictor import VariancePredictor
 
 
 class LengthAdaptor(Module):
-    r"""The LengthAdaptor module is used to adjust the duration of phonemes. Used in Tacotron 2 model.
+    r"""DEPRECATED: The LengthAdaptor module is used to adjust the duration of phonemes.
     It contains a dedicated duration predictor and methods to upsample the input features to match predicted durations.
 
     Args:
@@ -32,7 +32,9 @@ class LengthAdaptor(Module):
         )
 
     def length_regulate(
-        self, x: torch.Tensor, duration: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        duration: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Regulates the length of the input tensor using the duration tensor.
 
@@ -93,7 +95,8 @@ class LengthAdaptor(Module):
         """
         x_res = x_res.detach()
         log_duration_prediction = self.duration_predictor(
-            x_res, src_mask,
+            x_res,
+            src_mask,
         )  # type: torch.Tensor
         x, _ = self.length_regulate(x, duration_target)
         embeddings, _ = self.length_regulate(embeddings, duration_target)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import math
 import random
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 from scipy.stats import betabinom
@@ -30,7 +30,7 @@ class PreprocessForAcousticResult:
     raw_text: str
     normalized_text: str
     speaker_id: int
-    chapter_id: int
+    chapter_id: str
     utterance_id: str
     pitch_is_normalized: bool
 
@@ -40,6 +40,7 @@ class PreprocessLibriTTS:
 
     Args:
         lang (str): The language of the input text.
+        preprocess_config (Optional[PreprocessingConfig]): The preprocessing configuration.
 
     Attributes:
         min_seconds (float): The minimum duration of audio clips in seconds.
@@ -55,6 +56,7 @@ class PreprocessLibriTTS:
     def __init__(
         self,
         lang: str = "en",
+        preprocess_config: Optional[PreprocessingConfig] = None,
     ):
         super().__init__()
 
@@ -68,31 +70,34 @@ class PreprocessLibriTTS:
         self.tokenizer = TokenizerIPA(lang)
         self.vocoder_train_config = VocoderBasicConfig()
 
-        preprocess_config = PreprocessingConfig(processing_lang_type)
-        self.preprocess_config = preprocess_config
+        self.preprocess_config = (
+            PreprocessingConfig(processing_lang_type)
+            if preprocess_config is None
+            else preprocess_config
+        )
 
-        self.sampling_rate = preprocess_config.sampling_rate
-        self.use_audio_normalization = preprocess_config.use_audio_normalization
+        self.sampling_rate = self.preprocess_config.sampling_rate
+        self.use_audio_normalization = self.preprocess_config.use_audio_normalization
 
-        self.hop_length = preprocess_config.stft.hop_length
-        self.filter_length = preprocess_config.stft.filter_length
-        self.mel_fmin = preprocess_config.stft.mel_fmin
-        self.win_length = preprocess_config.stft.win_length
+        self.hop_length = self.preprocess_config.stft.hop_length
+        self.filter_length = self.preprocess_config.stft.filter_length
+        self.mel_fmin = self.preprocess_config.stft.mel_fmin
+        self.win_length = self.preprocess_config.stft.win_length
 
         self.tacotronSTFT = TacotronSTFT(
             filter_length=self.filter_length,
             hop_length=self.hop_length,
-            win_length=preprocess_config.stft.win_length,
-            n_mel_channels=preprocess_config.stft.n_mel_channels,
+            win_length=self.preprocess_config.stft.win_length,
+            n_mel_channels=self.preprocess_config.stft.n_mel_channels,
             sampling_rate=self.sampling_rate,
             mel_fmin=self.mel_fmin,
-            mel_fmax=preprocess_config.stft.mel_fmax,
+            mel_fmax=self.preprocess_config.stft.mel_fmax,
             center=False,
         )
 
         min_seconds, max_seconds = (
-            preprocess_config.min_seconds,
-            preprocess_config.max_seconds,
+            self.preprocess_config.min_seconds,
+            self.preprocess_config.max_seconds,
         )
 
         self.min_samples = int(self.sampling_rate * min_seconds)
@@ -101,7 +106,10 @@ class PreprocessLibriTTS:
         self.audio_processor = AudioProcessor()
 
     def beta_binomial_prior_distribution(
-        self, phoneme_count: int, mel_count: int, scaling_factor: float = 1.0,
+        self,
+        phoneme_count: int,
+        mel_count: int,
+        scaling_factor: float = 1.0,
     ) -> torch.Tensor:
         r"""Computes the beta-binomial prior distribution for the attention mechanism.
 
@@ -125,12 +133,12 @@ class PreprocessLibriTTS:
 
     def acoustic(
         self,
-        row: Tuple[torch.Tensor, int, str, str, int, int, str],
+        row: Tuple[torch.Tensor, int, str, str, int, str, str],
     ) -> Union[None, PreprocessForAcousticResult]:
         r"""Preprocesses audio and text data for use with a TacotronSTFT model.
 
         Args:
-            row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
+            row (Tuple[torch.FloatTensor, int, str, str, int, str, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
 
         Returns:
             dict: A dictionary containing the preprocessed audio and text data.
@@ -204,7 +212,8 @@ class PreprocessLibriTTS:
         mel_spectrogram = mel_spectrogram[:, : pitch.shape[0]]
 
         attn_prior = self.beta_binomial_prior_distribution(
-            phones.shape[0], mel_spectrogram.shape[1],
+            phones.shape[0],
+            mel_spectrogram.shape[1],
         ).T
 
         assert pitch.shape[0] == mel_spectrogram.shape[1], (
@@ -236,14 +245,14 @@ class PreprocessLibriTTS:
             pitch_is_normalized=False,
         )
 
-    def univnet(self, row: Tuple[torch.Tensor, int, str, str, int, int, str]):
+    def univnet(self, row: Tuple[torch.Tensor, int, str, str, int, str, str]):
         r"""Preprocesses audio data for use with a UnivNet model.
 
         This method takes a row of data, extracts the audio and preprocesses it.
         It then selects a random segment from the preprocessed audio and its corresponding mel spectrogram.
 
         Args:
-            row (Tuple[torch.FloatTensor, int, str, str, int, int, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
+            row (Tuple[torch.FloatTensor, int, str, str, int, str, str]): The input row. The row is a tuple containing the following elements: (audio, sr_actual, raw_text, normalized_text, speaker_id, chapter_id, utterance_id).
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, int]: A tuple containing the selected segment of the mel spectrogram, the corresponding audio segment, and the speaker ID.

@@ -12,6 +12,7 @@ import uvicorn
 
 from config.best_speakers_list import selected_speakers
 from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
+from models.vocoder.univnet import UnivNet
 from server.utils import (
     returnAudioBuffer,
     sentences_split,
@@ -29,8 +30,11 @@ checkpoint = "checkpoints/epoch=3265-step=313888.ckpt"
 
 device = torch.device("cuda")
 module = DelightfulTTS.load_from_checkpoint(checkpoint).to(device)
+
 # Set the module to eval mode
 module.eval()
+module.vocoder_module = UnivNet().to(device)
+module.vocoder_module.eval()
 
 
 # Load the speaker information
@@ -48,33 +52,79 @@ class TransformerParams(BaseModel):
     speaker: str = Field(default="122")  # Default speaker "carnright"
 
 
+# async def async_gen(text: str, speaker: torch.Tensor):
+#     """Audio streaming async generator function."""
+#     try:
+#         paragraphs = sentences_split(text)
+
+#         # Create an empty buffer to hold all the audio data
+#         total_buffer = io.BytesIO()
+
+#         for paragraph in paragraphs:
+#             if paragraph.strip() == "":
+#                 continue
+#             with torch.no_grad():
+#                 wav_prediction, wav_vf = module.forward(
+#                     paragraph,
+#                     speaker,
+#                 )
+
+#                 wav_vf = wav_vf.detach().cpu().numpy()
+
+#                 buffer_ = returnAudioBuffer(
+#                     wav_vf,
+#                     44100,
+#                     AUDIO_FORMAT,
+#                 )
+
+#                 # Append the buffer to the total buffer
+#                 total_buffer.write(buffer_.getvalue())
+
+#         total_buffer.seek(0)
+
+#         audio = AudioSegment.from_file(
+#             total_buffer,
+#             format=AUDIO_FORMAT,
+#         )
+
+#         audio_bytes = audio.export(format=AUDIO_FORMAT, bitrate="64k")
+
+#         yield audio_bytes.read()
+
+#         # need this sleep in order to be able to catch the disconnect
+#         await asyncio.sleep(0)
+
+#     except asyncio.CancelledError:
+#         print("Client disconnected")
+
+
 async def async_gen(text: str, speaker: torch.Tensor):
     """Audio streaming async generator function."""
     try:
-        paragraphs = sentences_split(text)
+        # paragraphs = sentences_split(text)
 
-        # Create an empty buffer to hold all the audio data
+        # # Create an empty buffer to hold all the audio data
         total_buffer = io.BytesIO()
 
-        for paragraph in paragraphs:
-            if paragraph.strip() == "":
-                continue
-            with torch.no_grad():
-                wav_prediction, wav_vf = module.forward(
-                    paragraph,
-                    speaker,
-                )
+        # for paragraph in paragraphs:
+        #     if paragraph.strip() == "":
+        #         continue
+        with torch.no_grad():
+            _, wav_vf = module.forward(
+                text,
+                speaker,
+            )
 
-                wav_vf = wav_vf.detach().cpu().numpy()
+            wav_vf = wav_vf.detach().cpu().numpy()
 
-                buffer_ = returnAudioBuffer(
-                    wav_vf,
-                    44100,
-                    AUDIO_FORMAT,
-                )
+            total_buffer = returnAudioBuffer(
+                wav_vf,
+                44100,
+                AUDIO_FORMAT,
+            )
 
-                # Append the buffer to the total buffer
-                total_buffer.write(buffer_.getvalue())
+            # # Append the buffer to the total buffer
+            # total_buffer.write(buffer_.getvalue())
 
         total_buffer.seek(0)
 

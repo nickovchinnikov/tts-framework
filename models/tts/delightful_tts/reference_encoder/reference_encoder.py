@@ -130,7 +130,10 @@ class ReferenceEncoder(Module):
         x = x.permute((0, 2, 1))
 
         packed_sequence = torch.nn.utils.rnn.pack_padded_sequence(
-            x, lengths=mel_lens.cpu().int(), batch_first=True, enforce_sorted=False,
+            x,
+            lengths=mel_lens.cpu().int(),
+            batch_first=True,
+            enforce_sorted=False,
         )
 
         self.gru.flatten_parameters()
@@ -141,7 +144,12 @@ class ReferenceEncoder(Module):
         return out, memory, mel_masks
 
     def calculate_channels(
-        self, L: int, kernel_size: int, stride: int, pad: int, n_convs: int,
+        self,
+        L: int,
+        kernel_size: int,
+        stride: int,
+        pad: int,
+        n_convs: int,
     ) -> int:
         r"""Calculate the number of channels after applying convolutions.
 

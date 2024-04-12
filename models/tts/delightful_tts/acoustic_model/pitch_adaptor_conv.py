@@ -58,7 +58,11 @@ class PitchAdaptorConv(nn.Module):
         )
 
     def get_pitch_embedding_train(
-        self, x: torch.Tensor, target: torch.Tensor, dr: torch.Tensor, mask: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        target: torch.Tensor,
+        dr: torch.Tensor,
+        mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         r"""Function is used during training to get the pitch prediction, average pitch target,
         and pitch embedding.
@@ -123,10 +127,14 @@ class PitchAdaptorConv(nn.Module):
             dr=dr,
             mask=mask,
         )
-        x = x + pitch_emb.transpose(1, 2)
-        return x, pitch_pred, avg_pitch_target
+        x_pitch = x + pitch_emb.transpose(1, 2)
+        return x_pitch, pitch_pred, avg_pitch_target
 
-    def get_pitch_embedding(self, x: torch.Tensor, mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_pitch_embedding(
+        self,
+        x: torch.Tensor,
+        mask: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         r"""Function is used during inference to get the pitch embedding and pitch prediction.
 
         Args:
@@ -167,5 +175,5 @@ class PitchAdaptorConv(nn.Module):
             pitch_pred (torch.Tensor): The predicted pitch tensor.
         """
         pitch_emb_pred, pitch_pred = self.get_pitch_embedding(x, mask)
-        x = x + pitch_emb_pred.transpose(1, 2)
-        return x, pitch_pred
+        x_pitch = x + pitch_emb_pred.transpose(1, 2)
+        return x_pitch, pitch_pred

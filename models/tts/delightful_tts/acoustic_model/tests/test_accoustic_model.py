@@ -39,7 +39,9 @@ class TestAcousticModel(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers,
+            self.preprocess_config,
+            self.model_config,
+            n_speakers,
         )
 
         # Generate mock data for the forward pass
@@ -184,7 +186,7 @@ class TestAcousticModel(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertIsInstance(loss_out, tuple)
-        self.assertEqual(len(result), 14)
+        self.assertEqual(len(result), 16)
 
     def test_average_utterance_prosody(self):
         u_prosody_pred = torch.randn(2, 5, self.model_config.encoder.n_hidden)
@@ -193,7 +195,8 @@ class TestAcousticModel(unittest.TestCase):
         )
 
         averaged_prosody_pred = self.acoustic_model.average_utterance_prosody(
-            u_prosody_pred=u_prosody_pred, src_mask=src_mask,
+            u_prosody_pred=u_prosody_pred,
+            src_mask=src_mask,
         )
 
         self.assertEqual(
@@ -202,7 +205,10 @@ class TestAcousticModel(unittest.TestCase):
         )
 
     def test_forward(self):
-        self.preprocess_config = PreprocessingConfig("english_only")
+        self.preprocess_config = PreprocessingConfig(
+            language="english_only",
+            sampling_rate=44100,
+        )
         self.model_config = AcousticENModelConfig()
 
         acoustic_model = AcousticModel(
@@ -254,6 +260,7 @@ class TestAcousticModel(unittest.TestCase):
             break
 
         self.assertIsInstance(x, torch.Tensor)
+
 
 if __name__ == "__main__":
     unittest.main()

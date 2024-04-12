@@ -9,19 +9,16 @@ from training.loss.bin_loss import BinLoss
 from training.loss.forward_sum_loss import ForwardSumLoss
 from training.loss.utils import sample_wise_min_max
 
-from .spectral_convergence_loss import SpectralConvergengeLoss
-from .stft_magnitude_loss import STFTMagnitudeLoss
-
 
 class FastSpeech2LossGen(Module):
     def __init__(
         self,
-        bin_warmup: bool = False,
+        bin_warmup: bool = True,
     ):
         r"""Initializes the FastSpeech2LossGen module.
 
         Args:
-            bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to False. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
+            bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to True. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
         """
         super().__init__()
 
@@ -31,14 +28,6 @@ class FastSpeech2LossGen(Module):
         self.sum_loss = ForwardSumLoss()
         self.bin_loss = BinLoss()
 
-        self.spectral_conv_loss = SpectralConvergengeLoss()
-
-        self.logstft_loss = STFTMagnitudeLoss(
-            log=True,
-            reduction="mean",
-            distance="L1",
-        )
-
         self.bin_warmup = bin_warmup
 
     def forward(
@@ -47,7 +36,6 @@ class FastSpeech2LossGen(Module):
         mel_masks: torch.Tensor,
         mel_targets: torch.Tensor,
         mel_predictions: torch.Tensor,
-        # postnet_outputs: torch.Tensor,
         log_duration_predictions: torch.Tensor,
         u_prosody_ref: torch.Tensor,
         u_prosody_pred: torch.Tensor,
@@ -130,41 +118,29 @@ class FastSpeech2LossGen(Module):
 
         mel_masks_expanded = mel_masks.unsqueeze(1)
 
-        mel_predictions_normalized = sample_wise_min_max(mel_predictions).float().to(mel_predictions.device)
-        mel_targets_normalized = sample_wise_min_max(mel_targets).float().to(mel_predictions.device)
-        # postnet_outputs_normalized = sample_wise_min_max(postnet_outputs).float().to(mel_predictions.device)
-
-        ssim_loss: torch.Tensor = self.ssim_loss(
-            mel_predictions_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
+        mel_predictions_normalized = (
+            sample_wise_min_max(mel_predictions).float().to(mel_predictions.device)
+        )
+        mel_targets_normalized = (
+            sample_wise_min_max(mel_targets).float().to(mel_predictions.device)
         )
 
-        # ssim_loss_postnet: torch.Tensor = self.ssim_loss(
-        #     postnet_outputs_normalized.unsqueeze(1), mel_targets_normalized.unsqueeze(1),
-        # )
+        ssim_loss: torch.Tensor = self.ssim_loss(
+            mel_predictions_normalized.unsqueeze(1),
+            mel_targets_normalized.unsqueeze(1),
+        )
 
         if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
-            # print(
-            #     f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
-            # )
             ssim_loss = torch.tensor([1.0], device=mel_predictions.device)
-
-        # if ssim_loss_postnet.item() > 1.0 or ssim_loss_postnet.item() < 0.0:
-        #     # print(
-        #     #     f"Overflow in ssim loss detected, which was {ssim_loss.item()}, setting to 1.0",
-        #     # )
-        #     ssim_loss_postnet = torch.tensor([1.0], device=mel_predictions.device)
 
         masked_mel_predictions = mel_predictions.masked_select(~mel_masks_expanded)
 
         masked_mel_targets = mel_targets.masked_select(~mel_masks_expanded)
 
-        # masked_postnet_outputs = postnet_outputs.masked_select(~mel_masks_expanded)
-
-        mel_loss: torch.Tensor = self.mae_loss(masked_mel_predictions, masked_mel_targets)
-        # mel_loss_postnet: torch.Tensor = self.mae_loss(masked_postnet_outputs, masked_mel_targets)
-
-        # sc_mag_loss = self.spectral_conv_loss(mel_predictions, mel_targets)
-        # log_mag_loss = self.logstft_loss(mel_predictions, mel_targets)
+        mel_loss: torch.Tensor = self.mae_loss(
+            masked_mel_predictions,
+            masked_mel_targets,
+        )
 
         p_prosody_ref = p_prosody_ref.permute((0, 2, 1))
         p_prosody_pred = p_prosody_pred.permute((0, 2, 1))
@@ -181,11 +157,13 @@ class FastSpeech2LossGen(Module):
 
         u_prosody_ref = u_prosody_ref.detach()
         u_prosody_loss: torch.Tensor = 0.5 * self.mae_loss(
-            u_prosody_ref, u_prosody_pred,
+            u_prosody_ref,
+            u_prosody_pred,
         )
 
         duration_loss: torch.Tensor = self.mse_loss(
-            log_duration_predictions, log_duration_targets,
+            log_duration_predictions,
+            log_duration_targets,
         )
 
         pitch_predictions = pitch_predictions.masked_select(~src_masks)
@@ -194,7 +172,9 @@ class FastSpeech2LossGen(Module):
         pitch_loss: torch.Tensor = self.mse_loss(pitch_predictions, p_targets)
 
         ctc_loss: torch.Tensor = self.sum_loss(
-            attn_logprob=attn_logprob, in_lens=src_lens, out_lens=mel_lens,
+            attn_logprob=attn_logprob,
+            in_lens=src_lens,
+            out_lens=mel_lens,
         )
 
         if self.bin_warmup:
@@ -218,20 +198,19 @@ class FastSpeech2LossGen(Module):
                 * bin_loss_weight
             )
         else:
-            bin_loss: torch.Tensor = self.bin_loss(hard_attention=attn_hard, soft_attention=attn_soft)
+            bin_loss: torch.Tensor = self.bin_loss(
+                hard_attention=attn_hard,
+                soft_attention=attn_soft,
+            )
 
         energy_loss: torch.Tensor = self.mse_loss(energy_pred, energy_target)
 
         total_loss = (
             mel_loss
-            # + mel_loss_postnet
             + duration_loss
             + u_prosody_loss
             + p_prosody_loss
             + ssim_loss
-            # + ssim_loss_postnet
-            # + sc_mag_loss
-            # + log_mag_loss
             + pitch_loss
             + ctc_loss
             + bin_loss
@@ -241,11 +220,7 @@ class FastSpeech2LossGen(Module):
         return (
             total_loss,
             mel_loss,
-            # mel_loss_postnet,
             ssim_loss,
-            # ssim_loss_postnet,
-            # sc_mag_loss,
-            # log_mag_loss,
             duration_loss,
             u_prosody_loss,
             p_prosody_loss,
