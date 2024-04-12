@@ -1,29 +1,25 @@
 from datetime import datetime
 import logging
 import os
-from pathlib import Path
 
 from lightning.pytorch import Trainer
 from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ignore
-from lightning.pytorch.callbacks import StochasticWeightAveraging
-from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
-from lightning.pytorch.tuner.tuning import Tuner
 import torch
 
 from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
 
 # Node runk in the cluster
-# node_rank = 0
-# num_nodes = 1
+node_rank = 0
+num_nodes = 2
 
 # # Setup of the training cluster
-# os.environ["MASTER_PORT"] = "12355"
+os.environ["MASTER_PORT"] = "12355"
 # # # Change the IP address to the IP address of the master node
-# os.environ["MASTER_ADDR"] = "10.164.0.32"
-# os.environ["WORLD_SIZE"] = f"{num_nodes}"
+os.environ["MASTER_ADDR"] = "10.164.0.32"
+os.environ["WORLD_SIZE"] = f"{num_nodes}"
 # # # Change the IP address to the IP address of the master node
-# os.environ["NODE_RANK"] = f"{node_rank}"
+os.environ["NODE_RANK"] = f"{node_rank}"
 
 # Get the current date and time
 now = datetime.now()
@@ -52,20 +48,16 @@ print("usable_cuda_devices: ", find_usable_cuda_devices())
 # Set the precision of the matrix multiplication to float32 to improve the performance of the training
 torch.set_float32_matmul_precision("high")
 
-# logs_10 is the best
-# default_root_dir="logs_10"
+# Root and checkpoint
 default_root_dir = "logs_new"
-
-# ckpt_acoustic = (
-#     "./logs_11/lightning_logs/version_4/checkpoints/epoch=1639-step=265108.ckpt"
-# )
-
-# ckpt_vocoder = "./checkpoints/vocoder.ckpt"
+ckpt_acoustic = (
+    "./logs_new/lightning_logs/version_0/checkpoints/epoch=48-step=17836.ckpt"
+)
 
 trainer = Trainer(
     accelerator="cuda",
     devices=-1,
-    # num_nodes=num_nodes,
+    num_nodes=num_nodes,
     strategy=DDPStrategy(
         gradient_as_bucket_view=True,
         find_unused_parameters=True,
@@ -79,12 +71,9 @@ trainer = Trainer(
     gradient_clip_val=0.5,
 )
 
-model = DelightfulTTS()
-# model = DelightfulTTS(batch_size=10)
+# model = DelightfulTTS()
+model = DelightfulTTS(batch_size=10)
 # model = DelightfulTTS.load_from_checkpoint(ckpt_acoustic, strict=False)
-
-# tuner = Tuner(trainer)
-# tuner.lr_find(model)
 
 train_dataloader = model.train_dataloader(
     root="/dev/shm/",
@@ -97,5 +86,5 @@ trainer.fit(
     model=model,
     train_dataloaders=train_dataloader,
     # Resume training states from the checkpoint file
-    # ckpt_path=ckpt_acoustic,
+    ckpt_path=ckpt_acoustic,
 )
