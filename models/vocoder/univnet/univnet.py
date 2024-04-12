@@ -27,14 +27,14 @@ class UnivNet(LightningModule):
     """
 
     def __init__(
-            self,
-            fine_tuning: bool = False,
-            lang: str = "en",
-            acc_grad_steps: int = 10,
-            batch_size: int = 6,
-            root: str = "datasets_cache/LIBRITTS",
-            checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
-        ):
+        self,
+        fine_tuning: bool = False,
+        lang: str = "en",
+        acc_grad_steps: int = 10,
+        batch_size: int = 6,
+        root: str = "datasets_cache/LIBRITTS",
+        checkpoint_path_v1: Optional[str] = "checkpoints/vocoder_pretrained.pt",
+    ):
         r"""Initializes the `VocoderModule`.
 
         Args:
@@ -70,10 +70,9 @@ class UnivNet(LightningModule):
 
         self.loss = UnivnetLoss()
 
-        self.train_config: VoicoderTrainingConfig = \
-        VocoderFinetuningConfig() \
-        if fine_tuning \
-        else VocoderPretrainingConfig()
+        self.train_config: VoicoderTrainingConfig = (
+            VocoderFinetuningConfig() if fine_tuning else VocoderPretrainingConfig()
+        )
 
         # NOTE: this code is used only for the v0.1.0 checkpoint.
         # In the future, this code will be removed!
@@ -82,7 +81,6 @@ class UnivNet(LightningModule):
             generator, discriminator, _, _ = self.get_weights_v1(checkpoint_path_v1)
             self.univnet.load_state_dict(generator, strict=False)
             self.discriminator.load_state_dict(discriminator, strict=False)
-
 
     def get_weights_v1(self, checkpoint_path: str) -> Tuple[dict, dict, dict, dict]:
         r"""NOTE: this method is used only for the v0.1.0 checkpoint.
@@ -105,7 +103,6 @@ class UnivNet(LightningModule):
             ckpt_acoustic["optim_d"],
         )
 
-
     def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
         r"""Performs a forward pass through the UnivNet model.
 
@@ -115,14 +112,15 @@ class UnivNet(LightningModule):
         Returns:
             torch.Tensor: The output of the UnivNet model.
         """
-        mel_lens=torch.tensor(
-            [y_pred.shape[2]], dtype=torch.int32, device=y_pred.device,
+        mel_lens = torch.tensor(
+            [y_pred.shape[2]],
+            dtype=torch.int32,
+            device=y_pred.device,
         )
 
         wav_prediction = self.univnet.infer(y_pred, mel_lens)
 
         return wav_prediction[0, 0]
-
 
     def training_step(self, batch: List, batch_idx: int):
         r"""Performs a training step for the model.
@@ -153,11 +151,11 @@ class UnivNet(LightningModule):
         # Access your optimizers
         optimizers = self.optimizers()
         schedulers = self.lr_schedulers()
-        opt_univnet: Optimizer = optimizers[0] # type: ignore
-        sch_univnet: ExponentialLR = schedulers[0] # type: ignore
+        opt_univnet: Optimizer = optimizers[0]  # type: ignore
+        sch_univnet: ExponentialLR = schedulers[0]  # type: ignore
 
-        opt_discriminator: Optimizer = optimizers[1] # type: ignore
-        sch_discriminator: ExponentialLR = schedulers[1] # type: ignore
+        opt_discriminator: Optimizer = optimizers[1]  # type: ignore
+        sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
         audio = wavs
         fake_audio = self.univnet(mels)
@@ -181,8 +179,18 @@ class UnivNet(LightningModule):
             period_real,
         )
 
-        self.log("total_loss_gen", total_loss_gen, sync_dist=True, batch_size=self.batch_size)
-        self.log("total_loss_disc", total_loss_disc, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "total_loss_gen",
+            total_loss_gen,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "total_loss_disc",
+            total_loss_disc,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("esr_loss", esr_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("snr_loss", snr_loss, sync_dist=True, batch_size=self.batch_size)
@@ -195,8 +203,16 @@ class UnivNet(LightningModule):
         # accumulate gradients of N batches
         if (batch_idx + 1) % self.acc_grad_steps == 0:
             # clip gradients
-            self.clip_gradients(opt_univnet, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
-            self.clip_gradients(opt_discriminator, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+            self.clip_gradients(
+                opt_univnet,
+                gradient_clip_val=0.5,
+                gradient_clip_algorithm="norm",
+            )
+            self.clip_gradients(
+                opt_discriminator,
+                gradient_clip_val=0.5,
+                gradient_clip_algorithm="norm",
+            )
 
             # optimizer step
             opt_univnet.step()
@@ -209,7 +225,6 @@ class UnivNet(LightningModule):
             # zero the gradients
             opt_univnet.zero_grad()
             opt_discriminator.zero_grad()
-
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.
@@ -238,7 +253,9 @@ class UnivNet(LightningModule):
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )
         scheduler_univnet = ExponentialLR(
-            optim_univnet, gamma=self.train_config.lr_decay, last_epoch=-1,
+            optim_univnet,
+            gamma=self.train_config.lr_decay,
+            last_epoch=-1,
         )
 
         optim_discriminator = AdamW(
@@ -247,7 +264,9 @@ class UnivNet(LightningModule):
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )
         scheduler_discriminator = ExponentialLR(
-            optim_discriminator, gamma=self.train_config.lr_decay, last_epoch=-1,
+            optim_discriminator,
+            gamma=self.train_config.lr_decay,
+            last_epoch=-1,
         )
 
         # NOTE: this code is used only for the v0.1.0 checkpoint.
@@ -262,18 +281,15 @@ class UnivNet(LightningModule):
             {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
         )
 
-
     def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""
         self.swa_averaged_univnet.update_parameters(self.univnet)
         self.swa_averaged_discriminator.update_parameters(self.discriminator)
 
-
     def on_train_end(self):
         # Update SWA model after training
         swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_univnet)
         swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_discriminator)
-
 
     def train_dataloader(
         self,

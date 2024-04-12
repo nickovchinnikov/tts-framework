@@ -517,3 +517,27 @@ selected_speakers_ids = {
 selected_speakers_ids, len(selected_speakers_ids)
 
 # %%
+import os
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+
+from pathlib import Path
+
+from IPython import display
+import torchaudio
+from voicefixer import Vocoder
+
+from .hifi_libri_dataset import HifiLibriDataset, HifiLibriItem
+
+vocoder_vf = Vocoder(44100)
+dataset = HifiLibriDataset(cache_dir="datasets_cache", cache=True)
+
+item = dataset[0]
+wav = vocoder_vf.forward(item.mel.permute((1, 0)).unsqueeze(0))
+display.Audio(wav.squeeze(0).cpu().detach().numpy(), rate=44100)
+# wav_path = Path(f"results/{item.id}.wav")
+# torchaudio.save(str(wav_path), wav, 44100)
+
+# %%
