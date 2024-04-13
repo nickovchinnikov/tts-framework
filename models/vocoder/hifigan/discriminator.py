@@ -10,14 +10,14 @@ from .ms_discriminator import MultiScaleDiscriminator
 class Discriminator(Module):
     r"""Discriminator for the HifiGan vocoder.
 
-    This class implements a discriminator that consists of a `MultiPeriodDiscriminator` and a `MultiScaleDiscriminator`.
+    This class implements a discriminator that consists of a `MultiScaleDiscriminator` and a `MultiPeriodDiscriminator`.
 
     Args:
         model_config (VocoderModelConfig): Model configuration object.
 
     Attributes:
-        MPD (MultiPeriodDiscriminator): Multi-resolution discriminator instance.
         MSD (MultiScaleDiscriminator): Multi-scale discriminator instance.
+        MPD (MultiPeriodDiscriminator): Multi-resolution discriminator instance.
 
     Methods:
         forward(x): Computes the forward pass of the discriminator.
@@ -26,8 +26,8 @@ class Discriminator(Module):
 
     def __init__(self):
         super().__init__()
-        self.MPD = MultiScaleDiscriminator()
-        self.MSD = MultiPeriodDiscriminator()
+        self.MPD = MultiPeriodDiscriminator()
+        self.MSD = MultiScaleDiscriminator()
 
     def forward(
         self,
@@ -48,6 +48,6 @@ class Discriminator(Module):
                 Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
                 Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]
             ]:
-            Tuple containing the output tensors of the `MultiResolutionDiscriminator` and `MultiPeriodDiscriminator` instances.
+            Tuple containing the output tensors of the `MultiPeriodDiscriminator` and `MultiScaleDiscriminator` instances.
         """
         return self.MPD.forward(x, x_hat), self.MSD.forward(x, x_hat)
