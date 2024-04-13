@@ -85,58 +85,40 @@ class HifiLoss(Module):
         self,
         audio: Tensor,
         fake_audio: Tensor,
-        res_fake: List[Tuple[Tensor, Tensor]],
-        period_fake: List[Tuple[Tensor, Tensor]],
-        res_real: List[Tuple[Tensor, Tensor]],
-        period_real: List[Tuple[Tensor, Tensor]],
-    ) -> Tuple[
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-    ]:
-        r"""Calculate the losses for the generator and discriminator.
-
-        Args:
-            audio (torch.Tensor): The real audio samples.
-            fake_audio (torch.Tensor): The generated audio samples.
-            res_fake (List[Tuple[Tensor, Tensor]]): The discriminator's output for the fake audio.
-            period_fake (List[Tuple[Tensor, Tensor]]): The discriminator's output for the fake audio in the period.
-            res_real (List[Tuple[Tensor, Tensor]]): The discriminator's output for the real audio.
-            period_real (List[Tuple[Tensor, Tensor]]): The discriminator's output for the real audio in the period.
-
-        Returns:
-            tuple: A tuple containing the univnet loss, discriminator loss, STFT loss and score loss.
-        """
+        mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+        msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+        r"""Calculate the losses for the generator and discriminator."""
         # Calculate the STFT loss
         sc_loss, mag_loss = self.stft_criterion(fake_audio.squeeze(1), audio.squeeze(1))
         stft_loss = (sc_loss + mag_loss) * self.stft_lamb
 
-        # Calculate the score loss
-        score_loss = torch.tensor(0.0, device=audio.device)
-        for _, score_fake in res_fake + period_fake:
-            score_loss += torch.mean(torch.pow(score_fake - 1.0, 2))
+        y_df_hat_r, y_df_hat_g, fmap_f_r, fmap_f_g = mpd_res
+        y_ds_hat_r, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
 
-        score_loss = score_loss / len(res_fake + period_fake)
+        loss_disc_f = discriminator_loss(y_df_hat_r, y_df_hat_g)
+        loss_disc_s = discriminator_loss(y_ds_hat_r, y_ds_hat_g)
+
+        # Calculate the total discriminator loss
+        total_loss_disc = loss_disc_f + loss_disc_s
+
+        loss_fm_f = feature_loss(fmap_f_r, fmap_f_g)
+        loss_fm_s = feature_loss(fmap_s_r, fmap_s_g)
+
+        loss_gen_f = generator_loss(y_df_hat_g)
+        loss_gen_s = generator_loss(y_ds_hat_g)
 
         # Calculate the total generator loss
-        total_loss_gen = score_loss + stft_loss
-
-        # Calculate the discriminator loss
-        total_loss_disc = torch.tensor(0.0, device=audio.device)
-        for (_, score_fake), (_, score_real) in zip(
-            res_fake + period_fake,
-            res_real + period_real,
-        ):
-            total_loss_disc += torch.mean(torch.pow(score_real - 1.0, 2)) + torch.mean(
-                torch.pow(score_fake, 2),
-            )
-
-        total_loss_disc = total_loss_disc / len(res_fake + period_fake)
+        total_loss_gen = loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + stft_loss
 
         return (
-            total_loss_gen,
             total_loss_disc,
+            loss_disc_s,
+            loss_disc_f,
+            total_loss_gen,
+            loss_gen_f,
+            loss_gen_s,
+            loss_fm_s,
+            loss_fm_f,
             stft_loss,
-            score_loss,
         )
