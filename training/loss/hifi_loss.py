@@ -24,13 +24,15 @@ def feature_loss(fmap_r: List[Tensor], fmap_g: List[Tensor]) -> Tensor:
 
     for dr, dg in zip(fmap_r, fmap_g):
         for rl, gl in zip(dr, dg):
-            # Pad gl to match rl
-            if rl.shape[2] > gl.shape[2]:
-                padding = rl.shape[2] - gl.shape[2]
-                gl = F.pad(gl, (0, padding))
-            elif gl.shape[2] > rl.shape[2]:
-                padding = gl.shape[2] - rl.shape[2]
-                rl = F.pad(rl, (0, padding))
+            diff_dims = torch.tensor(rl.shape) - torch.tensor(gl.shape)
+            padding = []
+            for diff in diff_dims.tolist():
+                padding.extend([0, max(0, -diff)])
+            padding = tuple(padding)
+            if diff_dims.min() < 0:
+                rl = F.pad(rl, padding)
+            else:
+                gl = F.pad(gl, padding)
             total_loss += torch.mean(torch.abs(rl - gl)).to(total_loss.device)
 
     return total_loss * 2
