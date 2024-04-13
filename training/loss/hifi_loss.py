@@ -3,6 +3,7 @@ from typing import List, Tuple
 import torch
 from torch import Tensor
 from torch.nn import Module
+from torch.nn import functional as F
 
 from models.config import VocoderBasicConfig, VocoderModelConfig
 
@@ -23,6 +24,13 @@ def feature_loss(fmap_r: List[Tensor], fmap_g: List[Tensor]) -> Tensor:
 
     for dr, dg in zip(fmap_r, fmap_g):
         for rl, gl in zip(dr, dg):
+            # Pad gl to match rl
+            if rl.shape[2] > gl.shape[2]:
+                padding = rl.shape[2] - gl.shape[2]
+                gl = F.pad(gl, (0, padding))
+            elif gl.shape[2] > rl.shape[2]:
+                padding = gl.shape[2] - rl.shape[2]
+                rl = F.pad(rl, (0, padding))
             total_loss += torch.mean(torch.abs(rl - gl)).to(total_loss.device)
 
     return total_loss * 2
