@@ -55,14 +55,14 @@ class HifiGan(LightningModule):
         self.lang = lang
 
         model_config = HifiGanConfig()
-        preprocess_config = PreprocessingConfig(
+        self.preprocess_config = PreprocessingConfig(
             "multilingual",
             sampling_rate=sampling_rate,
         )
 
         self.generator = Generator(
             h=model_config,
-            p=preprocess_config,
+            p=self.preprocess_config,
         )
         self.discriminator = Discriminator()
 
