@@ -2,6 +2,7 @@ from typing import List
 
 from lightning.pytorch.core import LightningModule
 import torch
+from torch import Tensor
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
@@ -55,7 +56,7 @@ class HifiGan(LightningModule):
 
         model_config = HifiGanConfig()
         preprocess_config = PreprocessingConfig(
-            "english_only",
+            "multilingual",
             sampling_rate=sampling_rate,
         )
 
@@ -119,45 +120,49 @@ class HifiGan(LightningModule):
         opt_discriminator: Optimizer = optimizers[1]  # type: ignore
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
-        audio = wavs
-        fake_audio = self.generator(mels)
+        audio: Tensor = wavs
+        fake_audio = self.generator.forward(mels)
+
+        mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
 
         (
-            (msd_res_real, mpd_res_fake, _, _),
-            (msd_period_real, mpd_period_fake, _, _),
-        ) = self.discriminator.forward(
-            audio,
-            fake_audio.detach(),
-        )
-
-        (
-            total_loss_gen,
             total_loss_disc,
+            loss_disc_s,
+            loss_disc_f,
+            total_loss_gen,
+            loss_gen_f,
+            loss_gen_s,
+            loss_fm_s,
+            loss_fm_f,
             stft_loss,
-            score_loss,
         ) = self.loss.forward(
             audio,
             fake_audio,
-            res_fake,
-            period_fake,
-            res_real,
-            period_real,
+            mpd_res,
+            msd_res,
         )
 
-        self.log(
-            "total_loss_gen",
-            total_loss_gen,
-            sync_dist=True,
-            batch_size=self.batch_size,
-        )
         self.log(
             "total_loss_disc",
             total_loss_disc,
             sync_dist=True,
             batch_size=self.batch_size,
         )
+        self.log(
+            "total_loss_gen",
+            total_loss_gen,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        # Gen losses
+        self.log("loss_gen_f", loss_gen_f, sync_dist=True, batch_size=self.batch_size)
+        self.log("loss_gen_s", loss_gen_s, sync_dist=True, batch_size=self.batch_size)
+        self.log("loss_fm_s", loss_fm_s, sync_dist=True, batch_size=self.batch_size)
+        self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("score_loss", score_loss, sync_dist=True, batch_size=self.batch_size)
+        # Disc losses
+        self.log("loss_disc_s", loss_disc_s, sync_dist=True, batch_size=self.batch_size)
+        self.log("loss_disc_f", loss_disc_f, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
         self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)

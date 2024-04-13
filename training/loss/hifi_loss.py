@@ -19,7 +19,7 @@ def feature_loss(fmap_r: List[Tensor], fmap_g: List[Tensor]) -> Tensor:
     Returns:
         Tensor: The calculated feature loss.
     """
-    loss = torch.tensor(0)
+    loss = torch.tensor(0.0)
 
     for dr, dg in zip(fmap_r, fmap_g):
         for rl, gl in zip(dr, dg):
@@ -41,7 +41,7 @@ def discriminator_loss(
     Returns:
         Tensor: The discriminator loss.
     """
-    total_loss = torch.tensor(0)
+    total_loss = torch.tensor(0.0)
 
     for dr, dg in zip(disc_real_outputs, disc_generated_outputs):
         r_loss = torch.mean((1 - dr) ** 2)
@@ -60,7 +60,7 @@ def generator_loss(disc_outputs: List[Tensor]):
     Returns:
         Tensor: The total loss and list of individual losses.
     """
-    total_loss = torch.tensor(0)
+    total_loss = torch.tensor(0.0)
     for dg in disc_outputs:
         total_loss += torch.mean((1 - dg) ** 2)
 
@@ -88,25 +88,38 @@ class HifiLoss(Module):
         mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
         msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
-        r"""Calculate the losses for the generator and discriminator."""
+        r"""Calculate the losses for the generator and discriminator.
+
+        Args:
+            audio (Tensor): The real audio samples.
+            fake_audio (Tensor): The generated audio samples.
+            mpd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-resolution discriminator results for the real and generated audio.
+            msd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-scale discriminator results for the real and generated audio.
+
+        Returns:
+            Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]: The total discriminator loss, discriminator loss for the real and generated audio, total generator loss, generator loss for the real and generated audio, feature loss for the real and generated audio, and the STFT loss.
+        """
         # Calculate the STFT loss
-        sc_loss, mag_loss = self.stft_criterion(fake_audio.squeeze(1), audio.squeeze(1))
+        sc_loss, mag_loss = self.stft_criterion.forward(
+            fake_audio.squeeze(1),
+            audio.squeeze(1),
+        )
         stft_loss = (sc_loss + mag_loss) * self.stft_lamb
 
         y_df_hat_r, y_df_hat_g, fmap_f_r, fmap_f_g = mpd_res
         y_ds_hat_r, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
 
-        loss_disc_f = discriminator_loss(y_df_hat_r, y_df_hat_g)
-        loss_disc_s = discriminator_loss(y_ds_hat_r, y_ds_hat_g)
+        loss_disc_f = discriminator_loss(y_df_hat_r, y_df_hat_g).to(audio.device)
+        loss_disc_s = discriminator_loss(y_ds_hat_r, y_ds_hat_g).to(audio.device)
 
         # Calculate the total discriminator loss
         total_loss_disc = loss_disc_f + loss_disc_s
 
-        loss_fm_f = feature_loss(fmap_f_r, fmap_f_g)
-        loss_fm_s = feature_loss(fmap_s_r, fmap_s_g)
+        loss_fm_f = feature_loss(fmap_f_r, fmap_f_g).to(audio.device)
+        loss_fm_s = feature_loss(fmap_s_r, fmap_s_g).to(audio.device)
 
-        loss_gen_f = generator_loss(y_df_hat_g)
-        loss_gen_s = generator_loss(y_ds_hat_g)
+        loss_gen_f = generator_loss(y_df_hat_g).to(audio.device)
+        loss_gen_s = generator_loss(y_ds_hat_g).to(audio.device)
 
         # Calculate the total generator loss
         total_loss_gen = loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + stft_loss
