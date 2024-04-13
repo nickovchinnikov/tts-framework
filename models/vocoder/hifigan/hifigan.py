@@ -14,7 +14,7 @@ from models.config import (
     VocoderPretrainingConfig,
     VoicoderTrainingConfig,
 )
-from models.helpers.dataloaders import train_dataloader
+from training.datasets.hifi_libri_dataset import train_dataloader
 from training.loss import HifiLoss
 
 from .discriminator import Discriminator
@@ -237,13 +237,6 @@ class HifiGan(LightningModule):
             last_epoch=-1,
         )
 
-        # NOTE: this code is used only for the v0.1.0 checkpoint.
-        # In the future, this code will be removed!
-        if self.checkpoint_path_v1 is not None:
-            _, _, optim_g, optim_d = self.get_weights_v1(self.checkpoint_path_v1)
-            optim_univnet.load_state_dict(optim_g)
-            optim_discriminator.load_state_dict(optim_d)
-
         return (
             {"optimizer": optim_univnet, "lr_scheduler": scheduler_univnet},
             {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
@@ -251,33 +244,25 @@ class HifiGan(LightningModule):
 
     def train_dataloader(
         self,
-        num_workers: int = 5,
-        root: str = "datasets_cache/LIBRITTS",
+        root: str = "datasets_cache",
         cache: bool = True,
-        cache_dir: str = "datasets_cache",
-        mem_cache: bool = False,
-        url: str = "train-clean-360",
+        cache_dir: str = "/dev/shm",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
-            num_workers (int): The number of workers.
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
-            cache_dir (str): The directory for the cache.
-            mem_cache (bool): Whether to use memory cache.
-            url (str): The URL of the dataset.
+            cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
 
         Returns:
-            DataLoader: The training and validation dataloaders.
+            Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
         """
         return train_dataloader(
             batch_size=self.batch_size,
-            num_workers=num_workers,
+            num_workers=self.preprocess_config.workers,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
-            mem_cache=mem_cache,
-            url=url,
             lang=self.lang,
         )

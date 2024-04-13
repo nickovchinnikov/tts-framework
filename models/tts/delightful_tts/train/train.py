@@ -1,4 +1,3 @@
-from copy import deepcopy
 from datetime import datetime
 import logging
 import os
@@ -6,7 +5,6 @@ import sys
 
 from lightning.pytorch import Trainer
 from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ignore
-from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
 from lightning.pytorch.tuner.tuning import Tuner
 import torch
@@ -53,11 +51,11 @@ print("usable_cuda_devices: ", find_usable_cuda_devices())
 # Set the precision of the matrix multiplication to float32 to improve the performance of the training
 torch.set_float32_matmul_precision("high")
 
-default_root_dir="logs"
+default_root_dir = "logs"
 
-ckpt_acoustic="./checkpoints/epoch=301-step=124630.ckpt"
+ckpt_acoustic = "./checkpoints/epoch=301-step=124630.ckpt"
 
-ckpt_vocoder="./checkpoints/vocoder.ckpt"
+ckpt_vocoder = "./checkpoints/vocoder.ckpt"
 
 try:
     trainer = Trainer(

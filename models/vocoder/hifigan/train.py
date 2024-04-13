@@ -1,13 +1,12 @@
 from datetime import datetime
 import logging
-import sys
 
 from lightning.pytorch import Trainer
 from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ignore
 from lightning.pytorch.strategies import DDPStrategy
 import torch
 
-from models.vocoder.univnet import UnivNet
+from models.vocoder.hifigan import HifiGan
 
 # Get the current date and time
 now = datetime.now()
@@ -43,39 +42,33 @@ default_root_dir = "logs"
 
 # ckpt_vocoder="./checkpoints/vocoder.ckpt"
 
-try:
-    trainer = Trainer(
-        accelerator="cuda",
-        devices=-1,
-        strategy=DDPStrategy(
-            gradient_as_bucket_view=True,
-            find_unused_parameters=True,
-        ),
-        # Save checkpoints to the `default_root_dir` directory
-        default_root_dir=default_root_dir,
-        enable_checkpointing=True,
-        max_epochs=-1,
-        log_every_n_steps=10,
-    )
+trainer = Trainer(
+    accelerator="cuda",
+    devices=-1,
+    strategy=DDPStrategy(
+        gradient_as_bucket_view=True,
+        find_unused_parameters=True,
+    ),
+    # Save checkpoints to the `default_root_dir` directory
+    default_root_dir=default_root_dir,
+    enable_checkpointing=True,
+    max_epochs=-1,
+    log_every_n_steps=10,
+)
 
-    model = UnivNet()
+model = HifiGan()
 
-    train_dataloader = model.train_dataloader(
-        # NOTE: Preload the cached dataset into the RAM
-        cache_dir="/dev/shm/",
-        cache=True,
-        mem_cache=False,
-    )
+train_dataloader = model.train_dataloader(
+    root="/dev/shm/",
+    # NOTE: Preload the cached dataset into the RAM
+    cache_dir="/dev/shm/",
+    cache=True,
+)
 
-    trainer.fit(
-        model=model,
-        train_dataloaders=train_dataloader,
-        # val_dataloaders=val_dataloader,
-        # Resume training states from the checkpoint file
-        # ckpt_path=ckpt_acoustic,
-    )
-
-except Exception as e:
-    # Log the error message
-    logger.error(f"An error occurred: {e}")
-    sys.exit(1)
+trainer.fit(
+    model=model,
+    train_dataloaders=train_dataloader,
+    # val_dataloaders=val_dataloader,
+    # Resume training states from the checkpoint file
+    # ckpt_path=ckpt_acoustic,
+)
