@@ -36,7 +36,7 @@ print("usable_cuda_devices: ", find_usable_cuda_devices())
 # Set the precision of the matrix multiplication to float32 to improve the performance of the training
 torch.set_float32_matmul_precision("high")
 
-default_root_dir = "logs"
+default_root_dir = "logs_hifi_vocoder"
 
 # ckpt_acoustic="./checkpoints/epoch=301-step=124630.ckpt"
 
