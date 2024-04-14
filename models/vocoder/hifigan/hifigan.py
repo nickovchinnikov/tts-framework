@@ -32,7 +32,7 @@ class HifiGan(LightningModule):
         fine_tuning: bool = False,
         lang: str = "en",
         acc_grad_steps: int = 5,
-        batch_size: int = 6,
+        batch_size: int = 4,
         sampling_rate: int = 44100,
     ):
         r"""Initializes the `VocoderModule`.
