@@ -31,7 +31,8 @@ class HifiGan(LightningModule):
         self,
         fine_tuning: bool = False,
         lang: str = "en",
-        acc_grad_steps: int = 5,
+        acc_grad_steps: int = 2,
+        # NOTE: shrink the max audio length to 5 sec!
         batch_size: int = 3,
         sampling_rate: int = 44100,
     ):
