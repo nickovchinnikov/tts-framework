@@ -123,7 +123,11 @@ class HifiGan(LightningModule):
         audio: Tensor = wavs
         fake_audio = self.generator.forward(mels)
 
-        mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
+        # Pad the fake audio to match the length of the real audio
+        padding = audio.shape[2] - fake_audio.shape[2]
+        fake_audio_padded = torch.nn.functional.pad(fake_audio, (0, padding))
+
+        mpd_res, msd_res = self.discriminator.forward(audio, fake_audio_padded.detach())
 
         (
             total_loss_disc,
