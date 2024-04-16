@@ -20,7 +20,7 @@ class TestHifiGan(unittest.TestCase):
 
         module = HifiGan(batch_size=2)
 
-        train_dataloader = module.train_dataloader(num_gpus=1)
+        train_dataloader = module.train_dataloader()
 
         result = trainer.fit(model=module, train_dataloaders=train_dataloader)
         self.assertIsNone(result)

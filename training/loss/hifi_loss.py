@@ -84,7 +84,24 @@ class HifiLoss(Module):
         self.ssim_loss = SSIMLoss()
         self.mae_loss = nn.L1Loss()
 
-    def forward(
+    def desc_loss(
+        self,
+        audio: Tensor,
+        mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+        msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+    ):
+        y_df_hat_r, y_df_hat_g, _, _ = mpd_res
+        y_ds_hat_r, y_ds_hat_g, _, _ = msd_res
+
+        loss_disc_f = discriminator_loss(y_df_hat_r, y_df_hat_g).to(audio.device)
+        loss_disc_s = discriminator_loss(y_ds_hat_r, y_ds_hat_g).to(audio.device)
+
+        # Calculate the total discriminator loss
+        total_loss_disc = loss_disc_f + loss_disc_s
+
+        return total_loss_disc, loss_disc_s, loss_disc_f
+
+    def gen_loss(
         self,
         audio: Tensor,
         fake_audio: Tensor,
@@ -92,32 +109,9 @@ class HifiLoss(Module):
         fake_mel: Tensor,
         mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
         msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
-    ) -> Tuple[
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-        Tensor,
-    ]:
-        r"""Calculate the losses for the generator and discriminator.
-
-        Args:
-            audio (Tensor): The real audio samples.
-            fake_audio (Tensor): The generated audio samples.
-            mpd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-resolution discriminator results for the real and generated audio.
-            msd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-scale discriminator results for the real and generated audio.
-
-        Returns:
-            Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]: The total discriminator loss, discriminator loss for the real and generated audio, total generator loss, generator loss for the real and generated audio, feature loss for the real and generated audio, and the STFT loss.
-        """
-        y_df_hat_r, y_df_hat_g, fmap_f_r, fmap_f_g = mpd_res
-        y_ds_hat_r, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
+    ):
+        _, y_df_hat_g, fmap_f_r, fmap_f_g = mpd_res
+        _, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
 
         # Calculate the STFT loss
         sc_loss, mag_loss = self.stft_criterion.forward(
@@ -159,11 +153,74 @@ class HifiLoss(Module):
             + loss_mel
         )
 
-        loss_disc_f = discriminator_loss(y_df_hat_r, y_df_hat_g).to(audio.device)
-        loss_disc_s = discriminator_loss(y_ds_hat_r, y_ds_hat_g).to(audio.device)
+        return (
+            total_loss_gen,
+            loss_gen_f,
+            loss_gen_s,
+            loss_fm_s,
+            loss_fm_f,
+            stft_loss,
+            ssim_loss,
+            loss_mel,
+        )
 
-        # Calculate the total discriminator loss
-        total_loss_disc = loss_disc_f + loss_disc_s
+    def forward(
+        self,
+        audio: Tensor,
+        fake_audio: Tensor,
+        mel: Tensor,
+        fake_mel: Tensor,
+        mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+        msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
+    ) -> Tuple[
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+    ]:
+        r"""Calculate the losses for the generator and discriminator.
+
+        Args:
+            audio (Tensor): The real audio samples.
+            fake_audio (Tensor): The generated audio samples.
+            mel (Tensor): The real mel spectrogram.
+            fake_mel (Tensor): The generated mel spectrogram.
+            mpd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-resolution discriminator results for the real and generated audio.
+            msd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-scale discriminator results for the real and generated audio.
+
+        Returns:
+            Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]: The total discriminator loss, discriminator loss for the real and generated audio, total generator loss, generator loss for the real and generated audio, feature loss for the real and generated audio, and the STFT loss.
+        """
+        (
+            total_loss_gen,
+            loss_gen_f,
+            loss_gen_s,
+            loss_fm_s,
+            loss_fm_f,
+            stft_loss,
+            ssim_loss,
+            loss_mel,
+        ) = self.gen_loss(
+            audio,
+            fake_audio,
+            mel,
+            fake_mel,
+            mpd_res,
+            msd_res,
+        )
+
+        total_loss_disc, loss_disc_s, loss_disc_f = self.desc_loss(
+            audio,
+            mpd_res,
+            msd_res,
+        )
 
         return (
             total_loss_disc,

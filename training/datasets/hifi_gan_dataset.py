@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 import torch
 from torch import Tensor
 from torch.nn import functional as F
-from torch.utils.data import DataLoader, Dataset, DistributedSampler
+from torch.utils.data import DataLoader, Dataset
 
 from models.config import HifiGanPretrainingConfig
 
@@ -181,7 +181,6 @@ def train_dataloader(
     batch_size: int = 5,
     pin_memory: bool = True,
     drop_last: bool = True,
-    num_gpus: int = 1,
 ) -> DataLoader:
     r"""Create a DataLoader for the training data.
 
@@ -221,13 +220,10 @@ def train_dataloader(
         num_jobs=num_jobs,
     )
 
-    train_sampler = DistributedSampler(trainset) if num_gpus > 1 else None
-
     train_loader = DataLoader(
         trainset,
         num_workers=num_workers,
         shuffle=shuffle,
-        sampler=train_sampler,
         batch_size=batch_size,
         pin_memory=pin_memory,
         drop_last=drop_last,

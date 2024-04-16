@@ -31,7 +31,7 @@ class HifiGan(LightningModule):
         self,
         lang: str = "en",
         acc_grad_steps: int = 3,
-        batch_size: int = 16,
+        batch_size: int = 96,
         sampling_rate: int = 44100,
     ):
         r"""Initializes the `VocoderModule`.
@@ -105,27 +105,55 @@ class HifiGan(LightningModule):
         # Access your optimizers
         optimizers = self.optimizers()
         schedulers = self.lr_schedulers()
-        opt_univnet: Optimizer = optimizers[0]  # type: ignore
-        sch_univnet: ExponentialLR = schedulers[0]  # type: ignore
+        opt_generator: Optimizer = optimizers[0]  # type: ignore
+        sch_generator: ExponentialLR = schedulers[0]  # type: ignore
 
         opt_discriminator: Optimizer = optimizers[1]  # type: ignore
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
-        # audio: Tensor = wavs
+        # Generate fake audio
         fake_audio = self.generator.forward(mel)
-
-        # Pad the fake audio to match the length of the real audio
-        # padding = audio.shape[2] - fake_audio.shape[2]
-        # fake_audio_padded = torch.nn.functional.pad(fake_audio, (0, padding))
 
         _, fake_mel = self.tacotronSTFT(fake_audio.squeeze(1))
 
+        # Discriminator
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
 
-        (
+        total_loss_disc, loss_disc_s, loss_disc_f = self.loss.desc_loss(
+            audio,
+            mpd_res,
+            msd_res,
+        )
+
+        # Disc logs
+        self.log(
+            "total_loss_disc",
             total_loss_disc,
-            loss_disc_s,
-            loss_disc_f,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log("loss_disc_s", loss_disc_s, sync_dist=True, batch_size=self.batch_size)
+        self.log("loss_disc_f", loss_disc_f, sync_dist=True, batch_size=self.batch_size)
+
+        self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
+
+        # accumulate gradients for the discriminator
+        if (batch_idx + 1) % self.acc_grad_steps == 0:
+            self.clip_gradients(
+                opt_discriminator,
+                gradient_clip_val=0.5,
+                gradient_clip_algorithm="norm",
+            )
+
+            # step for the discriminator
+            opt_discriminator.step()
+            sch_discriminator.step()
+            opt_discriminator.zero_grad()
+
+        # Generator
+        mpd_res, msd_res = self.discriminator.forward(audio, fake_audio)
+
+        (
             total_loss_gen,
             loss_gen_f,
             loss_gen_s,
@@ -134,7 +162,7 @@ class HifiGan(LightningModule):
             stft_loss,
             ssim_loss,
             loss_mel,
-        ) = self.loss.forward(
+        ) = self.loss.gen_loss(
             audio,
             fake_audio,
             mel,
@@ -143,12 +171,6 @@ class HifiGan(LightningModule):
             msd_res,
         )
 
-        self.log(
-            "total_loss_disc",
-            total_loss_disc,
-            sync_dist=True,
-            batch_size=self.batch_size,
-        )
         self.log(
             "total_loss_gen",
             total_loss_gen,
@@ -163,39 +185,23 @@ class HifiGan(LightningModule):
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_mel", loss_mel, sync_dist=True, batch_size=self.batch_size)
-        # Disc losses
-        self.log("loss_disc_s", loss_disc_s, sync_dist=True, batch_size=self.batch_size)
-        self.log("loss_disc_f", loss_disc_f, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
         self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
-        self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
 
         # accumulate gradients of N batches
         if (batch_idx + 1) % self.acc_grad_steps == 0:
             # clip gradients
             self.clip_gradients(
-                opt_univnet,
-                gradient_clip_val=0.5,
-                gradient_clip_algorithm="norm",
-            )
-            self.clip_gradients(
-                opt_discriminator,
+                opt_generator,
                 gradient_clip_val=0.5,
                 gradient_clip_algorithm="norm",
             )
 
-            # optimizer step
-            opt_univnet.step()
-            opt_discriminator.step()
-
-            # Scheduler step
-            sch_univnet.step()
-            sch_discriminator.step()
-
-            # zero the gradients
-            opt_univnet.zero_grad()
-            opt_discriminator.zero_grad()
+            # step for the generator
+            opt_generator.step()
+            sch_generator.step()
+            opt_generator.zero_grad()
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.
@@ -250,7 +256,6 @@ class HifiGan(LightningModule):
         root: str = "datasets_cache",
         cache: bool = True,
         cache_dir: str = "/dev/shm",
-        num_gpus: int = 2,  # Multi-GPU training num_gpus > 1
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
@@ -258,14 +263,12 @@ class HifiGan(LightningModule):
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
             cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
-            num_gpus (int): The number of GPUs to use. Defaults to 2.
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
         """
         return train_dataloader(
             batch_size=self.batch_size,
-            num_gpus=num_gpus,
             num_workers=self.preprocess_config.workers,
             root=root,
             cache=cache,
