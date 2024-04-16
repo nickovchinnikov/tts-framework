@@ -37,13 +37,13 @@ class UnivnetLoss(Module):
         res_real: List[Tuple[Tensor, Tensor]],
         period_real: List[Tuple[Tensor, Tensor]],
     ) -> Tuple[
-            Tensor,
-            Tensor,
-            Tensor,
-            Tensor,
-            Tensor,
-            Tensor,
-        ]:
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+        Tensor,
+    ]:
         r"""Calculate the losses for the generator and discriminator.
 
         Args:
@@ -70,7 +70,7 @@ class UnivnetLoss(Module):
 
         # Calculate the score loss
         score_loss = torch.tensor(0.0, device=audio.device)
-        for (_, score_fake) in res_fake + period_fake:
+        for _, score_fake in res_fake + period_fake:
             score_loss += torch.mean(torch.pow(score_fake - 1.0, 2))
 
         score_loss = score_loss / len(res_fake + period_fake)
@@ -80,9 +80,12 @@ class UnivnetLoss(Module):
 
         # Calculate the discriminator loss
         total_loss_disc = torch.tensor(0.0, device=audio.device)
-        for (_, score_fake), (_, score_real) in zip(res_fake + period_fake, res_real + period_real):
-            total_loss_disc += torch.mean(torch.pow(score_real - 1.0, 2)) + \
-                torch.mean(torch.pow(score_fake, 2))
+        for (_, score_fake), (_, score_real) in zip(
+            res_fake + period_fake, res_real + period_real
+        ):
+            total_loss_disc += torch.mean(torch.pow(score_real - 1.0, 2)) + torch.mean(
+                torch.pow(score_fake, 2)
+            )
 
         total_loss_disc = total_loss_disc / len(res_fake + period_fake)
 
