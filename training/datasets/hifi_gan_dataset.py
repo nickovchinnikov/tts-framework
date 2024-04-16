@@ -1,39 +1,16 @@
-from dataclasses import asdict, dataclass
 import math
 from pathlib import Path
 import random
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import torch
 from torch import Tensor
 from torch.nn import functional as F
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset, DistributedSampler
 
 from models.config import HifiGanPretrainingConfig
 
-from .hifi_libri_dataset import DATASET_TYPES, NUM_JOBS, HifiLibriDataset
-
-
-@dataclass
-class HifiGANItem:
-    r"""Dataset row for the HiFiTTS and LibriTTS datasets combined in this code.
-    Prepared for the HiFi-GAN model training.
-
-    Args:
-        id (str): The ID of the item.
-        wav (Tensor): The waveform of the audio.
-        mel (Tensor): The mel spectrogram.
-        speaker (int): The speaker ID.
-        lang (int): The language ID.
-        dataset_type (DATASET_TYPES): The type of dataset.
-    """
-
-    id: str
-    wav: Tensor
-    mel: Tensor
-    speaker: int
-    lang: int
-    dataset_type: DATASET_TYPES
+from .hifi_libri_dataset import NUM_JOBS, HifiLibriDataset
 
 
 class HifiGanDataset(Dataset):
@@ -117,7 +94,7 @@ class HifiGanDataset(Dataset):
         """
         return self.get_cache_subdir_path(idx) / f"{idx}.pt"
 
-    def __getitem__(self, idx: int) -> HifiGANItem:
+    def __getitem__(self, idx: int) -> Tuple[str, Tensor, Tensor]:
         r"""Get an item from the dataset.
 
         If caching is enabled and the item is in the cache, the cached item is returned.
@@ -127,15 +104,13 @@ class HifiGanDataset(Dataset):
             idx (int): The index of the item in the dataset.
 
         Returns:
-            HifiGANItem: The preprocessed item from the dataset.
+            Tuple[str, Tensor, Tensor]: The ID of the item, the audio waveform, and the mel spectrogram.
         """
         cache_file = self.get_cache_file_path(idx)
 
         if self.cache and cache_file.exists():
-            cached_data: Dict = torch.load(cache_file)
-            # Cast the cached data to the PreprocessForAcousticResult class
-            result = HifiGANItem(**cached_data)
-            return result
+            cached_data: Tuple[str, Tensor, Tensor] = torch.load(cache_file)
+            return cached_data
 
         item = self.dataset[idx]
         frames_per_seg = math.ceil(self.segment_size / self.hop_size)
@@ -163,14 +138,7 @@ class HifiGanDataset(Dataset):
                 "constant",
             )
 
-        result = HifiGANItem(
-            id=item.id,
-            wav=audio,
-            mel=mel,
-            speaker=item.speaker,
-            lang=item.lang,
-            dataset_type=item.dataset_type,
-        )
+        result = (item.id, audio, mel.squeeze(0))
 
         if self.cache:
             # Create the cache subdirectory if it doesn't exist
@@ -180,7 +148,7 @@ class HifiGanDataset(Dataset):
                 exist_ok=True,
             )
             # Save the preprocessed data to the cache
-            torch.save(asdict(result), cache_file)
+            torch.save(result, cache_file)
 
         return result
 
@@ -194,3 +162,75 @@ class HifiGanDataset(Dataset):
         """
         for item in range(self.__len__()):
             yield self.__getitem__(item)
+
+
+def train_dataloader(
+    lang: str = "en",
+    root: str = "datasets_cache",
+    sampling_rate: int = 44100,
+    hifitts_path: str = "hifitts",
+    hifi_cutset_file_name: str = "hifi.json.gz",
+    libritts_path: str = "librittsr",
+    libritts_cutset_file_name: str = "libri.json.gz",
+    libritts_subsets: List[str] | str = "all",
+    cache: bool = False,
+    cache_dir: str = "/dev/shm",
+    num_jobs: int = NUM_JOBS,
+    num_workers: int = 0,
+    shuffle: bool = False,
+    batch_size: int = 5,
+    pin_memory: bool = True,
+    drop_last: bool = True,
+    num_gpus: int = 1,
+) -> DataLoader:
+    r"""Create a DataLoader for the training data.
+
+    Args:
+        lang (str, optional): The language of the dataset. Defaults to "en".
+        root (str, optional): The root directory of the dataset. Defaults to "datasets_cache".
+        sampling_rate (int, optional): The sampling rate of the audio. Defaults to 44100.
+        hifitts_path (str, optional): The path to the HiFiTTS dataset. Defaults to "hifitts".
+        hifi_cutset_file_name (str, optional): The file name of the HiFiTTS cutset. Defaults to "hifi.json.gz".
+        libritts_path (str, optional): The path to the LibriTTS dataset. Defaults to "librittsr".
+        libritts_cutset_file_name (str, optional): The file name of the LibriTTS cutset. Defaults to "libri.json.gz".
+        libritts_subsets (Union[List[str], str], optional): The subsets of the LibriTTS dataset to use. Defaults to "all".
+        cache (bool, optional): Whether to cache the dataset. Defaults to False.
+        cache_dir (str, optional): The directory to cache the dataset in. Defaults to "/dev/shm".
+        num_jobs (int, optional): The number of jobs to use for preparing the dataset. Defaults to NUM_JOBS.
+        num_workers (int, optional): The number of worker processes to use for loading the data. Defaults to 0.
+        shuffle (bool, optional): Whether to shuffle the data. Defaults to False.
+        batch_size (int, optional): The batch size. Defaults to 5.
+        pin_memory (bool, optional): Whether to pin memory. Defaults to True.
+        drop_last (bool, optional): Whether to drop the last incomplete batch. Defaults to True.
+        num_gpus (int, optional): The number of GPUs to use. Defaults to 1.
+
+    Returns:
+        DataLoader: A DataLoader for the training data.
+    """
+    trainset = HifiGanDataset(
+        lang=lang,
+        root=root,
+        sampling_rate=sampling_rate,
+        hifitts_path=hifitts_path,
+        hifi_cutset_file_name=hifi_cutset_file_name,
+        libritts_path=libritts_path,
+        libritts_cutset_file_name=libritts_cutset_file_name,
+        libritts_subsets=libritts_subsets,
+        cache=cache,
+        cache_dir=cache_dir,
+        num_jobs=num_jobs,
+    )
+
+    train_sampler = DistributedSampler(trainset) if num_gpus > 1 else None
+
+    train_loader = DataLoader(
+        trainset,
+        num_workers=num_workers,
+        shuffle=shuffle,
+        sampler=train_sampler,
+        batch_size=batch_size,
+        pin_memory=pin_memory,
+        drop_last=drop_last,
+    )
+
+    return train_loader

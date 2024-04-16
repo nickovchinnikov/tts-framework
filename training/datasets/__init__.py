@@ -1,3 +1,4 @@
+from .hifi_gan_dataset import HifiGanDataset
 from .hifi_libri_dataset import HifiLibriDataset
 from .libritts_dataset_acoustic import LibriTTSDatasetAcoustic
 from .libritts_dataset_vocoder import LibriTTSDatasetVocoder

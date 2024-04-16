@@ -3,7 +3,6 @@ from pathlib import Path
 import unittest
 
 from training.datasets import HifiGanDataset
-from training.datasets.hifi_gan_dataset import HifiGANItem
 
 
 class TestHifiGanDataset(unittest.TestCase):
@@ -29,12 +28,12 @@ class TestHifiGanDataset(unittest.TestCase):
     def test_getitem(self):
         # Test that getting an item from the dataset returns a HifiGANItem
         item = self.dataset[0]
-        self.assertIsInstance(item, HifiGANItem)
+        self.assertIsInstance(item, tuple)
 
     def test_iter(self):
         # Test that the dataset is iterable
         for item in self.dataset:
-            self.assertIsInstance(item, HifiGANItem)
+            self.assertIsInstance(item, tuple)
             break
 
     def test_cache(self):

@@ -177,13 +177,13 @@ class HifiLibriDataset(Dataset):
         """
         lang_map = get_lang_map(lang)
         processing_lang_type = lang_map.processing_lang_type
-        preprocess_config = PreprocessingConfig(
+        self.preprocess_config = PreprocessingConfig(
             processing_lang_type,
             sampling_rate=sampling_rate,
         )
         self.preprocess_libtts = PreprocessLibriTTS(
             lang,
-            preprocess_config,
+            self.preprocess_config,
         )
         self.root_dir = Path(root)
         self.voicefixer = VoiceFixer()
@@ -254,8 +254,8 @@ class HifiLibriDataset(Dataset):
             (self.cutset_hifi + self.cutset_libri)
             .filter(
                 lambda cut: isinstance(cut, MonoCut)
-                and cut.duration >= preprocess_config.min_seconds
-                and cut.duration <= preprocess_config.max_seconds,
+                and cut.duration >= self.preprocess_config.min_seconds
+                and cut.duration <= self.preprocess_config.max_seconds,
             )
             .to_eager()
         )
