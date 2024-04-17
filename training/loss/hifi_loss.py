@@ -104,7 +104,7 @@ class HifiLoss(Module):
     def gen_loss(
         self,
         audio: Tensor,
-        fake_audio: Tensor,
+        # fake_audio: Tensor,
         mel: Tensor,
         fake_mel: Tensor,
         mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
@@ -113,12 +113,12 @@ class HifiLoss(Module):
         _, y_df_hat_g, fmap_f_r, fmap_f_g = mpd_res
         _, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
 
-        # Calculate the STFT loss
-        sc_loss, mag_loss = self.stft_criterion.forward(
-            fake_audio.squeeze(1),
-            audio.squeeze(1),
-        )
-        stft_loss = sc_loss + mag_loss
+        # # Calculate the STFT loss
+        # sc_loss, mag_loss = self.stft_criterion.forward(
+        #     fake_audio.squeeze(1),
+        #     audio.squeeze(1),
+        # )
+        # stft_loss = sc_loss + mag_loss
 
         loss_fm_f = feature_loss(fmap_f_r, fmap_f_g).to(audio.device)
         loss_fm_s = feature_loss(fmap_s_r, fmap_s_g).to(audio.device)
@@ -127,20 +127,20 @@ class HifiLoss(Module):
         loss_gen_s = generator_loss(y_ds_hat_g).to(audio.device)
 
         # SSIM loss
-        mel_predictions_normalized = (
-            sample_wise_min_max(fake_mel).float().to(fake_mel.device)
-        )
-        mel_targets_normalized = sample_wise_min_max(mel).float().to(mel.device)
+        # mel_predictions_normalized = (
+        #     sample_wise_min_max(fake_mel).float().to(fake_mel.device)
+        # )
+        # mel_targets_normalized = sample_wise_min_max(mel).float().to(mel.device)
 
-        ssim_loss: torch.Tensor = self.ssim_loss(
-            mel_predictions_normalized.unsqueeze(1),
-            mel_targets_normalized.unsqueeze(1),
-        )
+        # ssim_loss: torch.Tensor = self.ssim_loss(
+        #     mel_predictions_normalized.unsqueeze(1),
+        #     mel_targets_normalized.unsqueeze(1),
+        # )
 
-        if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
-            ssim_loss = torch.tensor([1.0], device=fake_mel.device)
+        # if ssim_loss.item() > 1.0 or ssim_loss.item() < 0.0:
+        #     ssim_loss = torch.tensor([1.0], device=fake_mel.device)
 
-        loss_mel = self.mae_loss(mel, fake_mel)
+        loss_mel = self.mae_loss(mel, fake_mel) * 45
 
         # Calculate the total generator loss
         total_loss_gen = (
@@ -148,8 +148,8 @@ class HifiLoss(Module):
             + loss_gen_s
             + loss_fm_s
             + loss_fm_f
-            + stft_loss
-            + ssim_loss
+            # + stft_loss
+            # + ssim_loss
             + loss_mel
         )
 
@@ -159,15 +159,15 @@ class HifiLoss(Module):
             loss_gen_s,
             loss_fm_s,
             loss_fm_f,
-            stft_loss,
-            ssim_loss,
+            # stft_loss,
+            # ssim_loss,
             loss_mel,
         )
 
     def forward(
         self,
         audio: Tensor,
-        fake_audio: Tensor,
+        # fake_audio: Tensor,
         mel: Tensor,
         fake_mel: Tensor,
         mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
@@ -182,8 +182,8 @@ class HifiLoss(Module):
         Tensor,
         Tensor,
         Tensor,
-        Tensor,
-        Tensor,
+        # Tensor,
+        # Tensor,
     ]:
         r"""Calculate the losses for the generator and discriminator.
 
@@ -204,12 +204,12 @@ class HifiLoss(Module):
             loss_gen_s,
             loss_fm_s,
             loss_fm_f,
-            stft_loss,
-            ssim_loss,
+            # stft_loss,
+            # ssim_loss,
             loss_mel,
         ) = self.gen_loss(
             audio,
-            fake_audio,
+            # fake_audio,
             mel,
             fake_mel,
             mpd_res,
@@ -231,7 +231,7 @@ class HifiLoss(Module):
             loss_gen_s,
             loss_fm_s,
             loss_fm_f,
-            stft_loss,
-            ssim_loss,
+            # stft_loss,
+            # ssim_loss,
             loss_mel,
         )
