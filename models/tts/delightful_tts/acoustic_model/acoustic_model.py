@@ -317,8 +317,7 @@ class AcousticModel(Module):
         encoding = positional_encoding(
             self.emb_dim,
             max(x.shape[1], int(mel_lens.max().item())),
-        ).to(x.device)
-        encoding = encoding.to(src_mask.device)
+        ).to(src_mask.device)
 
         attn_logprob, attn_soft, attn_hard, attn_hard_dur = self.aligner.forward(
             x=token_embeddings,
@@ -523,7 +522,7 @@ class AcousticModel(Module):
         ).to(x.device)
 
         if x.shape[1] > encoding.shape[1]:
-            encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
+            encoding = positional_encoding(self.emb_dim, x.shape[2]).to(x.device)
 
         # Change the embedding shape to match the decoder output
         embeddings_out = embeddings.repeat(
@@ -532,7 +531,7 @@ class AcousticModel(Module):
             1,
         )[:, : mel_mask.shape[1], :]
 
-        decoder_output = self.decoder(
+        decoder_output = self.decoder.forward(
             x.transpose(1, 2),
             mel_mask,
             embeddings=embeddings_out,

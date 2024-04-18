@@ -59,6 +59,8 @@ class HifiGanDataset(Dataset):
             libritts_cutset_file_name=libritts_cutset_file_name,
             libritts_subsets=libritts_subsets,
             num_jobs=num_jobs,
+            max_seconds=25.0,  # To be sure that all the audio files from the dataset will be used
+            include_libri=False,  # Exclude LibriTTS dataset
         )
 
         self.segment_size = self.pretraining_config.segment_size

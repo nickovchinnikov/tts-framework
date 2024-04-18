@@ -93,6 +93,39 @@ class TestHifiLibriDataset(unittest.TestCase):
         self.assertIsInstance(collated[11], Tensor)  # wavs
         self.assertIsInstance(collated[12], Tensor)  # energy
 
+    def test_include_libri(self):
+        dataset_with_libri = HifiLibriDataset(
+            cache_dir="datasets_cache",
+            include_libri=True,
+        )
+        dataset_without_libri = HifiLibriDataset(
+            cache_dir="datasets_cache",
+            include_libri=False,
+        )
+
+        # Check that the dataset with LibriTTS is larger than the dataset without LibriTTS
+        self.assertTrue(len(dataset_with_libri) > len(dataset_without_libri))
+
+        # Check that the dataset with LibriTTS includes items of type 'libritts'
+        libri_item = dataset_with_libri[len(dataset_with_libri) - 10]
+        self.assertIsInstance(libri_item, HifiLibriItem)
+        self.assertEqual(libri_item.dataset_type, "libritts")
+
+        # Check that the dataset without LibriTTS does not include items of type 'libritts'
+        hifi_item = dataset_without_libri[len(dataset_without_libri) - 10]
+        self.assertIsInstance(hifi_item, HifiLibriItem)
+        self.assertEqual(hifi_item.dataset_type, "hifitts")
+
+    def test_dur_filter(self):
+        # Test with a duration of 0.2
+        self.assertFalse(self.dataset.dur_filter(0.2))
+        # Test with a duration of 1.0
+        self.assertTrue(self.dataset.dur_filter(1.0))
+        # Test with a duration of 2.0
+        self.assertTrue(self.dataset.dur_filter(2.0))
+        # Test with a duration of 30.0
+        self.assertFalse(self.dataset.dur_filter(30.0))
+
 
 if __name__ == "__main__":
     unittest.main()
