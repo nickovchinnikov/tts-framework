@@ -1,9 +1,7 @@
-from typing import List, Tuple
+from typing import List
 
 from lightning.pytorch.core import LightningModule
 import torch
-from torch import Tensor
-from torch.nn.parallel import DistributedDataParallel
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
@@ -30,7 +28,7 @@ class HifiGan(LightningModule):
     def __init__(
         self,
         lang: str = "en",
-        acc_grad_steps: int = 1,
+        acc_grad_steps: int = 5,
         batch_size: int = 64,
         sampling_rate: int = 44100,
     ):
@@ -117,7 +115,7 @@ class HifiGan(LightningModule):
         _, fake_mel = self.tacotronSTFT(fake_audio.squeeze(1))
 
         # Zero the gradients before the descriminators step
-        opt_discriminator.zero_grad()
+        # opt_discriminator.zero_grad()
 
         # Discriminator
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
@@ -138,23 +136,24 @@ class HifiGan(LightningModule):
         self.log("loss_disc_s", loss_disc_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_disc_f", loss_disc_f, sync_dist=True, batch_size=self.batch_size)
 
-        self.manual_backward(total_loss_disc, retain_graph=True)
+        # self.manual_backward(total_loss_disc, retain_graph=True)
+        self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
 
-        # self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
         # accumulate gradients for the discriminator
-        # if (batch_idx + 1) % self.acc_grad_steps == 0:
-        self.clip_gradients(
-            opt_discriminator,
-            gradient_clip_val=0.5,
-            gradient_clip_algorithm="norm",
-        )
+        if (batch_idx + 1) % self.acc_grad_steps == 0:
+            self.clip_gradients(
+                opt_discriminator,
+                gradient_clip_val=0.5,
+                gradient_clip_algorithm="norm",
+            )
 
-        # step for the discriminator
-        opt_discriminator.step()
-        sch_discriminator.step()
+            # step for the discriminator
+            opt_discriminator.step()
+            sch_discriminator.step()
+            opt_discriminator.zero_grad()
 
         # Zero the gradients before the generator step
-        opt_generator.zero_grad()
+        # opt_generator.zero_grad()
 
         # Generator
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio)
@@ -165,12 +164,9 @@ class HifiGan(LightningModule):
             loss_gen_s,
             loss_fm_s,
             loss_fm_f,
-            # stft_loss,
-            # ssim_loss,
             loss_mel,
         ) = self.loss.gen_loss(
             audio,
-            # fake_audio,
             mel,
             fake_mel,
             mpd_res,
@@ -188,26 +184,25 @@ class HifiGan(LightningModule):
         self.log("loss_gen_s", loss_gen_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_s", loss_fm_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
-        # self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_mel", loss_mel, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
-        self.manual_backward(total_loss_gen, retain_graph=True)
+        # self.manual_backward(total_loss_gen, retain_graph=True)
 
-        # self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
+        self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
         # accumulate gradients of N batches
-        # if (batch_idx + 1) % self.acc_grad_steps == 0:
-        # clip gradients
-        self.clip_gradients(
-            opt_generator,
-            gradient_clip_val=0.5,
-            gradient_clip_algorithm="norm",
-        )
+        if (batch_idx + 1) % self.acc_grad_steps == 0:
+            # clip gradients
+            self.clip_gradients(
+                opt_generator,
+                gradient_clip_val=0.5,
+                gradient_clip_algorithm="norm",
+            )
 
-        # step for the generator
-        opt_generator.step()
-        sch_generator.step()
+            # step for the generator
+            opt_generator.step()
+            sch_generator.step()
+            opt_generator.zero_grad()
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.
