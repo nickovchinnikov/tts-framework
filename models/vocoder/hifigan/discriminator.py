@@ -12,9 +12,6 @@ class Discriminator(Module):
 
     This class implements a discriminator that consists of a `MultiScaleDiscriminator` and a `MultiPeriodDiscriminator`.
 
-    Args:
-        model_config (VocoderModelConfig): Model configuration object.
-
     Attributes:
         MSD (MultiScaleDiscriminator): Multi-scale discriminator instance.
         MPD (MultiPeriodDiscriminator): Multi-resolution discriminator instance.

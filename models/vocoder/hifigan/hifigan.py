@@ -32,7 +32,7 @@ class HifiGan(LightningModule):
         batch_size: int = 8,
         sampling_rate: int = 44100,
     ):
-        r"""Initializes the `VocoderModule`.
+        r"""Initializes the `HifiGan`.
 
         Args:
             fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
@@ -111,6 +111,10 @@ class HifiGan(LightningModule):
 
         # Generate fake audio
         fake_audio = self.generator.forward(mel)
+
+        # Pad the fake audio to match the length of the real audio
+        padding = audio.shape[2] - fake_audio.shape[2]
+        fake_audio_padded = torch.nn.functional.pad(fake_audio, (0, padding))
 
         _, fake_mel = self.tacotronSTFT(fake_audio.squeeze(1))
 
@@ -212,18 +216,6 @@ class HifiGan(LightningModule):
 
         Returns
             tuple: A tuple containing two dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
-
-        Examples
-            ```python
-            vocoder_module = VocoderModule()
-            optimizers = vocoder_module.configure_optimizers()
-
-            print(optimizers)
-            (
-                {"optimizer": <torch.optim.adamw.AdamW object at 0x7f8c0c0b3d90>, "lr_scheduler": <torch.optim.lr_scheduler.ExponentialLR object at 0x7f8c0c0b3e50>},
-                {"optimizer": <torch.optim.adamw.AdamW object at 0x7f8c0c0b3f10>, "lr_scheduler": <torch.optim.lr_scheduler.ExponentialLR object at 0x7f8c0c0b3fd0>}
-            )
-            ```
         """
         optim_generator = AdamW(
             self.generator.parameters(),
