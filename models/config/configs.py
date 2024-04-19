@@ -54,7 +54,7 @@ class PreprocessingConfig:
         if self.sampling_rate == 44100:
             self.stft = STFTConfig(
                 filter_length=2048,
-                hop_length=512,  # NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
+                hop_length=441,  # 512 ? NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
                 win_length=2048,
                 n_mel_channels=160,
                 mel_fmin=20,

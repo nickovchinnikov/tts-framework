@@ -29,9 +29,11 @@ class DelightfulHiFi(LightningModule):
         self.delightful_tts = DelightfulTTS.load_from_checkpoint(
             delightful_checkpoint_path,
         )
+        self.delightful_tts.freeze()
         self.hifi_gan = HifiGan.load_from_checkpoint(
             hifi_checkpoint_path,
         )
+        self.hifi_gan.freeze()
 
     def forward(
         self,

@@ -188,8 +188,8 @@ class HifiGan(LightningModule):
 
         # Perform manual optimization
         # self.manual_backward(total_loss_gen, retain_graph=True)
-
         self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
+
         # accumulate gradients of N batches
         if (batch_idx + 1) % self.acc_grad_steps == 0:
             # clip gradients
