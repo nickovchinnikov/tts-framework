@@ -64,6 +64,13 @@ disc_checkpoint = torch.load(disc_checkpoint_path)
 model.discriminator.MPD.load_state_dict(disc_checkpoint["mpd"])
 model.discriminator.MSD.load_state_dict(disc_checkpoint["msd"])
 
+# Gen checkpoints state load
+gen_checkpoint_path = "checkpoints/generator_v1"
+gen_checkpoint = torch.load(gen_checkpoint_path)
+model.generator.load_state_dict(gen_checkpoint["generator"])
+
+len(gen_checkpoint)
+
 train_dataloader = model.train_dataloader(
     root="/dev/shm/",
     # NOTE: Preload the cached dataset into the RAM
