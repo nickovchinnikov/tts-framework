@@ -56,7 +56,7 @@ class PreprocessingConfig:
                 filter_length=2048,
                 hop_length=512,  # NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
                 win_length=2048,
-                n_mel_channels=128,
+                n_mel_channels=80,
                 mel_fmin=20,
                 mel_fmax=11025,
             )
