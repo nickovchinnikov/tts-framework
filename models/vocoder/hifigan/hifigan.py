@@ -29,7 +29,7 @@ class HifiGan(LightningModule):
         self,
         lang: str = "en",
         acc_grad_steps: int = 5,
-        batch_size: int = 64,
+        batch_size: int = 8,
         sampling_rate: int = 44100,
     ):
         r"""Initializes the `VocoderModule`.
