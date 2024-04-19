@@ -58,6 +58,12 @@ trainer = Trainer(
 
 model = HifiGan()
 
+# Desc checkpoints state load
+disc_checkpoint_path = "checkpoints/do_02500000"
+disc_checkpoint = torch.load(disc_checkpoint_path)
+model.discriminator.MPD.load_state_dict(disc_checkpoint["mpd"])
+model.discriminator.MSD.load_state_dict(disc_checkpoint["msd"])
+
 train_dataloader = model.train_dataloader(
     root="/dev/shm/",
     # NOTE: Preload the cached dataset into the RAM

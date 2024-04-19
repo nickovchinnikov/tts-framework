@@ -112,10 +112,6 @@ class HifiGan(LightningModule):
         # Generate fake audio
         fake_audio = self.generator.forward(mel)
 
-        # Pad the fake audio to match the length of the real audio
-        padding = audio.shape[2] - fake_audio.shape[2]
-        fake_audio_padded = torch.nn.functional.pad(fake_audio, (0, padding))
-
         _, fake_mel = self.tacotronSTFT(fake_audio.squeeze(1))
 
         # Zero the gradients before the descriminators step
