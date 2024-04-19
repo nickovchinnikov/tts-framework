@@ -426,14 +426,14 @@ class HifiGanPretrainingConfig(VocoderBasicConfig):
 class HifiGanConfig:
     resblock: str = "1"
     upsample_rates: List[int] = field(
-        default_factory=lambda: [8, 8, 4, 2],
+        default_factory=lambda: [8, 8, 2, 2],
     )
     upsample_kernel_sizes: List[int] = field(
-        default_factory=lambda: [16, 16, 8, 4],
+        default_factory=lambda: [16, 16, 4, 4],
     )
-    upsample_initial_channel: int = 256
+    upsample_initial_channel: int = 512
     resblock_kernel_sizes: List[int] = field(
-        default_factory=lambda: [3, 5, 7],
+        default_factory=lambda: [3, 7, 11],
     )
     resblock_dilation_sizes: List[List[int]] = field(
         default_factory=lambda: [[1, 3, 5], [1, 3, 5], [1, 3, 5]],
