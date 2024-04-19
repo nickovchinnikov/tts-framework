@@ -54,9 +54,9 @@ class PreprocessingConfig:
         if self.sampling_rate == 44100:
             self.stft = STFTConfig(
                 filter_length=2048,
-                hop_length=512,  # 512 ? NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
+                hop_length=512,  # NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
                 win_length=2048,
-                n_mel_channels=160,
+                n_mel_channels=128,
                 mel_fmin=20,
                 mel_fmax=11025,
             )
@@ -414,7 +414,7 @@ class VocoderModelConfig:
 
 @dataclass
 class HifiGanPretrainingConfig(VocoderBasicConfig):
-    segment_size: int = 32768  # NOTE: 32768 for 512 and 16384 for 256
+    segment_size: int = 16384
     learning_rate: float = 0.0002
     adam_b1: float = 0.8
     adam_b2: float = 0.99
