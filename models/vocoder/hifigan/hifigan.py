@@ -117,6 +117,7 @@ class HifiGan(LightningModule):
         self.log("loss_disc_f", loss_disc_f, sync_dist=True, batch_size=self.batch_size)
 
         self.manual_backward(total_loss_disc, retain_graph=True)
+
         # step for the discriminator
         opt_discriminator.step()
         sch_discriminator.step()
@@ -132,6 +133,8 @@ class HifiGan(LightningModule):
             loss_fm_s,
             loss_fm_f,
             stft_loss,
+            mel_loss,
+            erl_loss,
         ) = self.loss.gen_loss(
             audio,
             fake_audio,
@@ -145,15 +148,19 @@ class HifiGan(LightningModule):
             sync_dist=True,
             batch_size=self.batch_size,
         )
+
         # Gen losses
         self.log("loss_gen_f", loss_gen_f, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_gen_s", loss_gen_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_s", loss_fm_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("erl_loss", erl_loss, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
         self.manual_backward(total_loss_gen, retain_graph=True)
+
         # step for the generator
         opt_generator.step()
         sch_generator.step()

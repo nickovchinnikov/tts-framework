@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
-from auraloss.freq import STFTLoss
+from auraloss.freq import MelSTFTLoss, STFTLoss
+from auraloss.time import ESRLoss
 import torch
 from torch import Tensor
 
@@ -80,6 +81,14 @@ class HifiLoss:
             hop_size=preprocess_config.stft.hop_length,
             win_length=preprocess_config.stft.win_length,
         )
+        self.mel_stft_loss = MelSTFTLoss(
+            sample_rate=preprocess_config.sampling_rate,
+            fft_size=preprocess_config.stft.filter_length,
+            hop_size=preprocess_config.stft.hop_length,
+            win_length=preprocess_config.stft.win_length,
+            n_mels=preprocess_config.stft.n_mel_channels,
+        )
+        self.erl_loss = ESRLoss()
         self.train_config = HifiGanPretrainingConfig()
 
     def desc_loss(
@@ -115,6 +124,15 @@ class HifiLoss:
             audio,
         ).to(audio.device)
 
+        # Calculate the mel STFT loss
+        mel_loss = self.mel_stft_loss(
+            fake_audio,
+            audio,
+        ).to(audio.device)
+
+        # Calculate the error-to-signal ratio loss
+        erl_loss = self.erl_loss(fake_audio, audio).to(audio.device)
+
         loss_fm_f = feature_loss(fmap_f_r, fmap_f_g).to(audio.device)
         loss_fm_s = feature_loss(fmap_s_r, fmap_s_g).to(audio.device)
 
@@ -122,7 +140,15 @@ class HifiLoss:
         loss_gen_s = generator_loss(y_ds_hat_g).to(audio.device)
 
         # Calculate the total generator loss
-        total_loss_gen = loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + stft_loss
+        total_loss_gen = (
+            loss_gen_f
+            + loss_gen_s
+            + loss_fm_s
+            + loss_fm_f
+            + stft_loss
+            + mel_loss
+            + erl_loss
+        )
 
         return (
             total_loss_gen,
@@ -131,4 +157,6 @@ class HifiLoss:
             loss_fm_s,
             loss_fm_f,
             stft_loss,
+            mel_loss,
+            erl_loss,
         )
