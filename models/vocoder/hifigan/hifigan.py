@@ -13,7 +13,6 @@ from models.config import (
 )
 from training.datasets.hifi_gan_dataset import train_dataloader
 from training.loss import HifiLoss
-from training.preprocess import TacotronSTFT
 
 from .discriminator import Discriminator
 from .generator import Generator
@@ -53,24 +52,13 @@ class HifiGan(LightningModule):
         )
         self.train_config = HifiGanPretrainingConfig()
 
-        self.tacotronSTFT = TacotronSTFT(
-            filter_length=self.preprocess_config.stft.filter_length,
-            hop_length=self.preprocess_config.stft.hop_length,
-            win_length=self.preprocess_config.stft.win_length,
-            n_mel_channels=self.preprocess_config.stft.n_mel_channels,
-            sampling_rate=self.preprocess_config.sampling_rate,
-            mel_fmin=self.preprocess_config.stft.mel_fmin,
-            mel_fmax=self.preprocess_config.stft.mel_fmax,
-            center=False,
-        )
-
         self.generator = Generator(
             h=HifiGanConfig(),
             p=self.preprocess_config,
         )
         self.discriminator = Discriminator()
 
-        self.loss = HifiLoss()
+        self.loss = HifiLoss(preprocess_config=self.preprocess_config)
 
     def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
         r"""Performs a forward pass through the UnivNet model.
@@ -109,8 +97,6 @@ class HifiGan(LightningModule):
         # Generate fake audio
         fake_audio = self.generator.forward(mel)
 
-        _, fake_mel = self.tacotronSTFT(fake_audio.squeeze(1))
-
         # Discriminator
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
 
@@ -146,12 +132,9 @@ class HifiGan(LightningModule):
             loss_fm_s,
             loss_fm_f,
             stft_loss,
-            loss_mel,
         ) = self.loss.gen_loss(
             audio,
             fake_audio,
-            mel,
-            fake_mel,
             mpd_res,
             msd_res,
         )
@@ -168,7 +151,6 @@ class HifiGan(LightningModule):
         self.log("loss_fm_s", loss_fm_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("loss_mel", loss_mel, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
         self.manual_backward(total_loss_gen, retain_graph=True)

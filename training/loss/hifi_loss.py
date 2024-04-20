@@ -1,12 +1,11 @@
 from typing import List, Tuple
 
+from auraloss.freq import STFTLoss
 import torch
 from torch import Tensor, nn
 from torch.nn import Module
 
-from models.config import VocoderModelConfig
-
-from .multi_resolution_stft_loss import MultiResolutionSTFTLoss
+from models.config import HifiGanPretrainingConfig, PreprocessingConfig
 
 
 def feature_loss(fmap_r: List[Tensor], fmap_g: List[Tensor]) -> Tensor:
@@ -73,12 +72,16 @@ def generator_loss(disc_outputs: List[Tensor]):
 class HifiLoss(Module):
     r"""HifiLoss is a PyTorch Module that calculates the generator and discriminator losses for Hifi vocoder."""
 
-    def __init__(self):
+    def __init__(self, preprocess_config: PreprocessingConfig):
         r"""Initializes the HifiLoss module."""
         super().__init__()
 
-        self.model_config = VocoderModelConfig()
-        self.stft_criterion = MultiResolutionSTFTLoss(self.model_config.mrd.resolutions)
+        self.stft_loss = STFTLoss(
+            fft_size=preprocess_config.stft.filter_length,
+            hop_size=preprocess_config.stft.hop_length,
+            win_length=preprocess_config.stft.win_length,
+        )
+        self.train_config = HifiGanPretrainingConfig()
         self.mae_loss = nn.L1Loss()
 
     def desc_loss(
@@ -102,8 +105,6 @@ class HifiLoss(Module):
         self,
         audio: Tensor,
         fake_audio: Tensor,
-        mel: Tensor,
-        fake_mel: Tensor,
         mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
         msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
     ):
@@ -111,11 +112,10 @@ class HifiLoss(Module):
         _, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
 
         # Calculate the STFT loss
-        sc_loss, mag_loss = self.stft_criterion.forward(
-            fake_audio.squeeze(1),
-            audio.squeeze(1),
-        )
-        stft_loss = sc_loss + mag_loss
+        stft_loss: Tensor = self.stft_loss(
+            fake_audio,
+            audio,
+        ).to(audio.device)
 
         loss_fm_f = feature_loss(fmap_f_r, fmap_f_g).to(audio.device)
         loss_fm_s = feature_loss(fmap_s_r, fmap_s_g).to(audio.device)
@@ -123,12 +123,8 @@ class HifiLoss(Module):
         loss_gen_f = generator_loss(y_df_hat_g).to(audio.device)
         loss_gen_s = generator_loss(y_ds_hat_g).to(audio.device)
 
-        loss_mel = self.mae_loss(mel, fake_mel) * 45
-
         # Calculate the total generator loss
-        total_loss_gen = (
-            loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + stft_loss + loss_mel
-        )
+        total_loss_gen = loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + stft_loss
 
         return (
             total_loss_gen,
@@ -137,19 +133,15 @@ class HifiLoss(Module):
             loss_fm_s,
             loss_fm_f,
             stft_loss,
-            loss_mel,
         )
 
     def forward(
         self,
         audio: Tensor,
         fake_audio: Tensor,
-        mel: Tensor,
-        fake_mel: Tensor,
         mpd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
         msd_res: Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]],
     ) -> Tuple[
-        Tensor,
         Tensor,
         Tensor,
         Tensor,
@@ -165,8 +157,6 @@ class HifiLoss(Module):
         Args:
             audio (Tensor): The real audio samples.
             fake_audio (Tensor): The generated audio samples.
-            mel (Tensor): The real mel spectrogram.
-            fake_mel (Tensor): The generated mel spectrogram.
             mpd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-resolution discriminator results for the real and generated audio.
             msd_res (Tuple[List[Tensor], List[Tensor], List[Tensor], List[Tensor]]): The multi-scale discriminator results for the real and generated audio.
 
@@ -180,12 +170,9 @@ class HifiLoss(Module):
             loss_fm_s,
             loss_fm_f,
             stft_loss,
-            loss_mel,
         ) = self.gen_loss(
             audio,
             fake_audio,
-            mel,
-            fake_mel,
             mpd_res,
             msd_res,
         )
@@ -206,5 +193,4 @@ class HifiLoss(Module):
             loss_fm_s,
             loss_fm_f,
             stft_loss,
-            loss_mel,
         )
