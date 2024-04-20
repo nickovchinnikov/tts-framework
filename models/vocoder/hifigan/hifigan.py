@@ -115,7 +115,7 @@ class HifiGan(LightningModule):
         _, fake_mel = self.tacotronSTFT(fake_audio.squeeze(1))
 
         # Zero the gradients before the descriminators step
-        opt_discriminator.zero_grad()
+        # opt_discriminator.zero_grad()
 
         # Discriminator
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
@@ -150,10 +150,10 @@ class HifiGan(LightningModule):
         # step for the discriminator
         opt_discriminator.step()
         sch_discriminator.step()
-        # opt_discriminator.zero_grad()
+        opt_discriminator.zero_grad()
 
         # Zero the gradients before the generator step
-        opt_generator.zero_grad()
+        # opt_generator.zero_grad()
 
         # Generator
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio)
@@ -202,7 +202,7 @@ class HifiGan(LightningModule):
         # step for the generator
         opt_generator.step()
         sch_generator.step()
-        # opt_generator.zero_grad()
+        opt_generator.zero_grad()
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.
