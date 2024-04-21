@@ -421,6 +421,8 @@ class HifiGanPretrainingConfig(VocoderBasicConfig):
     lr_decay: float = 0.9995
     lReLU_slope: float = 0.1
     l1_factor: int = 45
+    sampling_rate_acoustic: int = 22050
+    sampling_rate_vocoder: int = 44100
 
 
 @dataclass
