@@ -95,7 +95,7 @@ class HifiGan(LightningModule):
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
         # Generate fake audio
-        self.toggle_optimizer(opt_discriminator)
+        # self.toggle_optimizer(opt_discriminator)
         fake_audio = self.generator.forward(mel)
 
         # Discriminator
@@ -122,10 +122,10 @@ class HifiGan(LightningModule):
         # step for the discriminator
         opt_discriminator.step()
         opt_discriminator.zero_grad()
-        self.untoggle_optimizer(opt_discriminator)
+        # self.untoggle_optimizer(opt_discriminator)
 
         # Generator
-        self.toggle_optimizer(opt_generator)
+        # self.toggle_optimizer(opt_generator)
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio)
 
         (
@@ -164,7 +164,7 @@ class HifiGan(LightningModule):
         # step for the generator
         opt_generator.step()
         opt_generator.zero_grad()
-        self.untoggle_optimizer(opt_generator)
+        # self.untoggle_optimizer(opt_generator)
 
         # Schedulers step
         sch_generator.step()

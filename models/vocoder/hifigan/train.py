@@ -6,7 +6,12 @@ from lightning.pytorch.accelerators import find_usable_cuda_devices  # type: ign
 from lightning.pytorch.strategies import DDPStrategy
 import torch
 
+from models.config import (
+    HifiGanConfig,
+    PreprocessingConfig,
+)
 from models.vocoder.hifigan import HifiGan
+from models.vocoder.hifigan.generator import Generator
 
 # Get the current date and time
 now = datetime.now()
@@ -70,9 +75,15 @@ gen_checkpoint = torch.load(gen_checkpoint_path)
 model.generator.load_state_dict(gen_checkpoint["generator"])
 
 # Reset the parameters of the generator
-for layer in model.generator.children():
-    if hasattr(layer, "reset_parameters"):
-        layer.reset_parameters()
+preprocess_config = PreprocessingConfig(
+    "multilingual",
+    sampling_rate=44100,
+)
+
+model.generator = Generator(
+    h=HifiGanConfig(),
+    p=preprocess_config,
+)
 
 len(gen_checkpoint)
 
