@@ -63,29 +63,33 @@ trainer = Trainer(
 
 model = HifiGan()
 
+# Try to preload the model from the nvidia checkpoint
+hifigan_state_dict = torch.load("./checkpoints/hifigan_spanish.pth")
+model.load_state_dict(hifigan_state_dict)
+
 # Desc checkpoints state load
-disc_checkpoint_path = "checkpoints/do_02500000"
-disc_checkpoint = torch.load(disc_checkpoint_path)
-model.discriminator.MPD.load_state_dict(disc_checkpoint["mpd"])
-model.discriminator.MSD.load_state_dict(disc_checkpoint["msd"])
+# disc_checkpoint_path = "checkpoints/do_02500000"
+# disc_checkpoint = torch.load(disc_checkpoint_path)
+# model.discriminator.MPD.load_state_dict(disc_checkpoint["mpd"])
+# model.discriminator.MSD.load_state_dict(disc_checkpoint["msd"])
 
 # Gen checkpoints state load
-gen_checkpoint_path = "checkpoints/generator_v1"
-gen_checkpoint = torch.load(gen_checkpoint_path)
-model.generator.load_state_dict(gen_checkpoint["generator"])
+# gen_checkpoint_path = "checkpoints/generator_v1"
+# gen_checkpoint = torch.load(gen_checkpoint_path)
+# model.generator.load_state_dict(gen_checkpoint["generator"])
 
 # Reset the parameters of the generator
-preprocess_config = PreprocessingConfig(
-    "multilingual",
-    sampling_rate=44100,
-)
+# preprocess_config = PreprocessingConfig(
+#     "multilingual",
+#     sampling_rate=44100,
+# )
 
-model.generator = Generator(
-    h=HifiGanConfig(),
-    p=preprocess_config,
-)
+# model.generator = Generator(
+#     h=HifiGanConfig(),
+#     p=preprocess_config,
+# )
 
-len(gen_checkpoint)
+# len(gen_checkpoint)
 
 train_dataloader = model.train_dataloader(
     root="/dev/shm/",
