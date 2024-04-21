@@ -95,6 +95,7 @@ class HifiGan(LightningModule):
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
         # Generate fake audio
+        self.toggle_optimizer(opt_discriminator)
         fake_audio = self.generator.forward(mel)
 
         # Discriminator
@@ -120,10 +121,11 @@ class HifiGan(LightningModule):
 
         # step for the discriminator
         opt_discriminator.step()
-        sch_discriminator.step()
         opt_discriminator.zero_grad()
+        self.untoggle_optimizer(opt_discriminator)
 
         # Generator
+        self.toggle_optimizer(opt_generator)
         mpd_res, msd_res = self.discriminator.forward(audio, fake_audio)
 
         (
@@ -132,12 +134,8 @@ class HifiGan(LightningModule):
             loss_gen_s,
             loss_fm_s,
             loss_fm_f,
-            stft_loss,
             mel_loss,
-            log_cosh_loss,
-            # sdsdr_loss,
-            # snr_loss,
-            # erl_loss,
+            # stft_loss,
         ) = self.loss.gen_loss(
             audio,
             fake_audio,
@@ -157,25 +155,20 @@ class HifiGan(LightningModule):
         self.log("loss_gen_s", loss_gen_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_s", loss_fm_s, sync_dist=True, batch_size=self.batch_size)
         self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
-        self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log(
-            "log_cosh_loss",
-            log_cosh_loss,
-            sync_dist=True,
-            batch_size=self.batch_size,
-        )
-        # self.log("sdsdr_loss", sdsdr_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("snr_loss", snr_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("erl_loss", erl_loss, sync_dist=True, batch_size=self.batch_size)
+        # self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
         self.manual_backward(total_loss_gen, retain_graph=True)
 
         # step for the generator
         opt_generator.step()
-        sch_generator.step()
         opt_generator.zero_grad()
+        self.untoggle_optimizer(opt_generator)
+
+        # Schedulers step
+        sch_generator.step()
+        sch_discriminator.step()
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.

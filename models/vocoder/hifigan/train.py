@@ -69,6 +69,11 @@ gen_checkpoint_path = "checkpoints/generator_v1"
 gen_checkpoint = torch.load(gen_checkpoint_path)
 model.generator.load_state_dict(gen_checkpoint["generator"])
 
+# Reset the parameters of the generator
+for layer in model.generator.children():
+    if hasattr(layer, "reset_parameters"):
+        layer.reset_parameters()
+
 len(gen_checkpoint)
 
 train_dataloader = model.train_dataloader(
