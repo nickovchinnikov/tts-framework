@@ -91,8 +91,8 @@ class HifiLoss:
             n_mels=preprocess_config.stft.n_mel_channels,
         )
         self.log_cosh_loss = LogCoshLoss()
-        self.sdsdr_loss = SDSDRLoss()
-        self.signal_to_noise_loss = SNRLoss()
+        # self.sdsdr_loss = SDSDRLoss()
+        # self.signal_to_noise_loss = SNRLoss()
         self.train_config = HifiGanPretrainingConfig()
 
     def desc_loss(
@@ -135,8 +135,8 @@ class HifiLoss:
         ).to(audio.device)
 
         log_cosh_loss = self.log_cosh_loss(fake_audio, audio).to(audio.device)
-        sdsdr_loss = self.sdsdr_loss(fake_audio, audio).to(audio.device)
-        snr_loss = self.signal_to_noise_loss(fake_audio, audio).to(audio.device)
+        # sdsdr_loss = self.sdsdr_loss(fake_audio, audio).to(audio.device)
+        # snr_loss = self.signal_to_noise_loss(fake_audio, audio).to(audio.device)
 
         # Calculate the error-to-signal ratio loss
         # erl_loss = self.erl_loss(fake_audio, audio).to(audio.device)
@@ -156,8 +156,8 @@ class HifiLoss:
             + stft_loss
             + mel_loss
             + log_cosh_loss
-            + sdsdr_loss
-            + snr_loss
+            # + sdsdr_loss
+            # + snr_loss
             # + erl_loss
         )
 
@@ -170,7 +170,7 @@ class HifiLoss:
             stft_loss,
             mel_loss,
             log_cosh_loss,
-            sdsdr_loss,
-            snr_loss,
+            # sdsdr_loss,
+            # snr_loss,
             # erl_loss,
         )
