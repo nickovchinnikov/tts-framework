@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 from auraloss.freq import MelSTFTLoss, STFTLoss
+from auraloss.time import LogCoshLoss, SDSDRLoss, SNRLoss
 
 # from auraloss.time import ESRLoss
 import torch
@@ -89,7 +90,9 @@ class HifiLoss:
             win_length=preprocess_config.stft.win_length,
             n_mels=preprocess_config.stft.n_mel_channels,
         )
-        # self.erl_loss = ESRLoss()
+        self.log_cosh_loss = LogCoshLoss()
+        self.sdsdr_loss = SDSDRLoss()
+        self.signal_to_noise_loss = SNRLoss()
         self.train_config = HifiGanPretrainingConfig()
 
     def desc_loss(
@@ -131,6 +134,10 @@ class HifiLoss:
             audio,
         ).to(audio.device)
 
+        log_cosh_loss = self.log_cosh_loss(fake_audio, audio).to(audio.device)
+        sdsdr_loss = self.sdsdr_loss(fake_audio, audio).to(audio.device)
+        snr_loss = self.signal_to_noise_loss(fake_audio, audio).to(audio.device)
+
         # Calculate the error-to-signal ratio loss
         # erl_loss = self.erl_loss(fake_audio, audio).to(audio.device)
 
@@ -142,7 +149,15 @@ class HifiLoss:
 
         # Calculate the total generator loss
         total_loss_gen = (
-            loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + stft_loss + mel_loss
+            loss_gen_f
+            + loss_gen_s
+            + loss_fm_s
+            + loss_fm_f
+            + stft_loss
+            + mel_loss
+            + log_cosh_loss
+            + sdsdr_loss
+            + snr_loss
             # + erl_loss
         )
 
@@ -154,5 +169,8 @@ class HifiLoss:
             loss_fm_f,
             stft_loss,
             mel_loss,
+            log_cosh_loss,
+            sdsdr_loss,
+            snr_loss,
             # erl_loss,
         )

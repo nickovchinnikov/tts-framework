@@ -134,6 +134,9 @@ class HifiGan(LightningModule):
             loss_fm_f,
             stft_loss,
             mel_loss,
+            log_cosh_loss,
+            sdsdr_loss,
+            snr_loss,
             # erl_loss,
         ) = self.loss.gen_loss(
             audio,
@@ -156,6 +159,11 @@ class HifiGan(LightningModule):
         self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
         self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "log_cosh_loss", log_cosh_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log("sdsdr_loss", sdsdr_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log("snr_loss", snr_loss, sync_dist=True, batch_size=self.batch_size)
         # self.log("erl_loss", erl_loss, sync_dist=True, batch_size=self.batch_size)
 
         # Perform manual optimization
