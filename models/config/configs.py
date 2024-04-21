@@ -420,16 +420,17 @@ class HifiGanPretrainingConfig(VocoderBasicConfig):
     adam_b2: float = 0.99
     lr_decay: float = 0.9995
     lReLU_slope: float = 0.1
+    l1_factor: int = 45
 
 
 @dataclass
 class HifiGanConfig:
     resblock: str = "1"
     upsample_rates: List[int] = field(
-        default_factory=lambda: [8, 8, 2, 2, 2],
+        default_factory=lambda: [8, 8, 4, 2],
     )
     upsample_kernel_sizes: List[int] = field(
-        default_factory=lambda: [16, 16, 4, 4, 4],
+        default_factory=lambda: [16, 16, 4, 4],
     )
     upsample_initial_channel: int = 512
     resblock_kernel_sizes: List[int] = field(

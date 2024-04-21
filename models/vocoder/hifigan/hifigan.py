@@ -1,7 +1,9 @@
+import itertools
 from typing import List
 
 from lightning.pytorch.core import LightningModule
 import torch
+from torch import nn
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
@@ -12,9 +14,17 @@ from models.config import (
     PreprocessingConfig,
 )
 from training.datasets.hifi_gan_dataset import train_dataloader
-from training.loss import HifiLoss
+from training.loss.hifi_loss_nemo import (
+    DiscriminatorLoss,
+    FeatureMatchingLoss,
+    GeneratorLoss,
+)
+from training.preprocess import TacotronSTFT
 
-from .discriminator import Discriminator
+from .discriminator import (
+    MultiPeriodDiscriminator,
+    MultiScaleDiscriminator,
+)
 from .generator import Generator
 
 
@@ -27,7 +37,7 @@ class HifiGan(LightningModule):
     def __init__(
         self,
         lang: str = "en",
-        batch_size: int = 8,
+        batch_size: int = 16,
         sampling_rate: int = 44100,
     ):
         r"""Initializes the `HifiGan`.
@@ -40,8 +50,6 @@ class HifiGan(LightningModule):
         """
         super().__init__()
 
-        # Switch to manual optimization
-        self.automatic_optimization = False
         self.batch_size = batch_size
         self.sampling_rate = sampling_rate
         self.lang = lang
@@ -56,9 +64,31 @@ class HifiGan(LightningModule):
             h=HifiGanConfig(),
             p=self.preprocess_config,
         )
-        self.discriminator = Discriminator()
+        self.mpd = MultiPeriodDiscriminator()
+        self.msd = MultiScaleDiscriminator()
 
-        self.loss = HifiLoss(preprocess_config=self.preprocess_config)
+        self.feature_loss = FeatureMatchingLoss()
+        self.discriminator_loss = DiscriminatorLoss()
+        self.generator_loss = GeneratorLoss()
+        self.mae_loss = nn.L1Loss()
+
+        self.tacotronSTFT = TacotronSTFT(
+            filter_length=self.preprocess_config.stft.filter_length,
+            hop_length=self.preprocess_config.stft.hop_length,
+            win_length=self.preprocess_config.stft.win_length,
+            n_mel_channels=self.preprocess_config.stft.n_mel_channels,
+            sampling_rate=self.preprocess_config.sampling_rate,
+            mel_fmin=self.preprocess_config.stft.mel_fmin,
+            mel_fmax=self.preprocess_config.stft.mel_fmax,
+            center=False,
+        )
+
+        # Mark TacotronSTFT as non-trainable
+        for param in self.tacotronSTFT.parameters():
+            param.requires_grad = False
+
+        # Switch to manual optimization
+        self.automatic_optimization = False
 
     def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
         r"""Performs a forward pass through the UnivNet model.
@@ -95,80 +125,122 @@ class HifiGan(LightningModule):
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
         # Generate fake audio
-        # self.toggle_optimizer(opt_discriminator)
-        fake_audio = self.generator.forward(mel)
+        audio_pred = self.generator.forward(mel)
+        _, fake_mel = self.tacotronSTFT(audio_pred.squeeze(1))
 
-        # Discriminator
-        mpd_res, msd_res = self.discriminator.forward(audio, fake_audio.detach())
-
-        total_loss_disc, loss_disc_s, loss_disc_f = self.loss.desc_loss(
-            audio,
-            mpd_res,
-            msd_res,
-        )
-
-        # Disc logs
-        self.log(
-            "total_loss_disc",
-            total_loss_disc,
-            sync_dist=True,
-            batch_size=self.batch_size,
-        )
-        self.log("loss_disc_s", loss_disc_s, sync_dist=True, batch_size=self.batch_size)
-        self.log("loss_disc_f", loss_disc_f, sync_dist=True, batch_size=self.batch_size)
-
-        self.manual_backward(total_loss_disc, retain_graph=True)
-
-        # step for the discriminator
-        opt_discriminator.step()
+        # Train discriminator
         opt_discriminator.zero_grad()
-        # self.untoggle_optimizer(opt_discriminator)
-
-        # Generator
-        # self.toggle_optimizer(opt_generator)
-        mpd_res, msd_res = self.discriminator.forward(audio, fake_audio)
-
-        (
-            total_loss_gen,
-            loss_gen_f,
-            loss_gen_s,
-            loss_fm_s,
-            loss_fm_f,
-            mel_loss,
-            # stft_loss,
-        ) = self.loss.gen_loss(
-            audio,
-            fake_audio,
-            mpd_res,
-            msd_res,
+        mpd_score_real, mpd_score_gen, _, _ = self.mpd.forward(
+            y=audio,
+            y_hat=audio_pred.detach(),
         )
-
-        self.log(
-            "total_loss_gen",
-            total_loss_gen,
-            sync_dist=True,
-            batch_size=self.batch_size,
+        loss_disc_mpd, _, _ = self.discriminator_loss.forward(
+            disc_real_outputs=mpd_score_real,
+            disc_generated_outputs=mpd_score_gen,
         )
+        msd_score_real, msd_score_gen, _, _ = self.msd(
+            y=audio,
+            y_hat=audio_pred.detach(),
+        )
+        loss_disc_msd, _, _ = self.discriminator_loss(
+            disc_real_outputs=msd_score_real,
+            disc_generated_outputs=msd_score_gen,
+        )
+        loss_d = loss_disc_msd + loss_disc_mpd
 
-        # Gen losses
-        self.log("loss_gen_f", loss_gen_f, sync_dist=True, batch_size=self.batch_size)
-        self.log("loss_gen_s", loss_gen_s, sync_dist=True, batch_size=self.batch_size)
-        self.log("loss_fm_s", loss_fm_s, sync_dist=True, batch_size=self.batch_size)
-        self.log("loss_fm_f", loss_fm_f, sync_dist=True, batch_size=self.batch_size)
-        self.log("mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        # self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
+        # Step for the discriminator
+        self.manual_backward(loss_d, retain_graph=True)
+        opt_discriminator.step()
 
-        # Perform manual optimization
-        self.manual_backward(total_loss_gen, retain_graph=True)
+        # Train generator
+        opt_generator.zero_grad()
+        loss_mel = self.mae_loss(fake_mel, mel)
+
+        _, mpd_score_gen, fmap_mpd_real, fmap_mpd_gen = self.mpd.forward(
+            y=audio,
+            y_hat=audio_pred,
+        )
+        _, msd_score_gen, fmap_msd_real, fmap_msd_gen = self.msd.forward(
+            y=audio,
+            y_hat=audio_pred,
+        )
+        loss_fm_mpd = self.feature_loss.forward(
+            fmap_r=fmap_mpd_real,
+            fmap_g=fmap_mpd_gen,
+        )
+        loss_fm_msd = self.feature_loss.forward(
+            fmap_r=fmap_msd_real,
+            fmap_g=fmap_msd_gen,
+        )
+        loss_gen_mpd, _ = self.generator_loss.forward(disc_outputs=mpd_score_gen)
+        loss_gen_msd, _ = self.generator_loss.forward(disc_outputs=msd_score_gen)
+        loss_g = (
+            loss_gen_msd
+            + loss_gen_mpd
+            + loss_fm_msd
+            + loss_fm_mpd
+            + loss_mel * self.train_config.l1_factor
+        )
 
         # step for the generator
+        self.manual_backward(loss_g, retain_graph=True)
         opt_generator.step()
-        opt_generator.zero_grad()
-        # self.untoggle_optimizer(opt_generator)
 
         # Schedulers step
         sch_generator.step()
         sch_discriminator.step()
+
+        # Gen losses
+        self.log(
+            "loss_gen_msd",
+            loss_gen_msd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_gen_mpd",
+            loss_gen_mpd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_fm_msd",
+            loss_fm_msd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_fm_mpd",
+            loss_fm_mpd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "mel_loss",
+            loss_mel,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+
+        # Disc logs
+        self.log(
+            "loss_disc_msd",
+            loss_disc_msd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_disc_mpd",
+            loss_disc_mpd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "total_loss_disc",
+            loss_d,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.
@@ -191,7 +263,7 @@ class HifiGan(LightningModule):
         )
 
         optim_discriminator = AdamW(
-            self.discriminator.parameters(),
+            itertools.chain(self.msd.parameters(), self.mpd.parameters()),
             self.train_config.learning_rate,
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )

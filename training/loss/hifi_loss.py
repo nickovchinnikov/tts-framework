@@ -116,12 +116,6 @@ class HifiLoss:
         _, y_df_hat_g, fmap_f_r, fmap_f_g = mpd_res
         _, y_ds_hat_g, fmap_s_r, fmap_s_g = msd_res
 
-        # Calculate the STFT loss
-        # stft_loss: Tensor = self.stft_loss(
-        #     fake_audio,
-        #     audio,
-        # ).to(audio.device)
-
         # Calculate the mel STFT loss
         mel_loss = self.mel_stft_loss(
             fake_audio,
@@ -135,9 +129,7 @@ class HifiLoss:
         loss_gen_s = generator_loss(y_ds_hat_g).to(audio.device)
 
         # Calculate the total generator loss
-        total_loss_gen = (
-            loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + mel_loss  # + stft_loss
-        )
+        total_loss_gen = loss_gen_f + loss_gen_s + loss_fm_s + loss_fm_f + mel_loss
 
         return (
             total_loss_gen,
@@ -146,5 +138,4 @@ class HifiLoss:
             loss_fm_s,
             loss_fm_f,
             mel_loss,
-            # stft_loss,
         )
