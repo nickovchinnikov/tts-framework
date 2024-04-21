@@ -14,7 +14,7 @@ from models.config import (
     PreprocessingConfig,
 )
 from training.datasets.hifi_gan_dataset import train_dataloader
-from training.loss.hifi_loss_nemo import (
+from training.loss.hifi_loss import (
     DiscriminatorLoss,
     FeatureMatchingLoss,
     GeneratorLoss,
