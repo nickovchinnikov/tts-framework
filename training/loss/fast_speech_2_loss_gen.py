@@ -178,8 +178,8 @@ class FastSpeech2LossGen(Module):
         )
 
         if self.bin_warmup:
-            binarization_loss_enable_steps = 18000
-            binarization_loss_warmup_steps = 10000
+            binarization_loss_enable_steps = 600
+            binarization_loss_warmup_steps = 600
 
             if step < binarization_loss_enable_steps:
                 bin_loss_weight = 0.0

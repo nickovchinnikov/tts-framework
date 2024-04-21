@@ -41,7 +41,7 @@ class DelightfulTTS(LightningModule):
     def __init__(
         self,
         fine_tuning: bool = False,
-        bin_warmup: bool = False,
+        bin_warmup: bool = True,
         lang: str = "en",
         n_speakers: int = 5392,
         batch_size: int = 20,
