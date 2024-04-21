@@ -30,7 +30,7 @@ class PreprocessingConfig:
             filter_length=1024,
             hop_length=256,
             win_length=1024,
-            n_mel_channels=100,
+            n_mel_channels=80,  # For univnet 100
             mel_fmin=20,
             mel_fmax=11025,
         ),

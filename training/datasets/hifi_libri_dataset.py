@@ -547,6 +547,7 @@ class HifiLibriDataset(Dataset):
 def train_dataloader(
     batch_size: int = 6,
     num_workers: int = 5,
+    sampling_rate: int = 22050,
     shuffle: bool = False,
     lang: str = "en",
     root: str = "datasets_cache",
@@ -563,6 +564,7 @@ def train_dataloader(
     Args:
         batch_size (int): The batch size.
         num_workers (int): The number of workers.
+        sampling_rate (int): The sampling rate of the audio. Defaults to 22050.
         shuffle (bool): Whether to shuffle the dataset.
         lang (str): The language of the dataset.
         root (str): The root directory of the dataset.
@@ -580,6 +582,7 @@ def train_dataloader(
     dataset = HifiLibriDataset(
         root=root,
         hifitts_path=hifitts_path,
+        sampling_rate=sampling_rate,
         hifi_cutset_file_name=hifi_cutset_file_name,
         libritts_path=libritts_path,
         libritts_cutset_file_name=libritts_cutset_file_name,

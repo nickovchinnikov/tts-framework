@@ -44,7 +44,7 @@ class DelightfulTTS(LightningModule):
         lang: str = "en",
         n_speakers: int = 5392,
         batch_size: int = 10,
-        sampling_rate: int = 44100,
+        sampling_rate: int = 22050,
     ):
         super().__init__()
 
@@ -331,6 +331,7 @@ class DelightfulTTS(LightningModule):
         return train_dataloader(
             batch_size=self.batch_size,
             num_workers=self.preprocess_config.workers,
+            sampling_rate=self.preprocess_config.sampling_rate,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
