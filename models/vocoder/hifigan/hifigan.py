@@ -14,18 +14,16 @@ from models.config import (
     PreprocessingConfig,
 )
 from training.datasets.hifi_gan_dataset import train_dataloader
-from training.loss.hifi_loss import (
+from training.loss import (
     DiscriminatorLoss,
     FeatureMatchingLoss,
     GeneratorLoss,
 )
 from training.preprocess import TacotronSTFT
 
-from .discriminator import (
-    MultiPeriodDiscriminator,
-    MultiScaleDiscriminator,
-)
 from .generator import Generator
+from .mp_discriminator import MultiPeriodDiscriminator
+from .ms_discriminator import MultiScaleDiscriminator
 
 
 class HifiGan(LightningModule):
