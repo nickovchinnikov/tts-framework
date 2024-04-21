@@ -43,7 +43,7 @@ class DelightfulTTS(LightningModule):
         fine_tuning: bool = False,
         lang: str = "en",
         n_speakers: int = 5392,
-        batch_size: int = 10,
+        batch_size: int = 15,
         sampling_rate: int = 22050,
     ):
         super().__init__()
