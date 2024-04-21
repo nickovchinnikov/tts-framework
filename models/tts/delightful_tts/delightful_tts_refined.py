@@ -41,9 +41,10 @@ class DelightfulTTS(LightningModule):
     def __init__(
         self,
         fine_tuning: bool = False,
+        bin_warmup: bool = False,
         lang: str = "en",
         n_speakers: int = 5392,
-        batch_size: int = 15,
+        batch_size: int = 20,
         sampling_rate: int = 22050,
     ):
         super().__init__()
@@ -82,7 +83,7 @@ class DelightfulTTS(LightningModule):
         )
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=True)
+        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=bin_warmup)
 
     # def forward(
     #     self,
