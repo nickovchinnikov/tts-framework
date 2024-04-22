@@ -65,7 +65,7 @@ trainer = Trainer(
     # Save checkpoints to the `default_root_dir` directory
     default_root_dir=default_root_dir,
     enable_checkpointing=True,
-    accumulate_grad_batches=3,
+    accumulate_grad_batches=5,
     max_epochs=-1,
     log_every_n_steps=10,
     gradient_clip_val=0.5,
