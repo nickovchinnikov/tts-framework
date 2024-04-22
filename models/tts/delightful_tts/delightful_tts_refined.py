@@ -86,7 +86,9 @@ class DelightfulTTS(LightningModule):
         )
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=bin_warmup)
+        self.loss_acoustic = FastSpeech2LossGen(
+            bin_warmup=bin_warmup,
+        )
 
     def forward(
         self,
