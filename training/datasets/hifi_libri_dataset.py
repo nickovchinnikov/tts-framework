@@ -34,12 +34,12 @@ NUM_JOBS = (os.cpu_count() or 2) - 1
 # The selected speakers from the HiFiTTS dataset
 selected_speakers_hi_fi_ids = [
     "Cori Samuel",  # 92,
-    # "Phil Benson",  # 6097,
-    # "Mike Pelton",  # 6670,
     "Tony Oliva",  # 6671,
-    # "Maria Kasper",  # 8051,
     "John Van Stan",  # 9017,
     "Helen Taylor",  # 9136,
+    # "Phil Benson",  # 6097,
+    # "Mike Pelton",  # 6670,
+    # "Maria Kasper",  # 8051,
     # "Sylviamb",  # 11614,
     # "Celine Major",  # 11697,
     # "LikeManyWaters",  # 12787,
