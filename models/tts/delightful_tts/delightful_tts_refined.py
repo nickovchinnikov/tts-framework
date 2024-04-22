@@ -1,6 +1,8 @@
 from typing import List
 
 from lightning.pytorch.core import LightningModule
+import torch
+from torch import Tensor
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
@@ -12,6 +14,7 @@ from models.config import (
     AcousticTrainingConfig,
     PreprocessingConfig,
     get_lang_map,
+    lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
 from training.datasets.hifi_libri_dataset import train_dataloader
@@ -44,8 +47,8 @@ class DelightfulTTS(LightningModule):
         bin_warmup: bool = True,
         lang: str = "en",
         n_speakers: int = 5392,
-        batch_size: int = 20,
-        sampling_rate: int = 22050,
+        batch_size: int = 10,
+        sampling_rate: int = 44100,
     ):
         super().__init__()
 
@@ -85,54 +88,56 @@ class DelightfulTTS(LightningModule):
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(bin_warmup=bin_warmup)
 
-    # def forward(
-    #     self,
-    #     text: str,
-    #     speaker_idx: Tensor,
-    #     lang: str = "en",
-    # ) -> Tensor:
-    #     r"""Performs a forward pass through the AcousticModel.
-    #     This code must be run only with the loaded weights from the checkpoint!
+    def forward(
+        self,
+        text: str,
+        speaker_idx: Tensor,
+        lang: str = "en",
+    ) -> Tensor:
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
 
-    #     Args:
-    #         text (str): The input text.
-    #         speaker_idx (Tensor): The index of the speaker.
-    #         lang (str): The language.
+        Args:
+            text (str): The input text.
+            speaker_idx (Tensor): The index of the speaker.
+            lang (str): The language.
 
-    #     Returns:
-    #         Tensor: The generated waveform with hifi-gan.
-    #     """
-    #     normalized_text = self.normilize_text(text)
-    #     _, phones = self.tokenizer(normalized_text)
+        Returns:
+            Tensor: The generated waveform with hifi-gan.
+        """
+        normalized_text = self.normilize_text(text)
+        _, phones = self.tokenizer(normalized_text)
 
-    #     # Convert to tensor
-    #     x = torch.tensor(
-    #         phones,
-    #         dtype=torch.int,
-    #         device=speaker_idx.device,
-    #     ).unsqueeze(0)
+        # Convert to tensor
+        x = torch.tensor(
+            phones,
+            dtype=torch.int,
+            device=speaker_idx.device,
+        ).unsqueeze(0)
 
-    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-    #     langs = (
-    #         torch.tensor(
-    #             [lang2id[lang]],
-    #             dtype=torch.int,
-    #             device=speaker_idx.device,
-    #         )
-    #         .repeat(x.shape[1])
-    #         .unsqueeze(0)
-    #     )
+        langs = (
+            torch.tensor(
+                [lang2id[lang]],
+                dtype=torch.int,
+                device=speaker_idx.device,
+            )
+            .repeat(x.shape[1])
+            .unsqueeze(0)
+        )
 
-    #     mel_pred = self.acoustic_model.forward(
-    #         x=x,
-    #         speakers=speakers,
-    #         langs=langs,
-    #     )
+        mel_pred = self.acoustic_model.forward(
+            x=x,
+            speakers=speakers,
+            langs=langs,
+        )
 
-    #     wav = self.vocoder.forward(mel_pred)
+        return mel_pred
 
-    #     return wav
+        # wav = self.vocoder.forward(mel_pred)
+
+        # return wav
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer

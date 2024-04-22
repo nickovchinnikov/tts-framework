@@ -1,7 +1,7 @@
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import Module
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
@@ -23,11 +23,43 @@ from models.tts.delightful_tts.reference_encoder import (
     UtteranceLevelProsodyEncoder,
 )
 
-from .aligner import Aligner
+from .alignment_network import AlignmentNetwork
+from .duration_adaptor import DurationAdaptor
 from .energy_adaptor import EnergyAdaptor
-from .length_adaptor import LengthAdaptor
 from .phoneme_prosody_predictor import PhonemeProsodyPredictor
 from .pitch_adaptor_conv import PitchAdaptorConv
+
+
+class EmbeddingPadded(Module):
+    r"""EmbeddingPadded is a module that provides embeddings for input indices with support for padding.
+
+    Args:
+        num_embeddings (int): Size of the dictionary of embeddings.
+        embedding_dim (int): The size of each embedding vector.
+        padding_idx (int): The index of the padding token in the input indices.
+    """
+
+    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: int):
+        super().__init__()
+        padding_mult = torch.ones((num_embeddings, 1), dtype=torch.int64)
+        padding_mult[padding_idx] = 0
+        self.register_buffer("padding_mult", padding_mult)
+        self.embeddings = nn.parameter.Parameter(
+            tools.initialize_embeddings((num_embeddings, embedding_dim)),
+        )
+
+    def forward(self, idx: Tensor) -> Tensor:
+        r"""Forward pass of the EmbeddingPadded module.
+
+        Args:
+            idx (Tensor): Input indices.
+
+        Returns:
+            Tensor: The embeddings for the input indices.
+        """
+        embeddings_zeroed = self.embeddings * self.padding_mult
+        x = F.embedding(idx, embeddings_zeroed)
+        return x
 
 
 class AcousticModel(Module):
@@ -87,7 +119,15 @@ class AcousticModel(Module):
             leaky_relu_slope=leaky_relu_slope,
         )
 
-        self.length_regulator = LengthAdaptor(model_config)
+        # NOTE: Aligner replaced with AlignmentNetwork
+        self.aligner = AlignmentNetwork(
+            in_query_channels=preprocess_config.stft.n_mel_channels,
+            in_key_channels=model_config.encoder.n_hidden,
+            attn_channels=preprocess_config.stft.n_mel_channels,
+        )
+
+        # NOTE: DurationAdaptor is replacement for LengthAdaptor
+        self.duration_predictor = DurationAdaptor(model_config)
 
         self.utterance_prosody_encoder = UtteranceLevelProsodyEncoder(
             preprocess_config,
@@ -129,12 +169,6 @@ class AcousticModel(Module):
             elementwise_affine=False,
         )
 
-        self.aligner = Aligner(
-            d_enc_in=model_config.encoder.n_hidden,
-            d_dec_in=preprocess_config.stft.n_mel_channels,
-            d_hidden=model_config.encoder.n_hidden,
-        )
-
         self.decoder = Conformer(
             dim=model_config.decoder.n_hidden,
             n_layers=model_config.decoder.n_layers,
@@ -145,31 +179,28 @@ class AcousticModel(Module):
             with_ff=model_config.decoder.with_ff,
         )
 
-        self.src_word_emb = Parameter(
+        self.src_word_emb = EmbeddingPadded(
+            len(
+                symbols,
+            ),  # TODO: fix this, check the amount of symbols from the tokenizer
+            model_config.encoder.n_hidden,
+            padding_idx=100,  # TODO: fix this from training/preprocess/tokenizer_ipa_espeak.py#L59
+        )
+        # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
+        # NOTE: flexibility of the model binded by the n_speaker parameter, maybe I can find another way?
+        # NOTE: in LIBRITTS there are 2477 speakers, we can add more, just extend the speaker_embed matrix
+        # Need to think about it more
+        self.emb_g = nn.Embedding(n_speakers, model_config.speaker_embed_dim)
+
+        self.lang_embed = Parameter(
             tools.initialize_embeddings(
-                (len(symbols), model_config.encoder.n_hidden),
+                (len(SUPPORTED_LANGUAGES), model_config.lang_embed_dim),
             ),
         )
 
         self.to_mel = nn.Linear(
             model_config.decoder.n_hidden,
             preprocess_config.stft.n_mel_channels,
-        )
-
-        # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
-        # NOTE: flexibility of the model binded by the n_speaker parameter, maybe I can find another way?
-        # NOTE: in LIBRITTS there are 2477 speakers, we can add more, just extend the speaker_embed matrix
-        # Need to think about it more
-        self.speaker_embed = Parameter(
-            tools.initialize_embeddings(
-                (n_speakers, model_config.speaker_embed_dim),
-            ),
-        )
-
-        self.lang_embed = Parameter(
-            tools.initialize_embeddings(
-                (len(SUPPORTED_LANGUAGES), model_config.lang_embed_dim),
-            ),
         )
 
     def get_embeddings(
@@ -193,9 +224,13 @@ class AcousticModel(Module):
             Tuple[torch.Tensor, torch.Tensor]: Token embeddings tensor,
             and combined speaker and language embeddings tensor.
         """
-        token_embeddings = F.embedding(token_idx, self.src_word_emb)
+        # Token embeddings
+        token_embeddings = self.src_word_emb.forward(token_idx)  # [B, T_src, C_hidden]
+        token_embeddings = token_embeddings.masked_fill(src_mask.unsqueeze(-1), 0.0)
+
         # NOTE: here you can manage the speaker embeddings, can be used for the voice export ?
-        speaker_embeds = F.embedding(speaker_idx, self.speaker_embed)
+        speaker_embeds = F.normalize(self.emb_g(speaker_idx))
+
         lang_embeds = F.embedding(lang_idx, self.lang_embed)
 
         # Merge the speaker and language embeddings
@@ -206,68 +241,6 @@ class AcousticModel(Module):
         token_embeddings = token_embeddings.masked_fill(src_mask.unsqueeze(-1), 0.0)
 
         return token_embeddings, embeddings
-
-    def prepare_for_export(self) -> None:
-        r"""Prepare the model for export.
-
-        This method is called when the model is about to be exported, such as for deployment
-        or serializing for later use. The method removes unnecessary components that are
-        not needed during inference. Specifically, it removes the phoneme and utterance
-        prosody encoders for this acoustic model. These components are typically used during
-        training and are not needed when the model is used for making predictions.
-
-        Returns
-            None
-        """
-        del self.phoneme_prosody_encoder
-        del self.utterance_prosody_encoder
-
-    # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
-    def freeze_params(self) -> None:
-        r"""Freeze the trainable parameters in the model.
-
-        By freezing, the parameters are no longer updated by gradient descent.
-        This is typically done when you want to keep parts of your model fixed while training other parts.
-        For this model, it freezes all parameters and then selectively unfreezes the
-        speaker embeddings and the pitch adaptor's pitch embeddings to allow these components to update during training.
-
-        Returns
-            None
-        """
-        for par in self.parameters():
-            par.requires_grad = False
-        self.speaker_embed.requires_grad = True
-        # NOTE: requires_grad prop
-        # self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
-
-    # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
-    def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:
-        r"""Unfreeze the trainable parameters in the model, allowing them to be updated during training.
-
-        This method is typically used to 'unfreeze' previously 'frozen' parameters, making them trainable again.
-        For this model, it unfreezes all parameters and then selectively freezes the
-        text embeddings and language embeddings, if required.
-
-        Args:
-            freeze_text_embed (bool): Flag to indicate if text embeddings should remain frozen.
-            freeze_lang_embed (bool): Flag to indicate if language embeddings should remain frozen.
-
-        Returns:
-            None
-        """
-        # Iterate through all model parameters and make them trainable
-        for par in self.parameters():
-            par.requires_grad = True
-
-        # If freeze_text_embed flag is True, keep the source word embeddings frozen
-        if freeze_text_embed:
-            # @fixed self.src_word_emb.parameters has no parameters() method!
-            # for par in self.src_word_emb.parameters():
-            self.src_word_emb.requires_grad = False
-
-        # If freeze_lang_embed flag is True, keep the language embeddings frozen
-        if freeze_lang_embed:
-            self.lang_embed.requires_grad = False
 
     def average_utterance_prosody(
         self,
@@ -298,16 +271,16 @@ class AcousticModel(Module):
 
     def forward_train(
         self,
-        x: torch.Tensor,
-        speakers: torch.Tensor,
-        src_lens: torch.Tensor,
-        mels: torch.Tensor,
-        mel_lens: torch.Tensor,
-        pitches: torch.Tensor,
-        langs: torch.Tensor,
-        attn_priors: Union[torch.Tensor, None],
-        energies: torch.Tensor,
-    ) -> Dict[str, torch.Tensor]:
+        x: Tensor,
+        speakers: Tensor,
+        src_lens: Tensor,
+        mels: Tensor,
+        mel_lens: Tensor,
+        pitches: Tensor,
+        langs: Tensor,
+        attn_priors: Tensor,
+        energies: Tensor,
+    ) -> Dict[str, Tensor]:
         r"""Forward pass during training phase.
 
         For a given phoneme sequence, speaker identities, sequence lengths, mels,
@@ -315,39 +288,52 @@ class AcousticModel(Module):
         processes these inputs through the defined architecture.
 
         Args:
-            x (torch.Tensor): Tensor of phoneme sequence.
-            speakers (torch.Tensor): Tensor of speaker identities.
-            src_lens (torch.Tensor): Long tensor representing the lengths of source sequences.
-            mels (torch.Tensor): Tensor of mel spectrograms.
-            mel_lens (torch.Tensor): Long tensor representing the lengths of mel sequences.
-            pitches (torch.Tensor): Tensor of pitch values.
-            langs (torch.Tensor): Tensor of language identities.
-            attn_priors (torch.Tensor): Prior attention values.
-            energies (torch.Tensor): Tensor of energy values.
+            x (Tensor): Tensor of phoneme sequence.
+            speakers (Tensor): Tensor of speaker identities.
+            src_lens (Tensor): Long tensor representing the lengths of source sequences.
+            mels (Tensor): Tensor of mel spectrograms.
+            mel_lens (Tensor): Long tensor representing the lengths of mel sequences.
+            pitches (Tensor): Tensor of pitch values.
+            langs (Tensor): Tensor of language identities.
+            attn_priors (Tensor): Prior attention values.
+            energies (Tensor): Tensor of energy values.
 
         Returns:
-            Dict[str, torch.Tensor]: Returns the prediction outputs as a dictionary.
+            Dict[str, Tensor]: Returns the prediction outputs as a dictionary.
         """
         # Generate masks for padding positions in the source sequences and mel sequences
         src_mask = tools.get_mask_from_lengths(src_lens)
         mel_mask = tools.get_mask_from_lengths(mel_lens)
 
-        x, embeddings = self.get_embeddings(
+        token_embeddings, embeddings = self.get_embeddings(
             token_idx=x,
             speaker_idx=speakers,
             src_mask=src_mask,
             lang_idx=langs,
         )
+        token_embeddings = token_embeddings.to(src_mask.device)
+        embeddings = embeddings.to(src_mask.device)
 
         encoding = positional_encoding(
             self.emb_dim,
             max(x.shape[1], int(mel_lens.max().item())),
-        )
-        x = x.to(src_mask.device)
-        encoding = encoding.to(src_mask.device)
-        embeddings = embeddings.to(src_mask.device)
+        ).to(src_mask.device)
 
-        x = self.encoder(x, src_mask, embeddings=embeddings, encoding=encoding)
+        attn_logprob, attn_soft, attn_hard, attn_hard_dur = self.aligner.forward(
+            x=token_embeddings,
+            y=mels.transpose(1, 2),
+            x_mask=~src_mask[:, None],
+            y_mask=~mel_mask[:, None],
+            attn_priors=attn_priors,
+        )
+        attn_hard_dur = attn_hard_dur.to(src_mask.device)
+
+        x = self.encoder(
+            token_embeddings,
+            src_mask,
+            embeddings=embeddings,
+            encoding=encoding,
+        )
 
         u_prosody_ref = self.u_norm(
             self.utterance_prosody_encoder(mels=mels, mel_lens=mel_lens),
@@ -381,17 +367,6 @@ class AcousticModel(Module):
         # Save the residual for later use
         x_res = x
 
-        attn_logprob, attn_soft, attn_hard, attn_hard_dur = self.aligner(
-            enc_in=x_res.permute((0, 2, 1)),
-            dec_in=mels,
-            enc_len=src_lens,
-            dec_len=mel_lens,
-            enc_mask=src_mask,
-            attn_prior=attn_priors,
-        )
-
-        attn_hard_dur = attn_hard_dur.to(src_mask.device)
-
         x, pitch_prediction, avg_pitch_target = (
             self.pitch_adaptor_conv.add_pitch_embedding_train(
                 x=x,
@@ -412,23 +387,35 @@ class AcousticModel(Module):
             )
         )
 
-        x, log_duration_prediction, embeddings = self.length_regulator.upsample_train(
-            x=x,
-            x_res=x_res,
+        (
+            alignments_duration_pred,
+            log_duration_prediction,
+            x,
+            alignments,
+        ) = self.duration_predictor.forward_train(
+            encoder_output=x,
+            encoder_output_res=x_res,
             duration_target=attn_hard_dur,
             src_mask=src_mask,
-            embeddings=embeddings,
+            mel_lens=mel_lens,
         )
 
+        # Change the embedding shape to match the decoder output
+        embeddings_out = embeddings.repeat(
+            1,
+            encoding.shape[1] // embeddings.shape[1] + 1,
+            1,
+        )[:, : encoding.shape[1], :]
+
         # Decode the encoder output to pred mel spectrogram
-        decoder_output = self.decoder(
-            x,
+        decoder_output = self.decoder.forward(
+            x.transpose(1, 2),
             mel_mask,
-            embeddings=embeddings,
+            embeddings=embeddings_out,
             encoding=encoding,
         )
 
-        y_pred = self.to_mel(decoder_output)
+        y_pred: torch.Tensor = self.to_mel(decoder_output)
         y_pred = y_pred.permute((0, 2, 1))
 
         return {
@@ -442,6 +429,8 @@ class AcousticModel(Module):
             "u_prosody_ref": u_prosody_ref,
             "p_prosody_pred": p_prosody_pred,
             "p_prosody_ref": p_prosody_ref,
+            "alignments": alignments,
+            "alignments_duration_pred": alignments_duration_pred,
             "attn_logprob": attn_logprob,
             "attn_soft": attn_soft,
             "attn_hard": attn_hard,
@@ -509,8 +498,6 @@ class AcousticModel(Module):
         x = x + self.u_bottle_out(u_prosody_pred)
         x = x + self.p_bottle_out(p_prosody_pred)
 
-        x_res = x
-
         x, _ = self.pitch_adaptor_conv.add_pitch_embedding(
             x=x,
             mask=src_mask,
@@ -521,25 +508,33 @@ class AcousticModel(Module):
             mask=src_mask,
         )
 
-        x, _, embeddings = self.length_regulator.upsample(
-            x=x,
-            x_res=x_res,
+        _, x, _, _ = self.duration_predictor.forward(
+            encoder_output=x,
             src_mask=src_mask,
-            control=d_control,
-            embeddings=embeddings,
+            d_control=d_control,
         )
 
         mel_mask = tools.get_mask_from_lengths(
-            torch.tensor([x.shape[1]], dtype=torch.int64),
+            torch.tensor(
+                [x.shape[2]],
+                dtype=torch.int64,
+            ),
         ).to(x.device)
 
         if x.shape[1] > encoding.shape[1]:
-            encoding = positional_encoding(self.emb_dim, x.shape[1]).to(x.device)
+            encoding = positional_encoding(self.emb_dim, x.shape[2]).to(x.device)
 
-        decoder_output = self.decoder(
-            x,
+        # Change the embedding shape to match the decoder output
+        embeddings_out = embeddings.repeat(
+            1,
+            mel_mask.shape[1] // embeddings.shape[1] + 1,
+            1,
+        )[:, : mel_mask.shape[1], :]
+
+        decoder_output = self.decoder.forward(
+            x.transpose(1, 2),
             mel_mask,
-            embeddings=embeddings,
+            embeddings=embeddings_out,
             encoding=encoding,
         )
 
