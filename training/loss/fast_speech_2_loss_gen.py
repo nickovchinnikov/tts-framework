@@ -15,7 +15,7 @@ class FastSpeech2LossGen(Module):
         self,
         bin_warmup: bool = True,
         binarization_loss_enable_steps: int = 1260,
-        binarization_loss_warmup_steps: int = 700,
+        binarization_loss_warmup_steps: int = 1000,
     ):
         r"""Initializes the FastSpeech2LossGen module.
 
