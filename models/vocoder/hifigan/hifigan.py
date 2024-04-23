@@ -48,66 +48,45 @@ class HifiGan(LightningModule):
         """
         super().__init__()
 
-        # Switch to manual optimization
-        self.automatic_optimization = False
-
         self.batch_size = batch_size
         self.sampling_rate = sampling_rate
         self.lang = lang
 
-        self.train_config = HifiGanPretrainingConfig()
-        self.preprocess_config_hifi = PreprocessingConfig(
+        self.preprocess_config = PreprocessingConfig(
             "multilingual",
-            sampling_rate=self.train_config.sampling_rate_vocoder,
+            sampling_rate=sampling_rate,
         )
+        self.train_config = HifiGanPretrainingConfig()
 
         self.generator = Generator(
             h=HifiGanConfig(),
-            p=self.preprocess_config_hifi,
+            p=self.preprocess_config,
         )
         self.mpd = MultiPeriodDiscriminator()
         self.msd = MultiScaleDiscriminator()
 
-        # High resolution mel STFT for the vocoder
-        self.tacotronStftHifi = TacotronSTFT(
-            filter_length=self.preprocess_config_hifi.stft.filter_length,
-            hop_length=self.preprocess_config_hifi.stft.hop_length,
-            win_length=self.preprocess_config_hifi.stft.win_length,
-            n_mel_channels=self.preprocess_config_hifi.stft.n_mel_channels,
-            sampling_rate=self.preprocess_config_hifi.sampling_rate,
-            mel_fmin=self.preprocess_config_hifi.stft.mel_fmin,
-            mel_fmax=self.preprocess_config_hifi.stft.mel_fmax,
-            center=False,
-        )
-
-        # NOTE: To create the acoustic mel spectrogram
-        self.preprocess_config_acoustic = PreprocessingConfig(
-            "multilingual",
-            sampling_rate=self.train_config.sampling_rate_acoustic,
-        )
-        self.tacotronStftAcoustic = TacotronSTFT(
-            filter_length=self.preprocess_config_acoustic.stft.filter_length,
-            hop_length=self.preprocess_config_acoustic.stft.hop_length,
-            win_length=self.preprocess_config_acoustic.stft.win_length,
-            n_mel_channels=self.preprocess_config_acoustic.stft.n_mel_channels,
-            sampling_rate=self.preprocess_config_acoustic.sampling_rate,
-            mel_fmin=self.preprocess_config_acoustic.stft.mel_fmin,
-            mel_fmax=self.preprocess_config_acoustic.stft.mel_fmax,
-            center=False,
-        )
-
-        # Mark TacotronSTFT as non-trainable
-        for param in self.tacotronStftHifi.parameters():
-            param.requires_grad = False
-
-        for param in self.tacotronStftAcoustic.parameters():
-            param.requires_grad = False
-
-        # Loss functions
         self.feature_loss = FeatureMatchingLoss()
         self.discriminator_loss = DiscriminatorLoss()
         self.generator_loss = GeneratorLoss()
         self.mae_loss = nn.L1Loss()
+
+        self.tacotronSTFT = TacotronSTFT(
+            filter_length=self.preprocess_config.stft.filter_length,
+            hop_length=self.preprocess_config.stft.hop_length,
+            win_length=self.preprocess_config.stft.win_length,
+            n_mel_channels=self.preprocess_config.stft.n_mel_channels,
+            sampling_rate=self.preprocess_config.sampling_rate,
+            mel_fmin=self.preprocess_config.stft.mel_fmin,
+            mel_fmax=self.preprocess_config.stft.mel_fmax,
+            center=False,
+        )
+
+        # Mark TacotronSTFT as non-trainable
+        for param in self.tacotronSTFT.parameters():
+            param.requires_grad = False
+
+        # Switch to manual optimization
+        self.automatic_optimization = False
 
     def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
         r"""Performs a forward pass through the UnivNet model.
@@ -132,7 +111,7 @@ class HifiGan(LightningModule):
         Returns:
             dict: A dictionary containing the total loss for the generator and logs for tensorboard.
         """
-        _, audio, _ = batch
+        _, audio, mel = batch
 
         # Access your optimizers
         optimizers = self.optimizers()
@@ -143,14 +122,9 @@ class HifiGan(LightningModule):
         opt_discriminator: Optimizer = optimizers[1]  # type: ignore
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
-        # NOTE: Generate mel spectrogram
-        # As the last stage, for the fine-tuning
-        # generate the mel spectrogram from the acoustic model!
-        _, mel = self.tacotronStftAcoustic(audio.squeeze(1))
-
         # Generate fake audio
         audio_pred = self.generator.forward(mel)
-        _, fake_mel = self.tacotronStftHifi(audio_pred.squeeze(1))
+        _, fake_mel = self.tacotronSTFT(audio_pred.squeeze(1))
 
         # Train discriminator
         opt_discriminator.zero_grad()
@@ -320,7 +294,7 @@ class HifiGan(LightningModule):
         """
         return train_dataloader(
             batch_size=self.batch_size,
-            num_workers=self.preprocess_config_hifi.workers,
+            num_workers=self.preprocess_config.workers,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
