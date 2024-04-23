@@ -80,6 +80,9 @@ train_dataloader = model.train_dataloader(
     # NOTE: Preload the cached dataset into the RAM
     cache_dir="/dev/shm/",
     cache=True,
+    include_libri=False,
+    libri_speakers=[],
+    hifi_speakers=["John Van Stan"],
 )
 
 trainer.fit(

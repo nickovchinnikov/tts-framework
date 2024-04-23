@@ -32,7 +32,7 @@ NUM_JOBS = (os.cpu_count() or 2) - 1
 
 
 # The selected speakers from the HiFiTTS dataset
-selected_speakers_hi_fi_ids = [
+speakers_hifi_ids = [
     "Cori Samuel",  # 92,
     "Tony Oliva",  # 6671,
     "John Van Stan",  # 9017,
@@ -46,7 +46,7 @@ selected_speakers_hi_fi_ids = [
 ]
 
 # The selected speakers from the LibriTTS dataset
-selected_speakers_libri_ids = list(
+speakers_libri_ids = list(
     map(
         str,
         [
@@ -70,7 +70,7 @@ selected_speakers_libri_ids = list(
 selected_speakers_ids = {
     v: k
     for k, v in enumerate(
-        selected_speakers_hi_fi_ids + selected_speakers_libri_ids,
+        speakers_hifi_ids + speakers_libri_ids,
     )
 }
 
@@ -162,6 +162,8 @@ class HifiLibriDataset(Dataset):
         min_seconds: Optional[float] = None,
         max_seconds: Optional[float] = None,
         include_libri: bool = True,
+        libri_speakers: List[str] = speakers_libri_ids,
+        hifi_speakers: List[str] = speakers_hifi_ids,
     ):
         r"""Initializes the dataset.
 
@@ -180,6 +182,8 @@ class HifiLibriDataset(Dataset):
             min_seconds (Optional[float], optional): The minimum duration of the audio. Defaults from the preprocess config.
             max_seconds (Optional[float], optional): The maximum duration of the audio. Defaults from the preprocess config.
             include_libri (bool, optional): Whether to include the LibriTTS dataset. Defaults to True.
+            libri_speakers (List[str], optional): The selected speakers from the LibriTTS dataset. Defaults to selected_speakers_libri_ids.
+            hifi_speakers (List[str], optional): The selected speakers from the HiFiTTS dataset. Defaults to selected_speakers_hi_fi_ids.
         """
         lang_map = get_lang_map(lang)
         processing_lang_type = lang_map.processing_lang_type
@@ -204,8 +208,8 @@ class HifiLibriDataset(Dataset):
         self.voicefixer = VoiceFixer()
 
         # Map the speaker ids to string and list of selected speaker ids to set
-        self.selected_speakers_libri_ids_ = set(selected_speakers_libri_ids)
-        self.selected_speakers_hi_fi_ids_ = set(selected_speakers_hi_fi_ids)
+        self.selected_speakers_libri_ids_ = set(libri_speakers)
+        self.selected_speakers_hi_fi_ids_ = set(hifi_speakers)
 
         self.cache = cache
         self.cache_dir = Path(cache_dir) / f"cache-{hifitts_path}-{libritts_path}"
@@ -558,6 +562,9 @@ def train_dataloader(
     libritts_subsets: List[str] | str = "all",
     cache: bool = False,
     cache_dir: str = "/dev/shm",
+    include_libri: bool = True,
+    libri_speakers: List[str] = speakers_libri_ids,
+    hifi_speakers: List[str] = speakers_hifi_ids,
 ) -> DataLoader:
     r"""Returns the training dataloader, that is using the HifiLibriDataset dataset.
 
@@ -575,6 +582,9 @@ def train_dataloader(
         libritts_subsets (List[str] | str): The subsets of the LibriTTS dataset to use.
         cache (bool): Whether to cache the dataset.
         cache_dir (str): The directory to cache the dataset in.
+        include_libri (bool): Whether to include the LibriTTS dataset.
+        libri_speakers (List[str]): The selected speakers from the LibriTTS dataset.
+        hifi_speakers (List[str]): The selected speakers from the HiFiTTS dataset.
 
     Returns:
         DataLoader: The training dataloader.
@@ -590,7 +600,9 @@ def train_dataloader(
         cache=cache,
         cache_dir=cache_dir,
         lang=lang,
-        include_libri=False,
+        include_libri=include_libri,
+        libri_speakers=libri_speakers,
+        hifi_speakers=hifi_speakers,
     )
 
     train_loader = DataLoader(

@@ -17,7 +17,11 @@ from models.config import (
     lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
-from training.datasets.hifi_libri_dataset import train_dataloader
+from training.datasets.hifi_libri_dataset import (
+    speakers_hifi_ids,
+    speakers_libri_ids,
+    train_dataloader,
+)
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
 
@@ -325,6 +329,9 @@ class DelightfulTTS(LightningModule):
         root: str = "datasets_cache",
         cache: bool = True,
         cache_dir: str = "/dev/shm",
+        include_libri: bool = False,
+        libri_speakers: List[str] = speakers_libri_ids,
+        hifi_speakers: List[str] = speakers_hifi_ids,
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
@@ -332,6 +339,9 @@ class DelightfulTTS(LightningModule):
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
             cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
+            include_libri (bool): Whether to include the LibriTTS dataset or not.
+            libri_speakers (List[str]): The list of LibriTTS speakers to include.
+            hifi_speakers (List[str]): The list of HiFi-GAN speakers to include.
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
@@ -344,4 +354,7 @@ class DelightfulTTS(LightningModule):
             cache=cache,
             cache_dir=cache_dir,
             lang=self.lang,
+            include_libri=include_libri,
+            libri_speakers=libri_speakers,
+            hifi_speakers=hifi_speakers,
         )
