@@ -11,7 +11,7 @@ from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
 
 # Node runk in the cluster
 node_rank = 0
-num_nodes = 2
+num_nodes = 4
 
 # # Setup of the training cluster
 os.environ["MASTER_PORT"] = "12355"
@@ -49,9 +49,9 @@ print("usable_cuda_devices: ", find_usable_cuda_devices())
 torch.set_float32_matmul_precision("high")
 
 # Root and checkpoint
-default_root_dir = "logs_new"
+default_root_dir = "logs_new3"
 ckpt_acoustic = (
-    "./logs_new/lightning_logs/version_0/checkpoints/epoch=48-step=17836.ckpt"
+    "./logs_new3/lightning_logs/version_4/checkpoints/epoch=33-step=4046.ckpt"
 )
 
 trainer = Trainer(
@@ -72,14 +72,17 @@ trainer = Trainer(
 )
 
 # model = DelightfulTTS()
-model = DelightfulTTS(batch_size=10)
-# model = DelightfulTTS.load_from_checkpoint(ckpt_acoustic, strict=False)
+# model = DelightfulTTS(batch_size=10)
+model = DelightfulTTS.load_from_checkpoint(ckpt_acoustic, strict=False)
 
 train_dataloader = model.train_dataloader(
     root="/dev/shm/",
     # NOTE: Preload the cached dataset into the RAM
     cache_dir="/dev/shm/",
     cache=True,
+    include_libri=False,
+    libri_speakers=[],
+    hifi_speakers=["John Van Stan"],
 )
 
 trainer.fit(

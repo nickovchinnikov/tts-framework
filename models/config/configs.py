@@ -22,7 +22,7 @@ class PreprocessingConfig:
     sampling_rate: int = 22050
     val_size: float = 0.05
     min_seconds: float = 0.5
-    max_seconds: float = 15.0
+    max_seconds: float = 6.0
     use_audio_normalization: bool = True
     workers: int = 8
     stft: STFTConfig = field(
@@ -30,7 +30,7 @@ class PreprocessingConfig:
             filter_length=1024,
             hop_length=256,
             win_length=1024,
-            n_mel_channels=100,
+            n_mel_channels=80,  # For univnet 100
             mel_fmin=20,
             mel_fmax=11025,
         ),
@@ -56,7 +56,7 @@ class PreprocessingConfig:
                 filter_length=2048,
                 hop_length=512,  # NOTE: 441 ?? https://github.com/jik876/hifi-gan/issues/116#issuecomment-1436999858
                 win_length=2048,
-                n_mel_channels=160,
+                n_mel_channels=80,  # Based on https://github.com/jik876/hifi-gan/issues/116
                 mel_fmin=20,
                 mel_fmax=11025,
             )
@@ -420,16 +420,19 @@ class HifiGanPretrainingConfig(VocoderBasicConfig):
     adam_b2: float = 0.99
     lr_decay: float = 0.9995
     lReLU_slope: float = 0.1
+    l1_factor: int = 45
+    sampling_rate_acoustic: int = 22050
+    sampling_rate_vocoder: int = 44100
 
 
 @dataclass
 class HifiGanConfig:
     resblock: str = "1"
     upsample_rates: List[int] = field(
-        default_factory=lambda: [8, 8, 2, 2, 2],
+        default_factory=lambda: [8, 8, 4, 2],
     )
     upsample_kernel_sizes: List[int] = field(
-        default_factory=lambda: [16, 16, 4, 4, 4],
+        default_factory=lambda: [16, 16, 4, 4],
     )
     upsample_initial_channel: int = 512
     resblock_kernel_sizes: List[int] = field(
@@ -437,8 +440,4 @@ class HifiGanConfig:
     )
     resblock_dilation_sizes: List[List[int]] = field(
         default_factory=lambda: [[1, 3, 5], [1, 3, 5], [1, 3, 5]],
-    )
-    # NOTE: The following attributes are not used in the codebase
-    discriminator_periods: List[int] = field(
-        default_factory=lambda: [3, 5, 7, 11, 17, 23, 37],
     )

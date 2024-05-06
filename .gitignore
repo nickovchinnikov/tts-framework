@@ -175,6 +175,8 @@ lightning_logs
 **/checkpoints/**/*.txt
 **/checkpoints/**/*.tar
 
+checkpoints/*
+
 # Ignore generated sounds
 results/*
 

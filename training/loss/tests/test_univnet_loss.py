@@ -21,7 +21,12 @@ class TestUnivnetLoss(unittest.TestCase):
 
         # Call the forward method
         output = self.loss_module.forward(
-            audio, fake_audio, res_fake, period_fake, res_real, period_real,
+            audio,
+            fake_audio,
+            res_fake,
+            period_fake,
+            res_real,
+            period_real,
         )
 
         # Check that the output is a tuple with the expected lens
@@ -57,9 +62,11 @@ class TestUnivnetLoss(unittest.TestCase):
                         esr_loss,
                         snr_loss,
                     ],
-                ) >= 0,
+                )
+                >= 0,
             ),
         )
+
 
 if __name__ == "__main__":
     unittest.main()

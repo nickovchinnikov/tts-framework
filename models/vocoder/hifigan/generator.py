@@ -228,11 +228,13 @@ class Generator(Module):
 
         self.resblocks = nn.ModuleList()
         for i in range(len(self.ups)):
+            resblock_list = nn.ModuleList()
             ch = h.upsample_initial_channel // (2 ** (i + 1))
             for _, (k, d) in enumerate(
                 zip(h.resblock_kernel_sizes, h.resblock_dilation_sizes),
             ):
-                self.resblocks.append(resblock(ch, k, d))
+                resblock_list.append(resblock(ch, k, d))
+            self.resblocks.append(resblock_list)
 
         self.conv_post = weight_norm(Conv1d(ch, 1, 7, 1, padding=3))
         self.ups.apply(init_weights)
@@ -249,18 +251,13 @@ class Generator(Module):
         """
         x = self.conv_pre(x)
 
-        for i in range(self.num_upsamples):
+        for upsample_layer, resblock_group in zip(self.ups, self.resblocks):
             x = F.leaky_relu(x, LRELU_SLOPE)
-            x = self.ups[i](x)
-            xs = torch.zeros_like(x)
-
-            for j in range(self.num_kernels):
-                if xs is None:
-                    xs = self.resblocks[i * self.num_kernels + j](x)
-                else:
-                    xs += self.resblocks[i * self.num_kernels + j](x)
+            x = upsample_layer(x)
+            xs = torch.zeros(x.shape, dtype=x.dtype, device=x.device)
+            for resblock in resblock_group:  # type: ignore
+                xs += resblock(x)
             x = xs / self.num_kernels
-
         x = F.leaky_relu(x)
         x = self.conv_post(x)
         x = torch.tanh(x)

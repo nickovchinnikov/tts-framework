@@ -1,6 +1,8 @@
 from typing import List
 
 from lightning.pytorch.core import LightningModule
+import torch
+from torch import Tensor
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
@@ -12,9 +14,14 @@ from models.config import (
     AcousticTrainingConfig,
     PreprocessingConfig,
     get_lang_map,
+    lang2id,
 )
 from models.helpers.tools import get_mask_from_lengths
-from training.datasets.hifi_libri_dataset import train_dataloader
+from training.datasets.hifi_libri_dataset import (
+    speakers_hifi_ids,
+    speakers_libri_ids,
+    train_dataloader,
+)
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
 
@@ -41,9 +48,10 @@ class DelightfulTTS(LightningModule):
     def __init__(
         self,
         fine_tuning: bool = False,
+        bin_warmup: bool = True,
         lang: str = "en",
         n_speakers: int = 5392,
-        batch_size: int = 10,
+        batch_size: int = 19,
         sampling_rate: int = 44100,
     ):
         super().__init__()
@@ -82,56 +90,60 @@ class DelightfulTTS(LightningModule):
         )
 
         # NOTE: in case of training from 0 bin_warmup should be True!
-        self.loss_acoustic = FastSpeech2LossGen(bin_warmup=True)
+        self.loss_acoustic = FastSpeech2LossGen(
+            bin_warmup=bin_warmup,
+        )
 
-    # def forward(
-    #     self,
-    #     text: str,
-    #     speaker_idx: Tensor,
-    #     lang: str = "en",
-    # ) -> Tensor:
-    #     r"""Performs a forward pass through the AcousticModel.
-    #     This code must be run only with the loaded weights from the checkpoint!
+    def forward(
+        self,
+        text: str,
+        speaker_idx: Tensor,
+        lang: str = "en",
+    ) -> Tensor:
+        r"""Performs a forward pass through the AcousticModel.
+        This code must be run only with the loaded weights from the checkpoint!
 
-    #     Args:
-    #         text (str): The input text.
-    #         speaker_idx (Tensor): The index of the speaker.
-    #         lang (str): The language.
+        Args:
+            text (str): The input text.
+            speaker_idx (Tensor): The index of the speaker.
+            lang (str): The language.
 
-    #     Returns:
-    #         Tensor: The generated waveform with hifi-gan.
-    #     """
-    #     normalized_text = self.normilize_text(text)
-    #     _, phones = self.tokenizer(normalized_text)
+        Returns:
+            Tensor: The generated waveform with hifi-gan.
+        """
+        normalized_text = self.normilize_text(text)
+        _, phones = self.tokenizer(normalized_text)
 
-    #     # Convert to tensor
-    #     x = torch.tensor(
-    #         phones,
-    #         dtype=torch.int,
-    #         device=speaker_idx.device,
-    #     ).unsqueeze(0)
+        # Convert to tensor
+        x = torch.tensor(
+            phones,
+            dtype=torch.int,
+            device=speaker_idx.device,
+        ).unsqueeze(0)
 
-    #     speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
+        speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-    #     langs = (
-    #         torch.tensor(
-    #             [lang2id[lang]],
-    #             dtype=torch.int,
-    #             device=speaker_idx.device,
-    #         )
-    #         .repeat(x.shape[1])
-    #         .unsqueeze(0)
-    #     )
+        langs = (
+            torch.tensor(
+                [lang2id[lang]],
+                dtype=torch.int,
+                device=speaker_idx.device,
+            )
+            .repeat(x.shape[1])
+            .unsqueeze(0)
+        )
 
-    #     mel_pred = self.acoustic_model.forward(
-    #         x=x,
-    #         speakers=speakers,
-    #         langs=langs,
-    #     )
+        mel_pred = self.acoustic_model.forward(
+            x=x,
+            speakers=speakers,
+            langs=langs,
+        )
 
-    #     wav = self.vocoder.forward(mel_pred)
+        return mel_pred
 
-    #     return wav
+        # wav = self.vocoder.forward(mel_pred)
+
+        # return wav
 
     # TODO: don't forget about torch.no_grad() !
     # default used by the Trainer
@@ -317,6 +329,9 @@ class DelightfulTTS(LightningModule):
         root: str = "datasets_cache",
         cache: bool = True,
         cache_dir: str = "/dev/shm",
+        include_libri: bool = False,
+        libri_speakers: List[str] = speakers_libri_ids,
+        hifi_speakers: List[str] = speakers_hifi_ids,
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
@@ -324,6 +339,9 @@ class DelightfulTTS(LightningModule):
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
             cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
+            include_libri (bool): Whether to include the LibriTTS dataset or not.
+            libri_speakers (List[str]): The list of LibriTTS speakers to include.
+            hifi_speakers (List[str]): The list of HiFi-GAN speakers to include.
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
@@ -331,8 +349,12 @@ class DelightfulTTS(LightningModule):
         return train_dataloader(
             batch_size=self.batch_size,
             num_workers=self.preprocess_config.workers,
+            sampling_rate=self.preprocess_config.sampling_rate,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
             lang=self.lang,
+            include_libri=include_libri,
+            libri_speakers=libri_speakers,
+            hifi_speakers=hifi_speakers,
         )

@@ -1,23 +1,29 @@
+import itertools
 from typing import List
 
 from lightning.pytorch.core import LightningModule
 import torch
+from torch import nn
 from torch.optim import AdamW, Optimizer
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
 from models.config import (
     HifiGanConfig,
+    HifiGanPretrainingConfig,
     PreprocessingConfig,
-    VocoderFinetuningConfig,
-    VocoderPretrainingConfig,
-    VoicoderTrainingConfig,
 )
-from models.helpers.dataloaders import train_dataloader
-from training.loss import HifiLoss
+from training.datasets.hifi_gan_dataset import train_dataloader
+from training.loss import (
+    DiscriminatorLoss,
+    FeatureMatchingLoss,
+    GeneratorLoss,
+)
+from training.preprocess import TacotronSTFT
 
-from .discriminator import Discriminator
 from .generator import Generator
+from .mp_discriminator import MultiPeriodDiscriminator
+from .ms_discriminator import MultiScaleDiscriminator
 
 
 class HifiGan(LightningModule):
@@ -28,48 +34,59 @@ class HifiGan(LightningModule):
 
     def __init__(
         self,
-        fine_tuning: bool = False,
         lang: str = "en",
-        acc_grad_steps: int = 10,
-        batch_size: int = 6,
+        batch_size: int = 16,
         sampling_rate: int = 44100,
     ):
-        r"""Initializes the `VocoderModule`.
+        r"""Initializes the `HifiGan`.
 
         Args:
             fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
             lang (str): Language of the dataset.
-            acc_grad_steps (int): Accumulated gradient steps.
             batch_size (int): The batch size.
             sampling_rate (int): The sampling rate of the audio.
         """
         super().__init__()
 
-        # Switch to manual optimization
-        self.automatic_optimization = False
-        self.acc_grad_steps = acc_grad_steps
         self.batch_size = batch_size
         self.sampling_rate = sampling_rate
-
         self.lang = lang
 
-        model_config = HifiGanConfig()
-        preprocess_config = PreprocessingConfig(
-            "english_only",
+        self.preprocess_config = PreprocessingConfig(
+            "multilingual",
             sampling_rate=sampling_rate,
         )
+        self.train_config = HifiGanPretrainingConfig()
 
         self.generator = Generator(
-            h=model_config,
-            p=preprocess_config,
+            h=HifiGanConfig(),
+            p=self.preprocess_config,
         )
-        self.discriminator = Discriminator()
+        self.mpd = MultiPeriodDiscriminator()
+        self.msd = MultiScaleDiscriminator()
 
-        self.loss = HifiLoss()
+        self.feature_loss = FeatureMatchingLoss()
+        self.discriminator_loss = DiscriminatorLoss()
+        self.generator_loss = GeneratorLoss()
+        self.mae_loss = nn.L1Loss()
 
-        self.train_config: VoicoderTrainingConfig = (
-            VocoderFinetuningConfig() if fine_tuning else VocoderPretrainingConfig()
+        self.tacotronSTFT = TacotronSTFT(
+            filter_length=self.preprocess_config.stft.filter_length,
+            hop_length=self.preprocess_config.stft.hop_length,
+            win_length=self.preprocess_config.stft.win_length,
+            n_mel_channels=self.preprocess_config.stft.n_mel_channels,
+            sampling_rate=self.preprocess_config.sampling_rate,
+            mel_fmin=self.preprocess_config.stft.mel_fmin,
+            mel_fmax=self.preprocess_config.stft.mel_fmax,
+            center=False,
         )
+
+        # Mark TacotronSTFT as non-trainable
+        for param in self.tacotronSTFT.parameters():
+            param.requires_grad = False
+
+        # Switch to manual optimization
+        self.automatic_optimization = False
 
     def forward(self, y_pred: torch.Tensor) -> torch.Tensor:
         r"""Performs a forward pass through the UnivNet model.
@@ -88,106 +105,140 @@ class HifiGan(LightningModule):
         r"""Performs a training step for the model.
 
         Args:
-            batch (List): The batch of data for training. The batch should contain the mel spectrogram, its length, the audio, and the speaker ID.
+            batch (Tuple[str, Tensor, Tensor]): The batch of data for training. Each item in the list is a tuple containing the ID of the item, the audio waveform, and the mel spectrogram.
             batch_idx (int): Index of the batch.
 
         Returns:
             dict: A dictionary containing the total loss for the generator and logs for tensorboard.
         """
-        (
-            _,
-            _,
-            _,
-            _,
-            _,
-            mels,
-            _,
-            _,
-            _,
-            _,
-            _,
-            wavs,
-            _,
-        ) = batch
+        _, audio, mel = batch
 
         # Access your optimizers
         optimizers = self.optimizers()
         schedulers = self.lr_schedulers()
-        opt_univnet: Optimizer = optimizers[0]  # type: ignore
-        sch_univnet: ExponentialLR = schedulers[0]  # type: ignore
+        opt_generator: Optimizer = optimizers[0]  # type: ignore
+        sch_generator: ExponentialLR = schedulers[0]  # type: ignore
 
         opt_discriminator: Optimizer = optimizers[1]  # type: ignore
         sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
-        audio = wavs
-        fake_audio = self.generator(mels)
+        # Generate fake audio
+        audio_pred = self.generator.forward(mel)
+        _, fake_mel = self.tacotronSTFT(audio_pred.squeeze(1))
 
-        (
-            (msd_res_real, mpd_res_fake, _, _),
-            (msd_period_real, mpd_period_fake, _, _),
-        ) = self.discriminator.forward(
-            audio,
-            fake_audio.detach(),
+        # Train discriminator
+        opt_discriminator.zero_grad()
+        mpd_score_real, mpd_score_gen, _, _ = self.mpd.forward(
+            y=audio,
+            y_hat=audio_pred.detach(),
+        )
+        loss_disc_mpd, _, _ = self.discriminator_loss.forward(
+            disc_real_outputs=mpd_score_real,
+            disc_generated_outputs=mpd_score_gen,
+        )
+        msd_score_real, msd_score_gen, _, _ = self.msd(
+            y=audio,
+            y_hat=audio_pred.detach(),
+        )
+        loss_disc_msd, _, _ = self.discriminator_loss(
+            disc_real_outputs=msd_score_real,
+            disc_generated_outputs=msd_score_gen,
+        )
+        loss_d = loss_disc_msd + loss_disc_mpd
+
+        # Step for the discriminator
+        self.manual_backward(loss_d, retain_graph=True)
+        opt_discriminator.step()
+
+        # Train generator
+        opt_generator.zero_grad()
+        loss_mel = self.mae_loss(fake_mel, mel)
+
+        _, mpd_score_gen, fmap_mpd_real, fmap_mpd_gen = self.mpd.forward(
+            y=audio,
+            y_hat=audio_pred,
+        )
+        _, msd_score_gen, fmap_msd_real, fmap_msd_gen = self.msd.forward(
+            y=audio,
+            y_hat=audio_pred,
+        )
+        loss_fm_mpd = self.feature_loss.forward(
+            fmap_r=fmap_mpd_real,
+            fmap_g=fmap_mpd_gen,
+        )
+        loss_fm_msd = self.feature_loss.forward(
+            fmap_r=fmap_msd_real,
+            fmap_g=fmap_msd_gen,
+        )
+        loss_gen_mpd, _ = self.generator_loss.forward(disc_outputs=mpd_score_gen)
+        loss_gen_msd, _ = self.generator_loss.forward(disc_outputs=msd_score_gen)
+        loss_g = (
+            loss_gen_msd
+            + loss_gen_mpd
+            + loss_fm_msd
+            + loss_fm_mpd
+            + loss_mel * self.train_config.l1_factor
         )
 
-        (
-            total_loss_gen,
-            total_loss_disc,
-            stft_loss,
-            score_loss,
-        ) = self.loss.forward(
-            audio,
-            fake_audio,
-            res_fake,
-            period_fake,
-            res_real,
-            period_real,
-        )
+        # step for the generator
+        self.manual_backward(loss_g, retain_graph=True)
+        opt_generator.step()
 
+        # Schedulers step
+        sch_generator.step()
+        sch_discriminator.step()
+
+        # Gen losses
         self.log(
-            "total_loss_gen",
-            total_loss_gen,
+            "loss_gen_msd",
+            loss_gen_msd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_gen_mpd",
+            loss_gen_mpd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_fm_msd",
+            loss_fm_msd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_fm_mpd",
+            loss_fm_mpd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "mel_loss",
+            loss_mel,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+
+        # Disc logs
+        self.log(
+            "loss_disc_msd",
+            loss_disc_msd,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "loss_disc_mpd",
+            loss_disc_mpd,
             sync_dist=True,
             batch_size=self.batch_size,
         )
         self.log(
             "total_loss_disc",
-            total_loss_disc,
+            loss_d,
             sync_dist=True,
             batch_size=self.batch_size,
         )
-        self.log("stft_loss", stft_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("score_loss", score_loss, sync_dist=True, batch_size=self.batch_size)
-
-        # Perform manual optimization
-        self.manual_backward(total_loss_gen / self.acc_grad_steps, retain_graph=True)
-        self.manual_backward(total_loss_disc / self.acc_grad_steps, retain_graph=True)
-
-        # accumulate gradients of N batches
-        if (batch_idx + 1) % self.acc_grad_steps == 0:
-            # clip gradients
-            self.clip_gradients(
-                opt_univnet,
-                gradient_clip_val=0.5,
-                gradient_clip_algorithm="norm",
-            )
-            self.clip_gradients(
-                opt_discriminator,
-                gradient_clip_val=0.5,
-                gradient_clip_algorithm="norm",
-            )
-
-            # optimizer step
-            opt_univnet.step()
-            opt_discriminator.step()
-
-            # Scheduler step
-            sch_univnet.step()
-            sch_discriminator.step()
-
-            # zero the gradients
-            opt_univnet.zero_grad()
-            opt_discriminator.zero_grad()
 
     def configure_optimizers(self):
         r"""Configures the optimizers and learning rate schedulers for the `UnivNet` and `Discriminator` models.
@@ -197,32 +248,20 @@ class HifiGan(LightningModule):
 
         Returns
             tuple: A tuple containing two dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
-
-        Examples
-            ```python
-            vocoder_module = VocoderModule()
-            optimizers = vocoder_module.configure_optimizers()
-
-            print(optimizers)
-            (
-                {"optimizer": <torch.optim.adamw.AdamW object at 0x7f8c0c0b3d90>, "lr_scheduler": <torch.optim.lr_scheduler.ExponentialLR object at 0x7f8c0c0b3e50>},
-                {"optimizer": <torch.optim.adamw.AdamW object at 0x7f8c0c0b3f10>, "lr_scheduler": <torch.optim.lr_scheduler.ExponentialLR object at 0x7f8c0c0b3fd0>}
-            )
-            ```
         """
-        optim_univnet = AdamW(
+        optim_generator = AdamW(
             self.generator.parameters(),
             self.train_config.learning_rate,
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )
-        scheduler_univnet = ExponentialLR(
-            optim_univnet,
+        scheduler_generator = ExponentialLR(
+            optim_generator,
             gamma=self.train_config.lr_decay,
             last_epoch=-1,
         )
 
         optim_discriminator = AdamW(
-            self.discriminator.parameters(),
+            itertools.chain(self.msd.parameters(), self.mpd.parameters()),
             self.train_config.learning_rate,
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )
@@ -232,47 +271,32 @@ class HifiGan(LightningModule):
             last_epoch=-1,
         )
 
-        # NOTE: this code is used only for the v0.1.0 checkpoint.
-        # In the future, this code will be removed!
-        if self.checkpoint_path_v1 is not None:
-            _, _, optim_g, optim_d = self.get_weights_v1(self.checkpoint_path_v1)
-            optim_univnet.load_state_dict(optim_g)
-            optim_discriminator.load_state_dict(optim_d)
-
         return (
-            {"optimizer": optim_univnet, "lr_scheduler": scheduler_univnet},
+            {"optimizer": optim_generator, "lr_scheduler": scheduler_generator},
             {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
         )
 
     def train_dataloader(
         self,
-        num_workers: int = 5,
-        root: str = "datasets_cache/LIBRITTS",
+        root: str = "datasets_cache",
         cache: bool = True,
-        cache_dir: str = "datasets_cache",
-        mem_cache: bool = False,
-        url: str = "train-clean-360",
+        cache_dir: str = "/dev/shm",
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
-            num_workers (int): The number of workers.
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
-            cache_dir (str): The directory for the cache.
-            mem_cache (bool): Whether to use memory cache.
-            url (str): The URL of the dataset.
+            cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
 
         Returns:
-            DataLoader: The training and validation dataloaders.
+            Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
         """
         return train_dataloader(
             batch_size=self.batch_size,
-            num_workers=num_workers,
+            num_workers=self.preprocess_config.workers,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
-            mem_cache=mem_cache,
-            url=url,
             lang=self.lang,
         )

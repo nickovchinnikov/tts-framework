@@ -14,11 +14,15 @@ class FastSpeech2LossGen(Module):
     def __init__(
         self,
         bin_warmup: bool = True,
+        binarization_loss_enable_steps: int = 1260,
+        binarization_loss_warmup_steps: int = 700,
     ):
         r"""Initializes the FastSpeech2LossGen module.
 
         Args:
             bin_warmup (bool, optional): Whether to use binarization warmup. Defaults to True. NOTE: Switch this off if you preload the model with a checkpoint that has already passed the warmup phase.
+            binarization_loss_enable_steps (int, optional): Number of steps to enable the binarization loss. Defaults to 1260.
+            binarization_loss_warmup_steps (int, optional): Number of warmup steps for the binarization loss. Defaults to 700.
         """
         super().__init__()
 
@@ -29,6 +33,8 @@ class FastSpeech2LossGen(Module):
         self.bin_loss = BinLoss()
 
         self.bin_warmup = bin_warmup
+        self.binarization_loss_enable_steps = binarization_loss_enable_steps
+        self.binarization_loss_warmup_steps = binarization_loss_warmup_steps
 
     def forward(
         self,
@@ -178,16 +184,13 @@ class FastSpeech2LossGen(Module):
         )
 
         if self.bin_warmup:
-            binarization_loss_enable_steps = 18000
-            binarization_loss_warmup_steps = 10000
-
-            if step < binarization_loss_enable_steps:
+            if step < self.binarization_loss_enable_steps:
                 bin_loss_weight = 0.0
             else:
                 bin_loss_weight = (
                     min(
-                        (step - binarization_loss_enable_steps)
-                        / binarization_loss_warmup_steps,
+                        (step - self.binarization_loss_enable_steps)
+                        / self.binarization_loss_warmup_steps,
                         1.0,
                     )
                     * 1.0

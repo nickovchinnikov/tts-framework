@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 import os
 from pathlib import Path
 import tempfile
-from typing import Dict, List, Literal, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 os.environ["TQDM_DISABLE"] = "1"
 import tqdm
@@ -32,21 +32,21 @@ NUM_JOBS = (os.cpu_count() or 2) - 1
 
 
 # The selected speakers from the HiFiTTS dataset
-selected_speakers_hi_fi_ids = [
+speakers_hifi_ids = [
     "Cori Samuel",  # 92,
-    # "Phil Benson",  # 6097,
-    # "Mike Pelton",  # 6670,
     "Tony Oliva",  # 6671,
-    # "Maria Kasper",  # 8051,
     "John Van Stan",  # 9017,
     "Helen Taylor",  # 9136,
+    # "Phil Benson",  # 6097,
+    # "Mike Pelton",  # 6670,
+    # "Maria Kasper",  # 8051,
     # "Sylviamb",  # 11614,
     # "Celine Major",  # 11697,
     # "LikeManyWaters",  # 12787,
 ]
 
 # The selected speakers from the LibriTTS dataset
-selected_speakers_libri_ids = list(
+speakers_libri_ids = list(
     map(
         str,
         [
@@ -70,7 +70,7 @@ selected_speakers_libri_ids = list(
 selected_speakers_ids = {
     v: k
     for k, v in enumerate(
-        selected_speakers_hi_fi_ids + selected_speakers_libri_ids,
+        speakers_hifi_ids + speakers_libri_ids,
     )
 }
 
@@ -159,6 +159,11 @@ class HifiLibriDataset(Dataset):
         cache: bool = False,
         cache_dir: str = "/dev/shm",
         num_jobs: int = NUM_JOBS,
+        min_seconds: Optional[float] = None,
+        max_seconds: Optional[float] = None,
+        include_libri: bool = True,
+        libri_speakers: List[str] = speakers_libri_ids,
+        hifi_speakers: List[str] = speakers_hifi_ids,
     ):
         r"""Initializes the dataset.
 
@@ -174,23 +179,37 @@ class HifiLibriDataset(Dataset):
             cache (bool, optional): Whether to cache the dataset. Defaults to False.
             cache_dir (str, optional): The directory to cache the dataset in. Defaults to "/dev/shm".
             num_jobs (int, optional): The number of jobs to use for preparing the dataset. Defaults to NUM_JOBS.
+            min_seconds (Optional[float], optional): The minimum duration of the audio. Defaults from the preprocess config.
+            max_seconds (Optional[float], optional): The maximum duration of the audio. Defaults from the preprocess config.
+            include_libri (bool, optional): Whether to include the LibriTTS dataset. Defaults to True.
+            libri_speakers (List[str], optional): The selected speakers from the LibriTTS dataset. Defaults to selected_speakers_libri_ids.
+            hifi_speakers (List[str], optional): The selected speakers from the HiFiTTS dataset. Defaults to selected_speakers_hi_fi_ids.
         """
         lang_map = get_lang_map(lang)
         processing_lang_type = lang_map.processing_lang_type
-        preprocess_config = PreprocessingConfig(
+        self.preprocess_config = PreprocessingConfig(
             processing_lang_type,
             sampling_rate=sampling_rate,
         )
+
+        self.min_seconds = min_seconds or self.preprocess_config.min_seconds
+        self.max_seconds = max_seconds or self.preprocess_config.max_seconds
+
+        self.dur_filter = (
+            lambda duration: duration >= self.min_seconds
+            and duration <= self.max_seconds
+        )
+
         self.preprocess_libtts = PreprocessLibriTTS(
             lang,
-            preprocess_config,
+            self.preprocess_config,
         )
         self.root_dir = Path(root)
         self.voicefixer = VoiceFixer()
 
         # Map the speaker ids to string and list of selected speaker ids to set
-        self.selected_speakers_libri_ids_ = set(selected_speakers_libri_ids)
-        self.selected_speakers_hi_fi_ids_ = set(selected_speakers_hi_fi_ids)
+        self.selected_speakers_libri_ids_ = set(libri_speakers)
+        self.selected_speakers_hi_fi_ids_ = set(hifi_speakers)
 
         self.cache = cache
         self.cache_dir = Path(cache_dir) / f"cache-{hifitts_path}-{libritts_path}"
@@ -198,6 +217,9 @@ class HifiLibriDataset(Dataset):
         # Prepare the HiFiTTS dataset
         self.hifitts_path = self.root_dir / hifitts_path
         hifi_cutset_file_path = self.root_dir / hifi_cutset_file_name
+
+        # Initialize the cutset
+        self.cutset = CutSet()
 
         # Check if the HiFiTTS dataset has been prepared
         if hifi_cutset_file_path.exists():
@@ -214,51 +236,53 @@ class HifiLibriDataset(Dataset):
             # Save the prepared HiFiTTS dataset cutset
             self.cutset_hifi.to_file(hifi_cutset_file_path)
 
+        # Filter the HiFiTTS cutset to only include the selected speakers
         self.cutset_hifi = self.cutset_hifi.filter(
             lambda cut: isinstance(cut, MonoCut)
-            and str(cut.supervisions[0].speaker) in self.selected_speakers_hi_fi_ids_,
-        )
+            and str(cut.supervisions[0].speaker) in self.selected_speakers_hi_fi_ids_
+            and self.dur_filter(cut.duration),
+        ).to_eager()
 
-        # Prepare the LibriTTS dataset
-        self.libritts_path = self.root_dir / libritts_path
-        libritts_cutset_file_path = self.root_dir / libritts_cutset_file_name
+        # Add the HiFiTTS cutset to the final cutset
+        self.cutset += self.cutset_hifi
 
-        # Check if the LibriTTS dataset has been prepared
-        if libritts_cutset_file_path.exists():
-            self.cutset_libri = CutSet.from_file(libritts_cutset_file_path)
-        else:
-            libritts_root = libritts.download_librittsr(
-                self.libritts_path,
-                dataset_parts=libritts_subsets,
-            )
-            prepared_libri = libritts.prepare_librittsr(
-                libritts_root / "LibriTTS_R",
-                dataset_parts=libritts_subsets,
-                num_jobs=num_jobs,
-            )
+        if include_libri:
+            # Prepare the LibriTTS dataset
+            self.libritts_path = self.root_dir / libritts_path
+            libritts_cutset_file_path = self.root_dir / libritts_cutset_file_name
 
-            # Add the recordings and supervisions to the CutSet
-            self.cutset_libri = prep_2_cutset(prepared_libri)
-            # Save the prepared cutset for LibriTTS
-            self.cutset_libri.to_file(libritts_cutset_file_path)
+            # Check if the LibriTTS dataset has been prepared
+            if libritts_cutset_file_path.exists():
+                self.cutset_libri = CutSet.from_file(libritts_cutset_file_path)
+            else:
+                libritts_root = libritts.download_librittsr(
+                    self.libritts_path,
+                    dataset_parts=libritts_subsets,
+                )
+                prepared_libri = libritts.prepare_librittsr(
+                    libritts_root / "LibriTTS_R",
+                    dataset_parts=libritts_subsets,
+                    num_jobs=num_jobs,
+                )
 
-        # Filter the libri cutset to only include the selected speakers
-        self.cutset_libri = self.cutset_libri.filter(
-            lambda cut: isinstance(cut, MonoCut)
-            and str(cut.supervisions[0].speaker) in self.selected_speakers_libri_ids_,
-        )
+                # Add the recordings and supervisions to the CutSet
+                self.cutset_libri = prep_2_cutset(prepared_libri)
+                # Save the prepared cutset for LibriTTS
+                self.cutset_libri.to_file(libritts_cutset_file_path)
 
-        # Final cutset for the dataset
-        # to_eager() is used to evaluates all lazy operations on this manifest
-        self.cutset = (
-            (self.cutset_hifi + self.cutset_libri)
-            .filter(
+            # Filter the libri cutset to only include the selected speakers
+            self.cutset_libri = self.cutset_libri.filter(
                 lambda cut: isinstance(cut, MonoCut)
-                and cut.duration >= preprocess_config.min_seconds
-                and cut.duration <= preprocess_config.max_seconds,
-            )
-            .to_eager()
-        )
+                and str(cut.supervisions[0].speaker)
+                in self.selected_speakers_libri_ids_
+                and self.dur_filter(cut.duration),
+            ).to_eager()
+
+            # Add the LibriTTS cutset to the final cutset
+            self.cutset += self.cutset_libri
+
+        # to_eager() is used to evaluates all lazy operations on this manifest
+        self.cutset = self.cutset.to_eager()
 
     def get_cache_subdir_path(self, idx: int) -> Path:
         r"""Calculate the path to the cache subdirectory.
@@ -343,7 +367,6 @@ class HifiLibriDataset(Dataset):
 
             fileid = str(cutset.supervisions[0].recording_id)
 
-            # _, chapter_id, _, utterance_id = fileid.split("_")
             split_fileid = fileid.split("_")
             chapter_id = split_fileid[1]
             utterance_id = split_fileid[-1]
@@ -528,6 +551,7 @@ class HifiLibriDataset(Dataset):
 def train_dataloader(
     batch_size: int = 6,
     num_workers: int = 5,
+    sampling_rate: int = 22050,
     shuffle: bool = False,
     lang: str = "en",
     root: str = "datasets_cache",
@@ -538,12 +562,16 @@ def train_dataloader(
     libritts_subsets: List[str] | str = "all",
     cache: bool = False,
     cache_dir: str = "/dev/shm",
+    include_libri: bool = True,
+    libri_speakers: List[str] = speakers_libri_ids,
+    hifi_speakers: List[str] = speakers_hifi_ids,
 ) -> DataLoader:
     r"""Returns the training dataloader, that is using the HifiLibriDataset dataset.
 
     Args:
         batch_size (int): The batch size.
         num_workers (int): The number of workers.
+        sampling_rate (int): The sampling rate of the audio. Defaults to 22050.
         shuffle (bool): Whether to shuffle the dataset.
         lang (str): The language of the dataset.
         root (str): The root directory of the dataset.
@@ -554,6 +582,9 @@ def train_dataloader(
         libritts_subsets (List[str] | str): The subsets of the LibriTTS dataset to use.
         cache (bool): Whether to cache the dataset.
         cache_dir (str): The directory to cache the dataset in.
+        include_libri (bool): Whether to include the LibriTTS dataset.
+        libri_speakers (List[str]): The selected speakers from the LibriTTS dataset.
+        hifi_speakers (List[str]): The selected speakers from the HiFiTTS dataset.
 
     Returns:
         DataLoader: The training dataloader.
@@ -561,6 +592,7 @@ def train_dataloader(
     dataset = HifiLibriDataset(
         root=root,
         hifitts_path=hifitts_path,
+        sampling_rate=sampling_rate,
         hifi_cutset_file_name=hifi_cutset_file_name,
         libritts_path=libritts_path,
         libritts_cutset_file_name=libritts_cutset_file_name,
@@ -568,6 +600,9 @@ def train_dataloader(
         cache=cache,
         cache_dir=cache_dir,
         lang=lang,
+        include_libri=include_libri,
+        libri_speakers=libri_speakers,
+        hifi_speakers=hifi_speakers,
     )
 
     train_loader = DataLoader(
