@@ -8,7 +8,9 @@ from models.config import (
     AcousticENModelConfig,
     AcousticModelConfigType,
     AcousticPretrainingConfig,
-    PreprocessingConfig,
+)
+from models.config import (
+    PreprocessingConfigUnivNet as PreprocessingConfig,
 )
 from models.helpers import positional_encoding, tools
 from models.tts.delightful_tts.acoustic_model import AcousticModel

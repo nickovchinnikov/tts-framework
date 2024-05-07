@@ -1,23 +1,27 @@
-from typing import Callable, List, Tuple
+from typing import List
 
 from lightning.pytorch.core import LightningModule
 import torch
-from torch.optim import Adam, AdamW
-from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
+from torch import Tensor
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
 from models.config import (
-    AcousticENModelConfig,
     AcousticFinetuningConfig,
+    AcousticMultilingualModelConfig,
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
     PreprocessingConfig,
     get_lang_map,
     lang2id,
 )
-from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
-from models.vocoder.univnet import UnivNet
+from training.datasets.hifi_libri_dataset import (
+    speakers_hifi_ids,
+    speakers_libri_ids,
+    train_dataloader,
+)
 from training.loss import FastSpeech2LossGen
 from training.preprocess.normalize_text import NormalizeText
 
@@ -34,6 +38,7 @@ class DelightfulTTS(LightningModule):
     r"""Trainer for the acoustic model.
 
     Args:
+        preprocess_config PreprocessingConfig: The preprocessing configuration.
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
@@ -41,15 +46,19 @@ class DelightfulTTS(LightningModule):
     """
 
     def __init__(
-            self,
-            fine_tuning: bool = False,
-            lang: str = "en",
-            n_speakers: int = 5392,
-            batch_size: int = 6,
-        ):
+        self,
+        preprocess_config: PreprocessingConfig,
+        fine_tuning: bool = False,
+        bin_warmup: bool = True,
+        lang: str = "en",
+        n_speakers: int = 5392,
+        batch_size: int = 19,
+    ):
         super().__init__()
 
         self.lang = lang
+        self.lang_id = lang2id[self.lang]
+
         self.fine_tuning = fine_tuning
         self.batch_size = batch_size
 
@@ -66,8 +75,10 @@ class DelightfulTTS(LightningModule):
         else:
             self.train_config_acoustic = AcousticPretrainingConfig()
 
-        self.preprocess_config = PreprocessingConfig("english_only")
-        self.model_config = AcousticENModelConfig()
+        self.preprocess_config = preprocess_config
+
+        # NOTE: try Multilingual model config
+        self.model_config = AcousticMultilingualModelConfig()
 
         # TODO: fix the arguments!
         self.acoustic_model = AcousticModel(
@@ -77,60 +88,56 @@ class DelightfulTTS(LightningModule):
             n_speakers=n_speakers,
         )
 
-        # Initialize the vocoder, freeze for the first stage of the training
-        self.vocoder_module = UnivNet()
-        self.vocoder_module.freeze()
-
         # NOTE: in case of training from 0 bin_warmup should be True!
         self.loss_acoustic = FastSpeech2LossGen(
-            bin_warmup=False,
+            bin_warmup=bin_warmup,
         )
 
-
-    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+    def forward(
+        self,
+        text: str,
+        speaker_idx: Tensor,
+    ) -> Tensor:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
         Args:
             text (str): The input text.
-            speaker_idx (torch.Tensor): The index of the speaker.
-            lang (str): The language.
+            speaker_idx (Tensor): The index of the speaker
 
         Returns:
-            torch.Tensor: The output of the AcousticModel.
+            Tensor: The generated waveform with hifi-gan.
         """
         normalized_text = self.normilize_text(text)
         _, phones = self.tokenizer(normalized_text)
 
         # Convert to tensor
         x = torch.tensor(
-            phones, dtype=torch.int, device=speaker_idx.device,
+            phones,
+            dtype=torch.int,
+            device=speaker_idx.device,
         ).unsqueeze(0)
 
         speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = torch.tensor(
-            [lang2id[lang]],
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).repeat(x.shape[1]).unsqueeze(0)
+        langs = (
+            torch.tensor(
+                [self.lang_id],
+                dtype=torch.int,
+                device=speaker_idx.device,
+            )
+            .repeat(x.shape[1])
+            .unsqueeze(0)
+        )
 
-        y_pred = self.acoustic_model.forward(
+        mel_pred = self.acoustic_model.forward(
             x=x,
             speakers=speakers,
             langs=langs,
         )
 
-        wav = self.vocoder_module.forward(y_pred)
+        return mel_pred
 
-        return wav
-
-
-    # TODO: don't forget about torch.no_grad() !
-    # default used by the Trainer
-    # trainer = Trainer(inference_mode=True)
-    # Use `torch.no_grad` instead
-    # trainer = Trainer(inference_mode=False)
     def training_step(self, batch: List, _: int):
         r"""Performs a training step for the model.
 
@@ -227,281 +234,115 @@ class DelightfulTTS(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("train_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "train_total_loss",
+            total_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
         self.log("train_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "train_ssim_loss",
+            ssim_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_duration_loss",
+            duration_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_u_prosody_loss",
+            u_prosody_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_p_prosody_loss",
+            p_prosody_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "train_pitch_loss",
+            pitch_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
         self.log("train_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
         self.log("train_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("train_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "train_energy_loss",
+            energy_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
 
         return total_loss
 
-        # # Manual optimizer
-        # # Access your optimizers
-        # optimizers = self.optimizers()
-        # schedulers = self.lr_schedulers()
-
-        # ####################################
-        # # Acoustic model manual optimizer ##
-        # ####################################
-        # opt_acoustic: Optimizer = optimizers[0] # type: ignore
-        # sch_acoustic: LRScheduler = schedulers[0] # type: ignore
-
-        # # Backward pass for the acoustic model
-        # # NOTE: the loss is divided by the accumulated gradient steps
-        # self.manual_backward(total_loss / self.acc_grad_steps)
-
-        # # accumulate gradients of N batches
-        # if (batch_idx + 1) % self.acc_grad_steps == 0:
-        #     # clip gradients
-        #     self.clip_gradients(opt_acoustic, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
-
-        #     # optimizer step
-        #     opt_acoustic.step()
-        #     # Scheduler step
-        #     sch_acoustic.step()
-        #     # zero the gradients
-        #     opt_acoustic.zero_grad()
-
-
-    # def validation_step(self, batch: List, batch_idx: int):
-    #     r"""Performs a validation step for the model.
-
-    #     Args:
-    #     batch (List): The batch of data for training. The batch should contain:
-    #         - ids: List of indexes.
-    #         - raw_texts: Raw text inputs.
-    #         - speakers: Speaker identities.
-    #         - texts: Text inputs.
-    #         - src_lens: Lengths of the source sequences.
-    #         - mels: Mel spectrogram targets.
-    #         - pitches: Pitch targets.
-    #         - pitches_stat: Statistics of the pitches.
-    #         - mel_lens: Lengths of the mel spectrograms.
-    #         - langs: Language identities.
-    #         - attn_priors: Prior attention weights.
-    #         - wavs: Waveform targets.
-    #         - energies: Energy targets.
-    #     batch_idx (int): Index of the batch.
-
-    #     Returns:
-    #         - 'val_loss': The total loss for the training step.
-    #     """
-    #     (
-    #         _,
-    #         _,
-    #         speakers,
-    #         texts,
-    #         src_lens,
-    #         mels,
-    #         pitches,
-    #         pitches_stat,
-    #         mel_lens,
-    #         langs,
-    #         attn_priors,
-    #         _,
-    #         energies,
-    #     ) = batch
-
-    #     # Update pitches_stat (if needed)
-    #     self.pitches_stat[0] = min(self.pitches_stat[0], pitches_stat[0])
-    #     self.pitches_stat[1] = max(self.pitches_stat[1], pitches_stat[1])
-
-    #     outputs = self.acoustic_model.forward_train(
-    #         x=texts,
-    #         speakers=speakers,
-    #         src_lens=src_lens,
-    #         mels=mels,
-    #         mel_lens=mel_lens,
-    #         pitches=pitches,
-    #         pitches_range=pitches_stat,
-    #         langs=langs,
-    #         attn_priors=attn_priors,
-    #         energies=energies,
-    #     )
-
-    #     y_pred = outputs["y_pred"]
-    #     log_duration_prediction = outputs["log_duration_prediction"]
-    #     p_prosody_ref = outputs["p_prosody_ref"]
-    #     p_prosody_pred = outputs["p_prosody_pred"]
-    #     pitch_prediction = outputs["pitch_prediction"]
-    #     energy_pred = outputs["energy_pred"]
-    #     energy_target = outputs["energy_target"]
-
-    #     src_mask = get_mask_from_lengths(src_lens)
-    #     mel_mask = get_mask_from_lengths(mel_lens)
-
-    #     (
-    #         total_loss,
-    #         mel_loss,
-    #         ssim_loss,
-    #         duration_loss,
-    #         u_prosody_loss,
-    #         p_prosody_loss,
-    #         pitch_loss,
-    #         ctc_loss,
-    #         bin_loss,
-    #         energy_loss,
-    #     ) = self.loss_acoustic.forward(
-    #         src_masks=src_mask,
-    #         mel_masks=mel_mask,
-    #         mel_targets=mels,
-    #         mel_predictions=y_pred,
-    #         log_duration_predictions=log_duration_prediction,
-    #         u_prosody_ref=outputs["u_prosody_ref"],
-    #         u_prosody_pred=outputs["u_prosody_pred"],
-    #         p_prosody_ref=p_prosody_ref,
-    #         p_prosody_pred=p_prosody_pred,
-    #         pitch_predictions=pitch_prediction,
-    #         p_targets=outputs["pitch_target"],
-    #         durations=outputs["attn_hard_dur"],
-    #         attn_logprob=outputs["attn_logprob"],
-    #         attn_soft=outputs["attn_soft"],
-    #         attn_hard=outputs["attn_hard"],
-    #         src_lens=src_lens,
-    #         mel_lens=mel_lens,
-    #         energy_pred=energy_pred,
-    #         energy_target=energy_target,
-    #         step=self.trainer.global_step,
-    #     )
-
-    #     self.log("val_total_loss", total_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_mel_loss", mel_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_ssim_loss", ssim_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_duration_loss", duration_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_u_prosody_loss", u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_p_prosody_loss", p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_pitch_loss", pitch_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_ctc_loss", ctc_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_bin_loss", bin_loss, sync_dist=True, batch_size=self.batch_size)
-    #     self.log("val_energy_loss", energy_loss, sync_dist=True, batch_size=self.batch_size)
-
-
     def configure_optimizers(self):
         r"""Configures the optimizer used for training.
-        Depending on the training mode, either the finetuning or the pretraining optimizer is used.
-
-        Configures the optimizers and learning rate schedulers for the `AcousticModel`, `UnivNet` and `Discriminator` models.
-
-        This method creates an `AdamW`, `Adam` optimizers and an `ExponentialLR`, `LambdaLR` schedulers.
-        The learning rate, betas, and decay rate for the optimizers and schedulers are taken from the training configuration.
-
-        The `Learning Rate Finder` is also configured, if self.learning_rate is not None.
-        So, if the Learning Rate Finder is used, the optimizer is used self.learning_rate and the scheduler is not used.
 
         Returns
             tuple: A tuple containing three dictionaries. Each dictionary contains the optimizer and learning rate scheduler for one of the models.
         """
-        parameters_acoustic = self.acoustic_model.parameters()
+        lr_decay = self.train_config_acoustic.optimizer_config.lr_decay
+        default_lr = self.train_config_acoustic.optimizer_config.learning_rate
 
-        # If the Learning Rate Finder is not used, the optimizer and the scheduler are used
-        if self.fine_tuning:
-            # Compute the gamma and initial learning rate based on the current step
-            lr_decay = self.train_config_acoustic.optimizer_config.lr_decay
-            default_lr = self.train_config_acoustic.optimizer_config.learning_rate
+        init_lr = (
+            default_lr
+            if self.trainer.global_step == 0
+            else default_lr * (lr_decay**self.trainer.global_step)
+        )
 
-            init_lr = default_lr if self.trainer.global_step == 0 \
-            else default_lr * (lr_decay ** self.trainer.global_step)
+        optimizer_acoustic = AdamW(
+            self.acoustic_model.parameters(),
+            lr=init_lr,
+            betas=self.train_config_acoustic.optimizer_config.betas,
+            eps=self.train_config_acoustic.optimizer_config.eps,
+            weight_decay=self.train_config_acoustic.optimizer_config.weight_decay,
+        )
 
-            optimizer = AdamW(
-                parameters_acoustic,
-                betas=self.train_config_acoustic.optimizer_config.betas,
-                eps=self.train_config_acoustic.optimizer_config.eps,
-                lr=init_lr,
-            )
+        scheduler_acoustic = ExponentialLR(optimizer_acoustic, gamma=lr_decay)
 
-            scheduler = ExponentialLR(optimizer, gamma=lr_decay)
-
-            return (
-                {"optimizer": optimizer, "lr_scheduler": scheduler},
-            )
-        else:
-            init_lr, lr_lambda = self.get_lr_lambda()
-
-            optimizer = Adam(
-                parameters_acoustic,
-                betas=self.train_config_acoustic.optimizer_config.betas,
-                eps=self.train_config_acoustic.optimizer_config.eps,
-                lr=init_lr,
-            )
-            scheduler = LambdaLR(optimizer, lr_lambda)
-
-            return (
-                {"optimizer": optimizer, "lr_scheduler": scheduler},
-            )
-
-
-    def get_lr_lambda(self) -> Tuple[float, Callable[[int], float]]:
-        r"""Returns the custom lambda function for the learning rate schedule.
-
-        Returns
-            function: The custom lambda function for the learning rate schedule.
-        """
-        init_lr = self.model_config.encoder.n_hidden ** -0.5
-
-        def lr_lambda(step: int = self.trainer.global_step) -> float:
-            r"""Computes the learning rate scale factor.
-
-            Args:
-                step (int): The current training step.
-
-            Returns:
-                float: The learning rate scale factor.
-            """
-            step = 1 if step == 0 else step
-
-            warmup = self.train_config_acoustic.optimizer_config.warm_up_step
-            anneal_steps = self.train_config_acoustic.optimizer_config.anneal_steps
-            anneal_rate = self.train_config_acoustic.optimizer_config.anneal_rate
-
-            lr_scale = min(
-                step ** -0.5,
-                step * warmup ** -1.5,
-            )
-
-            for s in anneal_steps:
-                if step > s:
-                    lr_scale *= anneal_rate
-
-            return init_lr * lr_scale
-
-        # Function that returns the learning rate scale factor
-        return init_lr, lr_lambda
-
+        return {
+            "optimizer": optimizer_acoustic,
+            "lr_scheduler": scheduler_acoustic,
+        }
 
     def train_dataloader(
         self,
-        num_workers: int = 15,
-        root: str = "datasets_cache/LIBRITTS",
+        root: str = "datasets_cache",
         cache: bool = True,
-        cache_dir: str = "datasets_cache",
-        mem_cache: bool = False,
-        url: str = "train-clean-360",
+        cache_dir: str = "/dev/shm",
+        include_libri: bool = False,
+        libri_speakers: List[str] = speakers_libri_ids,
+        hifi_speakers: List[str] = speakers_hifi_ids,
     ) -> DataLoader:
         r"""Returns the training dataloader, that is using the LibriTTS dataset.
 
         Args:
-            num_workers (int): The number of workers.
             root (str): The root directory of the dataset.
             cache (bool): Whether to cache the preprocessed data.
-            cache_dir (str): The directory for the cache.
-            mem_cache (bool): Whether to use memory cache.
-            url (str): The URL of the dataset.
+            cache_dir (str): The directory for the cache. Defaults to "/dev/shm".
+            include_libri (bool): Whether to include the LibriTTS dataset or not.
+            libri_speakers (List[str]): The list of LibriTTS speakers to include.
+            hifi_speakers (List[str]): The list of HiFi-GAN speakers to include.
 
         Returns:
             Tupple[DataLoader, DataLoader]: The training and validation dataloaders.
         """
         return train_dataloader(
             batch_size=self.batch_size,
-            num_workers=num_workers,
+            num_workers=self.preprocess_config.workers,
+            sampling_rate=self.preprocess_config.sampling_rate,
             root=root,
             cache=cache,
             cache_dir=cache_dir,
-            mem_cache=mem_cache,
-            url=url,
             lang=self.lang,
+            include_libri=include_libri,
+            libri_speakers=libri_speakers,
+            hifi_speakers=hifi_speakers,
         )

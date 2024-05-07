@@ -38,15 +38,7 @@ root: str = "datasets_cache/LIBRITTS"
 lang: str = "en"
 url: str = "train-clean-360"
 
-# preprocess_libtts = PreprocessLibriTTS(
-#     lang,
-# )
-
 dataset = LibriTTSDatasetAcoustic(root=root, url=url, download=True)
-
-# Load the id_mapping dictionary from the JSON file
-# with open("speaker_id_mapping_libri.json") as f:
-#     id_mapping = json.load(f)
 
 # %%
 batch_size = 8
@@ -63,7 +55,7 @@ data_loader = DataLoader(
 data = []
 for i, batch in enumerate(tqdm(data_loader)):
     data.extend(batch)
-    if (i+1) % (10000 // batch_size) == 0:
+    if (i + 1) % (10000 // batch_size) == 0:
         torch.save(
             data,
             f"datasets_cache/{url}_step_{i+1}_preprocessed.pt",
@@ -83,15 +75,19 @@ from multiprocessing import Pool
 # Preprocess all samples and store them in lists
 data = []
 
+
 def process_sample(preprocessed_sample):
     return preprocessed_sample
     # preprocessed_sample = preprocess_libtts.acoustic(sample)
 
+
 with Pool(processes=10) as p:
     # data += list(tqdm(p.imap(process_sample, dataset), total=len(dataset)))
-    for i, result in enumerate(tqdm(p.imap(process_sample, dataset), total=len(dataset))):
+    for i, result in enumerate(
+        tqdm(p.imap(process_sample, dataset), total=len(dataset)),
+    ):
         data.append(result)
-        if (i+1) % 20000 == 0:
+        if (i + 1) % 20000 == 0:
             torch.save(
                 data,
                 f"datasets_cache/{url}_preprocessed.pt",
@@ -115,7 +111,9 @@ for sample in dataset:
     preprocessed_sample = preprocess_libtts.acoustic(sample)
 
     if preprocessed_sample is not None:
-        preprocessed_sample.wav = torch.FloatTensor(preprocessed_sample.wav.unsqueeze(0))
+        preprocessed_sample.wav = torch.FloatTensor(
+            preprocessed_sample.wav.unsqueeze(0),
+        )
         res = {
             "id": preprocessed_sample.utterance_id,
             "wav": preprocessed_sample.wav,
@@ -148,7 +146,7 @@ preprocessed_dataset = PreprocessedDataset(data)
 len(preprocessed_dataset)
 
 # %%
-torch.save([1,2,3], "test.pt")
+torch.save([1, 2, 3], "test.pt")
 
 # %%
 torch.load("test.pt")

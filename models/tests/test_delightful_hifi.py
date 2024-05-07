@@ -19,8 +19,10 @@ class TestDelightfulTTS(unittest.TestCase):
 
     def test_forward(self):
         # Create a dummy Trainer instance
-        delightful_checkpoint_path = "checkpoints/epoch=414-step=85176.ckpt"
-        hifi_checkpoint_path = "checkpoints/epoch=24-step=14200.ckpt"
+        delightful_checkpoint_path = "checkpoints/logs_44100_tts_80_logs_new3_lightning_logs_version_7_checkpoints_epoch=2450-step=183470.ckpt"
+        hifi_checkpoint_path = (
+            "checkpoints/logs_44100_vocoder_Mel44100_WAV44100_epoch=19-step=44480.ckpt"
+        )
 
         # Load the model
         model = DelightfulHiFi(

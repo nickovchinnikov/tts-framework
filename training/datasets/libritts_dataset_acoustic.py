@@ -6,7 +6,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from models.config import PreprocessingConfig, get_lang_map, lang2id
+from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
+from models.config import get_lang_map, lang2id
 from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
@@ -65,7 +66,10 @@ class LibriTTSDatasetAcoustic(Dataset):
         with open("speaker_id_mapping_libri.json") as f:
             self.id_mapping = json.load(f)
 
-        self.preprocess_libtts = PreprocessLibriTTS(lang)
+        self.preprocess_libtts = PreprocessLibriTTS(
+            preprocess_config,
+            lang,
+        )
 
     def __len__(self) -> int:
         r"""Returns the number of samples in the dataset.

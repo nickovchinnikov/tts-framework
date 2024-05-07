@@ -2,7 +2,7 @@ from lightning.pytorch.core import LightningModule
 from torch import Tensor
 
 from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
-from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
+from models.tts.delightful_tts.delightful_tts import DelightfulTTS
 from models.vocoder.univnet import UnivNet
 
 

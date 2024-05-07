@@ -2,6 +2,7 @@ import unittest
 
 import torch
 
+from models.config import PreprocessingConfigUnivNet, get_lang_map
 from training.preprocess import PreprocessLibriTTS
 from training.preprocess.preprocess_libritts import PreprocessForAcousticResult
 
@@ -9,7 +10,11 @@ from training.preprocess.preprocess_libritts import PreprocessForAcousticResult
 class TestPreprocessLibriTTS(unittest.TestCase):
     def setUp(self):
         torch.random.manual_seed(42)
-        self.preprocess_libritts = PreprocessLibriTTS()
+        lang_map = get_lang_map("en")
+        processing_lang_type = lang_map.processing_lang_type
+        self.preprocess_libritts = PreprocessLibriTTS(
+            PreprocessingConfigUnivNet(processing_lang_type),
+        )
 
     def test_acoustic(self):
         # Set the sampling rate and duration of the audio signal

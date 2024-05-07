@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset
 from torchaudio import datasets
 
+from models.config import PreprocessingConfigUnivNet, get_lang_map
 from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D
 
@@ -17,6 +18,7 @@ class LibriTTSDatasetVocoder(Dataset):
         root: str,
         batch_size: int,
         download: bool = True,
+        lang: str = "en",
     ):
         r"""A PyTorch dataset for loading preprocessed univnet data.
 
@@ -28,7 +30,10 @@ class LibriTTSDatasetVocoder(Dataset):
         self.dataset = datasets.LIBRITTS(root=root, download=download)
         self.batch_size = batch_size
 
-        self.preprocess_libtts = PreprocessLibriTTS()
+        lang_map = get_lang_map(lang)
+        self.preprocess_libtts = PreprocessLibriTTS(
+            PreprocessingConfigUnivNet(lang_map.processing_lang_type),
+        )
 
     def __len__(self) -> int:
         r"""Returns the number of samples in the dataset.
