@@ -99,17 +99,15 @@ class TestTextPreprocess(unittest.TestCase):
 
         # Test case 7: Time, currency, line-break
         input_text = "The alarm went off at 10:00a.m. \nI received $123. It's 12:30pm. I paid $123.45 for this desk."
-        expected_output = r"""The alarm went off at ten AM;; I received one hundred and twenty three dollars. It's twelve thirty PM. I paid one hundred and twenty three dollars forty five cents for this desk."""
+        expected_output = r"""The alarm went off at ten AM. I received one hundred and twenty three dollars. It's twelve thirty PM. I paid one hundred and twenty three dollars forty five cents for this desk."""
         self.assertEqual(self.normalizer(input_text), expected_output)
 
     def test_normalize2(self):
-        input_text = r"""The Wizard of Oz: “Lions? And Tigers? And Bears?”.
-        Toy Story: “Buzz, you’re flying!”.
-        As the snake shook its head, a deafening shout behind Harry made both of them jump.
-        ‘DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON’T BELIEVE WHAT IT’S DOING!’.
-        """
+        input_text = r"""The Wizard of Oz: “Lions? And Tigers? And Bears?”
+        Toy Story: “Buzz, you’re flying!”
+        As the snake shook its head, a deafening shout behind Harry made both of them jump. ‘DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON’T BELIEVE WHAT IT’S DOING!’."""
 
-        expected_output = r"The Wizard of Oz: 'Lions? And Tigers? And Bears?'.;; Toy Story: 'Buzz, you're flying!'.;; As the snake shook its head, a deafening shout behind Harry made both of them jump.;; 'DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON'T BELIEVE WHAT IT'S DOING!'.;; "
+        expected_output = r"The Wizard of Oz: 'Lions? And Tigers? And Bears?'. Toy Story: 'Buzz, you're flying!'. As the snake shook its head, a deafening shout behind Harry made both of them jump. 'DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON'T BELIEVE WHAT IT'S DOING!'."
 
         self.assertEqual(self.normalizer(input_text), expected_output)
 
@@ -122,22 +120,17 @@ class TestTextPreprocess(unittest.TestCase):
     def test_punctuation(self):
         input_text = r"""Hello, World! How are you?
         Victor — why did you do that?
-        As the old saying goes, "The early bird catches the worm."
-        (Some people say that the early bird gets the worm.)
-        """
+        As the old saying goes, "The early bird catches the worm." (Some people say that the early bird gets the worm.)"""
         result = self.normalizer(input_text)
-        expected_output = r"""Hello, World! How are you?;; Victor - why did you do that?;; As the old saying goes, 'The early bird catches the worm.';; (Some people say that the early bird gets the worm.);; """
+        expected_output = r"""Hello, World! How are you?. Victor - why did you do that?. As the old saying goes, 'The early bird catches the worm.' (Some people say that the early bird gets the worm.)"""
         self.assertEqual(result, expected_output)
 
         # Double punctuation
         input_text2 = r"""Hello, World!!!! How are you????
         Victor – why did you do that?
-        As the old saying goes, "The early bird catches the worm."
-        (Some people say that the early bird gets the worm.)
-        """
+        As the old saying goes, "The early bird catches the worm." (Some people say that the early bird gets the worm.)"""
         result2 = self.normalizer(input_text2)
-        expected_output2 = r"""Hello, World! How are you?;; Victor - why did you do that?;; As the old saying goes, 'The early bird catches the worm.';; (Some people say that the early bird gets the worm.);; """
-        self.assertEqual(result2, expected_output2)
+        self.assertEqual(result2, expected_output)
 
 
 if __name__ == "__main__":

@@ -107,8 +107,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         # Generate a sinusoidal waveform with the specified pitch frequency
         audio = torch.sin(2 * torch.pi * pitch_freq * t).unsqueeze(0)
 
-        raw_text = r"""
-        Hello, world! Wow!!!!! This is amazing?????
+        raw_text = r"""Hello, world! Wow!!!!! This is amazing?????
         It’s a beautiful day…
         Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk.
         """

@@ -98,12 +98,13 @@ class NormalizeText:
 
         """
         text = self.normalize_chars(text)
+        # return self.model.normalize(text)
 
         # Split the text into lines
         lines = text.split("\n")
         normalized_lines = self.model.normalize_list(lines)
 
-        # TODO: check this after training!
-        # Join the normalized lines, replace \n with ;; and return the result
-        result = ";; ".join(normalized_lines)
+        # TODO: check this!
+        # Join the normalized lines, replace \n with . and return the result
+        result = ". ".join(normalized_lines)
         return result
