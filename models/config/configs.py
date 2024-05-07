@@ -16,15 +16,39 @@ class STFTConfig:
     mel_fmax: int
 
 
+# Base class used with the Univnet vocoder
 @dataclass
 class PreprocessingConfig:
     language: PreprocessLangType
+    stft: STFTConfig
     sampling_rate: int = 22050
     val_size: float = 0.05
     min_seconds: float = 0.5
     max_seconds: float = 6.0
     use_audio_normalization: bool = True
     workers: int = 8
+    forced_alignment_batch_size: int = 200000
+    skip_on_error: bool = True
+    pitch_fmin: int = 1
+    pitch_fmax: int = 640
+
+
+@dataclass
+class PreprocessingConfigUnivNet(PreprocessingConfig):
+    stft: STFTConfig = field(
+        default_factory=lambda: STFTConfig(
+            filter_length=1024,
+            hop_length=256,
+            win_length=1024,
+            n_mel_channels=100,  # univnet
+            mel_fmin=20,
+            mel_fmax=11025,
+        ),
+    )
+
+
+@dataclass
+class PreprocessingConfigHifiGAN(PreprocessingConfig):
     stft: STFTConfig = field(
         default_factory=lambda: STFTConfig(
             filter_length=1024,
@@ -35,10 +59,6 @@ class PreprocessingConfig:
             mel_fmax=11025,
         ),
     )
-    forced_alignment_batch_size: int = 200000
-    skip_on_error: bool = True
-    pitch_fmin: int = 1
-    pitch_fmax: int = 640
 
     def __post_init__(self):
         r"""Post-initialization method for the `PreprocessingConfig` dataclass.

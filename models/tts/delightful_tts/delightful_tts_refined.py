@@ -38,25 +38,27 @@ class DelightfulTTS(LightningModule):
     r"""Trainer for the acoustic model.
 
     Args:
+        preprocess_config PreprocessingConfig: The preprocessing configuration.
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
         batch_size (int): The batch size.
-        sampling_rate (int): The sample rate of the audio.
     """
 
     def __init__(
         self,
+        preprocess_config: PreprocessingConfig,
         fine_tuning: bool = False,
         bin_warmup: bool = True,
         lang: str = "en",
         n_speakers: int = 5392,
         batch_size: int = 19,
-        sampling_rate: int = 44100,
     ):
         super().__init__()
 
         self.lang = lang
+        self.lang_id = lang2id[self.lang]
+
         self.fine_tuning = fine_tuning
         self.batch_size = batch_size
 
@@ -73,10 +75,7 @@ class DelightfulTTS(LightningModule):
         else:
             self.train_config_acoustic = AcousticPretrainingConfig()
 
-        self.preprocess_config = PreprocessingConfig(
-            "multilingual",
-            sampling_rate=sampling_rate,
-        )
+        self.preprocess_config = preprocess_config
 
         # NOTE: try Multilingual model config
         self.model_config = AcousticMultilingualModelConfig()
@@ -98,15 +97,13 @@ class DelightfulTTS(LightningModule):
         self,
         text: str,
         speaker_idx: Tensor,
-        lang: str = "en",
     ) -> Tensor:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
         Args:
             text (str): The input text.
-            speaker_idx (Tensor): The index of the speaker.
-            lang (str): The language.
+            speaker_idx (Tensor): The index of the speaker
 
         Returns:
             Tensor: The generated waveform with hifi-gan.
@@ -125,7 +122,7 @@ class DelightfulTTS(LightningModule):
 
         langs = (
             torch.tensor(
-                [lang2id[lang]],
+                [self.lang_id],
                 dtype=torch.int,
                 device=speaker_idx.device,
             )
@@ -141,15 +138,6 @@ class DelightfulTTS(LightningModule):
 
         return mel_pred
 
-        # wav = self.vocoder.forward(mel_pred)
-
-        # return wav
-
-    # TODO: don't forget about torch.no_grad() !
-    # default used by the Trainer
-    # trainer = Trainer(inference_mode=True)
-    # Use `torch.no_grad` instead
-    # trainer = Trainer(inference_mode=False)
     def training_step(self, batch: List, _: int):
         r"""Performs a training step for the model.
 

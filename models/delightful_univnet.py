@@ -1,18 +1,17 @@
 from lightning.pytorch.core import LightningModule
 from torch import Tensor
 
-from models.config import PreprocessingConfigHifiGAN as PreprocessingConfig
+from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
 from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
-from models.vocoder.hifigan import HifiGan
+from models.vocoder.univnet import UnivNet
 
 
-class DelightfulHiFi(LightningModule):
+class DelightfulUnivnet(LightningModule):
     def __init__(
         self,
         delightful_checkpoint_path: str,
-        hifi_checkpoint_path: str,
         lang: str = "en",
-        sampling_rate: int = 44100,
+        sampling_rate: int = 22050,
     ):
         super().__init__()
 
@@ -30,10 +29,9 @@ class DelightfulHiFi(LightningModule):
         )
         self.delightful_tts.freeze()
 
-        self.hifi_gan = HifiGan.load_from_checkpoint(
-            hifi_checkpoint_path,
-        )
-        self.hifi_gan.freeze()
+        # Don't need to use separated checkpoint, prev checkpoint used
+        self.univnet = UnivNet()
+        self.univnet.freeze()
 
     def forward(
         self,
@@ -52,6 +50,6 @@ class DelightfulHiFi(LightningModule):
         """
         mel_pred = self.delightful_tts.forward(text, speaker_idx)
 
-        wav = self.hifi_gan.generator.forward(mel_pred)
+        wav = self.univnet.forward(mel_pred)
 
         return wav
