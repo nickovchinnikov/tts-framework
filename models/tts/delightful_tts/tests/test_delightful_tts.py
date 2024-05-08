@@ -3,13 +3,13 @@ import unittest
 
 from lightning.pytorch import Trainer
 import torch
-import torchaudio
 
-from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
+from models.config import PreprocessingConfigHifiGAN as PreprocessingConfig
+from models.config import PreprocessingConfigUnivNet
 from models.tts.delightful_tts.delightful_tts import DelightfulTTS
 from models.vocoder.univnet import UnivNet
 
-checkpoint = "checkpoints/logs_new_training_libri-360-swa_multilingual_conf_epoch=146-step=33516.ckpt"
+checkpoint = "checkpoints/logs_44100_tts_80_logs_new3_lightning_logs_version_7_checkpoints_epoch=2450-step=183470.ckpt"
 
 # NOTE: this is needed to avoid CUDA_LAUNCH_BLOCKING error
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -37,6 +37,7 @@ class TestDelightfulTTS(unittest.TestCase):
 
     def test_train_steps(self):
         default_root_dir = "checkpoints/acoustic"
+        # checkpoint = "checkpoints/logs_new_training_libri-360-swa_multilingual_conf_epoch=146-step=33516.ckpt"
 
         trainer = Trainer(
             # Save checkpoints to the `default_root_dir` directory
@@ -44,10 +45,12 @@ class TestDelightfulTTS(unittest.TestCase):
             fast_dev_run=1,
             limit_train_batches=1,
             max_epochs=1,
-            accelerator="cpu",
+            accelerator="gpu",
         )
 
-        module = DelightfulTTS(preprocess_config=self.preprocessing_config)
+        module = DelightfulTTS(
+            preprocess_config=self.preprocessing_config,
+        )
 
         train_dataloader = module.train_dataloader(cache=False)
 
@@ -67,7 +70,7 @@ class TestDelightfulTTS(unittest.TestCase):
         except Exception as e:
             self.fail(f"Loading from checkpoint raised an exception: {e}")
 
-    def test_generate_audio(self):
+    def test_forward(self):
         # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         device = torch.device("cpu")
 
@@ -75,11 +78,10 @@ class TestDelightfulTTS(unittest.TestCase):
             checkpoint,
             strict=False,
             map_location=device,
+            preprocess_config=self.preprocessing_config,
         )
         univnet = UnivNet()
         univnet = univnet.to(device)
-
-        module.vocoder_module = univnet
 
         text = """As the snake shook its head, a deafening shout behind Harry made both of them jump.
         'DUDLEY! MR DURSLEY! COME AND LOOK AT THIS SNAKE! YOU WON'T BELIEVE WHAT IT'S DOING!'
@@ -88,16 +90,9 @@ class TestDelightfulTTS(unittest.TestCase):
 
         speaker = torch.tensor([2071], device=device)
 
-        wav_prediction, _ = module(
+        mel_spec = module.forward(
             text,
             speaker,
         )
 
-        # Save the audio to a file
-        torchaudio.save(  # type: ignore
-            "results/output1_2_d.wav",
-            wav_prediction.unsqueeze(0).detach().cpu(),
-            22050,
-        )
-
-        self.assertIsInstance(wav_prediction, torch.Tensor)
+        self.assertIsInstance(mel_spec, torch.Tensor)
