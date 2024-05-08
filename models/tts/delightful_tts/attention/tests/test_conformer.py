@@ -5,7 +5,9 @@ import torch
 from models.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
-    PreprocessingConfig,
+)
+from models.config import (
+    PreprocessingConfigUnivNet as PreprocessingConfig,
 )
 from models.helpers.initializer import (
     init_acoustic_model,
@@ -33,7 +35,9 @@ class TestConformer(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers,
+            self.preprocess_config,
+            self.model_config,
+            n_speakers,
         )
 
         # Generate mock data for the forward pass

@@ -2,7 +2,8 @@ import unittest
 
 import torch
 
-from models.config import AcousticENModelConfig, PreprocessingConfig
+from models.config import AcousticENModelConfig
+from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
 from models.tts.delightful_tts.reference_encoder import UtteranceLevelProsodyEncoder
 
 

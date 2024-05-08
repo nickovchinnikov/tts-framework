@@ -5,7 +5,9 @@ import torch
 from models.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
-    PreprocessingConfig,
+)
+from models.config import (
+    PreprocessingConfigUnivNet as PreprocessingConfig,
 )
 from models.helpers.initializer import (
     init_acoustic_model,

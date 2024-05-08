@@ -6,7 +6,9 @@ from torch import nn
 from models.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
-    PreprocessingConfig,
+)
+from models.config import (
+    PreprocessingConfigUnivNet as PreprocessingConfig,
 )
 from models.helpers.initializer import (
     init_acoustic_model,
@@ -42,7 +44,9 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
 
         # Add AcousticModel instance
         self.acoustic_model, _ = init_acoustic_model(
-            self.preprocess_config, self.model_config, n_speakers,
+            self.preprocess_config,
+            self.model_config,
+            n_speakers,
         )
 
         # Generate mock data for the forward pass
@@ -119,7 +123,11 @@ class TestPhonemeLevelProsodyEncoder(unittest.TestCase):
 
         p_prosody_ref = self.p_norm(
             self.phoneme_prosody_encoder(
-                x=x, src_mask=src_mask, mels=mels, mel_lens=mel_lens, encoding=encoding,
+                x=x,
+                src_mask=src_mask,
+                mels=mels,
+                mel_lens=mel_lens,
+                encoding=encoding,
             ),
         )
 

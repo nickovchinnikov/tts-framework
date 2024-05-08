@@ -7,7 +7,9 @@ from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
 from models.config import (
-    PreprocessingConfig,
+    PreprocessingConfigUnivNet as PreprocessingConfig,
+)
+from models.config import (
     VocoderFinetuningConfig,
     VocoderModelConfig,
     VocoderPretrainingConfig,

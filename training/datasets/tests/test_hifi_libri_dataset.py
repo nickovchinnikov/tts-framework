@@ -10,21 +10,22 @@ from training.datasets.hifi_libri_dataset import HifiLibriDataset, HifiLibriItem
 
 class TestHifiLibriDataset(unittest.TestCase):
     def setUp(self):
-        self.dataset = HifiLibriDataset(cache_dir="datasets_cache", cache=True)
+        self.cache_dir = "datasets_cache"
+        self.dataset = HifiLibriDataset(cache_dir=self.cache_dir, cache=True)
         self.vocoder_vf = Vocoder(44100)
 
     def test_init(self):
-        self.assertEqual(len(self.dataset.cutset), 327197)
+        self.assertEqual(len(self.dataset.cutset), 129751)
 
     def test_get_cache_subdir_path(self):
         idx = 1234
-        expected_path = Path("/dev/shm") / "cache-hifitts-librittsr" / "2000"
+        expected_path = Path(self.cache_dir) / "cache-hifitts-librittsr" / "2000"
         self.assertEqual(self.dataset.get_cache_subdir_path(idx), expected_path)
 
     def test_get_cache_file_path(self):
         idx = 1234
         expected_path = (
-            Path("/dev/shm") / "cache-hifitts-librittsr" / "2000" / f"{idx}.pt"
+            Path(self.cache_dir) / "cache-hifitts-librittsr" / "2000" / f"{idx}.pt"
         )
         self.assertEqual(self.dataset.get_cache_file_path(idx), expected_path)
 

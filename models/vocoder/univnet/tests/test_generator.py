@@ -3,7 +3,8 @@ import unittest
 import torch
 from torch import nn
 
-from models.config import PreprocessingConfig, VocoderModelConfig
+from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
+from models.config import VocoderModelConfig
 from models.vocoder.univnet.generator import Generator
 
 
