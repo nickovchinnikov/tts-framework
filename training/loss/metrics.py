@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import librosa
 import matplotlib.pyplot as plt
@@ -13,7 +14,7 @@ from torchmetrics.audio import (
     SpeechReverberationModulationEnergyRatio,
 )
 
-from models.config import PreprocessingConfig, get_lang_map
+from models.config import PreprocessingConfig, PreprocessingConfigUnivNet, get_lang_map
 from training.preprocess.audio_processor import AudioProcessor
 
 
@@ -47,6 +48,10 @@ class MetricsResult:
 class Metrics:
     r"""A class that computes various audio metrics.
 
+    Args:
+        lang (str): language parameter. Defaults to "en".
+        preprocess_config (Optional[PreprocessingConfig]): The preprocessing configuration. Defaults to None.
+
     Attributes:
         hop_length (int): The hop length for the STFT.
         filter_length (int): The filter length for the STFT.
@@ -62,9 +67,12 @@ class Metrics:
     def __init__(
         self,
         lang: str = "en",
+        preprocess_config: Optional[PreprocessingConfig] = None,
     ):
         lang_map = get_lang_map(lang)
-        preprocess_config = PreprocessingConfig(lang_map.processing_lang_type)
+        preprocess_config = preprocess_config or PreprocessingConfigUnivNet(
+            lang_map.processing_lang_type,
+        )
 
         self.hop_length = preprocess_config.stft.hop_length
         self.filter_length = preprocess_config.stft.filter_length
@@ -77,7 +85,9 @@ class Metrics:
         self.si_sdr = ScaleInvariantSignalDistortionRatio()
         self.si_snr = ScaleInvariantSignalNoiseRatio()
         self.c_si_snr = ComplexScaleInvariantSignalNoiseRatio(zero_mean=False)
-        self.reverb_modulation_energy_ratio = SpeechReverberationModulationEnergyRatio(self.sample_rate)
+        self.reverb_modulation_energy_ratio = SpeechReverberationModulationEnergyRatio(
+            self.sample_rate,
+        )
 
     def calculate_mcd(
         self,
@@ -101,9 +111,11 @@ class Metrics:
         ref_mfcc = mfcc_transform(wav_targets)
         synth_mfcc = mfcc_transform(wav_predictions)
 
-        mcd = torch.mean(torch.sqrt(
-            torch.sum((ref_mfcc - synth_mfcc) ** 2, dim=0),
-        ))
+        mcd = torch.mean(
+            torch.sqrt(
+                torch.sum((ref_mfcc - synth_mfcc) ** 2, dim=0),
+            ),
+        )
 
         return mcd
 
@@ -169,7 +181,7 @@ class Metrics:
         )
 
         # Assuming f0_audio1 and f0_audio2 are PyTorch tensors
-        rmse = torch.sqrt(torch.mean((f0_audio1 - f0_audio2)**2)).item()
+        rmse = torch.sqrt(torch.mean((f0_audio1 - f0_audio2) ** 2)).item()
 
         return rmse
 
@@ -217,7 +229,8 @@ class Metrics:
             torch.abs(torch.diff(f0, dim=-1)) / (torch.diff(f0, dim=-1) + epsilon),
         ).item()
         shimmer = torch.mean(
-            torch.abs(torch.diff(amplitude, dim=-1)) / (torch.diff(amplitude, dim=-1) + epsilon),
+            torch.abs(torch.diff(amplitude, dim=-1))
+            / (torch.diff(amplitude, dim=-1) + epsilon),
         )
 
         shimmer = torch.abs(shimmer).item()
@@ -285,9 +298,18 @@ class Metrics:
         si_snr: torch.Tensor = self.si_snr(mel_predictions, mel_targets)
 
         # New shape: [1, F, T, 2]
-        mel_predictions_complex = torch.stack((mel_predictions, torch.zeros_like(mel_predictions)), dim=-1)
-        mel_targets_complex = torch.stack((mel_targets, torch.zeros_like(mel_targets)), dim=-1)
-        c_si_snr: torch.Tensor = self.c_si_snr(mel_predictions_complex, mel_targets_complex)
+        mel_predictions_complex = torch.stack(
+            (mel_predictions, torch.zeros_like(mel_predictions)),
+            dim=-1,
+        )
+        mel_targets_complex = torch.stack(
+            (mel_targets, torch.zeros_like(mel_targets)),
+            dim=-1,
+        )
+        c_si_snr: torch.Tensor = self.c_si_snr(
+            mel_predictions_complex,
+            mel_targets_complex,
+        )
 
         mcd = self.calculate_mcd(wav_targets, wav_predictions)
         spec_dist = self.calculate_spectrogram_distance(wav_targets, wav_predictions)
@@ -306,15 +328,32 @@ class Metrics:
             shimmer,
         )
 
-    def plot_spectrograms(self, mel_target: np.ndarray, mel_prediction: np.ndarray, sr: int = 22050):
+    def plot_spectrograms(
+        self,
+        mel_target: np.ndarray,
+        mel_prediction: np.ndarray,
+        sr: int = 22050,
+    ):
         r"""Plots the mel spectrograms for the target and the prediction."""
         fig, axs = plt.subplots(2, 1, sharex=True, sharey=True, dpi=80)
 
-        img1 = librosa.display.specshow(mel_target, x_axis="time", y_axis="mel", sr=sr, ax=axs[0])
+        img1 = librosa.display.specshow(
+            mel_target,
+            x_axis="time",
+            y_axis="mel",
+            sr=sr,
+            ax=axs[0],
+        )
         axs[0].set_title("Target spectrogram")
         fig.colorbar(img1, ax=axs[0], format="%+2.0f dB")
 
-        img2 = librosa.display.specshow(mel_prediction, x_axis="time", y_axis="mel", sr=sr, ax=axs[1])
+        img2 = librosa.display.specshow(
+            mel_prediction,
+            x_axis="time",
+            y_axis="mel",
+            sr=sr,
+            ax=axs[1],
+        )
         axs[1].set_title("Prediction spectrogram")
         fig.colorbar(img2, ax=axs[1], format="%+2.0f dB")
 
@@ -336,7 +375,7 @@ class Metrics:
             mel_target,
             aspect="auto",
             Fs=sr,
-            cmap=plt.get_cmap("magma"), # type: ignore
+            cmap=plt.get_cmap("magma"),  # type: ignore
         )
         axs[0].set_title("Target spectrogram")
 
@@ -344,7 +383,7 @@ class Metrics:
             mel_prediction,
             aspect="auto",
             Fs=sr,
-            cmap=plt.get_cmap("magma"), # type: ignore
+            cmap=plt.get_cmap("magma"),  # type: ignore
         )
         axs[1].set_title("Prediction spectrogram")
 

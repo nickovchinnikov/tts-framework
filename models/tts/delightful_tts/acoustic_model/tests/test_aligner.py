@@ -5,7 +5,9 @@ import torch
 from models.config import (
     AcousticENModelConfig,
     AcousticPretrainingConfig,
-    PreprocessingConfig,
+)
+from models.config import (
+    PreprocessingConfigUnivNet as PreprocessingConfig,
 )
 from models.tts.delightful_tts.acoustic_model.aligner import Aligner
 
@@ -47,7 +49,6 @@ class TestAligner(unittest.TestCase):
         self.assertIsInstance(attn_hard, torch.Tensor)
         self.assertIsInstance(attn_hard_dur, torch.Tensor)
 
-
     def test_binarize_attention_parallel(self):
         aligner = Aligner(
             d_enc_in=10,
@@ -76,7 +77,9 @@ class TestAligner(unittest.TestCase):
         )
 
         binarized_attention = aligner.binarize_attention_parallel(
-            attn, in_lens, out_lens,
+            attn,
+            in_lens,
+            out_lens,
         )
 
         self.assertIsInstance(binarized_attention, torch.Tensor)

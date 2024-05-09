@@ -11,8 +11,7 @@ import torch
 import uvicorn
 
 from config.best_speakers_list import selected_speakers
-from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
-from models.vocoder.univnet import UnivNet
+from models.delightful_hifi import DelightfulHiFi
 from server.utils import (
     returnAudioBuffer,
     sentences_split,
@@ -25,16 +24,17 @@ os.environ["NUMBA_DISABLE_INTEL_SVML"] = "1"
 
 
 # Load the pretrained weights from the checkpoint
-checkpoint = "checkpoints/epoch=3265-step=313888.ckpt"
-
+delightful_checkpoint_path = "checkpoints/epoch=3265-step=313888.ckpt"
+hifi_checkpoint_path = "checkpoints/hifi-gan_v1_universal_v1.ckpt"
 
 device = torch.device("cuda")
-module = DelightfulTTS.load_from_checkpoint(checkpoint).to(device)
 
-# Set the module to eval mode
-module.eval()
-module.vocoder_module = UnivNet().to(device)
-module.vocoder_module.eval()
+module = DelightfulHiFi(
+    delightful_checkpoint_path=delightful_checkpoint_path,
+    hifi_checkpoint_path=hifi_checkpoint_path,
+).to(
+    device,
+)
 
 
 # Load the speaker information

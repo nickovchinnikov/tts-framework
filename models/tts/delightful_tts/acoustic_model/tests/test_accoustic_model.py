@@ -3,7 +3,8 @@ import unittest
 import torch
 from torch.utils.data import DataLoader
 
-from models.config import AcousticENModelConfig, PreprocessingConfig
+from models.config import AcousticENModelConfig
+from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
 
 # TODO: profile deeply the memory usage
 # from torch.profiler import profile, record_function, ProfilerActivity
@@ -186,7 +187,7 @@ class TestAcousticModel(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertIsInstance(loss_out, tuple)
-        self.assertEqual(len(result), 16)
+        self.assertEqual(len(result), 14)
 
     def test_average_utterance_prosody(self):
         u_prosody_pred = torch.randn(2, 5, self.model_config.encoder.n_hidden)

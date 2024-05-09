@@ -11,7 +11,9 @@ from torch.utils.data import DataLoader
 from models.config import (
     HifiGanConfig,
     HifiGanPretrainingConfig,
-    PreprocessingConfig,
+)
+from models.config import (
+    PreprocessingConfigHifiGAN as PreprocessingConfig,
 )
 from training.datasets.hifi_gan_dataset import train_dataloader
 from training.loss import (
@@ -43,8 +45,8 @@ class HifiGan(LightningModule):
         Args:
             fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
             lang (str): Language of the dataset.
-            batch_size (int): The batch size.
-            sampling_rate (int): The sampling rate of the audio.
+            batch_size (int): The batch size. Defaults to 16.
+            sampling_rate (int): The sampling rate of the audio. Defaults to 44100.
         """
         super().__init__()
 

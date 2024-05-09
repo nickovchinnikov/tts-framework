@@ -24,7 +24,8 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from voicefixer import VoiceFixer
 
-from models.config import PreprocessingConfig, get_lang_map, lang2id
+from models.config import PreprocessingConfigHifiGAN as PreprocessingConfig
+from models.config import get_lang_map, lang2id
 from training.preprocess import PreprocessLibriTTS
 from training.tools import pad_1D, pad_2D, pad_3D
 
@@ -201,8 +202,8 @@ class HifiLibriDataset(Dataset):
         )
 
         self.preprocess_libtts = PreprocessLibriTTS(
-            lang,
             self.preprocess_config,
+            lang,
         )
         self.root_dir = Path(root)
         self.voicefixer = VoiceFixer()

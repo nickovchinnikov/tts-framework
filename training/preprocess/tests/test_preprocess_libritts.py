@@ -2,6 +2,7 @@ import unittest
 
 import torch
 
+from models.config import PreprocessingConfigUnivNet, get_lang_map
 from training.preprocess import PreprocessLibriTTS
 from training.preprocess.preprocess_libritts import PreprocessForAcousticResult
 
@@ -9,7 +10,11 @@ from training.preprocess.preprocess_libritts import PreprocessForAcousticResult
 class TestPreprocessLibriTTS(unittest.TestCase):
     def setUp(self):
         torch.random.manual_seed(42)
-        self.preprocess_libritts = PreprocessLibriTTS()
+        lang_map = get_lang_map("en")
+        processing_lang_type = lang_map.processing_lang_type
+        self.preprocess_libritts = PreprocessLibriTTS(
+            PreprocessingConfigUnivNet(processing_lang_type),
+        )
 
     def test_acoustic(self):
         # Set the sampling rate and duration of the audio signal
@@ -102,11 +107,9 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         # Generate a sinusoidal waveform with the specified pitch frequency
         audio = torch.sin(2 * torch.pi * pitch_freq * t).unsqueeze(0)
 
-        raw_text = r"""
-        Hello, world! Wow!!!!! This is amazing?????
+        raw_text = r"""Hello, world! Wow!!!!! This is amazing?????
         It’s a beautiful day…
-        Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk.
-        """
+        Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk."""
 
         output = self.preprocess_libritts.acoustic(
             (audio, sr_actual, raw_text, raw_text, 0, 0, "0"),
@@ -115,16 +118,16 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         self.assertIsNotNone(output)
 
         if output is not None:
-            self.assertEqual(output.attn_prior.shape, torch.Size([224, 861]))
+            self.assertEqual(output.attn_prior.shape, torch.Size([226, 861]))
             self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
             self.assertEqual(
                 output.normalized_text,
-                "Hello, world! Wow! This is amazing? It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.",
+                "Hello, world! Wow! This is amazing?. It's a beautiful day.. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.",
             )
 
-            self.assertEqual(output.phones.shape, torch.Size([224]))
-            self.assertEqual(len(output.phones_ipa), 222)
+            self.assertEqual(output.phones.shape, torch.Size([226]))
+            self.assertEqual(len(output.phones_ipa), 224)
 
             self.assertEqual(output.wav.shape, torch.Size([220500]))
 

@@ -2,7 +2,8 @@ import unittest
 
 import torch
 
-from models.config import PreprocessingConfig, VocoderModelConfig
+from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
+from models.config import VocoderModelConfig
 from models.helpers.tools import get_mask_from_lengths
 from models.vocoder.univnet import Generator, TracedGenerator
 
@@ -26,7 +27,9 @@ class TestTracedUnivNet(unittest.TestCase):
             ),
         )
 
-        self.traced_generator = TracedGenerator(self.generator) # , self.example_inputs)
+        self.traced_generator = TracedGenerator(
+            self.generator
+        )  # , self.example_inputs)
 
         self.c = torch.randn(
             self.batch_size,

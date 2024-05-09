@@ -2,14 +2,11 @@ import unittest
 
 import torch
 
-from models.config import PreprocessingConfig
 from training.loss.fast_speech_2_loss_gen import FastSpeech2LossGen
 
 
 class TestFastSpeech2LossGen(unittest.TestCase):
     def setUp(self):
-        self.preprocessing_config = PreprocessingConfig("english_only")
-
         self.loss_gen = FastSpeech2LossGen()
 
     def test_forward(self):
@@ -107,7 +104,8 @@ class TestFastSpeech2LossGen(unittest.TestCase):
                         bin_loss,
                         energy_loss,
                     ],
-                ) >= 0,
+                )
+                >= 0,
             ),
         )
 

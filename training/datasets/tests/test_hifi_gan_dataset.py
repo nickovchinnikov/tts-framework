@@ -7,7 +7,8 @@ from training.datasets import HifiGanDataset
 
 class TestHifiGanDataset(unittest.TestCase):
     def setUp(self):
-        self.dataset = HifiGanDataset(cache_dir="datasets_cache", cache=True)
+        self.cache_dir = "datasets_cache"
+        self.dataset = HifiGanDataset(cache_dir=self.cache_dir, cache=True)
 
     def test_len(self):
         # Test that the length of the dataset is correct
@@ -15,13 +16,13 @@ class TestHifiGanDataset(unittest.TestCase):
 
     def test_get_cache_subdir_path(self):
         idx = 1234
-        expected_path = Path("datasets_cache") / "cache-hifigan-dataset" / "2000"
+        expected_path = Path(self.cache_dir) / "cache-hifigan-dataset" / "2000"
         self.assertEqual(self.dataset.get_cache_subdir_path(idx), expected_path)
 
     def test_get_cache_file_path(self):
         idx = 1234
         expected_path = (
-            Path("datasets_cache") / "cache-hifigan-dataset" / "2000" / f"{idx}.pt"
+            Path(self.cache_dir) / "cache-hifigan-dataset" / "2000" / f"{idx}.pt"
         )
         self.assertEqual(self.dataset.get_cache_file_path(idx), expected_path)
 
