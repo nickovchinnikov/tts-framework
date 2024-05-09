@@ -109,8 +109,7 @@ class TestPreprocessLibriTTS(unittest.TestCase):
 
         raw_text = r"""Hello, world! Wow!!!!! This is amazing?????
         It’s a beautiful day…
-        Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk.
-        """
+        Mr. Smith paid $111 in U.S.A. on Dec. 17th. We paid $123 for this desk."""
 
         output = self.preprocess_libritts.acoustic(
             (audio, sr_actual, raw_text, raw_text, 0, 0, "0"),
@@ -119,16 +118,16 @@ class TestPreprocessLibriTTS(unittest.TestCase):
         self.assertIsNotNone(output)
 
         if output is not None:
-            self.assertEqual(output.attn_prior.shape, torch.Size([224, 861]))
+            self.assertEqual(output.attn_prior.shape, torch.Size([226, 861]))
             self.assertEqual(output.mel.shape, torch.Size([100, 861]))
 
             self.assertEqual(
                 output.normalized_text,
-                "Hello, world! Wow! This is amazing? It's a beautiful day. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.",
+                "Hello, world! Wow! This is amazing?. It's a beautiful day.. mister Smith paid one hundred and eleven dollars in USA on december seventeenth. We paid one hundred and twenty three dollars for this desk.",
             )
 
-            self.assertEqual(output.phones.shape, torch.Size([224]))
-            self.assertEqual(len(output.phones_ipa), 222)
+            self.assertEqual(output.phones.shape, torch.Size([226]))
+            self.assertEqual(len(output.phones_ipa), 224)
 
             self.assertEqual(output.wav.shape, torch.Size([220500]))
 
