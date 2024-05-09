@@ -16,6 +16,8 @@ class DelightfulHiFi(LightningModule):
     ):
         super().__init__()
 
+        self.sampling_rate = sampling_rate
+
         self.preprocess_config = PreprocessingConfig(
             "multilingual",
             sampling_rate=sampling_rate,

@@ -189,3 +189,6 @@ notebooks/**/*.pth
 
 # Mock audio
 mocks/wav2vec_aligner/audio
+
+# Ignore flagged from gradio
+flagged
