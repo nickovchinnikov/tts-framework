@@ -12,23 +12,29 @@ hifi_checkpoint_path = (
 
 device = torch.device("cuda")
 
-module = DelightfulHiFi(
+delightfulhifi_44100 = DelightfulHiFi(
     delightful_checkpoint_path=delightful_checkpoint_path,
     hifi_checkpoint_path=hifi_checkpoint_path,
 ).to(device)
 
-speakers_hifi_speakers = {spk: idx for idx, spk in enumerate(speakers_hifi_ids)}
+speakers_delightfulhifi_44100_speakers = {
+    spk: idx for idx, spk in enumerate(speakers_hifi_ids)
+}
 
 
 def generate_audio(text: str, speaker_id: str):
-    speaker = torch.tensor([speakers_hifi_speakers[speaker_id]], device=device)
+    speaker = torch.tensor(
+        [speakers_delightfulhifi_44100_speakers[speaker_id]],
+        device=device,
+    )
     with torch.no_grad():
-        wav_vf = module.forward(text, speaker)
+        wav_vf = delightfulhifi_44100.forward(text, speaker)
         wav_vf = wav_vf.squeeze().detach().cpu().numpy()
-    return module.sampling_rate, wav_vf
+
+    return delightfulhifi_44100.sampling_rate, wav_vf
 
 
-demo = Interface(
+interfaceDelightfulHifi44100 = Interface(
     generate_audio,
     [
         Textbox(
@@ -37,10 +43,9 @@ demo = Interface(
         ),
         Dropdown(
             label="Speaker",
-            choices=list(speakers_hifi_speakers.keys()),
+            choices=list(speakers_delightfulhifi_44100_speakers.keys()),
             value=speakers_hifi_ids[0],
         ),
     ],
     outputs="audio",
 )
-demo.launch()
