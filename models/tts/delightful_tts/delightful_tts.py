@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 
 from models.config import (
     AcousticFinetuningConfig,
+    AcousticModelConfigType,
     AcousticMultilingualModelConfig,
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
@@ -39,7 +40,9 @@ class DelightfulTTS(LightningModule):
 
     Args:
         preprocess_config PreprocessingConfig: The preprocessing configuration.
+        model_config AcousticModelConfigType: The model configuration.
         fine_tuning (bool, optional): Whether to use fine-tuning mode or not. Defaults to False.
+        bin_warmup (bool, optional): Whether to use binarization warmup for the loss or not. Defaults to True.
         lang (str): Language of the dataset.
         n_speakers (int): Number of speakers in the dataset.generation during training.
         batch_size (int): The batch size.
@@ -48,6 +51,7 @@ class DelightfulTTS(LightningModule):
     def __init__(
         self,
         preprocess_config: PreprocessingConfig,
+        model_config: AcousticModelConfigType = AcousticMultilingualModelConfig(),
         fine_tuning: bool = False,
         bin_warmup: bool = True,
         lang: str = "en",
@@ -77,13 +81,10 @@ class DelightfulTTS(LightningModule):
 
         self.preprocess_config = preprocess_config
 
-        # NOTE: try Multilingual model config
-        self.model_config = AcousticMultilingualModelConfig()
-
         # TODO: fix the arguments!
         self.acoustic_model = AcousticModel(
             preprocess_config=self.preprocess_config,
-            model_config=self.model_config,
+            model_config=model_config,
             # NOTE: this parameter may be hyperparameter that you can define based on the demands
             n_speakers=n_speakers,
         )

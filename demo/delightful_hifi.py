@@ -48,4 +48,5 @@ interfaceDelightfulHifi44100 = Interface(
         ),
     ],
     outputs="audio",
+    title=f"Delightful Hifi-Gan, Sampling Rate: {delightfulhifi_44100.sampling_rate}",
 )

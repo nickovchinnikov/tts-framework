@@ -2,24 +2,15 @@ from gradio import Dropdown, Interface, Textbox
 from nemo.collections.tts.models.base import SpectrogramGenerator, Vocoder
 import torch
 
+from .config import speakers_hifi_tts as speakers
+
 # Download and load the pretrained tacotron2 model
 spec_generator = SpectrogramGenerator.from_pretrained("tts_en_fastpitch_multispeaker")
 
 # Download and load the pretrained hifi-gan model
 vocoder = Vocoder.from_pretrained("tts_en_hifitts_hifigan_ft_fastpitch")
 
-speakers = {
-    "Cori Samuel": 92,
-    "Phil Benson": 6097,
-    "John Van Stan": 9017,
-    "Mike Pelton": 6670,
-    "Tony Oliva": 6671,
-    "Maria Kasper": 8051,
-    "Helen Taylor": 9136,
-    "Sylviamb": 11614,
-    "Celine Major": 11697,
-    "LikeManyWaters": 12787,
-}
+sampling_rate = 44100
 
 speakers_names = list(speakers.keys())
 speakers_ids = list(speakers.values())
@@ -39,7 +30,7 @@ def generate_audio(text: str, speaker: str):
 
     audio = audio.squeeze().detach().cpu().numpy()
 
-    return 44100, audio
+    return sampling_rate, audio
 
 
 interfaceFastpichHifi = Interface(
@@ -56,4 +47,5 @@ interfaceFastpichHifi = Interface(
         ),
     ],
     outputs="audio",
+    title=f"Fastpitch Hifi, Sampling Rate: {sampling_rate}",
 )
