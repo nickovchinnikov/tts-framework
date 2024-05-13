@@ -1,0 +1,12 @@
+[Unit]
+Description=Demo_TTS
+
+[Service]
+Type=simple
+ExecStart=/home/you/anaconda3/envs/tts_framework/bin/python demo.py
+User=you
+WorkingDirectory=/home/you/tts-framework
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
