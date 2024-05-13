@@ -4,11 +4,9 @@ import torch
 from models.delightful_hifi import DelightfulHiFi
 from training.datasets.hifi_libri_dataset import speakers_hifi_ids
 
-# Load the pretrained weights from the checkpoint
-delightful_checkpoint_path = "checkpoints/logs_44100_tts_80_logs_new3_lightning_logs_version_7_checkpoints_epoch=2450-step=183470.ckpt"
-hifi_checkpoint_path = (
-    "checkpoints/logs_44100_vocoder_Mel44100_WAV44100_epoch=19-step=44480.ckpt"
-)
+# Load the pretrained weights from the checkpoints
+delightful_checkpoint_path = "checkpoints/epoch=2450-step=183470.ckpt"
+hifi_checkpoint_path = "checkpoints/epoch=19-step=44480.ckpt"
 
 device = torch.device("cuda")
 
