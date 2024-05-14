@@ -1,6 +1,7 @@
 from lightning.pytorch.core import LightningModule
 from torch import Tensor
 
+from models.config import AcousticENModelConfig
 from models.config import PreprocessingConfigUnivNet as PreprocessingConfig
 from models.tts.delightful_tts.delightful_tts import DelightfulTTS
 from models.vocoder.univnet import UnivNet
@@ -15,17 +16,21 @@ class DelightfulUnivnet(LightningModule):
     ):
         super().__init__()
 
+        self.sampling_rate = sampling_rate
+
         self.preprocess_config = PreprocessingConfig(
-            "multilingual",
+            "english_only",
             sampling_rate=sampling_rate,
         )
 
         self.delightful_tts = DelightfulTTS.load_from_checkpoint(
             delightful_checkpoint_path,
+            strict=False,
             # kwargs to be used in the model
+            preprocess_config=self.preprocess_config,
+            model_config=AcousticENModelConfig(),
             lang=lang,
             sampling_rate=sampling_rate,
-            preprocess_config=self.preprocess_config,
         )
         self.delightful_tts.freeze()
 

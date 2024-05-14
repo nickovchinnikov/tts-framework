@@ -11,13 +11,15 @@ from models.config import (
     AcousticFinetuningConfig,
     AcousticPretrainingConfig,
     AcousticTrainingConfig,
-    PreprocessingConfig,
     VocoderFinetuningConfig,
     VocoderModelConfig,
     VocoderPretrainingConfig,
     VoicoderTrainingConfig,
     get_lang_map,
     lang2id,
+)
+from models.config import (
+    PreprocessingConfigUnivNet as PreprocessingConfig,
 )
 from models.helpers.dataloaders import train_dataloader
 from models.helpers.tools import get_mask_from_lengths
@@ -48,14 +50,14 @@ class DelightfulUnivnet(LightningModule):
     """
 
     def __init__(
-            self,
-            fine_tuning: bool = True,
-            lang: str = "en",
-            n_speakers: int = 5392,
-            batch_size: int = 12,
-            acc_grad_steps: int = 5,
-            swa_steps: int = 1000,
-        ):
+        self,
+        fine_tuning: bool = True,
+        lang: str = "en",
+        n_speakers: int = 5392,
+        batch_size: int = 12,
+        acc_grad_steps: int = 5,
+        swa_steps: int = 1000,
+    ):
         super().__init__()
 
         # Switch to manual optimization
@@ -101,10 +103,9 @@ class DelightfulUnivnet(LightningModule):
         # Vocoder models
         self.model_config_vocoder = VocoderModelConfig()
 
-        self.train_config: VoicoderTrainingConfig = \
-        VocoderFinetuningConfig() \
-        if fine_tuning \
-        else VocoderPretrainingConfig()
+        self.train_config: VoicoderTrainingConfig = (
+            VocoderFinetuningConfig() if fine_tuning else VocoderPretrainingConfig()
+        )
 
         self.univnet = Generator(
             model_config=self.model_config_vocoder,
@@ -117,7 +118,9 @@ class DelightfulUnivnet(LightningModule):
 
         self.loss_univnet = UnivnetLoss()
 
-    def forward(self, text: str, speaker_idx: torch.Tensor, lang: str = "en") -> torch.Tensor:
+    def forward(
+        self, text: str, speaker_idx: torch.Tensor, lang: str = "en"
+    ) -> torch.Tensor:
         r"""Performs a forward pass through the AcousticModel.
         This code must be run only with the loaded weights from the checkpoint!
 
@@ -134,16 +137,22 @@ class DelightfulUnivnet(LightningModule):
 
         # Convert to tensor
         x = torch.tensor(
-            phones, dtype=torch.int, device=speaker_idx.device,
+            phones,
+            dtype=torch.int,
+            device=speaker_idx.device,
         ).unsqueeze(0)
 
         speakers = speaker_idx.repeat(x.shape[1]).unsqueeze(0)
 
-        langs = torch.tensor(
-            [lang2id[lang]],
-            dtype=torch.int,
-            device=speaker_idx.device,
-        ).repeat(x.shape[1]).unsqueeze(0)
+        langs = (
+            torch.tensor(
+                [lang2id[lang]],
+                dtype=torch.int,
+                device=speaker_idx.device,
+            )
+            .repeat(x.shape[1])
+            .unsqueeze(0)
+        )
 
         y_pred = self.acoustic_model.forward(
             x=x,
@@ -152,7 +161,9 @@ class DelightfulUnivnet(LightningModule):
         )
 
         mel_lens = torch.tensor(
-            [y_pred.shape[2]], dtype=torch.int32, device=y_pred.device,
+            [y_pred.shape[2]],
+            dtype=torch.int32,
+            device=y_pred.device,
         )
 
         wav = self.univnet.infer(y_pred, mel_lens)
@@ -264,16 +275,48 @@ class DelightfulUnivnet(LightningModule):
             step=self.trainer.global_step,
         )
 
-        self.log("acc_total_loss", acc_total_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_mel_loss", acc_mel_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_ssim_loss", acc_ssim_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_duration_loss", acc_duration_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_u_prosody_loss", acc_u_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_p_prosody_loss", acc_p_prosody_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_pitch_loss", acc_pitch_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_ctc_loss", acc_ctc_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_bin_loss", acc_bin_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("acc_energy_loss", acc_energy_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "acc_total_loss", acc_total_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "acc_mel_loss", acc_mel_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "acc_ssim_loss", acc_ssim_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "acc_duration_loss",
+            acc_duration_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "acc_u_prosody_loss",
+            acc_u_prosody_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "acc_p_prosody_loss",
+            acc_p_prosody_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "acc_pitch_loss", acc_pitch_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "acc_ctc_loss", acc_ctc_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "acc_bin_loss", acc_bin_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "acc_energy_loss",
+            acc_energy_loss,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
 
         #####################################
         ##    Univnet model train step     ##
@@ -299,12 +342,30 @@ class DelightfulUnivnet(LightningModule):
             period_real,
         )
 
-        self.log("voc_total_loss_gen", voc_total_loss_gen, sync_dist=True, batch_size=self.batch_size)
-        self.log("voc_total_loss_disc", voc_total_loss_disc, sync_dist=True, batch_size=self.batch_size)
-        self.log("voc_stft_loss", voc_stft_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("voc_score_loss", voc_score_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("voc_esr_loss", voc_esr_loss, sync_dist=True, batch_size=self.batch_size)
-        self.log("voc_snr_loss", voc_snr_loss, sync_dist=True, batch_size=self.batch_size)
+        self.log(
+            "voc_total_loss_gen",
+            voc_total_loss_gen,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "voc_total_loss_disc",
+            voc_total_loss_disc,
+            sync_dist=True,
+            batch_size=self.batch_size,
+        )
+        self.log(
+            "voc_stft_loss", voc_stft_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "voc_score_loss", voc_score_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "voc_esr_loss", voc_esr_loss, sync_dist=True, batch_size=self.batch_size
+        )
+        self.log(
+            "voc_snr_loss", voc_snr_loss, sync_dist=True, batch_size=self.batch_size
+        )
 
         # Manual optimizer
         # Access your optimizers
@@ -314,28 +375,34 @@ class DelightfulUnivnet(LightningModule):
         ####################################
         # Acoustic model manual optimizer ##
         ####################################
-        opt_acoustic: Optimizer = optimizers[0] # type: ignore
-        sch_acoustic: ExponentialLR = schedulers[0] # type: ignore
+        opt_acoustic: Optimizer = optimizers[0]  # type: ignore
+        sch_acoustic: ExponentialLR = schedulers[0]  # type: ignore
 
-        opt_univnet: Optimizer = optimizers[0] # type: ignore
-        sch_univnet: ExponentialLR = schedulers[0] # type: ignore
+        opt_univnet: Optimizer = optimizers[0]  # type: ignore
+        sch_univnet: ExponentialLR = schedulers[0]  # type: ignore
 
-        opt_discriminator: Optimizer = optimizers[1] # type: ignore
-        sch_discriminator: ExponentialLR = schedulers[1] # type: ignore
+        opt_discriminator: Optimizer = optimizers[1]  # type: ignore
+        sch_discriminator: ExponentialLR = schedulers[1]  # type: ignore
 
         # Backward pass for the acoustic model
         # NOTE: the loss is divided by the accumulated gradient steps
         self.manual_backward(acc_total_loss / self.acc_grad_steps, retain_graph=True)
 
         # Perform manual optimization univnet
-        self.manual_backward(voc_total_loss_gen / self.acc_grad_steps, retain_graph=True)
-        self.manual_backward(voc_total_loss_disc / self.acc_grad_steps, retain_graph=True)
+        self.manual_backward(
+            voc_total_loss_gen / self.acc_grad_steps, retain_graph=True
+        )
+        self.manual_backward(
+            voc_total_loss_disc / self.acc_grad_steps, retain_graph=True
+        )
 
         # accumulate gradients of N batches
         if (batch_idx + 1) % self.acc_grad_steps == 0:
             # Acoustic model optimizer step
             # clip gradients
-            self.clip_gradients(opt_acoustic, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+            self.clip_gradients(
+                opt_acoustic, gradient_clip_val=0.5, gradient_clip_algorithm="norm"
+            )
 
             # optimizer step
             opt_acoustic.step()
@@ -346,8 +413,12 @@ class DelightfulUnivnet(LightningModule):
 
             # Univnet model optimizer step
             # clip gradients
-            self.clip_gradients(opt_univnet, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
-            self.clip_gradients(opt_discriminator, gradient_clip_val=0.5, gradient_clip_algorithm="norm")
+            self.clip_gradients(
+                opt_univnet, gradient_clip_val=0.5, gradient_clip_algorithm="norm"
+            )
+            self.clip_gradients(
+                opt_discriminator, gradient_clip_val=0.5, gradient_clip_algorithm="norm"
+            )
 
             # optimizer step
             opt_univnet.step()
@@ -367,13 +438,11 @@ class DelightfulUnivnet(LightningModule):
             self.swa_averaged_univnet.update_parameters(self.univnet)
             self.swa_averaged_discriminator.update_parameters(self.discriminator)
 
-
     def on_train_epoch_end(self):
         r"""Updates the averaged model after each optimizer step with SWA."""
         self.swa_averaged_acoustic.update_parameters(self.acoustic_model)
         self.swa_averaged_univnet.update_parameters(self.univnet)
         self.swa_averaged_discriminator.update_parameters(self.discriminator)
-
 
     def configure_optimizers(self):
         r"""Configures the optimizer used for training.
@@ -388,8 +457,11 @@ class DelightfulUnivnet(LightningModule):
         lr_decay = self.train_config_acoustic.optimizer_config.lr_decay
         default_lr = self.train_config_acoustic.optimizer_config.learning_rate
 
-        init_lr = default_lr if self.trainer.global_step == 0 \
-        else default_lr * (lr_decay ** self.trainer.global_step)
+        init_lr = (
+            default_lr
+            if self.trainer.global_step == 0
+            else default_lr * (lr_decay**self.trainer.global_step)
+        )
 
         optimizer_acoustic = AdamW(
             self.acoustic_model.parameters(),
@@ -410,7 +482,9 @@ class DelightfulUnivnet(LightningModule):
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )
         scheduler_univnet = ExponentialLR(
-            optim_univnet, gamma=self.train_config.lr_decay, last_epoch=-1,
+            optim_univnet,
+            gamma=self.train_config.lr_decay,
+            last_epoch=-1,
         )
 
         ####################################
@@ -422,7 +496,9 @@ class DelightfulUnivnet(LightningModule):
             betas=(self.train_config.adam_b1, self.train_config.adam_b2),
         )
         scheduler_discriminator = ExponentialLR(
-            optim_discriminator, gamma=self.train_config.lr_decay, last_epoch=-1,
+            optim_discriminator,
+            gamma=self.train_config.lr_decay,
+            last_epoch=-1,
         )
 
         return (
@@ -431,13 +507,11 @@ class DelightfulUnivnet(LightningModule):
             {"optimizer": optim_discriminator, "lr_scheduler": scheduler_discriminator},
         )
 
-
     def on_train_end(self):
         # Update SWA models after training
         swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_acoustic)
         swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_univnet)
         swa_utils.update_bn(self.train_dataloader(), self.swa_averaged_discriminator)
-
 
     def train_dataloader(
         self,
