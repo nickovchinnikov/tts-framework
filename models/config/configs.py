@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Literal, Tuple, Union
 
-import torch
-
 PreprocessLangType = Literal["english_only", "multilingual"]
 
 
@@ -22,15 +20,10 @@ class PreprocessingConfig:
     language: PreprocessLangType
     stft: STFTConfig
     sampling_rate: int = 22050
-    val_size: float = 0.05
     min_seconds: float = 0.5
     max_seconds: float = 6.0
     use_audio_normalization: bool = True
     workers: int = 8
-    forced_alignment_batch_size: int = 200000
-    skip_on_error: bool = True
-    pitch_fmin: int = 1
-    pitch_fmax: int = 640
 
 
 @dataclass
@@ -61,10 +54,7 @@ class PreprocessingConfigHifiGAN(PreprocessingConfig):
     )
 
     def __post_init__(self):
-        r"""Post-initialization method for the `PreprocessingConfig` dataclass.
-
-        This method is automatically called after the instance is initialized.
-        It modifies the 'stft' attribute based on the 'sampling_rate' attribute.
+        r"""It modifies the 'stft' attribute based on the 'sampling_rate' attribute.
         If 'sampling_rate' is 44100, 'stft' is set with specific values for this rate.
         If 'sampling_rate' is not 22050 or 44100, a ValueError is raised.
 
@@ -82,21 +72,6 @@ class PreprocessingConfigHifiGAN(PreprocessingConfig):
             )
         if self.sampling_rate not in [22050, 44100]:
             raise ValueError("Sampling rate must be 22050 or 44100")
-
-
-@dataclass
-class SampleSplittingRunConfig:
-    workers: int
-    device: torch.device
-    skip_on_error: bool
-    forced_alignment_batch_size: int
-
-
-@dataclass
-class CleaningRunConfig:
-    workers: int
-    device: torch.device
-    skip_on_error: bool
 
 
 @dataclass

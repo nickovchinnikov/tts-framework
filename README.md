@@ -14,7 +14,6 @@ Export / import env
 
 ```
 conda env export > environment.yml
-
 ```
 
 By default, conda will export your environment with builds, but builds can be platform-specific.
