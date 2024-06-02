@@ -58,13 +58,13 @@ Autoregressive (AR) sequence generation involves generating a sequence one token
 The AR model's ability to capture sequential dependencies allows it to generate speech with natural-sounding variations, for example - making it expressive. This is because the model can learn to predict the next value in the sequence based on the context provided by the previous values.
 **Autoregressive model of order $n$, denoted as $\text{AR}(n)$**, can be defined as:
 
-$$x_t = b + φ_1x_{t-1} + φ_2x_{t-2} + \dots + φ_px_{t-n} + ε_t$$
+$$x_t = b + \varphi_1x_{t-1} + \varphi_2x_{t-2} + \dots + \varphi_px_{t-n} + \epsilon_t$$
 
 Using sum notation this can be written as:
 
 $$x_t = b + \sum_{i=1}^n \varphi_i x_{t-i} + \varepsilon_t$$
 
-where $b$ is the bias term, $x_t$ is the current value, $x_{t-1}, x_{t-2}, \ldots, x_{t-n}$ or $x_{t-i}$ are the $n$ previous values, $φ_1, φ_2, \dots , φ_n$ are the model parameters and $\varepsilon_t$ is the error term or the white noise.
+where $b$ is the bias term, $x_t$ is the current value, $x_{t-1}, x_{t-2}, \ldots, x_{t-n}$ or $x_{t-i}$ are the $n$ previous values, $\varphi_1, \varphi_2, \dots , \varphi_n$ are the model parameters and $\varepsilon_t$ is the error term or the white noise.
 
 During training, the model learns the optimal parameters $\varphi_1, \varphi_2, \ldots, \varphi_n$ by minimizing a loss function, such as the **Mean Squared Error (MSE)**:
 
@@ -156,21 +156,21 @@ $$\mathbf{\hat{x}_n} = (x̂_{t-1}, x̂_{t-2}, \dots, x̂_{t-n})$$
 
 Each predicted token $\hat{x}_t$ is computed based on the previous predicted tokens:
 
-$$\hat{x}_t = φ_1\hat{x}_{t-1} + φ_2\hat{x}_{t-2} + \dots + φ_p\hat{x}_{t-n} + b = \sum_{i=1}^n φ_i\hat{x}_{t-i} + b$$
+$$\hat{x}_t = \varphi_1\hat{x}_{t-1} + \varphi_2\hat{x}_{t-2} + \dots + \varphi_p\hat{x}_{t-n} + b = \sum_{i=1}^n \varphi_i\hat{x}_{t-i} + b$$
 
-Suppose the model predicts a token $\hat{x}_{t-i}$ with an error $ε_{t-i}$.  The next token will be predicted based on the erroneous token $\hat{x}_{t-i}$, leading to a new error. This process continues, and the errors accumulate, leading to a significant deviation from the true sequence.
+Suppose the model predicts a token $\hat{x}_{t-i}$ with an error $\epsilon_{t-i}$.  The next token will be predicted based on the erroneous token $\hat{x}_{t-i}$, leading to a new error. This process continues, and the errors accumulate, leading to a significant deviation from the true sequence.
 We can define this error propagation as:
 
-$$\hat{x}_t = (φ_1\hat{x}_{t-1} + ε_{t-1}) + (φ_2\hat{x}_{t-2} + ε_{t-2}) + \dots + (φ_p\hat{x}_{t-n} + ε_{t-n}) + b$$
+$$\hat{x}_t = (\varphi_1\hat{x}_{t-1} + \epsilon_{t-1}) + (\varphi_2\hat{x}_{t-2} + \epsilon_{t-2}) + \dots + (\varphi_p\hat{x}_{t-n} + \epsilon_{t-n}) + b$$
 
 Adding the growing error as a separated sum helps to visualize the harmful impact of the error propagation term:
 
-$$\hat{x}_t = \sum_{i=1}^n φ_i\hat{x}_{t-i} + \sum_{i=1}^n ε_{t-i} + b$$
+$$\hat{x}_t = \sum_{i=1}^n \varphi_i\hat{x}_{t-i} + \sum_{i=1}^n \epsilon_{t-i} + b$$
 
 The second term, $\sum_{i=1}^n \epsilon_{t-i}$, represents the accumulated error propagation term, which grows as the sequence length increases.
 **Error-propagation term:** 
 
-$$\text{err} = \sum_{i=1}^n ε_{t-i}$$ 
+$$\text{err} = \sum_{i=1}^n \epsilon_{t-i}$$ 
 
 **The worst-case scenario occurs when the error happens on the first token in the sequence, $\hat{x}_1$.** In this case, the error propagates and accumulates through the entire sequence, leading to the maximum deviation from the true sequence.
 
