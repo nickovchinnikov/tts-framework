@@ -9,7 +9,7 @@ from lightning.pytorch.strategies import DDPStrategy
 from lightning.pytorch.tuner.tuning import Tuner
 import torch
 
-from models.tts.delightful_tts.delightful_tts_refined import DelightfulTTS
+from models.tts.delightful_tts.delightful_tts import DelightfulTTS
 
 # Node runk in the cluster
 node_rank = 0
@@ -87,7 +87,6 @@ try:
         # NOTE: Preload the cached dataset into the RAM
         cache_dir="/dev/shm/",
         cache=True,
-        mem_cache=False,
     )
 
     trainer.fit(

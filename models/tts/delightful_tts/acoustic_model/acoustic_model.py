@@ -237,8 +237,6 @@ class AcousticModel(Module):
         for par in self.parameters():
             par.requires_grad = False
         self.speaker_embed.requires_grad = True
-        # NOTE: requires_grad prop
-        # self.pitch_adaptor.pitch_embedding.embeddings.requires_grad = True
 
     # NOTE: freeze/unfreeze params changed, because of the conflict with the lightning module
     def unfreeze_params(self, freeze_text_embed: bool, freeze_lang_embed: bool) -> None:

@@ -508,13 +508,15 @@ Here, $\text{Conv1D}$, $\text{DepthwiseConv1D}$, and $\text{MultiHeadAttention}$
 
 ### Variation Information Modeling
 Text-to-speech (TTS) is a typical one-to-many mapping problem where there could be multiple varying speech outputs (e.g., different pitch, duration, speaker, prosody, emotion, etc.) for a given text input. It is critical to model these variation information in speech to improve the expressiveness and fidelity of synthesized speech. While previous works have tried different methods to model the information, they focus on a specific aspect and cannot model in a comprehensive and systematic way. In this paper, considering that different variation information can be complementary to each other, the authors propose a unified way to model them in the proposed variance adaptor (as shown in Figure 1c).
+
 ### Categorization of Variation Information
 Observing that some variation information can be obtained implicitly (e.g., pitch can be extracted by some tools) or explicitly (e.g., utterance-level prosody can only be learned by the model), the authors categorize all the information they model as follows:
 1. **Explicit Modeling**: Language ID, Speaker ID, Pitch, Duration
 2. **Implicit Modeling**: Utterance-level prosody, Phoneme-level prosody
 For speaker and language ID, lookup embeddings are used in training and inference. For pitch and duration, the values are extracted from paired text-speech data in training, and two predictors are used to predict the values in inference.
-For utterance-level and phoneme-level prosody, two reference encoders are used to extract the values in training , and two separate predictors are used to predict the values in inference. The two reference encoders are both made up of convolution and RNN layers. Utterance-level prosody vector is obtained by the last RNN hidden and a style token layer. Phoneme-level prosody vectors are obtained by using the outputs of the phoneme encoder (phoneme-level) as a query to attend to the outputs of the mel-spectrogram reference encoder (frame-level). Different from , the authors do not use VAE but directly use the latent representation as the phoneme-level vector for training stability . The utterance-level prosody predictor contains a GRU layer followed by a bottleneck module to predict the prosody vector. The phoneme-level prosody predictor takes both the outputs of the text encoder and the utterance-level prosody vector as input. With the help of the utterance-level prosody vector, the authors do not need an autoregressive prosody predictor as in for faster inference.
+For utterance-level and phoneme-level prosody, two reference encoders are used to extract the values in training , and two separate predictors are used to predict the values in inference. The two reference encoders are both made up of convolution and RNN layers. Utterance-level prosody vector is obtained by the last RNN hidden and a style token layer. Phoneme-level prosody vectors are obtained by using the outputs of the phoneme encoder (phoneme-level) as a query to attend to the outputs of the mel-spectrogram reference encoder (frame-level). Different from, the authors do not use VAE but directly use the latent representation as the phoneme-level vector for training stability . The utterance-level prosody predictor contains a GRU layer followed by a bottleneck module to predict the prosody vector. The phoneme-level prosody predictor takes both the outputs of the text encoder and the utterance-level prosody vector as input. With the help of the utterance-level prosody vector, the authors do not need an autoregressive prosody predictor as in for faster inference.
 By unifying explicit and implicit information in different granularities (language-level, speaker-level, utterance-level, phoneme-level) in the variance adaptor, the authors aim to achieve better expressiveness in prosody and controllability in pitch and duration.
+
 ### Key Contributions
 - **Non-Autoregressive Architecture**: DelightfulTTS employs a non-autoregressive architecture, enabling faster inference compared to autoregressive models while maintaining high speech quality.
 - **Explicit Prosody Modeling**: The system explicitly models pitch and energy contours, in addition to duration, to capture the prosodic variations in speech, leading to more natural and expressive synthesized speech.
@@ -538,7 +540,7 @@ Based on my research, I haven't found a clear convergence between the areas of a
 After conducting research, I decided to implement the DelightfulTTS model. I didn't find many details in the paper about the implementation and hyperparameters, but I found the [Comprehensive-Transformer-TTS](https://github.com/keonlee9420/Comprehensive-Transformer-TTS) repository and was heavily influenced by this implementation. For example, you can check the Conformer implementation: [Comprehensive-Transformer-TTS/model/transformers/conformer.py](https://github.com/keonlee9420/Comprehensive-Transformer-TTS/blob/main/model/transformers/conformer.py)
 
 I also found another great implementation on GitHub: [dunky11/voicesmith](https://github.com/dunky11/voicesmith)
->VoiceSmith makes it possible to train and infer on both single and multispeaker models without any coding experience. It fine-tunes a pretty solid text to speech pipeline based on a modified version of [DelightfulTTS](https://arxiv.org/abs/2110.12612) and [UnivNet](https://arxiv.org/abs/2106.07889) on your dataset.
+> VoiceSmith makes it possible to train and infer on both single and multispeaker models without any coding experience. It fine-tunes a pretty solid text to speech pipeline based on a modified version of [DelightfulTTS](https://arxiv.org/abs/2110.12612) and [UnivNet](https://arxiv.org/abs/2106.07889) on your dataset.
 
 And there's also a coqui-ai [PR Add Delightful-TTS model](https://github.com/coqui-ai/TTS/pull/2095) implemetation.
 
@@ -648,82 +650,62 @@ trainer.fit(
 	model=model,
 	train_dataloaders=train_dataloader,
 	# Resume training states from the checkpoint file
-	# ckpt_path=ckpt_acoustic,
+	ckpt_path=ckpt_acoustic,
 )
 ```
 
 The entry point to the project is inside the train.py file, which serves as the foundation of the training process.
 
+### Inference code
+
+For inference, you can use the code examples from `demo/demo.py`. You have three possible options for combining the acoustic model and vocoder:
+
+* DelightfulTTS + UnivNet, with a sample rate of 22050 Hz
+* DelightfulTTS + HiFi-GAN, with a sample rate of 44100 Hz
+* FastPitch + HiFi-GAN, with a sample rate of 44100 Hz
+
+You can experiment with these TTS models and find the best fit for your use case.
+
 ### Docs
 
-You can find all the documentation inside the `docs` directory [docs link](./readme.md)
+I firmly believe that a good project starts with comprehensive documentation, and good code is built upon a solid foundation of test cases. With this in mind, I have made concerted efforts to maintain consistent documentation and ensure thorough test coverage for my code. The repository serves as a comprehensive resource where you can explore the implementation details, review the documentation, and examine the test cases that ensure the code's reliability and correctness.
+
+You can find all the documentation inside the `docs` directory, run the docs locally with `mkdocs serve`
+
+Also here you can the [docs online](https://storage.googleapis.com/tts-docs/index.html)
 
 ### Acoustic model
 
-### 
+The acoustic model is responsible for generating mel-spectrograms from input phoneme sequences, speaker identities, and language identities.
 
-My believe that the good project starts from the documentation and good code starts from the test cases. I tried to support the docs consistent and cover my code by the test cases.
-So, you can check the whole implementation on the repo. Here I 
+The core of your acoustic model is the AcousticModel class, which inherits from PyTorch's `nn.Module`. This class contains several sub-modules and components that work together to generate the mel-spectrogram output.
 
+1. Encoder: The encoder is a Conformer module that processes the input phoneme sequences. It takes the phoneme embeddings, speaker embeddings, language embeddings, and positional encodings as input and generates a hidden representation.
+2. Prosody Modeling:
+* Utterance-Level Prosody: The model includes an UtteranceLevelProsodyEncoder and a PhonemeProsodyPredictor (for utterance-level prosody) to capture and predict the prosodic features at the utterance level.
+* Phoneme-Level Prosody: Similarly, there is a PhonemeLevelProsodyEncoder and a PhonemeProsodyPredictor (for phoneme-level prosody) to model the prosodic features at the phoneme level.
+3. Variance Adaptor:
+* Pitch Adaptor: The PitchAdaptorConv module is responsible for adding pitch embeddings to the encoder output, based on the predicted or target pitch values.
+* Energy Adaptor: The EnergyAdaptor module adds energy embeddings to the encoder output, based on the predicted or target energy values.
+* Length Adaptor: The LengthAdaptor module upsamples the encoder output to match the length of the target mel-spectrogram, using the predicted or target duration values.
+4. Decoder: The decoder is another Conformer module that takes the output from the variance adaptor modules and generates the final mel-spectrogram prediction.
+5. Embeddings: The model includes learnable embeddings for phonemes, speakers, and languages, which are combined and used as input to the encoder.
+6. Aligner: The Aligner module is used during training to compute the attention logits and alignments between the encoder output and the target mel-spectrogram.
 
+The `forward_train` method defines the forward pass during training, where it takes the input phoneme sequences, speaker identities, language identities, mel-spectrograms, pitches, energies, and attention priors (if available). It computes the mel-spectrogram prediction, as well as the predicted pitch, energy, and duration values, which are used for computing the training loss. The forward method defines the forward pass during inference, where it takes the input phoneme sequences, speaker identities, language identities, and duration control value, and generates the mel-spectrogram prediction. Additionally, there are methods for freezing and unfreezing the model parameters, as well as preparing the model for export by removing unnecessary components (e.g., prosody encoders) that are not needed during inference. Implementation follows the DelightfulTTS architecture and incorporates various components for modeling prosody, pitch, energy, and duration, while leveraging the Conformer modules for the encoder and decoder.
 
+### Results
 
+#### `total_loss`
 
+![total_loss](./assets/total_loss.png)
 
+#### `mel_loss`
 
-[DelightfulTTS Github repo](https://github.com/nickovchinnikov/tts-framework) 
+![mel_loss](./assets/mel_loss.png)
 
-After my research I decided to implement DelightfulTTS model.
-I found not so many details in the paper about the implementation and hyperparams, but I found the [Comprehensive-Transformer-TTS](https://github.com/keonlee9420/Comprehensive-Transformer-TTS) and heavily influenced by this implementation.
+Check our [online demo](http://demo)
 
-For example you can check the conformer implementation: [conformer.py](https://github.com/keonlee9420/Comprehensive-Transformer-TTS/blob/main/model/transformers/conformer.py)
+## Future work
 
-I found one more great implementation on the github  [dunky11/voicesmith](https://github.com/dunky11/voicesmith)
-
-And coqui-ai [PR Add Delightful-TTS model](https://github.com/coqui-ai/TTS/pull/2095)
-
-
-I can look at the implementation, but I wanted to use my own training code, because the flexibility of the training process. Pytorch Lightining is a great training framework that can make training process on the multiple GPU very easy.
-
-
-
->VoiceSmith makes it possible to train and infer on both single and multispeaker models without any coding experience. It fine-tunes a pretty solid text to speech pipeline based on a modified version of [DelightfulTTS](https://arxiv.org/abs/2110.12612) and [UnivNet](https://arxiv.org/abs/2106.07889) on your dataset. Both models were pretrained on a proprietary 5000 speaker dataset. It also provides some tools for dataset preprocessing like automatic text normalization.
->If you want to play around with a model trained on a highly emotional emotional 60 speaker dataset using an earlier version of this software [click here](https://colab.research.google.com/drive/1zh6w_TpEAyr_UIojiLmt4ZdYLWeap9mn#scrollTo=vQCA50dao0Mt).
-
-Here is the description:
-
->Thanks for opening the issue! Pre-training the model will take me roughly one more week. Afterward, I will refactor the code, and get the project into a usable state, then I will implement this into coqui, so it will probably take me 6+ weeks. 
->Some info about the model: It's based upon DelightfulTTS with some modifications. Many components of the model weren't fully explained [in the paper](https://arxiv.org/abs/2110.12612). They especially didn't get into details about both the phoneme and utterance level prosody encoders as well as hyperparameters used, so their implementations were heavily influenced by [Comprehensive-Transformer-TTS](https://github.com/keonlee9420/Comprehensive-Transformer-TTS). The model also uses a different scheme to provide both language and speaker embeddings. The scheme of DelightfulTTS may have worked for the blizzard challenge but didn't work when using more speakers/languages.
->For the G2P model, I used [DeepPhonemizer](https://github.com/as-ideas/DeepPhonemizer), which implements [Transformer-based Grapheme-to-Phoneme Conversion](https://arxiv.org/abs/2004.06338), and increased the parameter count to ~23M. A single G2P model is trained on the global phone set of [Montreal Forced Aligner](https://montreal-forced-aligner.readthedocs.io/en/latest/) in the following languages:
-
-- English
-- German
-- French
-- Castilian Spanish
-- Russian
-- Polish
-- Bulgarian
-- Czech
-- Croatian
-- European Portuguese
-- Swedish
-- Thai
-- Turkish
-- Ukrainian
-
-Also, I increased the parameter count of DelightfulTTS to ~120M, otherwise, it would underfit the dataset. The dataset is ~20% stuff from public datasets like LibriTTS (100h and 360h split) and VCTK and ~80% stuff crawled by me. If you want to see some statistics about the dataset, you can [click here](https://montreal-forced-aligner.readthedocs.io/en/latest/).
-
-The purpose of the model is to be fine-tuned on smaller datasets. It should provide a way to create TTS models in languages with limited data. It can also be used to code-switch: Since the model was pre-trained in English, German, French, Spanish, Russian and Polish voices it can be used to fine-tune the model on an English voice and then make it speak the other languages.
-
-The parameter count may seem intimidating for a TTS model, but it can be fine-tuned without a problem on 6GB of VRAM using gradient accumulation. Also since the architecture is FastSpeech-based, and avoids autoregression, both training and inference are relatively quick and stable.
-
-UnivNet is used as vocoder, but any vocoder that shares its STFT configuration should do its job.
-
-In the future, I will further increase the size of the dataset, especially for the languages which contain no data yet. I also plan on further increasing the size of the model, since the current model still underfits the dataset. Then I will try to create a smaller model using knowledge distillation.
-
-I really hope the model turns out fine, I will probably fine-tune it tomorrow on an English single-speaker dataset to check how well it speaks in the other languages, even though it hasn't fully pre-trained, since I'm always impatient :)
-
-If you are interested in the progress, check out [VoiceSmith](https://github.com/dunky11/voicesmith) (still a WIP) which provides a GUI to fine-tune the multilingual model and preprocess multilingual TTS datasets.
-
-
-
+The combination of autoregressive (AR) and non-autoregressive (NAR) architectures is a promising direction in the text-to-speech (TTS) field. Diffusion models can introduce sufficient variation, and the approach taken by StyledTTS2 is particularly appealing. A potential avenue for future exploration could be to integrate the FastPitch model, known for its speed and stability, with the diffusion block from StyledTTS2. This hybrid approach could leverage the strengths of both models. The NAR nature of FastPitch would contribute to the overall speed and stability of the system, while the diffusion-based component from StyledTTS2 could introduce diversity and expressiveness to the generated speech. By combining the efficient and robust FastPitch model with the expressive capabilities of the diffusion-based variator from StyledTTS2, this hybrid architecture could potentially deliver diverse and natural-sounding speech while maintaining computational efficiency and stability. However, integrating these two distinct approaches into a unified model may pose challenges, and further research would be necessary to investigate the feasibility and effectiveness of such a hybrid solution.
