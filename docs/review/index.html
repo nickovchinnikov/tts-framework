@@ -1,0 +1,4983 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+    
+    
+      
+        <title>Training Text-to-Speech Models: A Journey from Zero to... - TTS-Framework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.35e1ed30.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#training-text-to-speech-models-a-journey-from-zero-to" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="TTS-Framework" class="md-header__button md-logo" aria-label="TTS-Framework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            TTS-Framework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Training Text-to-Speech Models: A Journey from Zero to...
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="TTS-Framework" class="md-nav__button md-logo" aria-label="TTS-Framework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    TTS-Framework
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Dev docs
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Dev docs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/change_log/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Change Log
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/problems_and_fixes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Problems and Fixes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/training/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lightning docs
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            Lightning docs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5_2" id="__nav_2_5_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Basic
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Basic
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/basic/argparse_and_cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Argparse and Hyperparams
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/basic/debug/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Debug
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/basic/early_stopping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Early Stopping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/basic/find_bottlenecks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Find Bottlenecks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/basic/saving_loading_checkpoints/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Saving Loading checkpoints
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/basic/visualize_experiments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Visualize Experiments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5_3" id="__nav_2_5_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Intermediate
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Intermediate
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/hardware_agnostic_training/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Hardware-Agnostic training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/gpu_training/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GPU training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/lightning_data_module/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Lightning Data Module
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/configure_hyperparameters_from_the_cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure hyperparameters from the CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/customize_checkpointing_behavior/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Customize checkpointing behavior
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/track_and_visualize_experiments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Track and Visualize Experiments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/sota_scaling_techniques/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SOTA scaling techniques (N-Bit Precision)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/effective_training_techniques/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Important! Effective Training Techniques (Acc grad,cliping)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/intermediate/deploy_models_into_production/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Deploy Models into Production
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5_4" id="__nav_2_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Advanced
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Advanced
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/advanced/hyperparameters_from_the_cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure hyperparameters from the CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/lightning/advanced/own_your_loop/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Customize training loop
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Models
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Config
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            Config
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/config/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/config/langs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Langs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Enhancer
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Enhancer
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2_1" id="__nav_3_2_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Gaussian Diffusion
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Gaussian Diffusion
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/enhancer/gaussian_diffusion/gaussian_diffusion/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Gaussian Diffusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/enhancer/gaussian_diffusion/denoiser/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Denoiser
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/enhancer/gaussian_diffusion/layers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Layers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/enhancer/gaussian_diffusion/utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utils
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    TTS
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            TTS
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1" id="__nav_3_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Delightful TTS
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            Delightful TTS
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/delightful_tts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DelightfulTTS
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1_3" id="__nav_3_3_1_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Convolution Blocks
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_3_1_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            Convolution Blocks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/activation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Activation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/conv1d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conv1d
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/bsconv/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BSConv
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/conv1d_glu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conv1dGLU
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/conv_transposed/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ConvTransposed
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/coord_conv1d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoordConv1d
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/conv_blocks/add_coords/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AddCoords
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1_4" id="__nav_3_3_1_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Attention
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_3_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            Attention
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/conformer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/feed_forward/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feed Forward
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/style_embed_attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Style Embed Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/multi_head_attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-Head Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/relative_multi_head_attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Relative Multi-Head Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/conformer_multi_headed_self_attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformer Multi-Headed Self Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/conformer_conv_module/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformer Convolution Module
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/attention/conformer_block/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conformer Block
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1_5" id="__nav_3_3_1_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Acoustic Model
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_3_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            Acoustic Model
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/aligner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Aligner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/acoustic_model/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Accoustic Model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/embedding/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Embedding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/helpers.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Helpers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/variance_predictor/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variance Predictor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/pitch_adaptor_conv/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pitch Adaptor Conv
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/energy_adaptor/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Energy Adaptor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/length_adaptor/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Length Adaptor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/phoneme_prosody_predictor/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoneme Prosody Predictor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1_5_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1_5_11" id="__nav_3_3_1_5_11_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Aligner
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="5" aria-labelledby="__nav_3_3_1_5_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1_5_11">
+            <span class="md-nav__icon md-icon"></span>
+            Aligner
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/acoustic_model/mas/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Monotonic Alignments Shrink
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_1_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_1_6" id="__nav_3_3_1_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference Encoder
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_3_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            Reference Encoder
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/reference_encoder/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/reference_encoder/STL/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Style Token Layer (STL)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/reference_encoder/reference_encoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Reference Encoder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/reference_encoder/utterance_level_prosody_encoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utterance Level Prosody Encoder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/delightful_tts/reference_encoder/phoneme_level_prosody_encoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoneme Level Prosody Encoder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_2" id="__nav_3_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    StyledTTS 2
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            StyledTTS 2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_2_2" id="__nav_3_3_2_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Diffusion
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_3_3_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            Diffusion
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/diffusion/diffusion/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Diffusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/diffusion/distributions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Distributions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/diffusion/embeddings/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Embeddings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/diffusion/attention/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Attention
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/diffusion/ada_layer_norm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AdaLayerNorm
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/tts/styledtts2/diffusion/utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Utils
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Vocoder
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            Vocoder
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4_1" id="__nav_3_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Univnet
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Univnet
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/univnet/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Univnet
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/generator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/traced_generator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Traced Generator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/kernel_predictor/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kernel Predictor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/lvc_block/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    LVC Block
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/discriminator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Discriminator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/discriminator_p/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DiscriminatorP
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/discriminator_r/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    DiscriminatorR
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/multi_period_discriminator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi Period Discriminator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/vocoder/univnet/multi_resolution_discriminator/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi Resolution Discriminator
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Helpers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            Helpers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/helpers/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/helpers/initializer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Initializer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/helpers/acoustic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Acoustic
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/helpers/tools/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Training
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Training
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Loss
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Loss
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2_2" id="__nav_4_2_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Acoustic Losses
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            Acoustic Losses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/bin_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Binary Cross Entropy Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/forward_sum_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Forward Sum Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/fast_speech_2_loss_gen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    FastSpeech 2 Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2_3" id="__nav_4_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Voicoder Losses
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Voicoder Losses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/stft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    STFT
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/stft_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    STFT Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/log_stft_magnitude_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Log STFT Magnitude Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/spectral_convergence_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Spectral Convergence Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/multi_resolution_stft_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi Resolution STFT Loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/loss/univnet_loss/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Univnet loss
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Datasets
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            Datasets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/dataset/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/dataset/libritts_dataset_acoustic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Libri TTS dataset acoustic
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/dataset/libritts_dataset_vocoder/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Libri TTS dataset vocoder
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Preprocess
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Preprocess
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Audio
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/audio_processor/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Audio Processor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/compute_yin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    compute_yin
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/normalize_text/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Normalize Text
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/preprocess_libritts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Preprocess LibriTTS
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/tacotron_stft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TacotronSTFT
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/preprocess/wav2vec_aligner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Wav2Vec Aligner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/tools/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Experiments
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Experiments
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/mas_torch/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MAS torch
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/conv_leaky_relu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Conv Leaky ReLU
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/tokenization/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tokenization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Optimizer
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            Optimizer
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/optimizer/readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    References
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/optimizer/scheduled_optim_pretraining/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduled Optim Pretraining
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiments/optimizer/scheduled_optim_finetuning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scheduled Optim Finetuning
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../readme/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    About mkdocs-material
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-all-started" class="md-nav__link">
+    How it all started?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-to-many-mapping-problem-in-tts" class="md-nav__link">
+    One-to-Many Mapping Problem in TTS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-sides-of-a-coin-ar-vs-nar" class="md-nav__link">
+    Two sides of a coin: AR vs NAR
+  </a>
+  
+    <nav class="md-nav" aria-label="Two sides of a coin: AR vs NAR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#autoregressive-models" class="md-nav__link">
+    Autoregressive models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#probabilistic-perspective" class="md-nav__link">
+    Probabilistic Perspective
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference" class="md-nav__link">
+    Inference
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ar-model-schema" class="md-nav__link">
+    AR model schema
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-best-example-of-the-ar-world-transformer-llm" class="md-nav__link">
+    The best example of the AR world: Transformer &amp; LLM
+  </a>
+  
+    <nav class="md-nav" aria-label="The best example of the AR world: Transformer & LLM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    Schema:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cons-of-autoregressive-ar-models" class="md-nav__link">
+    Cons of Autoregressive (AR) models
+  </a>
+  
+    <nav class="md-nav" aria-label="Cons of Autoregressive (AR) models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#time-complexity-analysis" class="md-nav__link">
+    Time Complexity Analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#harmful-biases-in-autoregressive-ar-generation" class="md-nav__link">
+    Harmful Biases in Autoregressive (AR) Generation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-propagation" class="md-nav__link">
+    Error Propagation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#label-bias" class="md-nav__link">
+    Label Bias
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#order-bias" class="md-nav__link">
+    Order Bias
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-autoregressive-models-nar" class="md-nav__link">
+    Non-autoregressive models (NAR)
+  </a>
+  
+    <nav class="md-nav" aria-label="Non-autoregressive models (NAR)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#time-complexity-analysis_1" class="md-nav__link">
+    Time Complexity Analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#definition" class="md-nav__link">
+    Definition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nar-model-schema" class="md-nav__link">
+    NAR model schema
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cons-of-nar-models" class="md-nav__link">
+    Cons of NAR models
+  </a>
+  
+    <nav class="md-nav" aria-label="Cons of NAR models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#text-to-speech-non-autoregressive-models" class="md-nav__link">
+    Text-to-Speech Non-Autoregressive models
+  </a>
+  
+    <nav class="md-nav" aria-label="Text-to-Speech Non-Autoregressive models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#side-by-side-ar-nar" class="md-nav__link">
+    Side-by-side AR / NAR
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-of-fastspeech" class="md-nav__link">
+    Schema of FastSpeech:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mostly-adequate-tts-models-review" class="md-nav__link">
+    Mostly adequate TTS models review
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ar-and-hybrid-models" class="md-nav__link">
+    AR and hybrid models
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sunoai-bark" class="md-nav__link">
+    SunoAI Bark
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note" class="md-nav__link">
+    📓 Note
+  </a>
+  
+    <nav class="md-nav" aria-label="📓 Note">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sunoai-summary" class="md-nav__link">
+    SunoAI summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vall-e-neural-codec-language-models-are-zero-shot-text-to-speech-synthesizers" class="md-nav__link">
+    VALL-E: Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers
+  </a>
+  
+    <nav class="md-nav" aria-label="VALL-E: Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-problem-formulation-is-valid-for-bark-as-well-except-dimensions" class="md-nav__link">
+    The Problem Formulation is valid for Bark as well (except dimensions):
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vall-e-implementations" class="md-nav__link">
+    VALL-E implementations
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vall-e-summary" class="md-nav__link">
+    VALL-E summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#styledtts-2-towards-human-level-text-to-speech-through-style-diffusion-and-adversarial-training-with-large-speech-language-models" class="md-nav__link">
+    StyledTTS 2: Towards Human-Level Text-to-Speech through Style Diffusion and Adversarial Training with Large Speech Language Models
+  </a>
+  
+    <nav class="md-nav" aria-label="StyledTTS 2: Towards Human-Level Text-to-Speech through Style Diffusion and Adversarial Training with Large Speech Language Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#style-diffusion" class="md-nav__link">
+    Style Diffusion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adversarial-training-with-large-slms" class="md-nav__link">
+    Adversarial Training with Large SLMs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-contributions" class="md-nav__link">
+    Key Contributions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    Known Issues
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hybrid-ar-nar-approach-perspective" class="md-nav__link">
+    Hybrid AR-NAR Approach perspective
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-ar-models" class="md-nav__link">
+    Non AR models
+  </a>
+  
+    <nav class="md-nav" aria-label="Non AR models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fastpitch-parallel-text-to-speech-with-pitch-prediction" class="md-nav__link">
+    FastPitch: Parallel Text-to-Speech with Pitch Prediction
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-contributions_1" class="md-nav__link">
+    Key Contributions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations-and-future-work" class="md-nav__link">
+    Limitations and Future Work
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delightfultts-the-microsoft-speech-synthesis-system-for-blizzard-challenge-2021" class="md-nav__link">
+    DelightfulTTS: The Microsoft Speech Synthesis System for Blizzard Challenge 2021
+  </a>
+  
+    <nav class="md-nav" aria-label="DelightfulTTS: The Microsoft Speech Synthesis System for Blizzard Challenge 2021">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    Architecture
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema_1" class="md-nav__link">
+    Schema:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conformer-architecture" class="md-nav__link">
+    Conformer Architecture
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variation-information-modeling" class="md-nav__link">
+    Variation Information Modeling
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#categorization-of-variation-information" class="md-nav__link">
+    Categorization of Variation Information
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-contributions_2" class="md-nav__link">
+    Key Contributions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations-and-future-work_1" class="md-nav__link">
+    Limitations and Future Work
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tts-review-summary" class="md-nav__link">
+    TTS Review summary
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delightfultts-implementation" class="md-nav__link">
+    DelightfulTTS implementation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pulp-friction" class="md-nav__link">
+    Pulp Friction
+  </a>
+  
+    <nav class="md-nav" aria-label="Pulp Friction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-train-our-model" class="md-nav__link">
+    How to Train Our Model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inference-code" class="md-nav__link">
+    Inference code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dataset-code" class="md-nav__link">
+    Dataset code
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    Docs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acoustic-model" class="md-nav__link">
+    Acoustic model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    Results
+  </a>
+  
+    <nav class="md-nav" aria-label="Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#total_loss" class="md-nav__link">
+    total_loss
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mel_loss" class="md-nav__link">
+    mel_loss
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-work" class="md-nav__link">
+    Future work
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="training-text-to-speech-models-a-journey-from-zero-to">Training Text-to-Speech Models: A Journey from Zero to...</h1>
+<p>Developing a high-quality text-to-speech (TTS) system is a complex task that requires extensive training of machine learning models. While successful TTS models can revolutionize how we interact with technology, enabling natural-sounding speech synthesis for various applications, the path to achieving such models is often paved with challenges and setbacks.
+Training a TTS model from scratch is a challenging process that involves numerous steps, from data preparation and preprocessing to model architecture selection, hyperparameter tuning, and iterative refinement. Even with state-of-the-art techniques and powerful computational resources, it's not uncommon for initial training attempts to fall short of expectations, yielding suboptimal results or encountering convergence issues.
+By carefully analyzing the shortcomings of unsuccessful models and identifying the root causes of their underperformance, researchers and practitioners can gain invaluable insights into the intricacies of TTS model training. These lessons can then inform and refine the training process, leading to more robust and high-performing models.
+In this article, we embark on a comprehensive journey, exploring the intricate world of TTS models.</p>
+<h2 id="how-it-all-started">How it all started?</h2>
+<p>At Peech, we're dedicated to making Text to Speech accessible to everyone - individuals and publishers alike. Our innovative technology converts web articles, e-books, and any written content into engaging audiobooks. This is especially beneficial for individuals with dyslexia, ADHD, or vision impairments, as well as anyone who prefers listening to reading.
+The heart of our app lies in its text-to-speech technology. I've recently joined the impressive speech team with the ambition of advancing our capabilities in AI and Machine Learning. To achieve this, we've embarked on a research journey focused on training models in this domain.
+I'm excited to share with you the results I've achieved in our research and model training. We have done a good job, and I'd like to present the accomplishments to you.</p>
+<p><strong>Audio is a very complicated data structure, just take a look for a 1 sec waveform...</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><img alt="audio-animation" src="../assets/audio-animation.gif" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><em>Audio exhibits patterns at multiple time scales. Source: <a href="https://deepmind.com/blog/wavenet-generative-model-raw-audio/">Google DeepMind</a>.</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="one-to-many-mapping-problem-in-tts">One-to-Many Mapping Problem in TTS</h2>
+<p>In TTS, the goal is to generate a speech waveform $y$ from a given input text $x$. This can be represented as a mapping function $f$ such that:</p>
+<p>$$y = f(x)$$</p>
+<p>However, the mapping from text to speech is not unique, as there can be multiple valid speech outputs $y$ for the same input text $x$. This is because speech is a complex signal that encodes various types of information beyond just the phonetic content, such as pitch, duration, speaker characteristics, prosody, emotion, and more.</p>
+<p>Let's denote these additional factors as a set of variation parameters $v$. Then, the mapping function $f$ can be rewritten as:</p>
+<p>$$y = f(x, v)$$</p>
+<p>This means that for a given input text $x$, the speech output $y$ can vary depending on the values of the variation parameters $v$.
+For example, consider the input text <code>x = "Hello, how are you?"</code>. Depending on the variation parameters $v$, we can have different speech outputs:
+- If $v$ represents pitch contour, we can have a speech output with a rising pitch at the end (questioning tone) or a falling pitch (statement tone).
+- If $v$ represents speaker identity, we can have speech outputs from different speakers, each with their unique voice characteristics.
+- If $v$ represents emotion, we can have speech outputs conveying different emotions, such as happiness, sadness, or anger.
+Mathematically, we can represent the variation parameters $v$ as a vector of different factors:</p>
+<p>$$v = [v_{\text{pitch}}, v_{\text{duration}}, v_{\text{speaker}}, v_{\text{prosody}}, v_{\text{emotion}}, \dots]$$</p>
+<p>The challenge in TTS is to model the mapping function $f$ in such a way that it can generate appropriate speech outputs $y$ for a given input text $x$ and variation parameters $v$. This is known as the one-to-many mapping problem, as there can be multiple valid speech outputs for the same input text, depending on the variation factors.
+There are two main approaches to modeling the specific aspects of the variation parameters $v$:
+1. <strong>Modeling Individual Factors</strong>: In this approach, each variation factor is modeled independently, without considering the interdependencies and interactions between different factors. For example, a model might focus solely on predicting pitch contours or duration values, treating them as separate components. While this approach can capture specific aspects of the variation parameters, it fails to model the variation information in a comprehensive and systematic way. The interdependencies between different factors, such as the relationship between pitch and prosody or the influence of speaker characteristics on duration, are not accounted for.
+2. <strong>Unified Frameworks for Modeling Multiple Factors</strong>: Recent research has proposed unified frameworks that aim to model multiple variation factors simultaneously, capturing their complementary nature and enabling more expressive and faithful speech synthesis. In this approach, the TTS model is designed to jointly model and generate multiple variation factors, considering their interdependencies and interactions. For instance, a unified framework might incorporate modules for predicting pitch, duration, and speaker characteristics simultaneously, while also accounting for their mutual influences. Mathematically, this can be represented as a mapping function $f$ that takes the input text $x$ and generates the speech output $y$ by considering the combined effect of multiple variation parameters $v$:</p>
+<p>$$y=f(x,v_{\text{pitch}},v_{\text{duration}},v_{\text{speaker}},v_{\text{prosody}},v_{\text{emotion}}, \dots)$$</p>
+<p>By modeling the variation parameters in a unified and comprehensive manner, these frameworks aim to capture the complex relationships between different factors, enabling more expressive and faithful speech synthesis that better reflects the nuances and variations present in natural speech.
+The unified approach to modeling variation parameters in TTS systems has gained traction in recent years, as it addresses the limitations of modeling individual factors independently and enables the generation of more natural and expressive speech outputs.</p>
+<h2 id="two-sides-of-a-coin-ar-vs-nar">Two sides of a coin: AR vs NAR</h2>
+<p>Any structured data can be transformed into a sequence. For instance, speech can be represented as a sequence of waveforms. Neural sequence generation methods can be used to generate such sequences, and there are two main categories of models for this purpose: autoregressive (AR) and non-autoregressive (non-AR) sequence generation methods.
+<em>I believe, that any sequence can be generated using neural sequence generation methods (but not sure).</em></p>
+<h3 id="autoregressive-models">Autoregressive models</h3>
+<p>Autoregressive (AR) sequence generation involves generating a sequence one token at a time in an autoregressive manner. In an AR model, the current value in the sequence is predicted based on the previous values and an error term (often referred to as <a href="https://en.wikipedia.org/wiki/White_noise">white noise</a>, which represents the unpredictable or random component).</p>
+<p><strong>The definition from wikipedia: <a href="https://en.wikipedia.org/wiki/Autoregressive_model">autoregressive model</a>:</strong></p>
+<blockquote>
+<p>In statistics, econometrics, and signal processing, an <strong>autoregressive</strong> (<strong>AR</strong>) <strong>model</strong> is a representation of a type of random process; as such, it is used to describe certain time-varying processes in nature, economics, behavior, etc. The autoregressive model specifies that the output variable depends linearly on its own previous values and on a <a href="https://en.wikipedia.org/wiki/Stochastic" title="Stochastic">stochastic</a> term (an imperfectly predictable term); thus the model is in the form of a stochastic difference equation (or recurrence relation) which should not be confused with a <a href="https://en.wikipedia.org/wiki/Differential_equation" title="Differential equation">differential equation</a>.</p>
+</blockquote>
+<p>The AR model's ability to capture sequential dependencies allows it to generate speech with natural-sounding variations, for example - making it expressive. This is because the model can learn to predict the next value in the sequence based on the context provided by the previous values.
+<strong>Autoregressive model of order $n$, denoted as $\text{AR}(n)$</strong>, can be defined as:</p>
+<p>$$x_t = b + \varphi_1x_{t-1} + \varphi_2x_{t-2} + \dots + \varphi_px_{t-n} + \epsilon_t$$</p>
+<p>Using sum notation this can be written as:</p>
+<p>$$x_t = b + \sum_{i=1}^n \varphi_i x_{t-i} + \varepsilon_t$$</p>
+<p>where $b$ is the bias term, $x_t$ is the current value, $x_{t-1}, x_{t-2}, \ldots, x_{t-n}$ or $x_{t-i}$ are the $n$ previous values, $\varphi_1, \varphi_2, \dots , \varphi_n$ are the model parameters and $\varepsilon_t$ is the error term or the white noise.</p>
+<p>During training, the model learns the optimal parameters $\varphi_1, \varphi_2, \ldots, \varphi_n$ by minimizing a loss function, such as the <strong>Mean Squared Error (MSE)</strong>:</p>
+<p>$$L(\varphi) = \frac{1}{n} \sum_{i=1}^n (x_i - \hat{x_i})^2$$</p>
+<p>where $x_i$ is the true value, $\hat{x_i}$ is the predicted value, and $n$ is the total number of time steps.</p>
+<h3 id="probabilistic-perspective">Probabilistic Perspective</h3>
+<p>To define AR Sequence Generation in a probabilistic manner, we can use the chain rule to decompose the joint probability of the sequence into a product of conditional probabilities. 
+AR sequence generation can be formulated using the chain rule of probability. Let $x = (x_1, x_2, \ldots, x_n)$ be the true sequence of length $n$.</p>
+<p>$$P(x) = P(x_1, x_2, ..., x_n)$$</p>
+<p>The joint probability of the sequence can be decomposed into a product of conditional probabilities:</p>
+<p>$$P(x) = P(x_1, x_2, ..., x_n) = P(x_1)P(x_2 | x_1)P(x_3 | x_1, x_2) \dots P(x_n | x_1, x_2 \dots, x_{n-1})$$</p>
+<p>Using prod notation this can be written as:</p>
+<p>$$P(x) = \prod_{i=1}^nP(x_i|x_1,x_2,\dots,x_{i-1})$$</p>
+<p>We can simplify the result to:</p>
+<p>$$P(x) = \prod_{i=1}^nP(x_i|\mathbf{x}_{&lt;i})$$</p>
+<h3 id="inference">Inference</h3>
+<p>During inference, the model generates the sequence one token at a time, using the previously predicted tokens as input:</p>
+<p>$$\hat{x}<em>t = f(\hat{x}</em>{t-1}, \dots, \hat{x}_{t-n})$$</p>
+<p>where $f$ is the AR model, and $\hat{x}<em>{t-1}, \hat{x}</em>{t-2}, \ldots, \hat{x}_{t-n}$ are the previously predicted tokens. </p>
+<p>Using sum notation and AR model definition this can be written as:</p>
+<p>$$\hat{x}<em>t = b + \sum</em>{i=1}^n \varphi_i \hat{x}_{t-i}$$</p>
+<h3 id="ar-model-schema">AR model schema</h3>
+<p>Note: oversimplified schema, shouldn't be considered seriously. SOS - start of the sequence, EOS - end of the sequence.</p>
+<p><img alt="AR Model" src="../assets/AR_Model.png" /></p>
+<h3 id="the-best-example-of-the-ar-world-transformer-llm">The best example of the AR world: Transformer &amp; LLM</h3>
+<p>Transformers, which are the backbone of many state-of-the-art natural language processing (NLP) and speech models, including Large Language Models (LLMs), use a mechanism called <strong>self-attention</strong> to model relationships between all pairs of tokens in a sequence. Self-attention allows the model to capture long-range dependencies and weigh the importance of each token relative to others, enabling it to focus on the most relevant tokens when generating the next token.
+The attention mechanism in Transformers can be thought of as a weighted sum of the input tokens, where the weights represent the importance or relevance of each token for the current prediction. This allows the model to selectively focus on the most relevant tokens when generating the output.</p>
+<p>Mathematically, the attention mechanism can be represented as $QKV$ <strong>attention</strong>:</p>
+<p>$$\text{Attention}(Q,K,V) = \text{softmax}(\frac{QK^T}{\sqrt{d_k}})V$$</p>
+<p>where:
+- $Q$ (Query) represents the current token or context for which we want to find relevant information.
+- $K$ (Key) and $V$ (Value) represent the input tokens and their corresponding values or representations.
+- $d_k$ is the dimensionality of the key vectors, and the scaling factor $\sqrt{d_k}$ is used for numerical stability.
+- The softmax function is applied to the scaled dot-product of the query and key vectors, resulting in a set of weights that sum to 1. These weights determine the relative importance of each input token for the current prediction.
+- The weighted sum of the value vectors, $V$, is then computed using the attention weights, producing the final output of the attention mechanism.</p>
+<h4 id="schema">Schema:</h4>
+<p><img alt="alt text" src="../assets/143lgCTyM5cTTABjC2VEHdA.webp" /></p>
+<p>The self-attention mechanism in Transformers allows the model to capture dependencies between tokens in a sequence, regardless of their position or distance. This has made Transformers highly effective for various natural language processing tasks, including language modeling, machine translation, and text generation.</p>
+<h2 id="cons-of-autoregressive-ar-models">Cons of Autoregressive (AR) models</h2>
+<p>While the autoregressive nature of AR models allows them to capture sequential dependencies and generate expressive sequences, it also introduces a significant drawback: slow inference time, especially for long sequences.</p>
+<h3 id="time-complexity-analysis">Time Complexity Analysis</h3>
+<p>The time complexity of an algorithm or model refers to how the computational time required for execution scales with the input size. In the case of AR models, the input size is the sequence length, denoted as $n$.
+During inference, AR models generate sequences one token at a time, using the previously generated tokens to predict the next token. This sequential generation process means that the model needs to process each token in the sequence, resulting in a time complexity of $O(n)$. In other words, the inference time grows linearly with the sequence length.
+This linear time complexity can become a significant bottleneck in real-time scenarios or when dealing with long sequences, such as generating long texts, speech utterances, or high-resolution images. Even with modern hardware and parallelization techniques, the sequential nature of AR models can make them computationally expensive and slow for certain applications.
+The slow inference time of AR models can be particularly problematic in the following scenarios:
+1. <strong>Real-time speech synthesis</strong>: In applications like virtual assistants or text-to-speech systems, the ability to generate speech in real-time is crucial for a seamless user experience. AR models may struggle to keep up with the required speed, leading to noticeable delays or latency.
+2. <strong>Long-form text generation</strong>: When generating long texts, such as articles, stories, or reports, the inference time of AR models can become prohibitively slow, making them impractical for certain use cases.
+While AR models excel at capturing sequential dependencies and generating expressive sequences, their slow inference time can be a significant limitation in certain applications, especially those requiring real-time or low-latency performance or involving long sequences.</p>
+<p>One of the inherent challenges in autoregressive (AR) models is the unavoidable loss of quality for longer sequences. This issue is visually represented in the following plot:</p>
+<p><img alt="ar plot" src="../assets/20240514174225.png" /></p>
+<p>As you can see, the dispersion or spread of the predicted values increases as the sequence length grows. This phenomenon occurs by design in AR models, and it's crucial to understand the underlying reasons behind it.</p>
+<h3 id="harmful-biases-in-autoregressive-ar-generation">Harmful Biases in Autoregressive (AR) Generation</h3>
+<p>Autoregressive (AR) models are prone to several harmful biases that can negatively impact their performance and the quality of the generated sequences. These biases can arise from various factors, including the training process, the model architecture, and the nature of the data itself. Let's explore the reasons behind these, why do we have such kind of troubles?</p>
+<h3 id="error-propagation">Error Propagation</h3>
+<p>Error propagation occurs when errors in the predicted tokens accumulate and affect the subsequent tokens, leading to a compounding effect, where the errors in the early tokens propagate to the later tokens. This can cause the generated sequence to deviate significantly from the true sequence, especially for longer sequences.</p>
+<p>For example, the model predicts a sequence of length $n$, denoted as</p>
+<p>$$\mathbf{\hat{x}<em>n} = (x̂</em>{t-1}, x̂<em>{t-2}, \dots, x̂</em>{t-n})$$</p>
+<p>Each predicted token $\hat{x}_t$ is computed based on the previous predicted tokens:</p>
+<p>$$\hat{x}<em>t = \varphi_1\hat{x}</em>{t-1} + \varphi_2\hat{x}<em>{t-2} + \dots + \varphi_p\hat{x}</em>{t-n} + b = \sum_{i=1}^n \varphi_i\hat{x}_{t-i} + b$$</p>
+<p>Suppose the model predicts a token $\hat{x}<em>{t-i}$ with an error $\epsilon</em>{t-i}$.  The next token will be predicted based on the erroneous token $\hat{x}_{t-i}$, leading to a new error. This process continues, and the errors accumulate, leading to a significant deviation from the true sequence.
+We can define this error propagation as:</p>
+<p>$$\hat{x}<em>t = (\varphi_1\hat{x}</em>{t-1} + \epsilon_{t-1}) + (\varphi_2\hat{x}<em>{t-2} + \epsilon</em>{t-2}) + \dots + (\varphi_p\hat{x}<em>{t-n} + \epsilon</em>{t-n}) + b$$</p>
+<p>Adding the growing error as a separated sum helps to visualize the harmful impact of the error propagation term:</p>
+<p>$$\hat{x}<em>t = \sum</em>{i=1}^n \varphi_i\hat{x}<em>{t-i} + \sum</em>{i=1}^n \epsilon_{t-i} + b$$</p>
+<p>The second term, $\sum_{i=1}^n \epsilon_{t-i}$, represents the accumulated error propagation term, which grows as the sequence length increases.
+<strong>Error-propagation term:</strong> </p>
+<p>$$\text{err} = \sum_{i=1}^n \epsilon_{t-i}$$ </p>
+<p><strong>The worst-case scenario occurs when the error happens on the first token in the sequence, $\hat{x}_1$.</strong> In this case, the error propagates and accumulates through the entire sequence, leading to the maximum deviation from the true sequence.</p>
+<p>In the context of text-to-speech synthesis, error propagation can lead to the generation of random noise or artifacts in the synthesized audio, making it difficult to avoid and potentially resulting in an unnatural or distorted output.</p>
+<h3 id="label-bias">Label Bias</h3>
+<p>Label bias occurs when the normalization constraint over the vocabulary items at each decoding step in AR models leads to learning miscalibrated distributions over tokens and sequences. This can happen because the model is forced to assign probabilities that sum to 1 over the entire vocabulary, even if some tokens or sequences are highly unlikely or impossible in the given context.</p>
+<p>Mathematically, the probability distribution over the vocabulary items at time step $t$ is typically computed using a softmax function:</p>
+<p>$$p(x_t | x_{t-1}, \dots, x_{t-n}) = \text{softmax}(W x_{t-1} + \dots + W x_{t-n} + b)$$</p>
+<p>where $p(x_t | x_{t-1}, ..., x_{t-n})$ is the probability distribution over the vocabulary items, $W$ is the weight matrix, and $b$ is the bias term.
+This normalization constraint can lead to a bias towards certain tokens or sequences, even if they are unlikely or irrelevant in the given context. For example, consider a language model trained on a corpus of news articles. If the model encounters a rare or unseen word during inference, it may still assign a non-zero probability to that word due to the normalization constraint, even though the word is highly unlikely in the context of news articles.</p>
+<p>The consequences of label bias can be significant, especially in cases where the data distribution is highly skewed or contains rare or unseen events. It can lead to the generation of nonsensical or irrelevant tokens, which can degrade the overall quality and coherence of the generated sequences. This bias can be particularly problematic in applications such as machine translation, text summarization, or dialogue systems, where accurate and context-appropriate generation is crucial.</p>
+<h3 id="order-bias">Order Bias</h3>
+<p>Order bias occurs when the left-to-right generation order imposed by AR models is not the most natural or optimal order for the given task or data. In some cases, the data may prefer a different generation order or require considering the entire context simultaneously, rather than generating tokens sequentially.</p>
+<p>For example, in text-to-speech synthesis, the natural flow of speech may not follow a strict left-to-right order. The pitch, intonation, or emphasis of a sentence can be determined by the context of the entire sentence, rather than the individual words. If the model is trained to generate the audio sequence in a left-to-right order, it may fail to capture these nuances, leading to an unnatural or strange-sounding output.</p>
+<h2 id="non-autoregressive-models-nar">Non-autoregressive models (NAR)</h2>
+<p>Non-autoregressive (NAR) sequence generation is an alternative approach to autoregressive (AR) models, where the entire output sequence is generated in parallel, without relying on previously generated tokens. Unlike AR models, which generate the sequence one token at a time in an autoregressive manner, NAR models do not have any sequential dependencies during the generation process. The key advantage of NAR models is their computational efficiency and speed. By generating the entire sequence in a single pass, NAR models can significantly reduce the inference time compared to AR models, which can be particularly beneficial for applications that require real-time or low-latency performance.</p>
+<h3 id="time-complexity-analysis_1">Time Complexity Analysis</h3>
+<p>The time complexity of NAR models is constant, denoted as $O(1)$, as the generation of the entire sequence is performed in a single pass, regardless of the sequence length. This is in contrast to AR models, which have a linear time complexity or $O(n)$.</p>
+<h3 id="definition">Definition</h3>
+<p>Here is how we can define the non-autoregressive model:</p>
+<p>$$x_t = f(x, t)$$</p>
+<p>where $f$ is the NAR model, $x$ is the input sequence, and $t$ is the time step.</p>
+<p>In a non-autoregressive model, the output sequence is generated in a single pass, without any sequential dependencies. This can be represented mathematically as:</p>
+<p>$$\hat{x} = f(x)$$</p>
+<p>where $x$ is the input sequence, $f$ is the NAR model and $\hat{x}$ is the output sequence.</p>
+<p>To define NAR Sequence Generation in a probabilistic manner, we can use the product rule to decompose the joint probability of the sequence into a product of independent probabilities.</p>
+<p><strong>NAR Sequence Generation as a Probabilistic Model:</strong> Let's denote the sequence of tokens as $x = (x_1, x_2, \dots, x_n)$, where $n$ is the sequence length. We can model the joint probability of the sequence using the product rule:</p>
+<p>$P(x) = P(x_1)P(x_2) \dots P(x_n) = \prod_{i=1}^nP(x_i)$</p>
+<p>Note that in a non-autoregressive model, the probability of each token is independent of the previous tokens, in contrast to AR models, which model the conditional probabilities using the chain rule.</p>
+<h3 id="nar-model-schema">NAR model schema</h3>
+<p>Note: over-oversimplified schema, shouldn't be considered seriously at all. Shows that every token is independent.</p>
+<p><img alt="NAR schema" src="../assets/NAR_schema.png" /></p>
+<h2 id="cons-of-nar-models">Cons of NAR models</h2>
+<p>NAR models generate each token independently, without considering the context of the previous tokens, models do not capture sequential dependencies between tokens, which can result in generated sequences that do not follow the natural flow of language. <strong>The independence assumption in the output space ignores the real dependency between target tokens</strong>. NAR models are not well-suited to capture hierarchical structures in language, such as syntax and semantics. 
+Based on the nature NAR models may generate repetitive phonemes or sounds, leading to a lack of naturalness and coherence in the synthesized speech, models may generate shorter or broken utterances, failing to capture the full meaning or context of the input text. NAR models may generate speech that sounds unnatural or robotic, indicating a lack of understanding of the acoustic properties of speech, and also may struggle to capture long-range dependencies between tokens, leading to a lack of coherence and fluency in the generated sequence.</p>
+<h3 id="text-to-speech-non-autoregressive-models">Text-to-Speech Non-Autoregressive models</h3>
+<p>Despite their limitations, Non-Autoregressive (NAR) models are still widely used in Text-to-Speech (TTS) systems. One of the main advantages of NAR models is their ability to generate speech much faster than Autoregressive (AR) models, thanks to their reduced computational requirements. This makes them well-suited for real-time TTS applications where speed is crucial. While NAR models may not produce speech that is as natural-sounding as AR models, they can still generate high-quality speech that is sufficient for many use cases.</p>
+<h4 id="side-by-side-ar-nar">Side-by-side AR / NAR</h4>
+<p><img alt="Side-by-side AR / NAR" src="../assets/1-Figure1-1.png" /></p>
+<p>To enhance the quality of the synthesized audio in non-autoregressive (NAR) text-to-speech models, researchers have explored the idea of incorporating additional modules or blocks to predict various speech parameters. By explicitly modeling speech parameters, such as pitch, energy, and other prosodic features, the models can generate more expressive and natural-sounding speech.</p>
+<p>For instance, in the FastPitch model, a dedicated pitch predictor module is introduced to generate pitch contours in parallel, which are then used to condition the mel-spectrogram generation.</p>
+<h4 id="schema-of-fastspeech">Schema of FastSpeech:</h4>
+<p><img alt="FastSpeech" src="../assets/20240527121619.png" /></p>
+<p>While introducing additional modules and conditioning the generation process on various speech parameters can improve the quality of the synthesized audio, it is important to strike a balance between model complexity and computational efficiency. The non-autoregressive nature of these models is designed to achieve faster inference speeds compared to autoregressive models, and adding too many complex modules or dependencies could potentially negate this advantage.</p>
+<h2 id="mostly-adequate-tts-models-review">Mostly adequate TTS models review</h2>
+<p>In the following sections, I will review the most interesting implementations and key ideas in the field of non-autoregressive (NAR) text-to-speech models. It's important to note that not all models have published research papers or open-source code available. However, I will endeavor to uncover and present the relevant information and insights from the available sources.</p>
+<h2 id="ar-and-hybrid-models">AR and hybrid models</h2>
+<h2 id="sunoai-bark">SunoAI Bark</h2>
+<p>My research has begun with the discovery of an incredible open-source solution that can produce incredible results: <a href="https://github.com/suno-ai/bark">SunoAI Bark</a></p>
+<p>Bark is obviously AR model, but how it works? I found this great repo: <a href="https://github.com/gitmylo/audio-webui">audio-webui</a> and author tried to found out <a href="https://github.com/gitmylo/audio-webui/wiki/how-bark-works#implementations--in-chronological-order-">how bark works</a>, but:</p>
+<blockquote>
+<h2 id="note">📓 Note</h2>
+<p>I'm still unsure how bark works. I am trying to figure out how it works though. My current knowledge goes here.</p>
+</blockquote>
+<p>The author is researching voice cloning using the SunoAI Bark model and identified three different models used in the generation process: Semantics, Coarse, and Fine. The author notes that the current method of generating semantic tokens is problematic, as it generates tokens based on the input text rather than the actual audio.</p>
+<p>The author proposes three potential way for creation of speaker files for voice cloning:
+1. Find out how Bark generates semantic tokens (may not be publicly available).
+2. Train a neural network to convert audio files to semantic tokens (time-consuming, but effective).
+3. Use a speech converter to change the input audio without editing semantics (not perfect, but better than current methods).</p>
+<p>The author has implemented Method 3 using coqui-ai/TTS and achieved decent voice cloning results, but with limitations. </p>
+<blockquote>
+<p><strong>Results</strong>: Decent voice cloning, not near perfect though. Better than previous methods, but struggles with some voices and accents. These issues lie in the transfer step.</p>
+</blockquote>
+<p>They also explored Method 1, but were unable to find a suitable model. </p>
+<blockquote>
+<p><strong>Pre</strong>: It looks like bark uses <a href="https://github.com/lucidrains/audiolm-pytorch">AudioLM</a> for the semantic tokens! I'm not sure if they use a different model though. I'll have to test that. But if they don't use a pre-trained model. I can do step 2.
+<strong>Results</strong>: No, it doesn't look like i can find a model, i did succeed in creating same-size vector embeddings, but the vectors use the wrong tokens.</p>
+</blockquote>
+<p>Method 2, which involves creating a quantizer based on data, has shown promising results, achieving convincing voice cloning with some limitations.</p>
+<blockquote>
+<p><strong>Pre</strong>: What if instead of training a whole model, i only create a quantizer based on a bunch of data?
+<strong>Results</strong>: Successful voice cloning, can be very convincing. Still some limitations. But better than anything I've seen done with bark before.</p>
+</blockquote>
+<p>I can't tell you more, please, share any details if you find better explanations of the Bark. AR nature of the model is obvious, that's for sure. I faced with the limitations from the first touch - model can't generate audio more than 13-14 sec length.
+Several issues about this problem are here:
+* <a href="https://github.com/suno-ai/bark/issues/79">Limited to 13 seconds?</a>
+* <a href="https://github.com/suno-ai/bark/issues/21">Arbitrarily long text</a></p>
+<p>Comment about it from issue <a href="https://github.com/suno-ai/bark/issues/36">#36 Inquiry on Maximum input character text prompt Length</a>:</p>
+<blockquote>
+<p>right now the output is limited by the context window of the model (1024) which equates to about 14s. So text should be around that duration (meaning ~2-3 sentences). For longer texts you can either do them one at a time (and use the same history prompt to continue the same voice) or feed the first generation as the history for the second. i know that that's still a bit inconvenient. will try to add better support for that in the next couple of days</p>
+</blockquote>
+<p>You can implement the following <a href="https://github.com/suno-ai/bark/pull/84#issuecomment-1523433448">approach</a>, split sentences and synthesize the audio chunks:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">bark</span> <span class="kn">import</span> <span class="n">generate_audio</span><span class="p">,</span><span class="n">preload_models</span>
+<span class="kn">from</span> <span class="nn">scipy.io.wavfile</span> <span class="kn">import</span> <span class="n">write</span> <span class="k">as</span> <span class="n">write_wav</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nltk</span>
+
+<span class="n">nltk</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="s1">&#39;punkt&#39;</span><span class="p">)</span>
+<span class="n">preload_models</span><span class="p">()</span>
+
+<span class="n">long_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Bark is a transformer-based text-to-audio model created by [Suno](https://suno.ai/). Bark can generate highly realistic, multilingual speech as well as other audio - including music, background noise and simple sound effects. The model can also produce nonverbal communications like laughing, sighing and crying. To support the research community, we are providing access to pretrained model checkpoints ready for inference.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">sentences</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">sent_tokenize</span><span class="p">(</span><span class="n">long_string</span><span class="p">)</span>
+
+<span class="c1"># Set up sample rate</span>
+<span class="n">SAMPLE_RATE</span> <span class="o">=</span> <span class="mi">22050</span>
+<span class="n">HISTORY_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;en_speaker_6&quot;</span>
+
+<span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+<span class="n">token_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">sentences</span><span class="p">:</span>
+    <span class="n">current_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nltk</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="n">sentence</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">token_counter</span> <span class="o">+</span> <span class="n">current_tokens</span> <span class="o">&lt;=</span> <span class="mi">250</span><span class="p">:</span>
+        <span class="n">token_counter</span> <span class="o">=</span> <span class="n">token_counter</span> <span class="o">+</span> <span class="n">current_tokens</span>
+        <span class="n">chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">sentence</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+        <span class="n">token_counter</span> <span class="o">=</span> <span class="n">current_tokens</span>
+
+<span class="c1"># Generate audio for each prompt</span>
+<span class="n">audio_arrays</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+    <span class="n">audio_array</span> <span class="o">=</span> <span class="n">generate_audio</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span><span class="n">history_prompt</span><span class="o">=</span><span class="n">HISTORY_PROMPT</span><span class="p">)</span>
+    <span class="n">audio_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">audio_array</span><span class="p">)</span>
+
+<span class="c1"># Combine the audio files</span>
+<span class="n">combined_audio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">audio_arrays</span><span class="p">)</span>
+
+<span class="c1"># Write the combined audio to a file</span>
+<span class="n">write_wav</span><span class="p">(</span><span class="s2">&quot;combined_audio.wav&quot;</span><span class="p">,</span> <span class="n">SAMPLE_RATE</span><span class="p">,</span> <span class="n">combined_audio</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Also you can use batching:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Audio</span>
+
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoProcessor</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">BarkModel</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">BarkModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;suno/bark-small&quot;</span><span class="p">)</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">AutoProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;suno/bark-small&quot;</span><span class="p">)</span>
+
+<span class="n">text_prompt</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Let&#39;s try generating speech, with Bark, a text-to-speech model&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Wow, batching is so great!&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;I love Hugging Face, it&#39;s so cool.&quot;</span>
+<span class="p">]</span>
+
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">processor</span><span class="p">(</span><span class="n">text_prompt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+  <span class="c1"># samples are generated all at once</span>
+  <span class="n">speech_output</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">do_sample</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fine_temperature</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">coarse_temperature</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">)</span>
+
+<span class="c1"># let&#39;s listen to the output samples!</span>
+
+<span class="n">Audio</span><span class="p">(</span><span class="n">speech_output</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">)</span>
+</code></pre></div></p>
+<p>But the butch generation creates a new problem. The quality of the audio is dramatically reduced, and it generates strange noises, much more often than in the case of generation in order. I found a great description in the comment: <a href="https://github.com/suno-ai/bark/issues/21#issuecomment-1516990620">output quality seems worse if you pack it like that</a>
+One more problem that I found is empty sounds if your text chunks are different sizes. Sometimes it's a random noise like background voices etc. So, you need to split the text carefully, it's very important.
+Bark occasionally hallucinates, which can lead to unexpected and inaccurate results. Unfortunately, it is impossible to detect this issue during the generation process, making it challenging to identify and correct. Furthermore, even during the review process, hallucinations can be difficult to spot, as they may be subtle or blend in with the rest of the generated content. This can result in incorrect or misleading information being presented as factual, which can have serious consequences in certain applications.</p>
+<h3 id="sunoai-summary">SunoAI summary</h3>
+<p>From what I understand, the issue of long context is not a priority for the Bark team and is largely being overlooked in the issues discussion. The only solution they've proposed is to use batches, but this approach has its limitations and doesn't work well. Moreover, due to the text context, it can't be processed accurately. Specifically, a small context of 2-3 sentences tends to disregard what happened in the previous passage, which can significantly impact the intonation and tempo of a speaker. Bark occasionally hallucinates, which can lead to unexpected and inaccurate results.</p>
+<h2 id="vall-e-neural-codec-language-models-are-zero-shot-text-to-speech-synthesizers">VALL-E: Neural Codec Language Models are Zero-Shot Text to Speech Synthesizers</h2>
+<p>Samples on the <a href="https://www.microsoft.com/en-us/research/project/vall-e-x/">demo page</a>.</p>
+<p>VALL-E is a novel language model approach for text-to-speech (TTS) synthesis that leverages large-scale, diverse, and multi-speaker speech data. Unlike traditional cascaded TTS systems, VALL-E treats TTS as a conditional language modeling task, using discrete audio codec codes as intermediate representations. This approach enables VALL-E to synthesize high-quality, personalized speech with only a 3-second enrolled recording of an unseen speaker as an acoustic prompt.</p>
+<p><strong>Key Components:</strong>
+1. <strong>Neural Codec Model</strong>: VALL-E uses a pre-trained neural audio codec model, <a href="https://github.com/facebookresearch/encodec">EnCodec</a>, to convert audio waveforms into discrete acoustic codes. This model is trained on a large dataset of speech and can reconstruct high-quality waveforms even for unseen speakers.
+2. <strong>Language Model</strong>: VALL-E is trained as a language model, using the discrete acoustic codes as input and output. This allows the model to learn the patterns and structures of speech, enabling it to generate coherent and natural-sounding speech.
+3. <strong>In-Context Learning</strong>: VALL-E has strong in-context learning capabilities, similar to GPT-3, which enables it to adapt to new speakers and acoustic environments with minimal additional training data.</p>
+<h3 id="the-problem-formulation-is-valid-for-bark-as-well-except-dimensions">The Problem Formulation is valid for Bark as well (except dimensions):</h3>
+<p><strong>Problem Formulation: Regarding TTS as Conditional Codec Language Modeling</strong>
+Given a dataset $D = {x_i, y_i}$, where $y$ is an audio sample and $x = {x_0, x_1, \dots, x_L}$ is its corresponding phoneme transcription, we use a pre-trained neural codec model to encode each audio sample into discrete acoustic codes, denoted as $\text{Encodec}(y) = C^{T ×8}$, where $C$ represents the two-dimensional acoustic code matrix, and $T$ is the downsampled utterance length. The row vector of each acoustic code matrix $c_{t,:}$ represents the eight codes for frame $t$ and the column vector of each acoustic code matrix $c_{:,j}$ represents the code sequence from the $j$-th codebook, where $j \in {1, \dots, 8}$. After quantization, the neural codec decoder is able to reconstruct the waveform, denoted as $\text{Decodec}(C) ≈ \hat{y}$.</p>
+<p><img alt="vall-e schema" src="../assets/20240517155909.png" /></p>
+<p><strong>Based on the paper, it appears that the proposed model combines the principles of Autoregressive (AR) and Non-Linear Autoregressive (NAR) models:</strong></p>
+<blockquote>
+<p>The combination of the AR model and the NAR model provides a good trade-off between speech quality and inference speed. On the one hand, the rate of the generated speech should be consistent with the enrolled recording, and it is hard to train a length predictor for different speakers since their speaking speed may be very diverse. In this case, the AR model is a more natural choice with its flexibility for acoustic sequence length prediction. On the other hand, for the consecutive stages, as the number of output slots follows the sequence length of the first stage, NAR can reduce the time complexity from $O(T)$ to $O(1)$. Overall, the prediction of $C$ can be modeled as:
+$p(C|x, \tilde{C}; \theta) = p(c_{:,1}| \tilde{C}<em>{:,1}, X; \theta</em>{\text{AR}}) \prod_{x=2}^8 p(c_{:,j}|c_{:,&lt;j}, x, \tilde{C}; \theta_{\text{NAR}})$</p>
+</blockquote>
+<h3 id="vall-e-implementations">VALL-E implementations</h3>
+<p>Note that there is currently no official implementation of VALL-E available. Even ETA for the official release is unknown <a href="https://github.com/microsoft/unilm/issues/977">VALL-E ETA?</a>. The <a href="https://github.com/microsoft/unilm/tree/master/valle">official repository</a> currently contains an empty space, awaiting further updates. However, for those interested in experimenting with VALL-E, an unofficial PyTorch implementation is available at <a href="https://github.com/lifeiteng/vall-e">unofficial PyTorch implementation of VALL-E</a>. This implementation can be trained on a single GPU and is widely used in the community.</p>
+<p><a href="https://github.com/lifeiteng/vall-e/issues/53">After eight hours of training, the model can synthesize natural speech!</a></p>
+<blockquote>
+<p>code branch <code>position</code> PR <a href="https://github.com/lifeiteng/vall-e/pull/46">#46</a><br />
+egs <code>https://github.com/lifeiteng/vall-e/tree/position/egs/ljspeech</code>
+synthesised speech <a href="https://github.com/lifeiteng/vall-e/tree/position/egs/ljspeech/demos">https://github.com/lifeiteng/vall-e/tree/position/egs/ljspeech/demos</a>
+The next step is to verify <code>in-context learning capabilities</code> of VALL-E on a large dataset.</p>
+</blockquote>
+<p>And I found one more training story: <a href="https://github.com/lifeiteng/vall-e/issues/58">After 100 epochs training, the model can synthesize natural speech on LibriTTS</a></p>
+<blockquote>
+<p>I trained vall-e on LibriTTS about 100 epochs (took almost 4 days on 8 A100 GPUs) and I obtained plausible synthesized audio.</p>
+<p>Here is a demo.</p>
+<p>[1] prompt : <a href="https://drive.google.com/file/d/149pHqb6TZzVwhF1vRN50H8A4AEYShpfp/view?usp=share_link">prompt_link</a>  synthesized audio : <a href="https://drive.google.com/file/d/189MpDf7f3nL-RfO3MtgtQ0APuwRygA0M/view?usp=share_link">synt_link</a>
+[2] prompt : <a href="https://drive.google.com/file/d/149pHqb6TZzVwhF1vRN50H8A4AEYShpfp/view?usp=share_link">prompt_link</a>  ground truth : <a href="https://drive.google.com/file/d/1rfsQD11Dtp7bzng73qGTU7H_YKSdeOdZ/view?usp=share_link">gt_link</a>  synthesized audio : <a href="https://drive.google.com/file/d/1Y4llFLT3Z8proFU_HeasRYGj656pLtcm/view?usp=share_link">synt_link</a>
+[3] prompt : <a href="https://drive.google.com/file/d/1N9EqA1GWJOBIZbjqpHidrEJs6sGtVuyu/view?usp=share_link">prompt_link</a>  synthesized audio : <a href="https://drive.google.com/file/d/1-W8QnhliE5UcFx8fn8B20KRlls5LGfiT/view?usp=share_link">synt_link</a>
+[4] prompt : <a href="https://drive.google.com/file/d/1N9EqA1GWJOBIZbjqpHidrEJs6sGtVuyu/view?usp=share_link">prompt_link</a>  ground truth : <a href="https://drive.google.com/file/d/1EIz686OEQ4-zep_JSN_WKriSIFiwz-Xc/view?usp=share_link">gt_link</a>  synthesized audio : <a href="https://drive.google.com/file/d/1z9EUcQdSf4QD_8KH3mcZpAdRMZZW9XpH/view?usp=share_link">synt_link</a></p>
+<p>The model I trained has worse quality than the original vall-e because of the dataset amount. However, it has promising quality in clean audio. I'm not sure whether I can share my pre-trained LibriTTS model. If I can, I would like to share the pre-trained LibriTTS model.</p>
+</blockquote>
+<p>Model weights:</p>
+<blockquote>
+<p>Sorry for late reply. This is the model that I trained. 
+google drive link : <a href="https://drive.google.com/file/d/1pKvS56NnzVCYqhbjoFqL_JQ8i32UixbL/view?usp=sharing">link</a></p>
+</blockquote>
+<p>One more unofficial PyTorch implementation of <a href="https://github.com/enhuiz/vall-e">VALL-E</a>, based on the <a href="https://github.com/facebookresearch/encodec">EnCodec</a> tokenizer.</p>
+<h3 id="vall-e-summary">VALL-E summary</h3>
+<p>So, VALL-E is an AR or NAR model? VALL-E is a hybrid model that leverages the strengths of both AR and NAR architectures.</p>
+<p>In section <em>6 Conclusion, Limitations, and Future Work</em> you can see one important note:</p>
+<blockquote>
+<p><strong>Synthesis robustness:</strong> We observe that some words may be unclear, missed, or duplicated in
+speech synthesis. It is mainly because the phoneme-to-acoustic language part is an autoregressive model, in which disordered attention alignments exist and no constraints to solving the issue. The phenomenon is also observed in vanilla Transformer-based TTS, which was addressed by applying non-autoregressive models or modifying the attention mechanism in modeling. In the future, we would like to leverage these techniques to solve the issue.</p>
+</blockquote>
+<p>It's interesting to note that the authors acknowledge this limitation and plan to explore techniques from non-autoregressive models or modified attention mechanisms to address this issue in future work. Even state-of-the-art AR models struggle with limitations like disordered attention alignments, leading to synthesis robustness issues.</p>
+<h2 id="styledtts-2-towards-human-level-text-to-speech-through-style-diffusion-and-adversarial-training-with-large-speech-language-models">StyledTTS 2: Towards Human-Level Text-to-Speech through Style Diffusion and Adversarial Training with Large Speech Language Models</h2>
+<p><a href="https://github.com/yl4579/StyleTTS2">Github repo</a>
+StyleTTS 2 is a state-of-the-art text-to-speech (TTS) model that leverages style diffusion and adversarial training with large speech language models (SLMs) to achieve human-level TTS synthesis.
+By modeling styles as a latent random variable through diffusion models, StyleTTS 2 is able to generate the most suitable style for the input text in diverse speech synthesis. The use of large pre-trained SLMs, such as WavLM, as discriminators with differentiable duration modeling enables end-to-end training and improves speech naturalness.</p>
+<h3 id="style-diffusion">Style Diffusion</h3>
+<p>StyleTTS 2 models speech $x$ as a conditional distribution $p(x|t) = \int p(x|t, s)p(s|t) \mathrm{d}s$, where $t$ represents the phonetic content, and $s$ is a latent variable representing the generalized speech style. This style variable $s$ is sampled using Efficient Diffusion Models (EDM), which follow the combined probability flow and time-varying Langevin dynamics. By modeling styles as a latent random variable through diffusion models, StyleTTS 2 can generate the most suitable style for the input text, enabling diverse speech synthesis.</p>
+<h3 id="adversarial-training-with-large-slms">Adversarial Training with Large SLMs</h3>
+<p>StyleTTS 2 employs large pre-trained SLMs, such as WavLM, as discriminators during training. This adversarial training, combined with the proposed differentiable duration modeling, results in improved speech naturalness.</p>
+<p><img alt="StyleTTS2" src="../assets/20240520150027.png" /></p>
+<h3 id="key-contributions">Key Contributions</h3>
+<ol>
+<li><strong>Differentiable Upsampling and Fast Style Diffusion</strong>: StyleTTS 2 introduces a differentiable upsampling method that allows for generating speech samples during training in a fully differentiable manner, similar to inference. These generated samples are used to optimize the loss function involving the large pre-trained SLM, enabling end-to-end training of all components.</li>
+<li><strong>Efficient Style Sampling</strong>: To enable fast style sampling during inference, StyleTTS 2 uses the ancestral DPM-2 solver instead of the 2nd-order Heun method, allowing for fast and diverse sampling without significantly impacting inference speed.</li>
+<li><strong>Multispeaker Modeling</strong>: For multispeaker settings, StyleTTS 2 models $p(s|t, c)$, where $c$ is a speaker embedding obtained from a reference audio of the target speaker. This speaker embedding is injected into the transformer model using adaptive layer normalization.</li>
+</ol>
+<h3 id="known-issues">Known Issues</h3>
+<p>It's worth noting that StyleTTS 2 has a known issue where loud white noise can occur on short texts when the <code>embedding_scale</code> parameter is set to a value greater than 1 (see <a href="https://github.com/yl4579/StyleTTS2/issues/46">GitHub issue #46</a>).</p>
+<h3 id="hybrid-ar-nar-approach-perspective">Hybrid AR-NAR Approach perspective</h3>
+<p>StyleTTS 2 presents a novel and promising approach to text-to-speech synthesis by combining the strengths of both autoregressive (AR) and non-autoregressive (NAR) models. This hybrid architecture leverages the power of large pre-trained SLMs, which are typically autoregressive models, while incorporating the diversity and expressiveness offered by diffusion models, which are non-autoregressive. By combining the pre-trained SLM with the style diffusion process, StyleTTS 2 effectively creates a hybrid architecture that combines the strengths of both AR and NAR models. The SLM provides a strong foundation for capturing sequential dependencies and generating high-quality speech, while the diffusion process introduces diversity and expressiveness, enabling the generation of natural-sounding speech with appropriate styles and characteristics.
+The combination of style diffusion and adversarial training with large SLMs has proven to be a powerful approach for generating natural and expressive speech.</p>
+<h2 id="non-ar-models">Non AR models</h2>
+<h3 id="fastpitch-parallel-text-to-speech-with-pitch-prediction">FastPitch: Parallel Text-to-Speech with Pitch Prediction</h3>
+<p>Implementation NVIDIA/NeMo: <a href="https://github.com/NVIDIA/NeMo/blob/main/tutorials/tts/FastPitch_MixerTTS_Training.ipynb">FastPitch and Mixer-TTS Training</a></p>
+<p>Traditional autoregressive TTS models, which generate speech one step at a time, suffer from slow inference speeds, making them unsuitable for real-time applications. FastPitch, proposed by NVIDIA in 2020, is a fully-parallel text-to-speech model that addresses these challenges by introducing parallel pitch prediction and conditioning the mel-spectrogram generation on the predicted pitch contours. It is based on FastSpeech and composed mainly of two feed-forward Transformer (FFTr) stacks. The first one operates in the resolution of input tokens, the second one in the resolution of the output frames. Let $x = (x_1, \dots, x_n)$ be the sequence of input lexical units, and $y = (y_1, \dots, y_t)$ be the sequence of target mel-scale spectrogram frames. The first FFTr stack produces the hidden representation $h = \text{FFTr}(x)$. The hidden representation $h$ is used to make predictions about the duration and average pitch of every character with a 1-D CNN</p>
+<p><img alt="FastPitch" src="../assets/20240524164947.png" /></p>
+<p>$$d = \text{DurationPredictor}(h), \hat{p} = \text{PitchPredictor}(h)$$</p>
+<p>where $\hat{d} \in \mathbb{N}^n$ and $\hat{p} \in \mathbb{R}^n$. Next, the pitch is projected to match the dimensionality of the hidden representation $h \in \mathbb{R}^{n×d}$ and added to $h$. The resulting sum $g$ is discretely up-sampled and passed to the output FFTr, which produces the output mel-spectrogram sequence:</p>
+<p>$g = h + \text{PitchEmbedding}(p)$
+$\hat{y} = \text{FFTr}([\underbrace{g_1, \dots, g_1}<em>{d_1}, \dots \underbrace{g_n, \dots, g_n}</em>{d_n} ])$</p>
+<p>Ground truth $p$ and $d$ are used during training, and predicted $\hat{p}$ and $\hat{d}$ are used during inference. The model optimizes mean-squared error (MSE) between the predicted and ground-truth modalities
+$\mathcal{L} = ||\hat{y} − y||^2_2 + α|| \hat{p} − p ||^2_2 + γ||\hat{d} − d||^2_2$</p>
+<h3 id="key-contributions_1">Key Contributions</h3>
+<p><strong>Parallel Pitch Prediction</strong>: One of the main innovations of FastPitch is its ability to predict the fundamental frequency (F0) contours, which represent the pitch variations in speech, directly from the input text in a fully-parallel manner. Unlike previous TTS models that predicted pitch contours autoregressively, FastPitch employs a feed-forward architecture (FFTr) and a dedicated pitch predictor to generate the pitch contours in a single pass. This parallel pitch prediction eliminates the need for autoregressive processing, leading to faster inference times.
+<strong>Conditioning on Pitch Contours</strong>: FastPitch conditions the mel-spectrogram generation, which represents the spectral characteristics of speech, on the predicted pitch contours. By explicitly modeling and incorporating the pitch information, FastPitch can capture and reproduce the natural variations in pitch and intonation present in human speech, resulting in more natural-sounding synthesized audio.
+<strong>Feed-Forward Architecture</strong>: FastPitch is a feed-forward model, which means that it does not rely on recurrent neural networks (RNNs) or attention mechanisms. This architecture choice contributes to the model's efficiency and parallelizability.
+<strong>Improved Speech Quality</strong>: By explicitly modeling pitch contours and conditioning the mel-spectrogram generation on them, FastPitch achieves improved speech quality compared to its predecessor, FastSpeech. The synthesized speech exhibits more natural-sounding pitch variations and intonation patterns.</p>
+<h3 id="limitations-and-future-work">Limitations and Future Work</h3>
+<p>While FastPitch represents a significant advancement in parallel text-to-speech synthesis, the authors acknowledge some limitations and suggest future research directions:
+<strong>Prosody Modeling</strong>: Although FastPitch improves pitch prediction, further work is needed to model other aspects of prosody, such as duration and energy contours, in a parallel and efficient manner.
+<strong>Multi-Speaker Adaptation</strong>: The FastPitch model presented in the paper is trained on a single-speaker dataset. Extending the model to handle multiple speakers and enable efficient speaker adaptation remains an open challenge.
+<strong>Deployment and Inference Optimization</strong>: While FastPitch offers faster inference times compared to autoregressive models, further optimization and deployment strategies could be explored to enable real-time applications and on-device inference.</p>
+<p>Overall, FastPitch is a notable contribution to the field of text-to-speech synthesis, introducing parallel pitch prediction and demonstrating improved speech quality while maintaining computational efficiency. However, there is still room for further research and development to address the remaining limitations and expand the model's capabilities.</p>
+<h2 id="delightfultts-the-microsoft-speech-synthesis-system-for-blizzard-challenge-2021">DelightfulTTS: The Microsoft Speech Synthesis System for Blizzard Challenge 2021</h2>
+<p>DelightfulTTS is a text-to-speech (TTS) system developed by Microsoft for the Blizzard Challenge 2021, a prestigious annual evaluation of TTS systems. This system aims to generate high-quality and expressive speech while maintaining computational efficiency.</p>
+<h3 id="architecture">Architecture</h3>
+<p>DelightfulTTS is based on a non-autoregressive (NAR) architecture, which allows for parallel generation of mel-spectrograms, enabling faster inference compared to traditional autoregressive models. The acoustic model still faces the challenge of the one-to-many mapping problem, where multiple speech variations can correspond to the same input text. To address this issue, DelightfulTTS systematically models variation information from both explicit and implicit perspectives:</p>
+<ol>
+<li>For explicit factors like speaker ID and language ID, lookup embeddings are used during training and inference.</li>
+<li>For explicit factors like pitch and duration, the values are extracted from paired text-speech data during training, and dedicated predictors are employed to estimate these values during inference.</li>
+<li>For implicit factors like utterance-level and phoneme-level prosody, reference encoders are used to extract the corresponding values during training, while separate predictors are employed to predict these values during inference.</li>
+</ol>
+<p>The acoustic model in DelightfulTTS is built upon non-autoregressive generation models like FastSpeech, incorporating an improved Conformer module to better capture local and global dependencies in the mel-spectrogram representation. By explicitly modeling variation information from multiple perspectives and leveraging non-autoregressive architectures, DelightfulTTS aims to generate high-quality and expressive speech while addressing the one-to-many mapping challenge inherent in text-to-speech synthesis.</p>
+<h4 id="schema_1">Schema:</h4>
+<p><img alt="DelightfulTTS" src="../assets/20240527161523.png" /></p>
+<h3 id="conformer-architecture">Conformer Architecture</h3>
+<p>The Conformer architecture is a variant of the Transformer model that integrates both convolutional neural networks (CNNs) and self-attention mechanisms. It was originally proposed for end-to-end speech recognition tasks and later adopted for TTS systems due to its ability to capture both local and global dependencies in the input sequences. In the context of TTS, the Conformer architecture is typically used in the acoustic model, which is responsible for generating the mel-spectrogram representation of speech from the input text.
+Mathematically, the Conformer block can be represented as follows: Let $X$ be the input sequence. The key components of the Conformer block used in the acoustic model are:
+1. <strong>Convolutional Feed-Forward Module</strong>: This module applies a 1D convolutional layer to the input sequence, capturing local dependencies. $X' = \text{Conv1D}(X) + X$
+2. <strong>Depthwise Convolution Module</strong>: This module applies a depthwise 1D convolutional layer, further enhancing the modeling of local correlations. $X'' = \text{DepthwiseConv1D}(X') + X'$
+3. <strong>Self-Attention Module</strong>: This module employs multi-headed self-attention, allowing the model to capture global dependencies and long-range interactions within the input sequence. $X''' = \text{MultiHeadAttention}(X'') + X''$
+4. <strong>Second Convolutional Feed-Forward Module</strong>: Another convolutional feed-forward module is applied after the self-attention module, further processing the output. $Y = \text{Conv1D}(X''') + X'''$
+Here, $\text{Conv1D}$, $\text{DepthwiseConv1D}$, and $\text{MultiHeadAttention}$ represent the convolutional, depthwise convolutional, and multi-headed self-attention operations, respectively. The Conformer architecture combines the strengths of CNNs and self-attention, allowing the model to capture both local and global dependencies in the input sequence. This is particularly important for TTS tasks, where the model needs to generate mel-spectrograms of varying lengths while capturing the prosodic and acoustic characteristics of speech. In the DelightfulTTS model, the authors likely employed the Conformer architecture in the acoustic model to benefit from its ability to model both local and global dependencies, leading to improved prosody and audio fidelity in the synthesized speech.</p>
+<h3 id="variation-information-modeling">Variation Information Modeling</h3>
+<p>Text-to-speech (TTS) is a typical one-to-many mapping problem where there could be multiple varying speech outputs (e.g., different pitch, duration, speaker, prosody, emotion, etc.) for a given text input. It is critical to model these variation information in speech to improve the expressiveness and fidelity of synthesized speech. While previous works have tried different methods to model the information, they focus on a specific aspect and cannot model in a comprehensive and systematic way. In this paper, considering that different variation information can be complementary to each other, the authors propose a unified way to model them in the proposed variance adaptor (as shown in Figure 1c).</p>
+<h3 id="categorization-of-variation-information">Categorization of Variation Information</h3>
+<p>Observing that some variation information can be obtained implicitly (e.g., pitch can be extracted by some tools) or explicitly (e.g., utterance-level prosody can only be learned by the model), the authors categorize all the information they model as follows:
+1. <strong>Explicit Modeling</strong>: Language ID, Speaker ID, Pitch, Duration
+2. <strong>Implicit Modeling</strong>: Utterance-level prosody, Phoneme-level prosody
+For speaker and language ID, lookup embeddings are used in training and inference. For pitch and duration, the values are extracted from paired text-speech data in training, and two predictors are used to predict the values in inference.
+For utterance-level and phoneme-level prosody, two reference encoders are used to extract the values in training , and two separate predictors are used to predict the values in inference. The two reference encoders are both made up of convolution and RNN layers. Utterance-level prosody vector is obtained by the last RNN hidden and a style token layer. Phoneme-level prosody vectors are obtained by using the outputs of the phoneme encoder (phoneme-level) as a query to attend to the outputs of the mel-spectrogram reference encoder (frame-level). Different from, the authors do not use VAE but directly use the latent representation as the phoneme-level vector for training stability . The utterance-level prosody predictor contains a GRU layer followed by a bottleneck module to predict the prosody vector. The phoneme-level prosody predictor takes both the outputs of the text encoder and the utterance-level prosody vector as input. With the help of the utterance-level prosody vector, the authors do not need an autoregressive prosody predictor as in for faster inference.
+By unifying explicit and implicit information in different granularities (language-level, speaker-level, utterance-level, phoneme-level) in the variance adaptor, the authors aim to achieve better expressiveness in prosody and controllability in pitch and duration.</p>
+<h3 id="key-contributions_2">Key Contributions</h3>
+<ul>
+<li><strong>Non-Autoregressive Architecture</strong>: DelightfulTTS employs a non-autoregressive architecture, enabling faster inference compared to autoregressive models while maintaining high speech quality.</li>
+<li><strong>Explicit Prosody Modeling</strong>: The system explicitly models pitch and energy contours, in addition to duration, to capture the prosodic variations in speech, leading to more natural and expressive synthesized speech.</li>
+<li><strong>Multi-Speaker Capabilities</strong>: DelightfulTTS supports multi-speaker synthesis by conditioning the generation process on speaker embeddings, enabling efficient speaker adaptation.</li>
+</ul>
+<h3 id="limitations-and-future-work_1">Limitations and Future Work</h3>
+<p>While DelightfulTTS represents a significant advancement in non-autoregressive TTS, the authors acknowledge some limitations and suggest future research directions:</p>
+<ul>
+<li><strong>Robustness to Long Inputs</strong>: The system's performance may degrade for very long input sequences, and further work is needed to improve robustness and consistency for such cases.</li>
+<li><strong>Fine-Grained Prosody Control</strong>: While DelightfulTTS models pitch, energy, and duration, additional work could explore more fine-grained control over prosodic aspects, such as emphasis and phrasing.</li>
+<li><strong>Deployment and Optimization</strong>: Further optimization and deployment strategies could be explored to enable real-time applications and on-device inference, leveraging the non-autoregressive architecture's potential for efficiency.</li>
+</ul>
+<p>Overall, DelightfulTTS is a notable contribution to the field of text-to-speech synthesis, demonstrating the potential of non-autoregressive architectures and explicit prosody modeling for generating high-quality and expressive speech. The system's performance in the Blizzard Challenge 2021 highlights its competitiveness and the progress made in this domain.</p>
+<h2 id="tts-review-summary">TTS Review summary</h2>
+<p>Based on my research, I haven't found a clear convergence between the areas of autoregressive (AR) and non-autoregressive (NAR) text-to-speech models in terms of combining or composing them into a single unified model. The key requirements for NAR models are sustainability, the ability to guarantee stability in the generated audio sequences, balanced quality, and fast generation speed, which is a significant advantage of the NAR architecture. Both the FastPitch and DelightfulTTS models meet these criteria. However, I prefer the DelightfulTTS model because it is more complex compared to FastPitch and can potentially provide more diverse results. The DelightfulTTS model's complexity and diversity could be further enhanced by incorporating ideas from the StyledTTS2 model, which uses diffusion as an AR variator to make the speech more unique and expressive based on the context. While the diffusion-based approach in StyledTTS2 can introduce expressiveness, the NAR nature of DelightfulTTS can contribute to the stability of the generated speech. Therefore, a potential direction could be to explore a hybrid approach that combines the strengths of DelightfulTTS's NAR architecture with the expressive capabilities of the diffusion-based variator from StyledTTS2. Such a hybrid model could leverage the stability and efficiency of the NAR framework while incorporating the contextual expressiveness and diversity offered by the diffusion-based variator. However, it's important to note that integrating these two approaches into a single unified model may pose challenges, and further research is needed to investigate the feasibility and effectiveness of such a hybrid approach.</p>
+<h2 id="delightfultts-implementation">DelightfulTTS implementation</h2>
+<p><a href="https://github.com/nickovchinnikov/tts-framework">DelightfulTTS Github repo</a></p>
+<p>After conducting research, I decided to implement the DelightfulTTS model. I didn't find many details in the paper about the implementation and hyperparameters, but I found the <a href="https://github.com/keonlee9420/Comprehensive-Transformer-TTS">Comprehensive-Transformer-TTS</a> repository and was heavily influenced by this implementation. For example, you can check the Conformer implementation: <a href="https://github.com/keonlee9420/Comprehensive-Transformer-TTS/blob/main/model/transformers/conformer.py">Comprehensive-Transformer-TTS/model/transformers/conformer.py</a></p>
+<p>I also found another great implementation on GitHub: <a href="https://github.com/dunky11/voicesmith">dunky11/voicesmith</a></p>
+<blockquote>
+<p>VoiceSmith makes it possible to train and infer on both single and multispeaker models without any coding experience. It fine-tunes a pretty solid text to speech pipeline based on a modified version of <a href="https://arxiv.org/abs/2110.12612">DelightfulTTS</a> and <a href="https://arxiv.org/abs/2106.07889">UnivNet</a> on your dataset.</p>
+</blockquote>
+<p>And there's also a coqui-ai <a href="https://github.com/coqui-ai/TTS/pull/2095">PR Add Delightful-TTS model</a> implemetation.</p>
+<h2 id="pulp-friction">Pulp Friction</h2>
+<p>I chose to use my own training code due to the flexibility it offers in the training process. While PyTorch Lightning is an excellent training framework that simplifies multi-GPU training and incorporates many best practices, custom implementations come with their own set of advantages and disadvantages.</p>
+<h3 id="how-to-train-our-model">How to Train Our Model</h3>
+<p>Using PyTorch Lightning to train a model is very straightforward. My training script allows you to train on a single machine with either one or multiple GPUs.</p>
+<p>I tried to support the hyperparameters and configurations in one place. You can find the configuration in the <code>models/config</code> directory. <code>PreprocessingConfig</code> is the basic piece of configuration where you can set the configuration for preprocessing audio used for training.</p>
+<p><code>PreprocessingConfigUnivNet</code> and <code>PreprocessingConfigHifiGAN</code> have different <code>n_mel_channels</code>, and these two configurations are not compatible because this parameter fundamentally defines the architecture of the <code>AcousticModel</code>.</p>
+<p>For the <code>PreprocessingConfigHifiGAN</code> , we have sampling rates of 22050 or 44100. You can see the post-initialization action that sets the parameters of <code>stft</code> based on this parameter:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;It modifies the &#39;stft&#39; attribute based on the &#39;sampling_rate&#39; attribute.</span>
+<span class="sd">    If &#39;sampling_rate&#39; is 44100, &#39;stft&#39; is set with specific values for this rate.</span>
+<span class="sd">    If &#39;sampling_rate&#39; is not 22050 or 44100, a ValueError is raised.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If &#39;sampling_rate&#39; is not 22050 or 44100.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">==</span> <span class="mi">44100</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stft</span> <span class="o">=</span> <span class="n">STFTConfig</span><span class="p">(</span>
+            <span class="n">filter_length</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+            <span class="n">hop_length</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+            <span class="n">win_length</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+            <span class="n">n_mel_channels</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+            <span class="n">mel_fmin</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+            <span class="n">mel_fmax</span><span class="o">=</span><span class="mi">11025</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">22050</span><span class="p">,</span> <span class="mi">44100</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sampling rate must be 22050 or 44100&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>To set up the cluster, you need to define the following environment variables:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Node runk in the cluster</span>
+<span class="n">node_rank</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># Num nodes in the cluster</span>
+<span class="n">num_nodes</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;WORLD_SIZE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num_nodes</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;NODE_RANK&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node_rank</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="c1"># Setup of the training cluster port</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MASTER_PORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;12355&quot;</span>
+
+<span class="c1"># Change the IP address to the IP address of the master node</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MASTER_ADDR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;10.148.0.6&quot;</span>
+</code></pre></div>
+<p>You can also choose the logs directory and checkpoints paths:</p>
+<div class="highlight"><pre><span></span><code><span class="n">default_root_dir</span> <span class="o">=</span> <span class="s2">&quot;logs&quot;</span>
+<span class="n">ckpt_acoustic</span> <span class="o">=</span> <span class="s2">&quot;./checkpoints/epoch=301-step=124630.ckpt&quot;</span>
+<span class="n">ckpt_vocoder</span> <span class="o">=</span> <span class="s2">&quot;./checkpoints/vocoder.ckpt&quot;</span>
+</code></pre></div>
+<p>Here's my Trainer code. I use the <code>DDPStrategy</code> because it's the only strategy that works in my case. Other useful parameters are:</p>
+<div class="highlight"><pre><span></span><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+    <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>  <span class="c1"># Use GPU acceleration</span>
+    <span class="n">devices</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Use all available GPUs</span>
+    <span class="n">num_nodes</span><span class="o">=</span><span class="n">num_nodes</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">DDPStrategy</span><span class="p">(</span>
+        <span class="n">gradient_as_bucket_view</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Optimize gradient communication</span>
+        <span class="n">find_unused_parameters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Ignore unused parameters</span>
+    <span class="p">),</span>
+    <span class="n">default_root_dir</span><span class="o">=</span><span class="n">default_root_dir</span><span class="p">,</span>  <span class="c1"># Directory for logs</span>
+    <span class="n">enable_checkpointing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Enable checkpoint saving</span>
+    <span class="n">accumulate_grad_batches</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>  <span class="c1"># Accumulate gradients for 5 batches</span>
+    <span class="n">max_epochs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Train indefinitely (until manually stopped)</span>
+    <span class="n">log_every_n_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># Log every 10 steps</span>
+    <span class="n">gradient_clip_val</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># Clip gradients to a maximum value of 0.5</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Import the preprocessing configuration that you want to train and choose the type of training. For example:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">models.config</span> <span class="kn">import</span> <span class="n">PreprocessingConfigUnivNet</span> <span class="k">as</span> <span class="n">PreprocessingConfig</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">preprocessing_config</span> <span class="o">=</span> <span class="n">PreprocessingConfig</span><span class="p">(</span><span class="s2">&quot;multilingual&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">DelightfulTTS</span><span class="p">(</span><span class="n">preprocessing_config</span><span class="p">)</span>
+
+<span class="n">tuner</span> <span class="o">=</span> <span class="n">Tuner</span><span class="p">(</span><span class="n">trainer</span><span class="p">)</span>
+
+<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">(</span>
+    <span class="c1"># NOTE: Preload the cached dataset into the RAM</span>
+    <span class="c1"># Use only if you have enough RAM to cache your entire dataset</span>
+    <span class="n">cache_dir</span><span class="o">=</span><span class="s2">&quot;/dev/shm/&quot;</span><span class="p">,</span>
+    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">train_dataloaders</span><span class="o">=</span><span class="n">train_dataloader</span><span class="p">,</span>
+    <span class="c1"># Resume training states from the checkpoint file</span>
+    <span class="n">ckpt_path</span><span class="o">=</span><span class="n">ckpt_acoustic</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The entry point to the project is inside the train.py file, which serves as the foundation of the training process.</p>
+<h3 id="inference-code">Inference code</h3>
+<p>For inference, you can use the code examples from <code>demo/demo.py</code>. You have three possible options for combining the acoustic model and vocoder:</p>
+<ul>
+<li>DelightfulTTS + UnivNet, with a sample rate of 22050 Hz</li>
+<li>DelightfulTTS + HiFi-GAN, with a sample rate of 44100 Hz</li>
+<li>FastPitch + HiFi-GAN, with a sample rate of 44100 Hz</li>
+</ul>
+<p>You can experiment with these TTS models and find the best fit for your use case.</p>
+<h3 id="dataset-code">Dataset code</h3>
+<p>For managing datasets, I utilize the lhotse library. This library allows you to wrap your audio dataset, prepare cutset files, and then filter or select specific subsets of the data. For example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Duration lambda</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">dur_filter</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">duration</span><span class="p">:</span> <span class="n">duration</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_seconds</span>
+    <span class="ow">and</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_seconds</span>
+<span class="p">)</span>
+
+<span class="c1"># Filter the HiFiTTS cutset to only include the selected speakers</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">cutset_hifi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutset_hifi</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">cut</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cut</span><span class="p">,</span> <span class="n">MonoCut</span><span class="p">)</span>
+    <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">cut</span><span class="o">.</span><span class="n">supervisions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">speaker</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_speakers_hi_fi_ids_</span>
+    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dur_filter</span><span class="p">(</span><span class="n">cut</span><span class="o">.</span><span class="n">duration</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to_eager</span><span class="p">()</span>
+</code></pre></div>
+<p>With lhotse, you can filter your dataset based on various criteria, such as speaker identities or audio duration. Notably, you don't need to read the audio metadata for this step, as the metadata is already present in the cutset file, which can be prepared beforehand. The lhotse library provides a wide range of functions and utilities for managing and processing speech datasets efficiently. I highly recommend exploring its capabilities to streamline your dataset preparation and filtering tasks.</p>
+<p>I have prepared the following ready-to-use datasets:</p>
+<ol>
+<li>
+<p><strong>HifiLibriDataset</strong>: This dataset code combines the <a href="http://openslr.org/109/">Hi-Fi Multi-Speaker English TTS Dataset</a> and <a href="http://openslr.org/141/">LibriTTS-R</a>. You can choose specific speakers from these datasets or filter the audio based on various parameters. The dataset code can cache data to the filesystem or RAM if needed. This dataset can be used to train the DelightfulTTS model.</p>
+</li>
+<li>
+<p><strong>HifiGanDataset</strong>: This dataset code is designed for the HiFi-GAN model. The data is prepared in a specific way, as you can see in the <code>__getitem__</code> method. With this dataset implementation, you can train the HiFi-GAN vocoder.</p>
+</li>
+<li>
+<p><strong>LIBRITTS_R</strong>: This code is a modified version of the <a href="https://pytorch.org/audio/main/generated/torchaudio.datasets.LIBRITTS.html">Pytorch LIBRITTS</a> dataset.</p>
+</li>
+</ol>
+<p>Additionally, you can explore the dataset code I prepared for various experiments within this project.</p>
+<h3 id="docs">Docs</h3>
+<p>I firmly believe that a good project starts with comprehensive documentation, and good code is built upon a solid foundation of test cases. With this in mind, I have made concerted efforts to maintain consistent documentation and ensure thorough test coverage for my code. The repository serves as a comprehensive resource where you can explore the implementation details, review the documentation, and examine the test cases that ensure the code's reliability and correctness.</p>
+<p>You can find all the documentation markdown inside the <code>docs-md</code> directory, run the docs locally with <code>mkdocs serve</code></p>
+<p>Also here you can the <a href="https://storage.googleapis.com/tts-docs/index.html">docs online</a></p>
+<h3 id="acoustic-model">Acoustic model</h3>
+<p>The acoustic model is responsible for generating mel-spectrograms from input phoneme sequences, speaker identities, and language identities.</p>
+<p>The core of your acoustic model is the AcousticModel class, which inherits from PyTorch's <code>nn.Module</code>. This class contains several sub-modules and components that work together to generate the mel-spectrogram output.</p>
+<ol>
+<li>Encoder: The encoder is a Conformer module that processes the input phoneme sequences. It takes the phoneme embeddings, speaker embeddings, language embeddings, and positional encodings as input and generates a hidden representation.</li>
+<li>Prosody Modeling:</li>
+<li>Utterance-Level Prosody: The model includes an UtteranceLevelProsodyEncoder and a PhonemeProsodyPredictor (for utterance-level prosody) to capture and predict the prosodic features at the utterance level.</li>
+<li>Phoneme-Level Prosody: Similarly, there is a PhonemeLevelProsodyEncoder and a PhonemeProsodyPredictor (for phoneme-level prosody) to model the prosodic features at the phoneme level.</li>
+<li>Variance Adaptor:</li>
+<li>Pitch Adaptor: The PitchAdaptorConv module is responsible for adding pitch embeddings to the encoder output, based on the predicted or target pitch values.</li>
+<li>Energy Adaptor: The EnergyAdaptor module adds energy embeddings to the encoder output, based on the predicted or target energy values.</li>
+<li>Length Adaptor: The LengthAdaptor module upsamples the encoder output to match the length of the target mel-spectrogram, using the predicted or target duration values.</li>
+<li>Decoder: The decoder is another Conformer module that takes the output from the variance adaptor modules and generates the final mel-spectrogram prediction.</li>
+<li>Embeddings: The model includes learnable embeddings for phonemes, speakers, and languages, which are combined and used as input to the encoder.</li>
+<li>Aligner: The Aligner module is used during training to compute the attention logits and alignments between the encoder output and the target mel-spectrogram.</li>
+</ol>
+<p>The <code>forward_train</code> method defines the forward pass during training, where it takes the input phoneme sequences, speaker identities, language identities, mel-spectrograms, pitches, energies, and attention priors (if available). It computes the mel-spectrogram prediction, as well as the predicted pitch, energy, and duration values, which are used for computing the training loss. The forward method defines the forward pass during inference, where it takes the input phoneme sequences, speaker identities, language identities, and duration control value, and generates the mel-spectrogram prediction. Additionally, there are methods for freezing and unfreezing the model parameters, as well as preparing the model for export by removing unnecessary components (e.g., prosody encoders) that are not needed during inference. Implementation follows the DelightfulTTS architecture and incorporates various components for modeling prosody, pitch, energy, and duration, while leveraging the Conformer modules for the encoder and decoder.</p>
+<h3 id="results">Results</h3>
+<h4 id="total_loss"><code>total_loss</code></h4>
+<p><img alt="total_loss" src="../assets/total_loss.png" /></p>
+<h4 id="mel_loss"><code>mel_loss</code></h4>
+<p><img alt="mel_loss" src="../assets/mel_loss.png" /></p>
+<p>Check our <a href="http://demo">online demo</a></p>
+<p>Training the DelightfulTTS model is a computationally intensive task due to its large size and numerous components. Achieving stable and consistent results requires significant computational resources and time. In my experience, using 8 Nvidia V100 GPUs resulted in extremely slow progress, with visible improvements taking weeks to manifest. However, upgrading to 8 Nvidia A100 GPUs significantly accelerated the training process, allowing visible progress to be observed within days. For optimal performance and efficiency, the ideal hardware configuration would be a cluster with 16 Nvidia A100 GPUs. The computational demands of the DelightfulTTS model highlight the importance of leveraging state-of-the-art hardware accelerators, such as the Nvidia A100 GPUs, to enable practical training times and facilitate the development of high-quality text-to-speech systems.</p>
+<h2 id="future-work">Future work</h2>
+<p>The combination of autoregressive (AR) and non-autoregressive (NAR) architectures is a promising direction in the text-to-speech (TTS) field. Diffusion models can introduce sufficient variation, and the approach taken by StyledTTS2 is particularly appealing. A potential avenue for future exploration could be to integrate the FastPitch model, known for its speed and stability, with the diffusion block from StyledTTS2. This hybrid approach could leverage the strengths of both models. The NAR nature of FastPitch would contribute to the overall speed and stability of the system, while the diffusion-based component from StyledTTS2 could introduce diversity and expressiveness to the generated speech. By combining the efficient and robust FastPitch model with the expressive capabilities of the diffusion-based variator from StyledTTS2, this hybrid architecture could potentially deliver diverse and natural-sounding speech while maintaining computational efficiency and stability. However, integrating these two distinct approaches into a unified model may pose challenges, and further research would be necessary to investigate the feasibility and effectiveness of such a hybrid solution.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.footer"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.aecac24b.min.js"></script>
+      
+        <script src="../javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+      
+    
+  </body>
+</html>
