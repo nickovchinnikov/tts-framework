@@ -701,9 +701,9 @@ Additionally, you can explore the dataset code I prepared for various experiment
 
 I firmly believe that a good project starts with comprehensive documentation, and good code is built upon a solid foundation of test cases. With this in mind, I have made concerted efforts to maintain consistent documentation and ensure thorough test coverage for my code. The repository serves as a comprehensive resource where you can explore the implementation details, review the documentation, and examine the test cases that ensure the code's reliability and correctness.
 
-You can find all the documentation markdown inside the `docs-md` directory, run the docs locally with `mkdocs serve`
+You can find all the documentation inside the `docs` directory, run the docs locally with `mkdocs serve`
 
-Also here you can the [docs online](https://storage.googleapis.com/tts-docs/index.html)
+Also here you can the [docs online](https://peechapp.github.io/tts-peech/)
 
 ### Acoustic model
 
