@@ -1,8 +1,8 @@
 # Training Text-to-Speech Models: A Journey from Zero to...
 Developing a high-quality text-to-speech (TTS) system is a complex task that requires extensive training of machine learning models. While successful TTS models can revolutionize how we interact with technology, enabling natural-sounding speech synthesis for various applications, the path to achieving such models is often paved with challenges and setbacks.
 Training a TTS model from scratch is a challenging process that involves numerous steps, from data preparation and preprocessing to model architecture selection, hyperparameter tuning, and iterative refinement. Even with state-of-the-art techniques and powerful computational resources, it's not uncommon for initial training attempts to fall short of expectations, yielding suboptimal results or encountering convergence issues.
-However, these failures should not be viewed as dead ends but rather as opportunities for growth and improvement. By carefully analyzing the shortcomings of unsuccessful models and identifying the root causes of their underperformance, researchers and practitioners can gain invaluable insights into the intricacies of TTS model training. These lessons can then inform and refine the training process, leading to more robust and high-performing models.
-In this article, we embark on a comprehensive journey, exploring the intricate world of TTS model training from the ground up. We'll delve into the essential steps, best practices, and common pitfalls, drawing from real-world experiences and case studies. By understanding the challenges and learning from failures, we can pave the way for more successful TTS model development, ultimately advancing the field of speech synthesis and its numerous applications.
+By carefully analyzing the shortcomings of unsuccessful models and identifying the root causes of their underperformance, researchers and practitioners can gain invaluable insights into the intricacies of TTS model training. These lessons can then inform and refine the training process, leading to more robust and high-performing models.
+In this article, we embark on a comprehensive journey, exploring the intricate world of TTS models.
 
 ## How it all started?
 At Peech, we're dedicated to making Text to Speech accessible to everyone - individuals and publishers alike. Our innovative technology converts web articles, e-books, and any written content into engaging audiobooks. This is especially beneficial for individuals with dyslexia, ADHD, or vision impairments, as well as anyone who prefers listening to reading.
@@ -666,6 +666,37 @@ For inference, you can use the code examples from `demo/demo.py`. You have three
 
 You can experiment with these TTS models and find the best fit for your use case.
 
+### Dataset code
+
+For managing datasets, I utilize the lhotse library. This library allows you to wrap your audio dataset, prepare cutset files, and then filter or select specific subsets of the data. For example:
+
+```python
+# Duration lambda
+self.dur_filter = (
+	lambda duration: duration >= self.min_seconds
+	and duration <= self.max_seconds
+)
+
+# Filter the HiFiTTS cutset to only include the selected speakers
+self.cutset_hifi = self.cutset_hifi.filter(
+	lambda cut: isinstance(cut, MonoCut)
+	and str(cut.supervisions[0].speaker) in self.selected_speakers_hi_fi_ids_
+	and self.dur_filter(cut.duration),
+).to_eager()
+```
+
+With lhotse, you can filter your dataset based on various criteria, such as speaker identities or audio duration. Notably, you don't need to read the audio metadata for this step, as the metadata is already present in the cutset file, which can be prepared beforehand. The lhotse library provides a wide range of functions and utilities for managing and processing speech datasets efficiently. I highly recommend exploring its capabilities to streamline your dataset preparation and filtering tasks.
+
+I have prepared the following ready-to-use datasets:
+
+1. **HifiLibriDataset**: This dataset code combines the [Hi-Fi Multi-Speaker English TTS Dataset](http://openslr.org/109/) and [LibriTTS-R](http://openslr.org/141/). You can choose specific speakers from these datasets or filter the audio based on various parameters. The dataset code can cache data to the filesystem or RAM if needed. This dataset can be used to train the DelightfulTTS model.
+
+2. **HifiGanDataset**: This dataset code is designed for the HiFi-GAN model. The data is prepared in a specific way, as you can see in the `__getitem__` method. With this dataset implementation, you can train the HiFi-GAN vocoder.
+
+3. **LIBRITTS_R**: This code is a modified version of the [Pytorch LIBRITTS](https://pytorch.org/audio/main/generated/torchaudio.datasets.LIBRITTS.html) dataset.
+
+Additionally, you can explore the dataset code I prepared for various experiments within this project.
+
 ### Docs
 
 I firmly believe that a good project starts with comprehensive documentation, and good code is built upon a solid foundation of test cases. With this in mind, I have made concerted efforts to maintain consistent documentation and ensure thorough test coverage for my code. The repository serves as a comprehensive resource where you can explore the implementation details, review the documentation, and examine the test cases that ensure the code's reliability and correctness.
@@ -705,6 +736,8 @@ The `forward_train` method defines the forward pass during training, where it ta
 ![mel_loss](./assets/mel_loss.png)
 
 Check our [online demo](http://demo)
+
+Training the DelightfulTTS model is a computationally intensive task due to its large size and numerous components. Achieving stable and consistent results requires significant computational resources and time. In my experience, using 8 Nvidia V100 GPUs resulted in extremely slow progress, with visible improvements taking weeks to manifest. However, upgrading to 8 Nvidia A100 GPUs significantly accelerated the training process, allowing visible progress to be observed within days. For optimal performance and efficiency, the ideal hardware configuration would be a cluster with 16 Nvidia A100 GPUs. The computational demands of the DelightfulTTS model highlight the importance of leveraging state-of-the-art hardware accelerators, such as the Nvidia A100 GPUs, to enable practical training times and facilitate the development of high-quality text-to-speech systems.
 
 ## Future work
 
