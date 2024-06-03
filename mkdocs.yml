@@ -1,4 +1,6 @@
 site_name: TTS-Framework
+docs_dir: docs-md
+site_dir: docs
 nav:
   - Home: index.md
   - Dev docs:
