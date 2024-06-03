@@ -1,52 +1,23 @@
 # TTS-Framework
+
 Modified version of DelightfulTTS and UnivNet
 
-### Conda env
+## Install deps
 
-Create / activate env
-
+```bash
+sudo apt install ffmpeg libasound2-dev build-essential espeak-ng -y
 ```
-conda create --name tts_framework python=3.11
+
+Create env from the `environment.yml` file:
+
+```bash
+conda env create -f ./tts-framework/environment.yml python=3.11
+
+# After the setup
 conda activate tts_framework
 ```
 
-Export / import env
-
-```
-conda env export > environment.yml
-```
-
-By default, conda will export your environment with builds, but builds can be platform-specific.
-A solution that worked for me is to use the `--no-build` flag:
-
-```
-conda env export --no-build > environment.yml
-```
-
-Create an env
-```
-conda env create -f environment.yml
-```
-
-If you have troubles with export, like:
-```
-InvalidVersionSpec: Invalid version '3.0<3.3': invalid character(s)                                                           
-```
-
-Find a problem by this way:
-
-```
-cd /mnt/Data/anaconda3/envs/tts_framework/lib/python3.11/site-packages/
-
-grep -Rnw . -e "3.0<3.3"
-
-```
-
-A Faster Solver for Conda: [Libmamba](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community)
-
-
-Generate docs:
-
+## Generate docs:
 
 ```
 # live preview server
@@ -56,35 +27,8 @@ mkdocs serve
 mkdocs build
 ```
 
-Test cases:
+## Test cases:
 
 ```
 python -m unittest discover -v
-```
-
-### [Libmamba solver](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community):
-
-```
-conda update -n base conda
-```
-
-And then:
-
-```
-conda install -n base conda-libmamba-solver
-conda config --set solver libmamba
-```
-
-### Env Installation process
-
-Install separately
-
-```
-# First - pytorch
-# conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch-nightly -c nvidia
-
-pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
-
-# Second - lightning
-pip3 install lightning
 ```
