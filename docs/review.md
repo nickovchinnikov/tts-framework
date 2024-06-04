@@ -703,7 +703,7 @@ I firmly believe that a good project starts with comprehensive documentation, an
 
 You can find all the documentation inside the `docs` directory, run the docs locally with `mkdocs serve`
 
-Also here you can the [docs online](https://peechapp.github.io/tts-peech/)
+Also here you can the [docs online](https://storage.googleapis.com/tts-docs/index.html)
 
 ### Acoustic model
 
