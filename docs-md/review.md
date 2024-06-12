@@ -1,3 +1,7 @@
+# A comprehensive review of opensource Text-to-Speech (TTS) Models
+
+# Part 1: TTS Overview, Little Theory and Math
+
 # Training Text-to-Speech Models: A Journey from Zero to...
 Developing a high-quality text-to-speech (TTS) system is a complex task that requires extensive training of machine learning models. While successful TTS models can revolutionize how we interact with technology, enabling natural-sounding speech synthesis for various applications, the path to achieving such models is often paved with challenges and setbacks.
 Training a TTS model from scratch is a challenging process that involves numerous steps, from data preparation and preprocessing to model architecture selection, hyperparameter tuning, and iterative refinement. Even with state-of-the-art techniques and powerful computational resources, it's not uncommon for initial training attempts to fall short of expectations, yielding suboptimal results or encountering convergence issues.
@@ -36,6 +40,7 @@ Mathematically, we can represent the variation parameters $v$ as a vector of dif
 $$v = [v_{\text{pitch}}, v_{\text{duration}}, v_{\text{speaker}}, v_{\text{prosody}}, v_{\text{emotion}}, \dots]$$
 
 The challenge in TTS is to model the mapping function $f$ in such a way that it can generate appropriate speech outputs $y$ for a given input text $x$ and variation parameters $v$. This is known as the one-to-many mapping problem, as there can be multiple valid speech outputs for the same input text, depending on the variation factors.
+
 There are two main approaches to modeling the specific aspects of the variation parameters $v$:
 1. **Modeling Individual Factors**: In this approach, each variation factor is modeled independently, without considering the interdependencies and interactions between different factors. For example, a model might focus solely on predicting pitch contours or duration values, treating them as separate components. While this approach can capture specific aspects of the variation parameters, it fails to model the variation information in a comprehensive and systematic way. The interdependencies between different factors, such as the relationship between pitch and prosody or the influence of speaker characteristics on duration, are not accounted for.
 2. **Unified Frameworks for Modeling Multiple Factors**: Recent research has proposed unified frameworks that aim to model multiple variation factors simultaneously, capturing their complementary nature and enabling more expressive and faithful speech synthesis. In this approach, the TTS model is designed to jointly model and generate multiple variation factors, considering their interdependencies and interactions. For instance, a unified framework might incorporate modules for predicting pitch, duration, and speaker characteristics simultaneously, while also accounting for their mutual influences. Mathematically, this can be represented as a mapping function $f$ that takes the input text $x$ and generates the speech output $y$ by considering the combined effect of multiple variation parameters $v$:
@@ -50,12 +55,13 @@ Any structured data can be transformed into a sequence. For instance, speech can
 *I believe, that any sequence can be generated using neural sequence generation methods (but not sure).*
 
 ### Autoregressive models
-Autoregressive (AR) sequence generation involves generating a sequence one token at a time in an autoregressive manner. In an AR model, the current value in the sequence is predicted based on the previous values and an error term (often referred to as [white noise](https://en.wikipedia.org/wiki/White_noise), which represents the unpredictable or random component).
+Autoregressive (AR) sequence generation involves generating a sequence one token at a time in an autoregressive manner. In an AR model, the current value in the sequence is predicted based on the previous values and an error term (often referred to as \href{white noise}{https://en.wikipedia.org/wiki/White_noise}, which represents the unpredictable or random component).
 
 **The definition from wikipedia: [autoregressive model](https://en.wikipedia.org/wiki/Autoregressive_model):**
 >In statistics, econometrics, and signal processing, an **autoregressive** (**AR**) **model** is a representation of a type of random process; as such, it is used to describe certain time-varying processes in nature, economics, behavior, etc. The autoregressive model specifies that the output variable depends linearly on its own previous values and on a [stochastic](https://en.wikipedia.org/wiki/Stochastic "Stochastic") term (an imperfectly predictable term); thus the model is in the form of a stochastic difference equation (or recurrence relation) which should not be confused with a [differential equation](https://en.wikipedia.org/wiki/Differential_equation "Differential equation").
 
 The AR model's ability to capture sequential dependencies allows it to generate speech with natural-sounding variations, for example - making it expressive. This is because the model can learn to predict the next value in the sequence based on the context provided by the previous values.
+
 **Autoregressive model of order $n$, denoted as $\text{AR}(n)$**, can be defined as:
 
 $$x_t = b + \varphi_1x_{t-1} + \varphi_2x_{t-2} + \dots + \varphi_px_{t-n} + \epsilon_t$$
@@ -73,7 +79,8 @@ $$L(\varphi) = \frac{1}{n} \sum_{i=1}^n (x_i - \hat{x_i})^2$$
 where $x_i$ is the true value, $\hat{x_i}$ is the predicted value, and $n$ is the total number of time steps.
 
 ### Probabilistic Perspective
-To define AR Sequence Generation in a probabilistic manner, we can use the chain rule to decompose the joint probability of the sequence into a product of conditional probabilities. 
+To define AR Sequence Generation in a probabilistic manner, we can use the chain rule to decompose the joint probability of the sequence into a product of conditional probabilities.
+
 AR sequence generation can be formulated using the chain rule of probability. Let $x = (x_1, x_2, \ldots, x_n)$ be the true sequence of length $n$.
 
 $$P(x) = P(x_1, x_2, ..., x_n)$$
@@ -184,6 +191,7 @@ Mathematically, the probability distribution over the vocabulary items at time s
 $$p(x_t | x_{t-1}, \dots, x_{t-n}) = \text{softmax}(W x_{t-1} + \dots + W x_{t-n} + b)$$
 
 where $p(x_t | x_{t-1}, ..., x_{t-n})$ is the probability distribution over the vocabulary items, $W$ is the weight matrix, and $b$ is the bias term.
+
 This normalization constraint can lead to a bias towards certain tokens or sequences, even if they are unlikely or irrelevant in the given context. For example, consider a language model trained on a corpus of news articles. If the model encounters a rare or unseen word during inference, it may still assign a non-zero probability to that word due to the normalization constraint, even though the word is highly unlikely in the context of news articles.
 
 The consequences of label bias can be significant, especially in cases where the data distribution is highly skewed or contains rare or unseen events. It can lead to the generation of nonsensical or irrelevant tokens, which can degrade the overall quality and coherence of the generated sequences. This bias can be particularly problematic in applications such as machine translation, text summarization, or dialogue systems, where accurate and context-appropriate generation is crucial.
@@ -288,6 +296,7 @@ Comment about it from issue [\#36 Inquiry on Maximum input character text prompt
 > right now the output is limited by the context window of the model (1024) which equates to about 14s. So text should be around that duration (meaning ~2-3 sentences). For longer texts you can either do them one at a time (and use the same history prompt to continue the same voice) or feed the first generation as the history for the second. i know that that's still a bit inconvenient. will try to add better support for that in the next couple of days
 
 You can implement the following [approach](https://github.com/suno-ai/bark/pull/84#issuecomment-1523433448), split sentences and synthesize the audio chunks:
+
 ```python
 from bark import generate_audio,preload_models
 from scipy.io.wavfile import write as write_wav
@@ -378,7 +387,7 @@ VALL-E is a novel language model approach for text-to-speech (TTS) synthesis tha
 
 ### The Problem Formulation is valid for Bark as well (except dimensions):
 **Problem Formulation: Regarding TTS as Conditional Codec Language Modeling**
-Given a dataset $D = \{x_i, y_i\}$, where $y$ is an audio sample and $x = \{x_0, x_1, \dots, x_L\}$ is its corresponding phoneme transcription, we use a pre-trained neural codec model to encode each audio sample into discrete acoustic codes, denoted as $\text{Encodec}(y) = C^{T ×8}$, where $C$ represents the two-dimensional acoustic code matrix, and $T$ is the downsampled utterance length. The row vector of each acoustic code matrix $c_{t,:}$ represents the eight codes for frame $t$ and the column vector of each acoustic code matrix $c_{:,j}$ represents the code sequence from the $j$-th codebook, where $j \in \{1, \dots, 8\}$. After quantization, the neural codec decoder is able to reconstruct the waveform, denoted as $\text{Decodec}(C) ≈ \hat{y}$.
+Given a dataset $D = \{x_i, y_i\}$, where $y$ is an audio sample and $x = \{x_0, x_1, \dots, x_L\}$ is its corresponding phoneme transcription, we use a pre-trained neural codec model to encode each audio sample into discrete acoustic codes, denoted as $\text{Encodec}(y) = C^{T\times8}$, where $C$ represents the two-dimensional acoustic code matrix, and $T$ is the downsampled utterance length. The row vector of each acoustic code matrix $c_{t,:}$ represents the eight codes for frame $t$ and the column vector of each acoustic code matrix $c_{:,j}$ represents the code sequence from the $j$-th codebook, where $j \in \{1, \dots, 8\}$. After quantization, the neural codec decoder is able to reconstruct the waveform, denoted as $\text{Decodec}(C) \approx \hat{y}$.
 
 ![vall-e schema](assets/20240517155909.png)
 
@@ -533,7 +542,7 @@ Overall, DelightfulTTS is a notable contribution to the field of text-to-speech 
 ## TTS Review summary
 Based on my research, I haven't found a clear convergence between the areas of autoregressive (AR) and non-autoregressive (NAR) text-to-speech models in terms of combining or composing them into a single unified model. The key requirements for NAR models are sustainability, the ability to guarantee stability in the generated audio sequences, balanced quality, and fast generation speed, which is a significant advantage of the NAR architecture. Both the FastPitch and DelightfulTTS models meet these criteria. However, I prefer the DelightfulTTS model because it is more complex compared to FastPitch and can potentially provide more diverse results. The DelightfulTTS model's complexity and diversity could be further enhanced by incorporating ideas from the StyledTTS2 model, which uses diffusion as an AR variator to make the speech more unique and expressive based on the context. While the diffusion-based approach in StyledTTS2 can introduce expressiveness, the NAR nature of DelightfulTTS can contribute to the stability of the generated speech. Therefore, a potential direction could be to explore a hybrid approach that combines the strengths of DelightfulTTS's NAR architecture with the expressive capabilities of the diffusion-based variator from StyledTTS2. Such a hybrid model could leverage the stability and efficiency of the NAR framework while incorporating the contextual expressiveness and diversity offered by the diffusion-based variator. However, it's important to note that integrating these two approaches into a single unified model may pose challenges, and further research is needed to investigate the feasibility and effectiveness of such a hybrid approach.
 
-## DelightfulTTS implementation
+## DelightfulTTS implementation and training
 
 [DelightfulTTS Github repo](https://github.com/nickovchinnikov/tts-framework)
 
