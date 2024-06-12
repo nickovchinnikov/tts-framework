@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -4034,125 +4032,125 @@
 <h2 id="find-training-loop-bottlenecks">Find training loop bottlenecks</h2>
 <h4 id="more-details-are-here-find-bottlenecks"><a href="https://lightning.ai/docs/pytorch/stable/tuning/profiler_basic.html">More details are here: Find bottlenecks</a></h4>
 <p>The most basic profile measures all the key methods across <code>Callbacks</code>, <code>DataModules</code> and the <code>LightningModule</code> in the training loop.</p>
-<div class="highlight"><pre><span></span><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="s2">&quot;simple&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="s2">&quot;simple&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Once the <code>.fit()</code> function has completed, you’ll see an output like this:</p>
-<div class="highlight"><pre><span></span><code>FIT Profiler Report
-
------------------------------------------------------------------------------------------------
-|  Action                                          |  Mean duration (s)     |  Total time (s) |
------------------------------------------------------------------------------------------------
-|  [LightningModule]BoringModel.prepare_data       |  10.0001               |  20.00          |
-|  run_training_epoch                              |  6.1558                |  6.1558         |
-|  run_training_batch                              |  0.0022506             |  0.015754       |
-|  [LightningModule]BoringModel.optimizer_step     |  0.0017477             |  0.012234       |
-|  [LightningModule]BoringModel.val_dataloader     |  0.00024388            |  0.00024388     |
-|  on_train_batch_start                            |  0.00014637            |  0.0010246      |
-|  [LightningModule]BoringModel.teardown           |  2.15e-06              |  2.15e-06       |
-|  [LightningModule]BoringModel.on_train_start     |  1.644e-06             |  1.644e-06      |
-|  [LightningModule]BoringModel.on_train_end       |  1.516e-06             |  1.516e-06      |
-|  [LightningModule]BoringModel.on_fit_end         |  1.426e-06             |  1.426e-06      |
-|  [LightningModule]BoringModel.setup              |  1.403e-06             |  1.403e-06      |
-|  [LightningModule]BoringModel.on_fit_start       |  1.226e-06             |  1.226e-06      |
------------------------------------------------------------------------------------------------
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>FIT Profiler Report
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>-----------------------------------------------------------------------------------------------
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>|  Action                                          |  Mean duration (s)     |  Total time (s) |
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>-----------------------------------------------------------------------------------------------
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>|  [LightningModule]BoringModel.prepare_data       |  10.0001               |  20.00          |
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>|  run_training_epoch                              |  6.1558                |  6.1558         |
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>|  run_training_batch                              |  0.0022506             |  0.015754       |
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>|  [LightningModule]BoringModel.optimizer_step     |  0.0017477             |  0.012234       |
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>|  [LightningModule]BoringModel.val_dataloader     |  0.00024388            |  0.00024388     |
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>|  on_train_batch_start                            |  0.00014637            |  0.0010246      |
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>|  [LightningModule]BoringModel.teardown           |  2.15e-06              |  2.15e-06       |
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>|  [LightningModule]BoringModel.on_train_start     |  1.644e-06             |  1.644e-06      |
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>|  [LightningModule]BoringModel.on_train_end       |  1.516e-06             |  1.516e-06      |
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>|  [LightningModule]BoringModel.on_fit_end         |  1.426e-06             |  1.426e-06      |
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>|  [LightningModule]BoringModel.setup              |  1.403e-06             |  1.403e-06      |
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>|  [LightningModule]BoringModel.on_fit_start       |  1.226e-06             |  1.226e-06      |
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>-----------------------------------------------------------------------------------------------
+</span></code></pre></div>
 <h2 id="profile-the-time-within-every-function">Profile the time within every function</h2>
-<div class="highlight"><pre><span></span><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="s2">&quot;advanced&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="s2">&quot;advanced&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Once the <code>.fit()</code> function has completed, you’ll see an output like this:</p>
-<div class="highlight"><pre><span></span><code>Profiler Report
-
-Profile stats for: get_train_batch
-        4869394 function calls (4863767 primitive calls) in 18.893 seconds
-Ordered by: cumulative time
-List reduced from 76 to 10 due to restriction &lt;10&gt;
-ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-3752/1876    0.011    0.000   18.887    0.010 {built-in method builtins.next}
-    1876     0.008    0.000   18.877    0.010 dataloader.py:344(__next__)
-    1876     0.074    0.000   18.869    0.010 dataloader.py:383(_next_data)
-    1875     0.012    0.000   18.721    0.010 fetch.py:42(fetch)
-    1875     0.084    0.000   18.290    0.010 fetch.py:44(&lt;listcomp&gt;)
-    60000    1.759    0.000   18.206    0.000 mnist.py:80(__getitem__)
-    60000    0.267    0.000   13.022    0.000 transforms.py:68(__call__)
-    60000    0.182    0.000    7.020    0.000 transforms.py:93(__call__)
-    60000    1.651    0.000    6.839    0.000 functional.py:42(to_tensor)
-    60000    0.260    0.000    5.734    0.000 transforms.py:167(__call__)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Profiler Report
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Profile stats for: get_train_batch
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        4869394 function calls (4863767 primitive calls) in 18.893 seconds
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>Ordered by: cumulative time
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>List reduced from 76 to 10 due to restriction &lt;10&gt;
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>3752/1876    0.011    0.000   18.887    0.010 {built-in method builtins.next}
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    1876     0.008    0.000   18.877    0.010 dataloader.py:344(__next__)
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    1876     0.074    0.000   18.869    0.010 dataloader.py:383(_next_data)
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    1875     0.012    0.000   18.721    0.010 fetch.py:42(fetch)
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    1875     0.084    0.000   18.290    0.010 fetch.py:44(&lt;listcomp&gt;)
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    60000    1.759    0.000   18.206    0.000 mnist.py:80(__getitem__)
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    60000    0.267    0.000   13.022    0.000 transforms.py:68(__call__)
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    60000    0.182    0.000    7.020    0.000 transforms.py:93(__call__)
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    60000    1.651    0.000    6.839    0.000 functional.py:42(to_tensor)
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    60000    0.260    0.000    5.734    0.000 transforms.py:167(__call__)
+</span></code></pre></div>
 <p>If the profiler report becomes too long, you can stream the report to a file:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">AdvancedProfiler</span>
-
-<span class="n">profiler</span> <span class="o">=</span> <span class="n">AdvancedProfiler</span><span class="p">(</span><span class="n">dirpath</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;perf_logs&quot;</span><span class="p">)</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">AdvancedProfiler</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">profiler</span> <span class="o">=</span> <span class="n">AdvancedProfiler</span><span class="p">(</span><span class="n">dirpath</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;perf_logs&quot;</span><span class="p">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
+</span></code></pre></div>
 <h2 id="measure-accelerator-usage">Measure accelerator usage</h2>
 <p>Another helpful technique to detect bottlenecks is to ensure that you’re using the full capacity of your accelerator (GPU/TPU/IPU/HPU). This can be measured with the <code>DeviceStatsMonitor</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.callbacks</span> <span class="kn">import</span> <span class="n">DeviceStatsMonitor</span>
-
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">DeviceStatsMonitor</span><span class="p">()])</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.callbacks</span> <span class="kn">import</span> <span class="n">DeviceStatsMonitor</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">DeviceStatsMonitor</span><span class="p">()])</span>
+</span></code></pre></div>
 <p>CPU metrics will be tracked by default on the CPU accelerator. To enable it for other accelerators set <code>DeviceStatsMonitor(cpu_stats=True)</code>. To disable logging CPU metrics, you can specify <code>DeviceStatsMonitor(cpu_stats=False)</code>.</p>
 <h2 id="find-bottlenecks-in-your-code-intermediate">Find bottlenecks in your code (intermediate)</h2>
 <h4 id="more-details-are-here-find-bottlenecks-in-your-code-intermediate"><a href="https://lightning.ai/docs/pytorch/stable/tuning/profiler_intermediate.html">More details are here: Find bottlenecks in your code (intermediate)</a></h4>
 <h3 id="profile-pytorch-operations">Profile pytorch operations</h3>
 <p>To understand the cost of each PyTorch operation, use the <code>PyTorchProfiler</code> built on top of the PyTorch profiler.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">PyTorchProfiler</span>
-
-<span class="n">profiler</span> <span class="o">=</span> <span class="n">PyTorchProfiler</span><span class="p">()</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">PyTorchProfiler</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">profiler</span> <span class="o">=</span> <span class="n">PyTorchProfiler</span><span class="p">()</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
+</span></code></pre></div>
 <p>The profiler will generate an output like this:</p>
-<div class="highlight"><pre><span></span><code>Profiler<span class="w"> </span>Report
-
-Profile<span class="w"> </span>stats<span class="w"> </span><span class="k">for</span>:<span class="w"> </span>training_step
----------------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------
-Name<span class="w">                   </span>Self<span class="w"> </span>CPU<span class="w"> </span>total<span class="w"> </span>%<span class="w">  </span>Self<span class="w"> </span>CPU<span class="w"> </span>total<span class="w">   </span>CPU<span class="w"> </span>total<span class="w"> </span>%<span class="w">      </span>CPU<span class="w"> </span>total<span class="w">        </span>CPU<span class="w"> </span><span class="nb">time</span><span class="w"> </span>avg
----------------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------
-t<span class="w">                      </span><span class="m">62</span>.10%<span class="w">           </span><span class="m">1</span>.044ms<span class="w">          </span><span class="m">62</span>.77%<span class="w">           </span><span class="m">1</span>.055ms<span class="w">          </span><span class="m">1</span>.055ms
-addmm<span class="w">                  </span><span class="m">32</span>.32%<span class="w">           </span><span class="m">543</span>.135us<span class="w">        </span><span class="m">32</span>.69%<span class="w">           </span><span class="m">549</span>.362us<span class="w">        </span><span class="m">549</span>.362us
-mse_loss<span class="w">               </span><span class="m">1</span>.35%<span class="w">            </span><span class="m">22</span>.657us<span class="w">         </span><span class="m">3</span>.58%<span class="w">            </span><span class="m">60</span>.105us<span class="w">         </span><span class="m">60</span>.105us
-mean<span class="w">                   </span><span class="m">0</span>.22%<span class="w">            </span><span class="m">3</span>.694us<span class="w">          </span><span class="m">2</span>.05%<span class="w">            </span><span class="m">34</span>.523us<span class="w">         </span><span class="m">34</span>.523us
-div_<span class="w">                   </span><span class="m">0</span>.64%<span class="w">            </span><span class="m">10</span>.756us<span class="w">         </span><span class="m">1</span>.90%<span class="w">            </span><span class="m">32</span>.001us<span class="w">         </span><span class="m">16</span>.000us
-ones_like<span class="w">              </span><span class="m">0</span>.21%<span class="w">            </span><span class="m">3</span>.461us<span class="w">          </span><span class="m">0</span>.81%<span class="w">            </span><span class="m">13</span>.669us<span class="w">         </span><span class="m">13</span>.669us
-sum_out<span class="w">                </span><span class="m">0</span>.45%<span class="w">            </span><span class="m">7</span>.638us<span class="w">          </span><span class="m">0</span>.74%<span class="w">            </span><span class="m">12</span>.432us<span class="w">         </span><span class="m">12</span>.432us
-transpose<span class="w">              </span><span class="m">0</span>.23%<span class="w">            </span><span class="m">3</span>.786us<span class="w">          </span><span class="m">0</span>.68%<span class="w">            </span><span class="m">11</span>.393us<span class="w">         </span><span class="m">11</span>.393us
-as_strided<span class="w">             </span><span class="m">0</span>.60%<span class="w">            </span><span class="m">10</span>.060us<span class="w">         </span><span class="m">0</span>.60%<span class="w">            </span><span class="m">10</span>.060us<span class="w">         </span><span class="m">3</span>.353us
-to<span class="w">                     </span><span class="m">0</span>.18%<span class="w">            </span><span class="m">3</span>.059us<span class="w">          </span><span class="m">0</span>.44%<span class="w">            </span><span class="m">7</span>.464us<span class="w">          </span><span class="m">7</span>.464us
-empty_like<span class="w">             </span><span class="m">0</span>.14%<span class="w">            </span><span class="m">2</span>.387us<span class="w">          </span><span class="m">0</span>.41%<span class="w">            </span><span class="m">6</span>.859us<span class="w">          </span><span class="m">6</span>.859us
-empty_strided<span class="w">          </span><span class="m">0</span>.38%<span class="w">            </span><span class="m">6</span>.351us<span class="w">          </span><span class="m">0</span>.38%<span class="w">            </span><span class="m">6</span>.351us<span class="w">          </span><span class="m">3</span>.175us
-fill_<span class="w">                  </span><span class="m">0</span>.28%<span class="w">            </span><span class="m">4</span>.782us<span class="w">          </span><span class="m">0</span>.33%<span class="w">            </span><span class="m">5</span>.566us<span class="w">          </span><span class="m">2</span>.783us
-expand<span class="w">                 </span><span class="m">0</span>.20%<span class="w">            </span><span class="m">3</span>.336us<span class="w">          </span><span class="m">0</span>.28%<span class="w">            </span><span class="m">4</span>.743us<span class="w">          </span><span class="m">4</span>.743us
-empty<span class="w">                  </span><span class="m">0</span>.27%<span class="w">            </span><span class="m">4</span>.456us<span class="w">          </span><span class="m">0</span>.27%<span class="w">            </span><span class="m">4</span>.456us<span class="w">          </span><span class="m">2</span>.228us
-copy_<span class="w">                  </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.526us<span class="w">          </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.526us<span class="w">          </span><span class="m">2</span>.526us
-broadcast_tensors<span class="w">      </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.492us<span class="w">          </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.492us<span class="w">          </span><span class="m">2</span>.492us
-size<span class="w">                   </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.967us<span class="w">          </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.967us<span class="w">          </span><span class="m">0</span>.484us
-is_complex<span class="w">             </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.961us<span class="w">          </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.961us<span class="w">          </span><span class="m">0</span>.481us
-stride<span class="w">                 </span><span class="m">0</span>.03%<span class="w">            </span><span class="m">0</span>.517us<span class="w">          </span><span class="m">0</span>.03%<span class="w">            </span><span class="m">0</span>.517us<span class="w">          </span><span class="m">0</span>.517us
----------------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------
-Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</span><span class="w"> </span>total:<span class="w"> </span><span class="m">1</span>.681ms
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Profiler<span class="w"> </span>Report
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Profile<span class="w"> </span>stats<span class="w"> </span><span class="k">for</span>:<span class="w"> </span>training_step
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>---------------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>Name<span class="w">                   </span>Self<span class="w"> </span>CPU<span class="w"> </span>total<span class="w"> </span>%<span class="w">  </span>Self<span class="w"> </span>CPU<span class="w"> </span>total<span class="w">   </span>CPU<span class="w"> </span>total<span class="w"> </span>%<span class="w">      </span>CPU<span class="w"> </span>total<span class="w">        </span>CPU<span class="w"> </span><span class="nb">time</span><span class="w"> </span>avg
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>---------------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>t<span class="w">                      </span><span class="m">62</span>.10%<span class="w">           </span><span class="m">1</span>.044ms<span class="w">          </span><span class="m">62</span>.77%<span class="w">           </span><span class="m">1</span>.055ms<span class="w">          </span><span class="m">1</span>.055ms
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>addmm<span class="w">                  </span><span class="m">32</span>.32%<span class="w">           </span><span class="m">543</span>.135us<span class="w">        </span><span class="m">32</span>.69%<span class="w">           </span><span class="m">549</span>.362us<span class="w">        </span><span class="m">549</span>.362us
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>mse_loss<span class="w">               </span><span class="m">1</span>.35%<span class="w">            </span><span class="m">22</span>.657us<span class="w">         </span><span class="m">3</span>.58%<span class="w">            </span><span class="m">60</span>.105us<span class="w">         </span><span class="m">60</span>.105us
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>mean<span class="w">                   </span><span class="m">0</span>.22%<span class="w">            </span><span class="m">3</span>.694us<span class="w">          </span><span class="m">2</span>.05%<span class="w">            </span><span class="m">34</span>.523us<span class="w">         </span><span class="m">34</span>.523us
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>div_<span class="w">                   </span><span class="m">0</span>.64%<span class="w">            </span><span class="m">10</span>.756us<span class="w">         </span><span class="m">1</span>.90%<span class="w">            </span><span class="m">32</span>.001us<span class="w">         </span><span class="m">16</span>.000us
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>ones_like<span class="w">              </span><span class="m">0</span>.21%<span class="w">            </span><span class="m">3</span>.461us<span class="w">          </span><span class="m">0</span>.81%<span class="w">            </span><span class="m">13</span>.669us<span class="w">         </span><span class="m">13</span>.669us
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>sum_out<span class="w">                </span><span class="m">0</span>.45%<span class="w">            </span><span class="m">7</span>.638us<span class="w">          </span><span class="m">0</span>.74%<span class="w">            </span><span class="m">12</span>.432us<span class="w">         </span><span class="m">12</span>.432us
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>transpose<span class="w">              </span><span class="m">0</span>.23%<span class="w">            </span><span class="m">3</span>.786us<span class="w">          </span><span class="m">0</span>.68%<span class="w">            </span><span class="m">11</span>.393us<span class="w">         </span><span class="m">11</span>.393us
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>as_strided<span class="w">             </span><span class="m">0</span>.60%<span class="w">            </span><span class="m">10</span>.060us<span class="w">         </span><span class="m">0</span>.60%<span class="w">            </span><span class="m">10</span>.060us<span class="w">         </span><span class="m">3</span>.353us
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>to<span class="w">                     </span><span class="m">0</span>.18%<span class="w">            </span><span class="m">3</span>.059us<span class="w">          </span><span class="m">0</span>.44%<span class="w">            </span><span class="m">7</span>.464us<span class="w">          </span><span class="m">7</span>.464us
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>empty_like<span class="w">             </span><span class="m">0</span>.14%<span class="w">            </span><span class="m">2</span>.387us<span class="w">          </span><span class="m">0</span>.41%<span class="w">            </span><span class="m">6</span>.859us<span class="w">          </span><span class="m">6</span>.859us
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>empty_strided<span class="w">          </span><span class="m">0</span>.38%<span class="w">            </span><span class="m">6</span>.351us<span class="w">          </span><span class="m">0</span>.38%<span class="w">            </span><span class="m">6</span>.351us<span class="w">          </span><span class="m">3</span>.175us
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>fill_<span class="w">                  </span><span class="m">0</span>.28%<span class="w">            </span><span class="m">4</span>.782us<span class="w">          </span><span class="m">0</span>.33%<span class="w">            </span><span class="m">5</span>.566us<span class="w">          </span><span class="m">2</span>.783us
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>expand<span class="w">                 </span><span class="m">0</span>.20%<span class="w">            </span><span class="m">3</span>.336us<span class="w">          </span><span class="m">0</span>.28%<span class="w">            </span><span class="m">4</span>.743us<span class="w">          </span><span class="m">4</span>.743us
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>empty<span class="w">                  </span><span class="m">0</span>.27%<span class="w">            </span><span class="m">4</span>.456us<span class="w">          </span><span class="m">0</span>.27%<span class="w">            </span><span class="m">4</span>.456us<span class="w">          </span><span class="m">2</span>.228us
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>copy_<span class="w">                  </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.526us<span class="w">          </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.526us<span class="w">          </span><span class="m">2</span>.526us
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>broadcast_tensors<span class="w">      </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.492us<span class="w">          </span><span class="m">0</span>.15%<span class="w">            </span><span class="m">2</span>.492us<span class="w">          </span><span class="m">2</span>.492us
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>size<span class="w">                   </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.967us<span class="w">          </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.967us<span class="w">          </span><span class="m">0</span>.484us
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>is_complex<span class="w">             </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.961us<span class="w">          </span><span class="m">0</span>.06%<span class="w">            </span><span class="m">0</span>.961us<span class="w">          </span><span class="m">0</span>.481us
+</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>stride<span class="w">                 </span><span class="m">0</span>.03%<span class="w">            </span><span class="m">0</span>.517us<span class="w">          </span><span class="m">0</span>.03%<span class="w">            </span><span class="m">0</span>.517us<span class="w">          </span><span class="m">0</span>.517us
+</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>---------------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------<span class="w">  </span>---------------
+</span><span id="__span-7-28"><a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</span><span class="w"> </span>total:<span class="w"> </span><span class="m">1</span>.681ms
+</span></code></pre></div>
 <h3 id="profile-a-distributed-model">Profile a distributed model</h3>
 <p>To profile a distributed model, use the <code>PyTorchProfiler</code> with the filename argument which will save a report per rank.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">PyTorchProfiler</span>
-
-<span class="n">profiler</span> <span class="o">=</span> <span class="n">PyTorchProfiler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;perf-logs&quot;</span><span class="p">)</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">PyTorchProfiler</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">profiler</span> <span class="o">=</span> <span class="n">PyTorchProfiler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;perf-logs&quot;</span><span class="p">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="visualize-profiled-operations">Visualize profiled operations</h3>
 <p>To visualize the profiled operations, enable <code>emit_nvtx</code> in the <code>PyTorchProfiler</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">PyTorchProfiler</span>
-
-<span class="n">profiler</span> <span class="o">=</span> <span class="n">PyTorchProfiler</span><span class="p">(</span><span class="n">emit_nvtx</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.profilers</span> <span class="kn">import</span> <span class="n">PyTorchProfiler</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">profiler</span> <span class="o">=</span> <span class="n">PyTorchProfiler</span><span class="p">(</span><span class="n">emit_nvtx</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">profiler</span><span class="o">=</span><span class="n">profiler</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Then run as following:</p>
-<div class="highlight"><pre><span></span><code>nvprof<span class="w"> </span>--profile-from-start<span class="w"> </span>off<span class="w"> </span>-o<span class="w"> </span>trace_name.prof<span class="w"> </span>--<span class="w"> </span>&lt;regular<span class="w"> </span><span class="nb">command</span><span class="w"> </span>here&gt;
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>nvprof<span class="w"> </span>--profile-from-start<span class="w"> </span>off<span class="w"> </span>-o<span class="w"> </span>trace_name.prof<span class="w"> </span>--<span class="w"> </span>&lt;regular<span class="w"> </span><span class="nb">command</span><span class="w"> </span>here&gt;
+</span></code></pre></div>
 <p>To visualize the profiled operation, you can either use <code>nvvp</code>:</p>
-<div class="highlight"><pre><span></span><code>nvvp<span class="w"> </span>trace_name.prof
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>nvvp<span class="w"> </span>trace_name.prof
+</span></code></pre></div>
 <p>or python:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import torch; print(torch.autograd.profiler.load_nvprof(&quot;trace_name.prof&quot;))&#39;</span>
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import torch; print(torch.autograd.profiler.load_nvprof(&quot;trace_name.prof&quot;))&#39;</span>
+</span></code></pre></div>
 
 
 
@@ -4236,11 +4234,11 @@ Self<span class="w"> </span>CPU<span class="w"> </span><span class="nb">time</sp
     
       <script src="../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../javascripts/katex.js"></script>
+        <script src="../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

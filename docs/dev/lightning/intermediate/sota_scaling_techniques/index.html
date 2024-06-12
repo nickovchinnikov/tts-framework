@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -4160,32 +4158,32 @@
 <p>Lower precision, such as 16-bit floating-point, requires less memory and enables training and deploying larger models. Higher precision, such as the 64-bit floating-point, can be used for highly sensitive use-cases.</p>
 <h3 id="16-bit-precision">16-bit Precision</h3>
 <p>Use 16-bit mixed precision to speed up training and inference. If your GPUs are [Tensor Core] GPUs, you can expect a ~3x speed improvement.</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-mixed&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-mixed&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <p>In most cases, mixed precision uses FP16. Supported PyTorch operations automatically run in FP16, saving memory and improving throughput on the supported accelerators. Since computation happens in FP16, which has a very limited “dynamic range”, there is a chance of numerical instability during training. This is handled internally by a dynamic grad scaler which skips invalid steps and adjusts the scaler to ensure subsequent steps fall within a finite range. For more information see the autocast docs.</p>
 <p>With true 16-bit precision you can additionally lower your memory consumption by up to half so that you can train and deploy larger models. <strong>However, this setting can sometimes lead to unstable training.</strong></p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-true&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-true&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="32-bit-precision">32-bit Precision</h3>
 <p>32-bit precision is the default used across all models and research. This precision is known to be stable in contrast to lower precision settings.</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;32-true&quot;</span><span class="p">)</span>
-
-<span class="c1"># or (legacy)</span>
-<span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;32&quot;</span><span class="p">)</span>
-
-<span class="c1"># or (legacy)</span>
-<span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;32-true&quot;</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># or (legacy)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;32&quot;</span><span class="p">)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># or (legacy)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="64-bit-precision">64-bit Precision</h3>
 <p>For certain scientific computations, 64-bit precision enables more accurate models. However, doubling the precision from 32 to 64 bit also doubles the memory requirements.</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;64-true&quot;</span><span class="p">)</span>
-
-<span class="c1"># or (legacy)</span>
-<span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;64&quot;</span><span class="p">)</span>
-
-<span class="c1"># or (legacy)</span>
-<span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;64-true&quot;</span><span class="p">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># or (legacy)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;64&quot;</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># or (legacy)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</span></code></pre></div>
 <h4 id="more-details-are-here-track-and-visualize-experiments_1"><a href="https://lightning.ai/docs/pytorch/stable/common/precision_basic.html">More details are here: Track and Visualize Experiments</a></h4>
 <h2 id="n-bit-precision-intermediate">N-Bit Precision (Intermediate)</h2>
 <h4 id="more-details-are-here-n-bit-precision-intermediate"><a href="https://lightning.ai/docs/pytorch/stable/common/precision_intermediate.html">More details are here: N-Bit Precision (Intermediate)</a></h4>
@@ -4194,63 +4192,63 @@
 <blockquote>
 <p>BFloat16 may not provide significant speedups or memory improvements or offer better numerical stability. For GPUs, the most significant benefits require Ampere based GPUs or newer, such as A100s or 3090s.</p>
 </blockquote>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-mixed&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="n">devices</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-mixed&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <p>It is also possible to use BFloat16 mixed precision on the CPU, relying on MKLDNN under the hood.</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-mixed&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-mixed&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="true-half-precision">True Half Precision</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Select FP16 precision</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-true&quot;</span><span class="p">)</span>
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># model gets cast to torch.float16</span>
-
-<span class="c1"># Select BF16 precision</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-true&quot;</span><span class="p">)</span>
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># model gets cast to torch.bfloat16</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Select FP16 precision</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-true&quot;</span><span class="p">)</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># model gets cast to torch.float16</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Select BF16 precision</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-true&quot;</span><span class="p">)</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># model gets cast to torch.bfloat16</span>
+</span></code></pre></div>
 <blockquote>
 <p>Tip: For faster initialization, you can create model parameters with the desired dtype directly on the device:</p>
 </blockquote>
-<div class="highlight"><pre><span></span><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-true&quot;</span><span class="p">)</span>
-
-<span class="c1"># init the model directly on the device and with parameters in half-precision</span>
-<span class="k">with</span> <span class="n">trainer</span><span class="o">.</span><span class="n">init_module</span><span class="p">():</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">()</span>
-
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;bf16-true&quot;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># init the model directly on the device and with parameters in half-precision</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">with</span> <span class="n">trainer</span><span class="o">.</span><span class="n">init_module</span><span class="p">():</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">()</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="efficient-initialization-advanced">Efficient initialization (Advanced)</h3>
 <h4 id="more-details-are-here-efficient-initialization"><a href="https://lightning.ai/docs/pytorch/stable/advanced/model_init.html">More details are here: Efficient initialization</a></h4>
 <h4 id="half-precision">Half-precision</h4>
 <p>Instantiating a nn.Module in PyTorch creates all parameters on CPU in float32 precision by default. To speed up initialization, you can force PyTorch to create the model directly on the target device and with the desired precision without changing your model code.</p>
-<div class="highlight"><pre><span></span><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-true&quot;</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">trainer</span><span class="o">.</span><span class="n">init_module</span><span class="p">():</span>
-    <span class="c1"># models created here will be on GPU and in float16</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">MyLightningModule</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="s2">&quot;16-true&quot;</span><span class="p">)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">with</span> <span class="n">trainer</span><span class="o">.</span><span class="n">init_module</span><span class="p">():</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="c1"># models created here will be on GPU and in float16</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">MyLightningModule</span><span class="p">()</span>
+</span></code></pre></div>
 <h4 id="loading-checkpoints-for-inference-or-finetuning">Loading checkpoints for inference or finetuning</h4>
-<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">trainer</span><span class="o">.</span><span class="n">init_module</span><span class="p">(</span><span class="n">empty_init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="c1"># creation of the model is fast</span>
-    <span class="c1"># and depending on the strategy allocates no memory, or uninitialized memory</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">MyLightningModule</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="s2">&quot;my/checkpoint/path.ckpt&quot;</span><span class="p">)</span>
-
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">with</span> <span class="n">trainer</span><span class="o">.</span><span class="n">init_module</span><span class="p">(</span><span class="n">empty_init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="c1"># creation of the model is fast</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="c1"># and depending on the strategy allocates no memory, or uninitialized memory</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">MyLightningModule</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="s2">&quot;my/checkpoint/path.ckpt&quot;</span><span class="p">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="float8-mixed-precision-via-nvidias-transformerengine">Float8 Mixed Precision via Nvidia’s TransformerEngine</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># Select 8bit mixed precision via TransformerEngine, with model weights in bfloat16</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;transformer-engine&quot;</span><span class="p">)</span>
-
-<span class="c1"># Select 8bit mixed precision via TransformerEngine, with model weights in float16</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;transformer-engine-float16&quot;</span><span class="p">)</span>
-
-<span class="c1"># Customize the fp8 recipe or set a different base precision:</span>
-<span class="kn">from</span> <span class="nn">lightning.trainer.plugins</span> <span class="kn">import</span> <span class="n">TransformerEnginePrecision</span>
-
-<span class="n">recipe</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fp8_format&quot;</span><span class="p">:</span> <span class="s2">&quot;HYBRID&quot;</span><span class="p">,</span> <span class="s2">&quot;amax_history_len&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;amax_compute_algo&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">}</span>
-<span class="n">precision</span> <span class="o">=</span> <span class="n">TransformerEnginePrecision</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="n">recipe</span><span class="o">=</span><span class="n">recipe</span><span class="p">)</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Select 8bit mixed precision via TransformerEngine, with model weights in bfloat16</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;transformer-engine&quot;</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Select 8bit mixed precision via TransformerEngine, with model weights in float16</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="s2">&quot;transformer-engine-float16&quot;</span><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Customize the fp8 recipe or set a different base precision:</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="kn">from</span> <span class="nn">lightning.trainer.plugins</span> <span class="kn">import</span> <span class="n">TransformerEnginePrecision</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="n">recipe</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fp8_format&quot;</span><span class="p">:</span> <span class="s2">&quot;HYBRID&quot;</span><span class="p">,</span> <span class="s2">&quot;amax_history_len&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;amax_compute_algo&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">}</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">precision</span> <span class="o">=</span> <span class="n">TransformerEnginePrecision</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="n">recipe</span><span class="o">=</span><span class="n">recipe</span><span class="p">)</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="n">precision</span><span class="p">)</span>
+</span></code></pre></div>
 <blockquote>
 <p>This requires Hopper based GPUs or newer, such the H100.</p>
 </blockquote>
@@ -4337,11 +4335,11 @@
     
       <script src="../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../javascripts/katex.js"></script>
+        <script src="../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>
