@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -4059,68 +4057,68 @@
 
           <details class="quote">
             <summary>Source code in <code>models/helpers/initializer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_test_configs</span><span class="p">(</span>
-    <span class="n">srink_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">PreprocessingConfig</span><span class="p">,</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span> <span class="n">AcousticPretrainingConfig</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a tuple of configuration objects for testing purposes.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        srink_factor (int, optional): The shrink factor to apply to the model configuration. Defaults to 4.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig]: A tuple of configuration objects for testing purposes.</span>
-
-<span class="sd">    This function returns a tuple of configuration objects for testing purposes. The configuration objects are as follows:</span>
-<span class="sd">    - `PreprocessingConfig`: A configuration object for preprocessing.</span>
-<span class="sd">    - `AcousticENModelConfig`: A configuration object for the acoustic model.</span>
-<span class="sd">    - `AcousticPretrainingConfig`: A configuration object for acoustic pretraining.</span>
-
-<span class="sd">    The `srink_factor` parameter is used to shrink the dimensions of the model configuration to prevent out of memory issues during testing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">preprocess_config</span> <span class="o">=</span> <span class="n">PreprocessingConfig</span><span class="p">(</span><span class="s2">&quot;english_only&quot;</span><span class="p">)</span>
-    <span class="n">model_config</span> <span class="o">=</span> <span class="n">AcousticENModelConfig</span><span class="p">()</span>
-
-    <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">//</span> <span class="n">srink_factor</span>
-    <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">//</span> <span class="n">srink_factor</span>
-    <span class="n">model_config</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">//</span> <span class="n">srink_factor</span>
-    <span class="n">model_config</span><span class="o">.</span><span class="n">variance_adaptor</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">model_config</span><span class="o">.</span><span class="n">variance_adaptor</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">//</span> <span class="n">srink_factor</span>
-    <span class="p">)</span>
-
-    <span class="n">acoustic_pretraining_config</span> <span class="o">=</span> <span class="n">AcousticPretrainingConfig</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">preprocess_config</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">acoustic_pretraining_config</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
+<span class="normal"><a href="#__codelineno-0-39">39</a></span>
+<span class="normal"><a href="#__codelineno-0-40">40</a></span>
+<span class="normal"><a href="#__codelineno-0-41">41</a></span>
+<span class="normal"><a href="#__codelineno-0-42">42</a></span>
+<span class="normal"><a href="#__codelineno-0-43">43</a></span>
+<span class="normal"><a href="#__codelineno-0-44">44</a></span>
+<span class="normal"><a href="#__codelineno-0-45">45</a></span>
+<span class="normal"><a href="#__codelineno-0-46">46</a></span>
+<span class="normal"><a href="#__codelineno-0-47">47</a></span>
+<span class="normal"><a href="#__codelineno-0-48">48</a></span>
+<span class="normal"><a href="#__codelineno-0-49">49</a></span>
+<span class="normal"><a href="#__codelineno-0-50">50</a></span>
+<span class="normal"><a href="#__codelineno-0-51">51</a></span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span>
+<span class="normal"><a href="#__codelineno-0-54">54</a></span>
+<span class="normal"><a href="#__codelineno-0-55">55</a></span>
+<span class="normal"><a href="#__codelineno-0-56">56</a></span>
+<span class="normal"><a href="#__codelineno-0-57">57</a></span>
+<span class="normal"><a href="#__codelineno-0-58">58</a></span>
+<span class="normal"><a href="#__codelineno-0-59">59</a></span>
+<span class="normal"><a href="#__codelineno-0-60">60</a></span>
+<span class="normal"><a href="#__codelineno-0-61">61</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="k">def</span> <span class="nf">get_test_configs</span><span class="p">(</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span class="n">srink_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">PreprocessingConfig</span><span class="p">,</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span> <span class="n">AcousticPretrainingConfig</span><span class="p">]:</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns a tuple of configuration objects for testing purposes.</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        srink_factor (int, optional): The shrink factor to apply to the model configuration. Defaults to 4.</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">        Tuple[PreprocessingConfig, AcousticENModelConfig, AcousticPretrainingConfig]: A tuple of configuration objects for testing purposes.</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    This function returns a tuple of configuration objects for testing purposes. The configuration objects are as follows:</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">    - `PreprocessingConfig`: A configuration object for preprocessing.</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="sd">    - `AcousticENModelConfig`: A configuration object for the acoustic model.</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    - `AcousticPretrainingConfig`: A configuration object for acoustic pretraining.</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    The `srink_factor` parameter is used to shrink the dimensions of the model configuration to prevent out of memory issues during testing.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>    <span class="n">preprocess_config</span> <span class="o">=</span> <span class="n">PreprocessingConfig</span><span class="p">(</span><span class="s2">&quot;english_only&quot;</span><span class="p">)</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">AcousticENModelConfig</span><span class="p">()</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">//</span> <span class="n">srink_factor</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">//</span> <span class="n">srink_factor</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">model_config</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">//</span> <span class="n">srink_factor</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span class="n">model_config</span><span class="o">.</span><span class="n">variance_adaptor</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span class="n">model_config</span><span class="o">.</span><span class="n">variance_adaptor</span><span class="o">.</span><span class="n">n_hidden</span> <span class="o">//</span> <span class="n">srink_factor</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span class="p">)</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span class="n">acoustic_pretraining_config</span> <span class="o">=</span> <span class="n">AcousticPretrainingConfig</span><span class="p">()</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">preprocess_config</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">acoustic_pretraining_config</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
           </details>
   </div>
 
@@ -4232,72 +4230,72 @@ The <code>AcousticModelConfig</code> is configured as follows:
 
           <details class="quote">
             <summary>Source code in <code>models/helpers/initializer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">init_acoustic_model</span><span class="p">(</span>
-    <span class="n">preprocess_config</span><span class="p">:</span> <span class="n">PreprocessingConfig</span><span class="p">,</span>
-    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span>
-    <span class="n">n_speakers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AcousticModel</span><span class="p">,</span> <span class="n">AcousticModelConfig</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize an `AcousticModel` with given preprocessing and model configurations.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        preprocess_config (PreprocessingConfig): Configuration object for pre-processing.</span>
-<span class="sd">        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.</span>
-<span class="sd">        n_speakers (int, optional): Number of speakers. Defaults to 10.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        AcousticModel: Initialized Acoustic Model.</span>
-
-<span class="sd">    The function creates an `AcousticModelConfig` instance which is then used to initialize the `AcousticModel`.</span>
-<span class="sd">    The `AcousticModelConfig` is configured as follows:</span>
-<span class="sd">    - preprocess_config: Pre-processing configuration.</span>
-<span class="sd">    - model_config: English Acoustic model configuration.</span>
-<span class="sd">    - fine_tuning: Boolean flag set to True indicating the model is for fine-tuning.</span>
-<span class="sd">    - n_speakers: Number of speakers.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Create an AcousticModelConfig instance</span>
-    <span class="n">acoustic_model_config</span> <span class="o">=</span> <span class="n">AcousticModelConfig</span><span class="p">(</span>
-        <span class="n">preprocess_config</span><span class="o">=</span><span class="n">preprocess_config</span><span class="p">,</span>
-        <span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">,</span>
-        <span class="n">n_speakers</span><span class="o">=</span><span class="n">n_speakers</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">AcousticModel</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">acoustic_model_config</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">acoustic_model_config</span>
-</code></pre></div></td></tr></table></div>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span>
+<span class="normal"><a href="#__codelineno-0-120">120</a></span>
+<span class="normal"><a href="#__codelineno-0-121">121</a></span>
+<span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span>
+<span class="normal"><a href="#__codelineno-0-125">125</a></span>
+<span class="normal"><a href="#__codelineno-0-126">126</a></span>
+<span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span>
+<span class="normal"><a href="#__codelineno-0-131">131</a></span>
+<span class="normal"><a href="#__codelineno-0-132">132</a></span>
+<span class="normal"><a href="#__codelineno-0-133">133</a></span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span>
+<span class="normal"><a href="#__codelineno-0-137">137</a></span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="k">def</span> <span class="nf">init_acoustic_model</span><span class="p">(</span>
+</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">preprocess_config</span><span class="p">:</span> <span class="n">PreprocessingConfig</span><span class="p">,</span>
+</span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span class="n">n_speakers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AcousticModel</span><span class="p">,</span> <span class="n">AcousticModelConfig</span><span class="p">]:</span>
+</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize an `AcousticModel` with given preprocessing and model configurations.</span>
+</span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a>
+</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120"></a><span class="sd">        preprocess_config (PreprocessingConfig): Configuration object for pre-processing.</span>
+</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="sd">        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.</span>
+</span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="sd">        n_speakers (int, optional): Number of speakers. Defaults to 10.</span>
+</span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123"></a>
+</span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125"></a><span class="sd">        AcousticModel: Initialized Acoustic Model.</span>
+</span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126"></a>
+</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127"></a><span class="sd">    The function creates an `AcousticModelConfig` instance which is then used to initialize the `AcousticModel`.</span>
+</span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="sd">    The `AcousticModelConfig` is configured as follows:</span>
+</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="sd">    - preprocess_config: Pre-processing configuration.</span>
+</span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a><span class="sd">    - model_config: English Acoustic model configuration.</span>
+</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">    - fine_tuning: Boolean flag set to True indicating the model is for fine-tuning.</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span class="sd">    - n_speakers: Number of speakers.</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>    <span class="c1"># Create an AcousticModelConfig instance</span>
+</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span class="n">acoustic_model_config</span> <span class="o">=</span> <span class="n">AcousticModelConfig</span><span class="p">(</span>
+</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>        <span class="n">preprocess_config</span><span class="o">=</span><span class="n">preprocess_config</span><span class="p">,</span>
+</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>        <span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">,</span>
+</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a>        <span class="n">n_speakers</span><span class="o">=</span><span class="n">n_speakers</span><span class="p">,</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>    <span class="p">)</span>
+</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">AcousticModel</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">acoustic_model_config</span><span class="p">))</span>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a>
+</span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a>    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">acoustic_model_config</span>
+</span></code></pre></div></td></tr></table></div>
           </details>
   </div>
 
@@ -4386,82 +4384,82 @@ The <code>Conformer</code> configuration is set as follows:
 
           <details class="quote">
             <summary>Source code in <code>models/helpers/initializer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">init_conformer</span><span class="p">(</span>
-    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticModelConfigType</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Conformer</span><span class="p">,</span> <span class="n">ConformerConfig</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize a `Conformer` with a given `AcousticModelConfigType` configuration.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model_config (AcousticModelConfigType): The object that holds the configuration details.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Conformer: Initialized Conformer object.</span>
-
-<span class="sd">    The function sets the details of the `Conformer` object based on the `model_config` parameter.</span>
-<span class="sd">    The `Conformer` configuration is set as follows:</span>
-<span class="sd">    - dim: The number of hidden units, taken from the encoder part of the `model_config.encoder.n_hidden`.</span>
-<span class="sd">    - n_layers: The number of layers, taken from the encoder part of the `model_config.encoder.n_layers`.</span>
-<span class="sd">    - n_heads: The number of attention heads, taken from the encoder part of the `model_config.encoder.n_heads`.</span>
-<span class="sd">    - embedding_dim: The sum of dimensions of speaker embeddings and language embeddings.</span>
-<span class="sd">      The speaker_embed_dim and lang_embed_dim are a part of the `model_config.speaker_embed_dim`.</span>
-<span class="sd">    - p_dropout: Dropout rate taken from the encoder part of the `model_config.encoder.p_dropout`.</span>
-<span class="sd">      It adds a regularization parameter to prevent overfitting.</span>
-<span class="sd">    - kernel_size_conv_mod: The kernel size for the convolution module taken from the encoder part of the `model_config.encoder.kernel_size_conv_mod`.</span>
-<span class="sd">    - with_ff: A Boolean value denoting if feedforward operation is involved, taken from the encoder part of the `model_config.encoder.with_ff`.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">conformer_config</span> <span class="o">=</span> <span class="n">ConformerConfig</span><span class="p">(</span>
-        <span class="n">dim</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
-        <span class="n">n_layers</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_layers</span><span class="p">,</span>
-        <span class="n">n_heads</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_heads</span><span class="p">,</span>
-        <span class="n">embedding_dim</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span>
-        <span class="o">+</span> <span class="n">model_config</span><span class="o">.</span><span class="n">lang_embed_dim</span><span class="p">,</span>  <span class="c1"># speaker_embed_dim + lang_embed_dim = 385</span>
-        <span class="n">p_dropout</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">p_dropout</span><span class="p">,</span>
-        <span class="n">kernel_size_conv_mod</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">kernel_size_conv_mod</span><span class="p">,</span>
-        <span class="n">with_ff</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">with_ff</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">Conformer</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">conformer_config</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">conformer_config</span>
-</code></pre></div></td></tr></table></div>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="k">def</span> <span class="nf">init_conformer</span><span class="p">(</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticModelConfigType</span><span class="p">,</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Conformer</span><span class="p">,</span> <span class="n">ConformerConfig</span><span class="p">]:</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize a `Conformer` with a given `AcousticModelConfigType` configuration.</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">        model_config (AcousticModelConfigType): The object that holds the configuration details.</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">        Conformer: Initialized Conformer object.</span>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a>
+</span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    The function sets the details of the `Conformer` object based on the `model_config` parameter.</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">    The `Conformer` configuration is set as follows:</span>
+</span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">    - dim: The number of hidden units, taken from the encoder part of the `model_config.encoder.n_hidden`.</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">    - n_layers: The number of layers, taken from the encoder part of the `model_config.encoder.n_layers`.</span>
+</span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">    - n_heads: The number of attention heads, taken from the encoder part of the `model_config.encoder.n_heads`.</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="sd">    - embedding_dim: The sum of dimensions of speaker embeddings and language embeddings.</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">      The speaker_embed_dim and lang_embed_dim are a part of the `model_config.speaker_embed_dim`.</span>
+</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">    - p_dropout: Dropout rate taken from the encoder part of the `model_config.encoder.p_dropout`.</span>
+</span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">      It adds a regularization parameter to prevent overfitting.</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">    - kernel_size_conv_mod: The kernel size for the convolution module taken from the encoder part of the `model_config.encoder.kernel_size_conv_mod`.</span>
+</span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a><span class="sd">    - with_ff: A Boolean value denoting if feedforward operation is involved, taken from the encoder part of the `model_config.encoder.with_ff`.</span>
+</span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a>    <span class="n">conformer_config</span> <span class="o">=</span> <span class="n">ConformerConfig</span><span class="p">(</span>
+</span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a>        <span class="n">dim</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
+</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a>        <span class="n">n_layers</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_layers</span><span class="p">,</span>
+</span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a>        <span class="n">n_heads</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_heads</span><span class="p">,</span>
+</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a>        <span class="n">embedding_dim</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span>
+</span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a>        <span class="o">+</span> <span class="n">model_config</span><span class="o">.</span><span class="n">lang_embed_dim</span><span class="p">,</span>  <span class="c1"># speaker_embed_dim + lang_embed_dim = 385</span>
+</span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a>        <span class="n">p_dropout</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">p_dropout</span><span class="p">,</span>
+</span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a>        <span class="n">kernel_size_conv_mod</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">kernel_size_conv_mod</span><span class="p">,</span>
+</span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a>        <span class="n">with_ff</span><span class="o">=</span><span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">with_ff</span><span class="p">,</span>
+</span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a>    <span class="p">)</span>
+</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a>
+</span><span id="__span-0-100"><a id="__codelineno-0-100" name="__codelineno-0-100"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Conformer</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">conformer_config</span><span class="p">))</span>
+</span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101"></a>
+</span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">conformer_config</span>
+</span></code></pre></div></td></tr></table></div>
           </details>
   </div>
 
@@ -4593,252 +4591,252 @@ The <code>Conformer</code> configuration is set as follows:
 
           <details class="quote">
             <summary>Source code in <code>models/helpers/initializer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">init_forward_trains_params</span><span class="p">(</span>
-    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span>
-    <span class="n">acoustic_pretraining_config</span><span class="p">:</span> <span class="n">AcousticPretrainingConfig</span><span class="p">,</span>
-    <span class="n">preprocess_config</span><span class="p">:</span> <span class="n">PreprocessingConfig</span><span class="p">,</span>
-    <span class="n">n_speakers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ForwardTrainParams</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize the parameters for forward propagation during training.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.</span>
-<span class="sd">        acoustic_pretraining_config (AcousticPretrainingConfig): Configuration object for acoustic pretraining.</span>
-<span class="sd">        preprocess_config (PreprocessingConfig): Configuration object for pre-processing.</span>
-<span class="sd">        n_speakers (int, optional): Number of speakers. Defaults to 10.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        ForwardTrainParams: Initialized parameters for forward propagation during training.</span>
-
-<span class="sd">    The function initializes the ForwardTrainParams object with the following parameters:</span>
-<span class="sd">    - x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size]</span>
-<span class="sd">    - speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]</span>
-<span class="sd">    - src_lens: Tensor containing the lengths of source sequences. Shape: [batch_size]</span>
-<span class="sd">    - mels: Tensor containing the mel spectrogram. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
-<span class="sd">    - mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]</span>
-<span class="sd">    - pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
-<span class="sd">    - energies: Tensor containing the energy values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
-<span class="sd">    - langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]</span>
-<span class="sd">    - attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]</span>
-<span class="sd">    - use_ground_truth: Boolean flag indicating if ground truth values should be used or not.</span>
-
-<span class="sd">    All the Tensors are initialized with random values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">ForwardTrainParams</span><span class="p">(</span>
-        <span class="c1"># x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size]</span>
-        <span class="n">x</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
-            <span class="mi">1</span><span class="p">,</span>
-            <span class="mi">255</span><span class="p">,</span>
-            <span class="p">(</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-                <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="p">),</span>
-        <span class="p">),</span>
-        <span class="n">pitches_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
-        <span class="c1"># speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]</span>
-        <span class="n">speakers</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
-            <span class="mi">1</span><span class="p">,</span>
-            <span class="n">n_speakers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="p">(</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-                <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="p">),</span>
-        <span class="p">),</span>
-        <span class="c1"># src_lens: Tensor containing the lengths of source sequences. Shape: [speaker_embed_dim]</span>
-        <span class="n">src_lens</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="c1"># torch.tensor([self.model_config.speaker_embed_dim]),</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
-                    <span class="mi">1</span><span class="p">,</span>
-                    <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                    <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,),</span>
-                <span class="p">),</span>
-            <span class="p">],</span>
-            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="c1"># mels: Tensor containing the mel spectrogram. Shape: [batch_size, stft.n_mel_channels, encoder.n_hidden]</span>
-        <span class="n">mels</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-            <span class="n">preprocess_config</span><span class="o">.</span><span class="n">stft</span><span class="o">.</span><span class="n">n_mel_channels</span><span class="p">,</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="c1"># enc_len: Tensor containing the lengths of mel sequences. Shape: [speaker_embed_dim]</span>
-        <span class="n">enc_len</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
-                    <span class="mi">1</span><span class="p">,</span>
-                    <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-                    <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,),</span>
-                <span class="p">),</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">]),</span>
-            <span class="p">],</span>
-            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="c1"># mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]</span>
-        <span class="n">mel_lens</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
-                    <span class="mi">1</span><span class="p">,</span>
-                    <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-                    <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,),</span>
-                <span class="p">),</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">]),</span>
-            <span class="p">],</span>
-            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="c1"># pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
-        <span class="n">pitches</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
-            <span class="c1"># acoustic_pretraining_config.batch_size,</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-            <span class="c1"># model_config.speaker_embed_dim,</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="c1"># energies: Tensor containing the energy values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
-        <span class="n">energies</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-            <span class="mi">1</span><span class="p">,</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="c1"># langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]</span>
-        <span class="n">langs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
-            <span class="mi">1</span><span class="p">,</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">SUPPORTED_LANGUAGES</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="p">(</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-                <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="p">),</span>
-        <span class="p">),</span>
-        <span class="c1"># attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]</span>
-        <span class="n">attn_priors</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
-            <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
-        <span class="p">),</span>
-        <span class="n">use_ground_truth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-163">163</a></span>
+<span class="normal"><a href="#__codelineno-0-164">164</a></span>
+<span class="normal"><a href="#__codelineno-0-165">165</a></span>
+<span class="normal"><a href="#__codelineno-0-166">166</a></span>
+<span class="normal"><a href="#__codelineno-0-167">167</a></span>
+<span class="normal"><a href="#__codelineno-0-168">168</a></span>
+<span class="normal"><a href="#__codelineno-0-169">169</a></span>
+<span class="normal"><a href="#__codelineno-0-170">170</a></span>
+<span class="normal"><a href="#__codelineno-0-171">171</a></span>
+<span class="normal"><a href="#__codelineno-0-172">172</a></span>
+<span class="normal"><a href="#__codelineno-0-173">173</a></span>
+<span class="normal"><a href="#__codelineno-0-174">174</a></span>
+<span class="normal"><a href="#__codelineno-0-175">175</a></span>
+<span class="normal"><a href="#__codelineno-0-176">176</a></span>
+<span class="normal"><a href="#__codelineno-0-177">177</a></span>
+<span class="normal"><a href="#__codelineno-0-178">178</a></span>
+<span class="normal"><a href="#__codelineno-0-179">179</a></span>
+<span class="normal"><a href="#__codelineno-0-180">180</a></span>
+<span class="normal"><a href="#__codelineno-0-181">181</a></span>
+<span class="normal"><a href="#__codelineno-0-182">182</a></span>
+<span class="normal"><a href="#__codelineno-0-183">183</a></span>
+<span class="normal"><a href="#__codelineno-0-184">184</a></span>
+<span class="normal"><a href="#__codelineno-0-185">185</a></span>
+<span class="normal"><a href="#__codelineno-0-186">186</a></span>
+<span class="normal"><a href="#__codelineno-0-187">187</a></span>
+<span class="normal"><a href="#__codelineno-0-188">188</a></span>
+<span class="normal"><a href="#__codelineno-0-189">189</a></span>
+<span class="normal"><a href="#__codelineno-0-190">190</a></span>
+<span class="normal"><a href="#__codelineno-0-191">191</a></span>
+<span class="normal"><a href="#__codelineno-0-192">192</a></span>
+<span class="normal"><a href="#__codelineno-0-193">193</a></span>
+<span class="normal"><a href="#__codelineno-0-194">194</a></span>
+<span class="normal"><a href="#__codelineno-0-195">195</a></span>
+<span class="normal"><a href="#__codelineno-0-196">196</a></span>
+<span class="normal"><a href="#__codelineno-0-197">197</a></span>
+<span class="normal"><a href="#__codelineno-0-198">198</a></span>
+<span class="normal"><a href="#__codelineno-0-199">199</a></span>
+<span class="normal"><a href="#__codelineno-0-200">200</a></span>
+<span class="normal"><a href="#__codelineno-0-201">201</a></span>
+<span class="normal"><a href="#__codelineno-0-202">202</a></span>
+<span class="normal"><a href="#__codelineno-0-203">203</a></span>
+<span class="normal"><a href="#__codelineno-0-204">204</a></span>
+<span class="normal"><a href="#__codelineno-0-205">205</a></span>
+<span class="normal"><a href="#__codelineno-0-206">206</a></span>
+<span class="normal"><a href="#__codelineno-0-207">207</a></span>
+<span class="normal"><a href="#__codelineno-0-208">208</a></span>
+<span class="normal"><a href="#__codelineno-0-209">209</a></span>
+<span class="normal"><a href="#__codelineno-0-210">210</a></span>
+<span class="normal"><a href="#__codelineno-0-211">211</a></span>
+<span class="normal"><a href="#__codelineno-0-212">212</a></span>
+<span class="normal"><a href="#__codelineno-0-213">213</a></span>
+<span class="normal"><a href="#__codelineno-0-214">214</a></span>
+<span class="normal"><a href="#__codelineno-0-215">215</a></span>
+<span class="normal"><a href="#__codelineno-0-216">216</a></span>
+<span class="normal"><a href="#__codelineno-0-217">217</a></span>
+<span class="normal"><a href="#__codelineno-0-218">218</a></span>
+<span class="normal"><a href="#__codelineno-0-219">219</a></span>
+<span class="normal"><a href="#__codelineno-0-220">220</a></span>
+<span class="normal"><a href="#__codelineno-0-221">221</a></span>
+<span class="normal"><a href="#__codelineno-0-222">222</a></span>
+<span class="normal"><a href="#__codelineno-0-223">223</a></span>
+<span class="normal"><a href="#__codelineno-0-224">224</a></span>
+<span class="normal"><a href="#__codelineno-0-225">225</a></span>
+<span class="normal"><a href="#__codelineno-0-226">226</a></span>
+<span class="normal"><a href="#__codelineno-0-227">227</a></span>
+<span class="normal"><a href="#__codelineno-0-228">228</a></span>
+<span class="normal"><a href="#__codelineno-0-229">229</a></span>
+<span class="normal"><a href="#__codelineno-0-230">230</a></span>
+<span class="normal"><a href="#__codelineno-0-231">231</a></span>
+<span class="normal"><a href="#__codelineno-0-232">232</a></span>
+<span class="normal"><a href="#__codelineno-0-233">233</a></span>
+<span class="normal"><a href="#__codelineno-0-234">234</a></span>
+<span class="normal"><a href="#__codelineno-0-235">235</a></span>
+<span class="normal"><a href="#__codelineno-0-236">236</a></span>
+<span class="normal"><a href="#__codelineno-0-237">237</a></span>
+<span class="normal"><a href="#__codelineno-0-238">238</a></span>
+<span class="normal"><a href="#__codelineno-0-239">239</a></span>
+<span class="normal"><a href="#__codelineno-0-240">240</a></span>
+<span class="normal"><a href="#__codelineno-0-241">241</a></span>
+<span class="normal"><a href="#__codelineno-0-242">242</a></span>
+<span class="normal"><a href="#__codelineno-0-243">243</a></span>
+<span class="normal"><a href="#__codelineno-0-244">244</a></span>
+<span class="normal"><a href="#__codelineno-0-245">245</a></span>
+<span class="normal"><a href="#__codelineno-0-246">246</a></span>
+<span class="normal"><a href="#__codelineno-0-247">247</a></span>
+<span class="normal"><a href="#__codelineno-0-248">248</a></span>
+<span class="normal"><a href="#__codelineno-0-249">249</a></span>
+<span class="normal"><a href="#__codelineno-0-250">250</a></span>
+<span class="normal"><a href="#__codelineno-0-251">251</a></span>
+<span class="normal"><a href="#__codelineno-0-252">252</a></span>
+<span class="normal"><a href="#__codelineno-0-253">253</a></span>
+<span class="normal"><a href="#__codelineno-0-254">254</a></span>
+<span class="normal"><a href="#__codelineno-0-255">255</a></span>
+<span class="normal"><a href="#__codelineno-0-256">256</a></span>
+<span class="normal"><a href="#__codelineno-0-257">257</a></span>
+<span class="normal"><a href="#__codelineno-0-258">258</a></span>
+<span class="normal"><a href="#__codelineno-0-259">259</a></span>
+<span class="normal"><a href="#__codelineno-0-260">260</a></span>
+<span class="normal"><a href="#__codelineno-0-261">261</a></span>
+<span class="normal"><a href="#__codelineno-0-262">262</a></span>
+<span class="normal"><a href="#__codelineno-0-263">263</a></span>
+<span class="normal"><a href="#__codelineno-0-264">264</a></span>
+<span class="normal"><a href="#__codelineno-0-265">265</a></span>
+<span class="normal"><a href="#__codelineno-0-266">266</a></span>
+<span class="normal"><a href="#__codelineno-0-267">267</a></span>
+<span class="normal"><a href="#__codelineno-0-268">268</a></span>
+<span class="normal"><a href="#__codelineno-0-269">269</a></span>
+<span class="normal"><a href="#__codelineno-0-270">270</a></span>
+<span class="normal"><a href="#__codelineno-0-271">271</a></span>
+<span class="normal"><a href="#__codelineno-0-272">272</a></span>
+<span class="normal"><a href="#__codelineno-0-273">273</a></span>
+<span class="normal"><a href="#__codelineno-0-274">274</a></span>
+<span class="normal"><a href="#__codelineno-0-275">275</a></span>
+<span class="normal"><a href="#__codelineno-0-276">276</a></span>
+<span class="normal"><a href="#__codelineno-0-277">277</a></span>
+<span class="normal"><a href="#__codelineno-0-278">278</a></span>
+<span class="normal"><a href="#__codelineno-0-279">279</a></span>
+<span class="normal"><a href="#__codelineno-0-280">280</a></span>
+<span class="normal"><a href="#__codelineno-0-281">281</a></span>
+<span class="normal"><a href="#__codelineno-0-282">282</a></span>
+<span class="normal"><a href="#__codelineno-0-283">283</a></span>
+<span class="normal"><a href="#__codelineno-0-284">284</a></span>
+<span class="normal"><a href="#__codelineno-0-285">285</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a><span class="k">def</span> <span class="nf">init_forward_trains_params</span><span class="p">(</span>
+</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a>    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span>
+</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a>    <span class="n">acoustic_pretraining_config</span><span class="p">:</span> <span class="n">AcousticPretrainingConfig</span><span class="p">,</span>
+</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a>    <span class="n">preprocess_config</span><span class="p">:</span> <span class="n">PreprocessingConfig</span><span class="p">,</span>
+</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a>    <span class="n">n_speakers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ForwardTrainParams</span><span class="p">:</span>
+</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize the parameters for forward propagation during training.</span>
+</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a>
+</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span class="sd">        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.</span>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span class="sd">        acoustic_pretraining_config (AcousticPretrainingConfig): Configuration object for acoustic pretraining.</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span class="sd">        preprocess_config (PreprocessingConfig): Configuration object for pre-processing.</span>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span class="sd">        n_speakers (int, optional): Number of speakers. Defaults to 10.</span>
+</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>
+</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a><span class="sd">        ForwardTrainParams: Initialized parameters for forward propagation during training.</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>
+</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a><span class="sd">    The function initializes the ForwardTrainParams object with the following parameters:</span>
+</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a><span class="sd">    - x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size]</span>
+</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span class="sd">    - speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]</span>
+</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a><span class="sd">    - src_lens: Tensor containing the lengths of source sequences. Shape: [batch_size]</span>
+</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a><span class="sd">    - mels: Tensor containing the mel spectrogram. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
+</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a><span class="sd">    - mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]</span>
+</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a><span class="sd">    - pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
+</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a><span class="sd">    - energies: Tensor containing the energy values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
+</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a><span class="sd">    - langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]</span>
+</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a><span class="sd">    - attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]</span>
+</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a><span class="sd">    - use_ground_truth: Boolean flag indicating if ground truth values should be used or not.</span>
+</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>
+</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a><span class="sd">    All the Tensors are initialized with random values.</span>
+</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>    <span class="k">return</span> <span class="n">ForwardTrainParams</span><span class="p">(</span>
+</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a>        <span class="c1"># x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size]</span>
+</span><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a>        <span class="n">x</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+</span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a>            <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a>            <span class="mi">255</span><span class="p">,</span>
+</span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a>            <span class="p">(</span>
+</span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a>                <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a>                <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+</span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a>            <span class="p">),</span>
+</span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a>        <span class="p">),</span>
+</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a>        <span class="n">pitches_range</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+</span><span id="__span-0-205"><a id="__codelineno-0-205" name="__codelineno-0-205"></a>        <span class="c1"># speakers: Tensor containing the speaker indices. Shape: [speaker_embed_dim, batch_size]</span>
+</span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a>        <span class="n">speakers</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+</span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a>            <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a>            <span class="n">n_speakers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a>            <span class="p">(</span>
+</span><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a>                <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a>                <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+</span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>            <span class="p">),</span>
+</span><span id="__span-0-213"><a id="__codelineno-0-213" name="__codelineno-0-213"></a>        <span class="p">),</span>
+</span><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a>        <span class="c1"># src_lens: Tensor containing the lengths of source sequences. Shape: [speaker_embed_dim]</span>
+</span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a>        <span class="n">src_lens</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+</span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>            <span class="p">[</span>
+</span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a>                <span class="c1"># torch.tensor([self.model_config.speaker_embed_dim]),</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a>                <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+</span><span id="__span-0-219"><a id="__codelineno-0-219" name="__codelineno-0-219"></a>                    <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-220"><a id="__codelineno-0-220" name="__codelineno-0-220"></a>                    <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-221"><a id="__codelineno-0-221" name="__codelineno-0-221"></a>                    <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,),</span>
+</span><span id="__span-0-222"><a id="__codelineno-0-222" name="__codelineno-0-222"></a>                <span class="p">),</span>
+</span><span id="__span-0-223"><a id="__codelineno-0-223" name="__codelineno-0-223"></a>            <span class="p">],</span>
+</span><span id="__span-0-224"><a id="__codelineno-0-224" name="__codelineno-0-224"></a>            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-225"><a id="__codelineno-0-225" name="__codelineno-0-225"></a>        <span class="p">),</span>
+</span><span id="__span-0-226"><a id="__codelineno-0-226" name="__codelineno-0-226"></a>        <span class="c1"># mels: Tensor containing the mel spectrogram. Shape: [batch_size, stft.n_mel_channels, encoder.n_hidden]</span>
+</span><span id="__span-0-227"><a id="__codelineno-0-227" name="__codelineno-0-227"></a>        <span class="n">mels</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+</span><span id="__span-0-228"><a id="__codelineno-0-228" name="__codelineno-0-228"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-229"><a id="__codelineno-0-229" name="__codelineno-0-229"></a>            <span class="n">preprocess_config</span><span class="o">.</span><span class="n">stft</span><span class="o">.</span><span class="n">n_mel_channels</span><span class="p">,</span>
+</span><span id="__span-0-230"><a id="__codelineno-0-230" name="__codelineno-0-230"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
+</span><span id="__span-0-231"><a id="__codelineno-0-231" name="__codelineno-0-231"></a>        <span class="p">),</span>
+</span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a>        <span class="c1"># enc_len: Tensor containing the lengths of mel sequences. Shape: [speaker_embed_dim]</span>
+</span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a>        <span class="n">enc_len</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+</span><span id="__span-0-234"><a id="__codelineno-0-234" name="__codelineno-0-234"></a>            <span class="p">[</span>
+</span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a>                <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+</span><span id="__span-0-236"><a id="__codelineno-0-236" name="__codelineno-0-236"></a>                    <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-237"><a id="__codelineno-0-237" name="__codelineno-0-237"></a>                    <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-238"><a id="__codelineno-0-238" name="__codelineno-0-238"></a>                    <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,),</span>
+</span><span id="__span-0-239"><a id="__codelineno-0-239" name="__codelineno-0-239"></a>                <span class="p">),</span>
+</span><span id="__span-0-240"><a id="__codelineno-0-240" name="__codelineno-0-240"></a>                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">]),</span>
+</span><span id="__span-0-241"><a id="__codelineno-0-241" name="__codelineno-0-241"></a>            <span class="p">],</span>
+</span><span id="__span-0-242"><a id="__codelineno-0-242" name="__codelineno-0-242"></a>            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-243"><a id="__codelineno-0-243" name="__codelineno-0-243"></a>        <span class="p">),</span>
+</span><span id="__span-0-244"><a id="__codelineno-0-244" name="__codelineno-0-244"></a>        <span class="c1"># mel_lens: Tensor containing the lengths of mel sequences. Shape: [batch_size]</span>
+</span><span id="__span-0-245"><a id="__codelineno-0-245" name="__codelineno-0-245"></a>        <span class="n">mel_lens</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+</span><span id="__span-0-246"><a id="__codelineno-0-246" name="__codelineno-0-246"></a>            <span class="p">[</span>
+</span><span id="__span-0-247"><a id="__codelineno-0-247" name="__codelineno-0-247"></a>                <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+</span><span id="__span-0-248"><a id="__codelineno-0-248" name="__codelineno-0-248"></a>                    <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-249"><a id="__codelineno-0-249" name="__codelineno-0-249"></a>                    <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-250"><a id="__codelineno-0-250" name="__codelineno-0-250"></a>                    <span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,),</span>
+</span><span id="__span-0-251"><a id="__codelineno-0-251" name="__codelineno-0-251"></a>                <span class="p">),</span>
+</span><span id="__span-0-252"><a id="__codelineno-0-252" name="__codelineno-0-252"></a>                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">]),</span>
+</span><span id="__span-0-253"><a id="__codelineno-0-253" name="__codelineno-0-253"></a>            <span class="p">],</span>
+</span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a>            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>        <span class="p">),</span>
+</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a>        <span class="c1"># pitches: Tensor containing the pitch values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
+</span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>        <span class="n">pitches</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+</span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a>            <span class="c1"># acoustic_pretraining_config.batch_size,</span>
+</span><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a>            <span class="c1"># model_config.speaker_embed_dim,</span>
+</span><span id="__span-0-261"><a id="__codelineno-0-261" name="__codelineno-0-261"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
+</span><span id="__span-0-262"><a id="__codelineno-0-262" name="__codelineno-0-262"></a>        <span class="p">),</span>
+</span><span id="__span-0-263"><a id="__codelineno-0-263" name="__codelineno-0-263"></a>        <span class="c1"># energies: Tensor containing the energy values. Shape: [batch_size, speaker_embed_dim, encoder.n_hidden]</span>
+</span><span id="__span-0-264"><a id="__codelineno-0-264" name="__codelineno-0-264"></a>        <span class="n">energies</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+</span><span id="__span-0-265"><a id="__codelineno-0-265" name="__codelineno-0-265"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-266"><a id="__codelineno-0-266" name="__codelineno-0-266"></a>            <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-267"><a id="__codelineno-0-267" name="__codelineno-0-267"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
+</span><span id="__span-0-268"><a id="__codelineno-0-268" name="__codelineno-0-268"></a>        <span class="p">),</span>
+</span><span id="__span-0-269"><a id="__codelineno-0-269" name="__codelineno-0-269"></a>        <span class="c1"># langs: Tensor containing the language indices. Shape: [speaker_embed_dim, batch_size]</span>
+</span><span id="__span-0-270"><a id="__codelineno-0-270" name="__codelineno-0-270"></a>        <span class="n">langs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span>
+</span><span id="__span-0-271"><a id="__codelineno-0-271" name="__codelineno-0-271"></a>            <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-272"><a id="__codelineno-0-272" name="__codelineno-0-272"></a>            <span class="nb">len</span><span class="p">(</span><span class="n">SUPPORTED_LANGUAGES</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-273"><a id="__codelineno-0-273" name="__codelineno-0-273"></a>            <span class="p">(</span>
+</span><span id="__span-0-274"><a id="__codelineno-0-274" name="__codelineno-0-274"></a>                <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-275"><a id="__codelineno-0-275" name="__codelineno-0-275"></a>                <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+</span><span id="__span-0-276"><a id="__codelineno-0-276" name="__codelineno-0-276"></a>            <span class="p">),</span>
+</span><span id="__span-0-277"><a id="__codelineno-0-277" name="__codelineno-0-277"></a>        <span class="p">),</span>
+</span><span id="__span-0-278"><a id="__codelineno-0-278" name="__codelineno-0-278"></a>        <span class="c1"># attn_priors: Tensor containing the attention priors. Shape: [batch_size, speaker_embed_dim, speaker_embed_dim]</span>
+</span><span id="__span-0-279"><a id="__codelineno-0-279" name="__codelineno-0-279"></a>        <span class="n">attn_priors</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+</span><span id="__span-0-280"><a id="__codelineno-0-280" name="__codelineno-0-280"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-281"><a id="__codelineno-0-281" name="__codelineno-0-281"></a>            <span class="n">model_config</span><span class="o">.</span><span class="n">speaker_embed_dim</span><span class="p">,</span>
+</span><span id="__span-0-282"><a id="__codelineno-0-282" name="__codelineno-0-282"></a>            <span class="n">acoustic_pretraining_config</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+</span><span id="__span-0-283"><a id="__codelineno-0-283" name="__codelineno-0-283"></a>        <span class="p">),</span>
+</span><span id="__span-0-284"><a id="__codelineno-0-284" name="__codelineno-0-284"></a>        <span class="n">use_ground_truth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-285"><a id="__codelineno-0-285" name="__codelineno-0-285"></a>    <span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
           </details>
   </div>
 
@@ -4952,102 +4950,102 @@ Finally, it computes the positional encoding.</p>
 
           <details class="quote">
             <summary>Source code in <code>models/helpers/initializer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">init_mask_input_embeddings_encoding_attn_mask</span><span class="p">(</span>
-    <span class="n">acoustic_model</span><span class="p">:</span> <span class="n">AcousticModel</span><span class="p">,</span>
-    <span class="n">forward_train_params</span><span class="p">:</span> <span class="n">ForwardTrainParams</span><span class="p">,</span>
-    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize masks for padding positions, input sequences, embeddings, positional encoding and attention masks.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        acoustic_model (AcousticModel): Initialized Acoustic Model.</span>
-<span class="sd">        forward_train_params (ForwardTrainParams): Parameters for the forward training process.</span>
-<span class="sd">        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing the following elements:</span>
-<span class="sd">            - src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]</span>
-<span class="sd">            - x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]</span>
-<span class="sd">            - embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]</span>
-<span class="sd">            - encoding: Tensor containing the positional encoding. Shape: [lang_embed_dim, max(forward_train_params.mel_lens), model_config.encoder.n_hidden]</span>
-<span class="sd">            - attn_maskЖ Tensor containing the attention masks. Shape: [1, 1, 1, batch_size]</span>
-
-<span class="sd">    The function starts by generating masks for padding positions in the source and mel sequences.</span>
-<span class="sd">    Then, it uses the acoustic model to get the input sequences and embeddings.</span>
-<span class="sd">    Finally, it computes the positional encoding.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Generate masks for padding positions in the source sequences and mel sequences</span>
-    <span class="c1"># src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]</span>
-    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_mask_from_lengths</span><span class="p">(</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">src_lens</span><span class="p">)</span>
-
-    <span class="c1"># x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]</span>
-    <span class="c1"># embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">embeddings</span> <span class="o">=</span> <span class="n">acoustic_model</span><span class="o">.</span><span class="n">get_embeddings</span><span class="p">(</span>
-        <span class="n">token_idx</span><span class="o">=</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-        <span class="n">speaker_idx</span><span class="o">=</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">speakers</span><span class="p">,</span>
-        <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span>
-        <span class="n">lang_idx</span><span class="o">=</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">langs</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="c1"># encoding: Tensor containing the positional encoding</span>
-    <span class="c1"># Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]</span>
-    <span class="n">encoding</span> <span class="o">=</span> <span class="n">positional_encoding</span><span class="p">(</span>
-        <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
-        <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">mel_lens</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())),</span>
-    <span class="p">)</span>
-
-    <span class="n">attn_mask</span> <span class="o">=</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">src_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-
-    <span class="k">return</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">attn_mask</span>
-</code></pre></div></td></tr></table></div>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-288">288</a></span>
+<span class="normal"><a href="#__codelineno-0-289">289</a></span>
+<span class="normal"><a href="#__codelineno-0-290">290</a></span>
+<span class="normal"><a href="#__codelineno-0-291">291</a></span>
+<span class="normal"><a href="#__codelineno-0-292">292</a></span>
+<span class="normal"><a href="#__codelineno-0-293">293</a></span>
+<span class="normal"><a href="#__codelineno-0-294">294</a></span>
+<span class="normal"><a href="#__codelineno-0-295">295</a></span>
+<span class="normal"><a href="#__codelineno-0-296">296</a></span>
+<span class="normal"><a href="#__codelineno-0-297">297</a></span>
+<span class="normal"><a href="#__codelineno-0-298">298</a></span>
+<span class="normal"><a href="#__codelineno-0-299">299</a></span>
+<span class="normal"><a href="#__codelineno-0-300">300</a></span>
+<span class="normal"><a href="#__codelineno-0-301">301</a></span>
+<span class="normal"><a href="#__codelineno-0-302">302</a></span>
+<span class="normal"><a href="#__codelineno-0-303">303</a></span>
+<span class="normal"><a href="#__codelineno-0-304">304</a></span>
+<span class="normal"><a href="#__codelineno-0-305">305</a></span>
+<span class="normal"><a href="#__codelineno-0-306">306</a></span>
+<span class="normal"><a href="#__codelineno-0-307">307</a></span>
+<span class="normal"><a href="#__codelineno-0-308">308</a></span>
+<span class="normal"><a href="#__codelineno-0-309">309</a></span>
+<span class="normal"><a href="#__codelineno-0-310">310</a></span>
+<span class="normal"><a href="#__codelineno-0-311">311</a></span>
+<span class="normal"><a href="#__codelineno-0-312">312</a></span>
+<span class="normal"><a href="#__codelineno-0-313">313</a></span>
+<span class="normal"><a href="#__codelineno-0-314">314</a></span>
+<span class="normal"><a href="#__codelineno-0-315">315</a></span>
+<span class="normal"><a href="#__codelineno-0-316">316</a></span>
+<span class="normal"><a href="#__codelineno-0-317">317</a></span>
+<span class="normal"><a href="#__codelineno-0-318">318</a></span>
+<span class="normal"><a href="#__codelineno-0-319">319</a></span>
+<span class="normal"><a href="#__codelineno-0-320">320</a></span>
+<span class="normal"><a href="#__codelineno-0-321">321</a></span>
+<span class="normal"><a href="#__codelineno-0-322">322</a></span>
+<span class="normal"><a href="#__codelineno-0-323">323</a></span>
+<span class="normal"><a href="#__codelineno-0-324">324</a></span>
+<span class="normal"><a href="#__codelineno-0-325">325</a></span>
+<span class="normal"><a href="#__codelineno-0-326">326</a></span>
+<span class="normal"><a href="#__codelineno-0-327">327</a></span>
+<span class="normal"><a href="#__codelineno-0-328">328</a></span>
+<span class="normal"><a href="#__codelineno-0-329">329</a></span>
+<span class="normal"><a href="#__codelineno-0-330">330</a></span>
+<span class="normal"><a href="#__codelineno-0-331">331</a></span>
+<span class="normal"><a href="#__codelineno-0-332">332</a></span>
+<span class="normal"><a href="#__codelineno-0-333">333</a></span>
+<span class="normal"><a href="#__codelineno-0-334">334</a></span>
+<span class="normal"><a href="#__codelineno-0-335">335</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-288"><a id="__codelineno-0-288" name="__codelineno-0-288"></a><span class="k">def</span> <span class="nf">init_mask_input_embeddings_encoding_attn_mask</span><span class="p">(</span>
+</span><span id="__span-0-289"><a id="__codelineno-0-289" name="__codelineno-0-289"></a>    <span class="n">acoustic_model</span><span class="p">:</span> <span class="n">AcousticModel</span><span class="p">,</span>
+</span><span id="__span-0-290"><a id="__codelineno-0-290" name="__codelineno-0-290"></a>    <span class="n">forward_train_params</span><span class="p">:</span> <span class="n">ForwardTrainParams</span><span class="p">,</span>
+</span><span id="__span-0-291"><a id="__codelineno-0-291" name="__codelineno-0-291"></a>    <span class="n">model_config</span><span class="p">:</span> <span class="n">AcousticENModelConfig</span><span class="p">,</span>
+</span><span id="__span-0-292"><a id="__codelineno-0-292" name="__codelineno-0-292"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+</span><span id="__span-0-293"><a id="__codelineno-0-293" name="__codelineno-0-293"></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Function to initialize masks for padding positions, input sequences, embeddings, positional encoding and attention masks.</span>
+</span><span id="__span-0-294"><a id="__codelineno-0-294" name="__codelineno-0-294"></a>
+</span><span id="__span-0-295"><a id="__codelineno-0-295" name="__codelineno-0-295"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-296"><a id="__codelineno-0-296" name="__codelineno-0-296"></a><span class="sd">        acoustic_model (AcousticModel): Initialized Acoustic Model.</span>
+</span><span id="__span-0-297"><a id="__codelineno-0-297" name="__codelineno-0-297"></a><span class="sd">        forward_train_params (ForwardTrainParams): Parameters for the forward training process.</span>
+</span><span id="__span-0-298"><a id="__codelineno-0-298" name="__codelineno-0-298"></a><span class="sd">        model_config (AcousticENModelConfig): Configuration object for English Acoustic model.</span>
+</span><span id="__span-0-299"><a id="__codelineno-0-299" name="__codelineno-0-299"></a>
+</span><span id="__span-0-300"><a id="__codelineno-0-300" name="__codelineno-0-300"></a><span class="sd">    Returns:</span>
+</span><span id="__span-0-301"><a id="__codelineno-0-301" name="__codelineno-0-301"></a><span class="sd">        Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]: A tuple containing the following elements:</span>
+</span><span id="__span-0-302"><a id="__codelineno-0-302" name="__codelineno-0-302"></a><span class="sd">            - src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]</span>
+</span><span id="__span-0-303"><a id="__codelineno-0-303" name="__codelineno-0-303"></a><span class="sd">            - x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]</span>
+</span><span id="__span-0-304"><a id="__codelineno-0-304" name="__codelineno-0-304"></a><span class="sd">            - embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]</span>
+</span><span id="__span-0-305"><a id="__codelineno-0-305" name="__codelineno-0-305"></a><span class="sd">            - encoding: Tensor containing the positional encoding. Shape: [lang_embed_dim, max(forward_train_params.mel_lens), model_config.encoder.n_hidden]</span>
+</span><span id="__span-0-306"><a id="__codelineno-0-306" name="__codelineno-0-306"></a><span class="sd">            - attn_maskЖ Tensor containing the attention masks. Shape: [1, 1, 1, batch_size]</span>
+</span><span id="__span-0-307"><a id="__codelineno-0-307" name="__codelineno-0-307"></a>
+</span><span id="__span-0-308"><a id="__codelineno-0-308" name="__codelineno-0-308"></a><span class="sd">    The function starts by generating masks for padding positions in the source and mel sequences.</span>
+</span><span id="__span-0-309"><a id="__codelineno-0-309" name="__codelineno-0-309"></a><span class="sd">    Then, it uses the acoustic model to get the input sequences and embeddings.</span>
+</span><span id="__span-0-310"><a id="__codelineno-0-310" name="__codelineno-0-310"></a><span class="sd">    Finally, it computes the positional encoding.</span>
+</span><span id="__span-0-311"><a id="__codelineno-0-311" name="__codelineno-0-311"></a>
+</span><span id="__span-0-312"><a id="__codelineno-0-312" name="__codelineno-0-312"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-313"><a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span class="c1"># Generate masks for padding positions in the source sequences and mel sequences</span>
+</span><span id="__span-0-314"><a id="__codelineno-0-314" name="__codelineno-0-314"></a>    <span class="c1"># src_mask: Tensor containing the masks for padding positions in the source sequences. Shape: [1, batch_size]</span>
+</span><span id="__span-0-315"><a id="__codelineno-0-315" name="__codelineno-0-315"></a>    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_mask_from_lengths</span><span class="p">(</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">src_lens</span><span class="p">)</span>
+</span><span id="__span-0-316"><a id="__codelineno-0-316" name="__codelineno-0-316"></a>
+</span><span id="__span-0-317"><a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span class="c1"># x: Tensor containing the input sequences. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim]</span>
+</span><span id="__span-0-318"><a id="__codelineno-0-318" name="__codelineno-0-318"></a>    <span class="c1"># embeddings: Tensor containing the embeddings. Shape: [speaker_embed_dim, batch_size, speaker_embed_dim + lang_embed_dim]</span>
+</span><span id="__span-0-319"><a id="__codelineno-0-319" name="__codelineno-0-319"></a>    <span class="n">x</span><span class="p">,</span> <span class="n">embeddings</span> <span class="o">=</span> <span class="n">acoustic_model</span><span class="o">.</span><span class="n">get_embeddings</span><span class="p">(</span>
+</span><span id="__span-0-320"><a id="__codelineno-0-320" name="__codelineno-0-320"></a>        <span class="n">token_idx</span><span class="o">=</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+</span><span id="__span-0-321"><a id="__codelineno-0-321" name="__codelineno-0-321"></a>        <span class="n">speaker_idx</span><span class="o">=</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">speakers</span><span class="p">,</span>
+</span><span id="__span-0-322"><a id="__codelineno-0-322" name="__codelineno-0-322"></a>        <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span>
+</span><span id="__span-0-323"><a id="__codelineno-0-323" name="__codelineno-0-323"></a>        <span class="n">lang_idx</span><span class="o">=</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">langs</span><span class="p">,</span>
+</span><span id="__span-0-324"><a id="__codelineno-0-324" name="__codelineno-0-324"></a>    <span class="p">)</span>
+</span><span id="__span-0-325"><a id="__codelineno-0-325" name="__codelineno-0-325"></a>
+</span><span id="__span-0-326"><a id="__codelineno-0-326" name="__codelineno-0-326"></a>    <span class="c1"># encoding: Tensor containing the positional encoding</span>
+</span><span id="__span-0-327"><a id="__codelineno-0-327" name="__codelineno-0-327"></a>    <span class="c1"># Shape: [lang_embed_dim, max(forward_train_params.mel_lens), encoder.n_hidden]</span>
+</span><span id="__span-0-328"><a id="__codelineno-0-328" name="__codelineno-0-328"></a>    <span class="n">encoding</span> <span class="o">=</span> <span class="n">positional_encoding</span><span class="p">(</span>
+</span><span id="__span-0-329"><a id="__codelineno-0-329" name="__codelineno-0-329"></a>        <span class="n">model_config</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">n_hidden</span><span class="p">,</span>
+</span><span id="__span-0-330"><a id="__codelineno-0-330" name="__codelineno-0-330"></a>        <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">forward_train_params</span><span class="o">.</span><span class="n">mel_lens</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())),</span>
+</span><span id="__span-0-331"><a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span class="p">)</span>
+</span><span id="__span-0-332"><a id="__codelineno-0-332" name="__codelineno-0-332"></a>
+</span><span id="__span-0-333"><a id="__codelineno-0-333" name="__codelineno-0-333"></a>    <span class="n">attn_mask</span> <span class="o">=</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">src_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</span><span id="__span-0-334"><a id="__codelineno-0-334" name="__codelineno-0-334"></a>
+</span><span id="__span-0-335"><a id="__codelineno-0-335" name="__codelineno-0-335"></a>    <span class="k">return</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">attn_mask</span>
+</span></code></pre></div></td></tr></table></div>
           </details>
   </div>
 
@@ -5143,11 +5141,11 @@ Finally, it computes the positional encoding.</p>
     
       <script src="../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../javascripts/katex.js"></script>
+        <script src="../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

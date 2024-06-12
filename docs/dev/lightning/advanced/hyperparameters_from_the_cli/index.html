@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -3993,54 +3991,54 @@
 <h4 id="more-details-are-here-configure-hyperparameters-from-the-cli-advanced"><a href="https://lightning.ai/docs/pytorch/stable/cli/lightning_cli_advanced.html">More details are here: Configure hyperparameters from the CLI (Advanced)</a></h4>
 <h3 id="run-using-a-config-file">Run using a config file</h3>
 <p>To run the CLI using a yaml config, do:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>config.yaml
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>config.yaml
+</span></code></pre></div>
 <p>Individual arguments can be given to override options in the config file:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>config.yaml<span class="w"> </span>--trainer.max_epochs<span class="w"> </span><span class="m">100</span>
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>config.yaml<span class="w"> </span>--trainer.max_epochs<span class="w"> </span><span class="m">100</span>
+</span></code></pre></div>
 <h3 id="automatic-save-of-config">Automatic save of config</h3>
 <p>To ease experiment reporting and reproducibility, by default <code>LightningCLI</code> automatically saves the full YAML configuration in the log directory. After multiple fit runs with different hyperparameters, each one will have in its respective log directory a <code>config.yaml</code> file. These files can be used to trivially reproduce an experiment, e.g.:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>lightning_logs/version_7/config.yaml
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>lightning_logs/version_7/config.yaml
+</span></code></pre></div>
 <p>The automatic saving of the config is done by the special callback <code>SaveConfigCallback</code>. This callback is automatically added to the Trainer. To disable the save of the config, instantiate <code>LightningCLI</code> with <code>save_config_callback=None</code>.</p>
 <p>To change the file name of the saved configs to e.g. <code>name.yaml</code>, do:</p>
-<div class="highlight"><pre><span></span><code><span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">save_config_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;config_filename&quot;</span><span class="p">:</span> <span class="s2">&quot;name.yaml&quot;</span><span class="p">})</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">save_config_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;config_filename&quot;</span><span class="p">:</span> <span class="s2">&quot;name.yaml&quot;</span><span class="p">})</span>
+</span></code></pre></div>
 <p>It is also possible to extend the <code>SaveConfigCallback</code> class, for instance to additionally save the config in a logger. An example of this is:</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LoggerSaveConfigCallback</span><span class="p">(</span><span class="n">SaveConfigCallback</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">pl_module</span><span class="p">:</span> <span class="n">LightningModule</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">Logger</span><span class="p">):</span>
-            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">skip_none</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Required for proper reproducibility</span>
-            <span class="n">trainer</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_hyperparams</span><span class="p">({</span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">})</span>
-
-
-<span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">save_config_callback</span><span class="o">=</span><span class="n">LoggerSaveConfigCallback</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span> <span class="nc">LoggerSaveConfigCallback</span><span class="p">(</span><span class="n">SaveConfigCallback</span><span class="p">):</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">pl_module</span><span class="p">:</span> <span class="n">LightningModule</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">Logger</span><span class="p">):</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">skip_none</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Required for proper reproducibility</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>            <span class="n">trainer</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_hyperparams</span><span class="p">({</span><span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">})</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">save_config_callback</span><span class="o">=</span><span class="n">LoggerSaveConfigCallback</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="prepare-a-config-file-for-the-cli">Prepare a config file for the CLI</h3>
 <p>The <code>--help</code> option of the CLIs can be used to learn which configuration options are available and how to use them. However, writing a config from scratch can be time-consuming and error-prone. To alleviate this, the CLIs have the <code>--print_config</code> argument, which prints to stdout the configuration without running the command.</p>
 <p>For a CLI implemented as <code>LightningCLI(DemoModel, BoringDataModule)</code>, executing:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--print_config
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--print_config
+</span></code></pre></div>
 <p>generates a config with all default values like the following:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">seed_everything</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
-<span class="nt">trainer</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">logger</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
-<span class="nt">model</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">out_dim</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-<span class="w">  </span><span class="nt">learning_rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.02</span>
-<span class="nt">data</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">data_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./</span>
-<span class="nt">ckpt_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
-</code></pre></div>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">seed_everything</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">trainer</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">logger</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nt">model</span><span class="p">:</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">out_dim</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">learning_rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.02</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="nt">data</span><span class="p">:</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="nt">data_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="nt">ckpt_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+</span></code></pre></div>
 <p>A standard procedure to run experiments can be:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Print a configuration to have as reference</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--print_config<span class="w"> </span>&gt;<span class="w"> </span>config.yaml
-<span class="c1"># Modify the config to your liking - you can remove all default arguments</span>
-nano<span class="w"> </span>config.yaml
-<span class="c1"># Fit your model using the edited configuration</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>config.yaml
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Print a configuration to have as reference</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--print_config<span class="w"> </span>&gt;<span class="w"> </span>config.yaml
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># Modify the config to your liking - you can remove all default arguments</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>nano<span class="w"> </span>config.yaml
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Fit your model using the edited configuration</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--config<span class="w"> </span>config.yaml
+</span></code></pre></div>
 <h4 id="customize-arguments"><a href="https://lightning.ai/docs/pytorch/stable/cli/lightning_cli_advanced_2.html">Customize arguments</a></h4>
 
 
@@ -4125,11 +4123,11 @@ python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w">
     
       <script src="../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../javascripts/katex.js"></script>
+        <script src="../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

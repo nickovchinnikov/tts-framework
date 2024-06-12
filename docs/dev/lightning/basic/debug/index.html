@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -3994,59 +3992,59 @@
 <h2 id="how-to-debug-lightning">How to debug Lightning</h2>
 <h4 id="more-details-are-here-debug"><a href="https://lightning.ai/docs/pytorch/stable/debug/debugging_basic.html">More details are here: Debug</a></h4>
 <h3 id="breakpoint-better-use-debugger">Breakpoint (better use debugger)</h3>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">function_to_debug</span><span class="p">():</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="mi">2</span>
-
-    <span class="c1"># set breakpoint</span>
-    <span class="kn">import</span> <span class="nn">pdb</span>
-
-    <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span> <span class="nf">function_to_debug</span><span class="p">():</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">x</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="c1"># set breakpoint</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="kn">import</span> <span class="nn">pdb</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+</span></code></pre></div>
 <h3 id="run-all-your-model-code-once-quickly">Run all your model code once quickly</h3>
 <p>The <code>fast_dev_run</code> argument in the trainer runs 5 batch of training, validation, test and prediction data through your trainer to see if there are any bugs:</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">fast_dev_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">fast_dev_run</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
 <p>To change how many batches to use, change the argument to an integer. Here we run 7 batches of each:</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">fast_dev_run</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">fast_dev_run</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="shorten-the-epoch-length">Shorten the epoch length</h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># use only 10% of training data and 1% of val data</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">limit_train_batches</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">limit_val_batches</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
-
-<span class="c1"># use 10 batches of train and 5 batches of val</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">limit_train_batches</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">limit_val_batches</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># use only 10% of training data and 1% of val data</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">limit_train_batches</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">limit_val_batches</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># use 10 batches of train and 5 batches of val</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">limit_train_batches</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">limit_val_batches</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="sanity-check">Sanity Check</h3>
 <p>Lightning runs 2 steps of validation in the beginning of training. This avoids crashing in the validation loop sometime deep into a lengthy training loop.</p>
-<div class="highlight"><pre><span></span><code><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">num_sanity_val_steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">num_sanity_val_steps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="print-input-output-layer-dimensions">Print input output layer dimensions</h3>
 <p>Whenever the <code>.fit()</code> function gets called, the Trainer will print the weights summary for the LightningModule.</p>
-<div class="highlight"><pre><span></span><code><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span></code></pre></div>
 <p>this generate a table like:</p>
-<div class="highlight"><pre><span></span><code>  | Name  | Type        | Params
-----------------------------------
-0 | net   | Sequential  | 132 K
-1 | net.0 | Linear      | 131 K
-2 | net.1 | BatchNorm1d | 1.0 K
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>  | Name  | Type        | Params
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>----------------------------------
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>0 | net   | Sequential  | 132 K
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>1 | net.0 | Linear      | 131 K
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>2 | net.1 | BatchNorm1d | 1.0 K
+</span></code></pre></div>
 <p>To add the child modules to the summary add a <code>ModelSummary</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.callbacks</span> <span class="kn">import</span> <span class="n">ModelSummary</span>
-
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">ModelSummary</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=-</span><span class="mi">1</span><span class="p">)])</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.callbacks</span> <span class="kn">import</span> <span class="n">ModelSummary</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">ModelSummary</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=-</span><span class="mi">1</span><span class="p">)])</span>
+</span></code></pre></div>
 <p>To print the model summary if <code>.fit()</code> is not called:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.model_summary</span> <span class="kn">import</span> <span class="n">ModelSummary</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">LitModel</span><span class="p">()</span>
-<span class="n">summary</span> <span class="o">=</span> <span class="n">ModelSummary</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.model_summary</span> <span class="kn">import</span> <span class="n">ModelSummary</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">LitModel</span><span class="p">()</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">summary</span> <span class="o">=</span> <span class="n">ModelSummary</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+</span></code></pre></div>
 <p>To turn off the autosummary use:</p>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">enable_model_summary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">enable_model_summary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
 
 
 
@@ -4130,11 +4128,11 @@
     
       <script src="../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../javascripts/katex.js"></script>
+        <script src="../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -4032,13 +4030,13 @@
 <p>This is a tutorial/implementation of multi-headed attention from paper Attention Is All You Need in PyTorch. The implementation is inspired from Annotated Transformer.</p>
 </blockquote>
 <p>This computes scaled multi-headed attention for given <code>query</code>, <code>key</code> and <code>value</code> vectors.</p>
-<p>$$\mathop{Attention}(Q, K, V) = \underset{seq}{\mathop{softmax}}\Bigg(\frac{Q K^\top}{\sqrt{d_k}}\Bigg)V$$</p>
+<div class="arithmatex">\[\mathop{Attention}(Q, K, V) = \underset{seq}{\mathop{softmax}}\Bigg(\frac{Q K^\top}{\sqrt{d_k}}\Bigg)V\]</div>
 <p>In simple terms, it finds keys that matches the query, and gets the values of
     those keys.</p>
 <p>It uses dot-product of query and key as the indicator of how matching they are.
-Before taking the $softmax$ the dot-products are scaled by $\frac{1}{\sqrt{d_k}}$.
+Before taking the <span class="arithmatex">\(softmax\)</span> the dot-products are scaled by <span class="arithmatex">\(\frac{1}{\sqrt{d_k}}\)</span>.
 This is done to avoid large dot-product values causing softmax to
-give very small gradients when $d_k$ is large.</p>
+give very small gradients when <span class="arithmatex">\(d_k\)</span> is large.</p>
 <p>Softmax is calculated along the axis of of the sequence (or time).</p>
 <h3 id="relative-multi-head-attention"><a href="../relative_multi_head_attention/">Relative Multi-Head Attention</a></h3>
 <p>Explanations with code implementation of <a href="https://nn.labml.ai/transformers/xl/relative_mha.html">Relative Multi-Headed Attention</a> by labml.ai Deep Learning Paper Implementations.</p>
@@ -4144,11 +4142,11 @@ used in some modern automated speech recognition systems. It is composed of seve
     
       <script src="../../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../../javascripts/katex.js"></script>
+        <script src="../../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

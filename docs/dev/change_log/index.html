@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -3957,18 +3955,18 @@ I have the code, that wrapped the <code>NeMo</code> and added several more prepr
 <h3 id="2-the-phonemizer-process-g2p-and-tokenization-process-are-changed">2 The phonemizer process (G2P) and tokenization process are changed.</h3>
 <p>I tried to build the same tokenization as Dunky11, but failed, because of the vocab. It's not possible to reproduce the same vocab in the same order, and the vocab that I have missesed some <code>IPA</code> tokens. Change of the vocab order == lost all the progress that was made from the training steps. So, it makes no sense to build my own tokenization that lost benefits during the training process. I decided to use tokenizations from <a href="https://github.com/as-ideas/DeepPhonemizer">DeepPhonemizer</a>, maybe Dunky11 didn't find it, I don't understand why he's built his own solution.</p>
 <p>Maybe because of the <code>[SILENCE]</code> token from here:</p>
-<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">sentence_tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">symbol_ids</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">sentence</span> <span class="o">=</span> <span class="n">text_normalizer</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
-        <span class="n">word</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="k">elif</span> <span class="n">word</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="s2">&quot;!&quot;</span><span class="p">]:</span>
-            <span class="n">symbol_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol2id</span><span class="p">[</span><span class="n">word</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">word</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;;&quot;</span><span class="p">]:</span>
-            <span class="n">symbol_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol2id</span><span class="p">[</span><span class="s2">&quot;SILENCE&quot;</span><span class="p">])</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">sentence_tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">symbol_ids</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">sentence</span> <span class="o">=</span> <span class="n">text_normalizer</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="n">word</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>            <span class="k">continue</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="k">elif</span> <span class="n">word</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="s2">&quot;!&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>            <span class="n">symbol_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol2id</span><span class="p">[</span><span class="n">word</span><span class="p">])</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="k">elif</span> <span class="n">word</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;;&quot;</span><span class="p">]:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>            <span class="n">symbol_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbol2id</span><span class="p">[</span><span class="s2">&quot;SILENCE&quot;</span><span class="p">])</span>
+</span></code></pre></div>
 <h3 id="3-training-framework-instead-of-tricky-training-spaghetti">3 Training framework instead of tricky training spaghetti</h3>
 <p><a href="https://lightning.ai/docs/pytorch/stable/">PyTorch Lightning</a> instead of wild hacks.</p>
 
@@ -4054,11 +4052,11 @@ I have the code, that wrapped the <code>NeMo</code> and added several more prepr
     
       <script src="../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../javascripts/katex.js"></script>
+        <script src="../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

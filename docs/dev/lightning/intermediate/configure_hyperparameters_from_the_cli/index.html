@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -4049,223 +4047,223 @@
 <h4 id="more-details-are-here-configure-hyperparameters-from-the-cli-intermediate"><a href="https://lightning.ai/docs/pytorch/stable/cli/lightning_cli_intermediate_2.html">More details are here: Configure hyperparameters from the CLI (Intermediate)</a></h4>
 <h3 id="lightningcli-requirements">LightningCLI requirements</h3>
 <p>The <code>LightningCLI</code> class is designed to significantly ease the implementation of CLIs. To use this class, an additional Python requirement is necessary than the minimal installation of Lightning provides. To enable, either install all extras:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lightning[pytorch-extra]&quot;</span>
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lightning[pytorch-extra]&quot;</span>
+</span></code></pre></div>
 <p>or if only interested in <code>LightningCLI</code>, just install <code>jsonargparse</code>:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;jsonargparse[signatures]&quot;</span>
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;jsonargparse[signatures]&quot;</span>
+</span></code></pre></div>
 <h3 id="implementing-a-cli">Implementing a CLI</h3>
 <p>Implementing a CLI is as simple as instantiating a <code>LightningCLI</code> object giving as arguments classes for a <code>LightningModule</code> and optionally a <code>LightningDataModule</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># main.py</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
-
-<span class="c1"># simple demo classes for your convenience</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
-
-
-<span class="k">def</span> <span class="nf">cli_main</span><span class="p">():</span>
-    <span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span><span class="p">)</span>
-    <span class="c1"># note: don&#39;t call fit!!</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">cli_main</span><span class="p">()</span>
-    <span class="c1"># note: it is good practice to implement the CLI in a function and call it in the main if block</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># main.py</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># simple demo classes for your convenience</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="k">def</span> <span class="nf">cli_main</span><span class="p">():</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="c1"># note: don&#39;t call fit!!</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">cli_main</span><span class="p">()</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="c1"># note: it is good practice to implement the CLI in a function and call it in the main if block</span>
+</span></code></pre></div>
 <p>Now your model can be managed via the CLI. To see the available commands type:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>--help
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>--help
+</span></code></pre></div>
 <p>which prints out:</p>
-<div class="highlight"><pre><span></span><code>usage:<span class="w"> </span>main.py<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-c<span class="w"> </span>CONFIG<span class="o">]</span><span class="w"> </span><span class="o">[</span>--print_config<span class="w"> </span><span class="o">[={</span>comments,skip_null,skip_default<span class="o">}</span>+<span class="o">]]</span>
-<span class="w">        </span><span class="o">{</span>fit,validate,test,predict<span class="o">}</span><span class="w"> </span>...
-
-Lightning<span class="w"> </span>Trainer<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>tool
-
-optional<span class="w"> </span>arguments:
--h,<span class="w"> </span>--help<span class="w">            </span>Show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
--c<span class="w"> </span>CONFIG,<span class="w"> </span>--config<span class="w"> </span>CONFIG
-<span class="w">                        </span>Path<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>configuration<span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span>json<span class="w"> </span>or<span class="w"> </span>yaml<span class="w"> </span>format.
---print_config<span class="w"> </span><span class="o">[={</span>comments,skip_null,skip_default<span class="o">}</span>+<span class="o">]</span>
-<span class="w">                        </span>Print<span class="w"> </span>configuration<span class="w"> </span>and<span class="w"> </span>exit.
-
-subcommands:
-For<span class="w"> </span>more<span class="w"> </span>details<span class="w"> </span>of<span class="w"> </span>each<span class="w"> </span>subcommand<span class="w"> </span>add<span class="w"> </span>it<span class="w"> </span>as<span class="w"> </span>argument<span class="w"> </span>followed<span class="w"> </span>by<span class="w"> </span>--help.
-
-<span class="o">{</span>fit,validate,test,predict<span class="o">}</span>
-<span class="w">    </span>fit<span class="w">                 </span>Runs<span class="w"> </span>the<span class="w"> </span>full<span class="w"> </span>optimization<span class="w"> </span>routine.
-<span class="w">    </span>validate<span class="w">            </span>Perform<span class="w"> </span>one<span class="w"> </span>evaluation<span class="w"> </span>epoch<span class="w"> </span>over<span class="w"> </span>the<span class="w"> </span>validation<span class="w"> </span>set.
-<span class="w">    </span><span class="nb">test</span><span class="w">                </span>Perform<span class="w"> </span>one<span class="w"> </span>evaluation<span class="w"> </span>epoch<span class="w"> </span>over<span class="w"> </span>the<span class="w"> </span><span class="nb">test</span><span class="w"> </span>set.
-<span class="w">    </span>predict<span class="w">             </span>Run<span class="w"> </span>inference<span class="w"> </span>on<span class="w"> </span>your<span class="w"> </span>data.
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>usage:<span class="w"> </span>main.py<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-c<span class="w"> </span>CONFIG<span class="o">]</span><span class="w"> </span><span class="o">[</span>--print_config<span class="w"> </span><span class="o">[={</span>comments,skip_null,skip_default<span class="o">}</span>+<span class="o">]]</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">        </span><span class="o">{</span>fit,validate,test,predict<span class="o">}</span><span class="w"> </span>...
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Lightning<span class="w"> </span>Trainer<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>tool
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>optional<span class="w"> </span>arguments:
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>-h,<span class="w"> </span>--help<span class="w">            </span>Show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>-c<span class="w"> </span>CONFIG,<span class="w"> </span>--config<span class="w"> </span>CONFIG
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">                        </span>Path<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>configuration<span class="w"> </span>file<span class="w"> </span><span class="k">in</span><span class="w"> </span>json<span class="w"> </span>or<span class="w"> </span>yaml<span class="w"> </span>format.
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>--print_config<span class="w"> </span><span class="o">[={</span>comments,skip_null,skip_default<span class="o">}</span>+<span class="o">]</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">                        </span>Print<span class="w"> </span>configuration<span class="w"> </span>and<span class="w"> </span>exit.
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>subcommands:
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>For<span class="w"> </span>more<span class="w"> </span>details<span class="w"> </span>of<span class="w"> </span>each<span class="w"> </span>subcommand<span class="w"> </span>add<span class="w"> </span>it<span class="w"> </span>as<span class="w"> </span>argument<span class="w"> </span>followed<span class="w"> </span>by<span class="w"> </span>--help.
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="o">{</span>fit,validate,test,predict<span class="o">}</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span>fit<span class="w">                 </span>Runs<span class="w"> </span>the<span class="w"> </span>full<span class="w"> </span>optimization<span class="w"> </span>routine.
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span>validate<span class="w">            </span>Perform<span class="w"> </span>one<span class="w"> </span>evaluation<span class="w"> </span>epoch<span class="w"> </span>over<span class="w"> </span>the<span class="w"> </span>validation<span class="w"> </span>set.
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="nb">test</span><span class="w">                </span>Perform<span class="w"> </span>one<span class="w"> </span>evaluation<span class="w"> </span>epoch<span class="w"> </span>over<span class="w"> </span>the<span class="w"> </span><span class="nb">test</span><span class="w"> </span>set.
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">    </span>predict<span class="w">             </span>Run<span class="w"> </span>inference<span class="w"> </span>on<span class="w"> </span>your<span class="w"> </span>data.
+</span></code></pre></div>
 <p>The message tells us that we have a few available subcommands:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span><span class="o">[</span>subcommand<span class="o">]</span>
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>python<span class="w"> </span>main.py<span class="w"> </span><span class="o">[</span>subcommand<span class="o">]</span>
+</span></code></pre></div>
 <p>which you can use depending on your use case:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit
-python<span class="w"> </span>main.py<span class="w"> </span>validate
-python<span class="w"> </span>main.py<span class="w"> </span><span class="nb">test</span>
-python<span class="w"> </span>main.py<span class="w"> </span>predict
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>validate
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>python<span class="w"> </span>main.py<span class="w"> </span><span class="nb">test</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>python<span class="w"> </span>main.py<span class="w"> </span>predict
+</span></code></pre></div>
 <h3 id="train-a-model-with-the-cli">Train a model with the CLI</h3>
 <p>To train a model, use the <code>fit</code> subcommand:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit
+</span></code></pre></div>
 <p>View all available options with the <code>--help</code> argument given after the subcommand:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--help
-
-usage:<span class="w"> </span>main.py<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>fit<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-c<span class="w"> </span>CONFIG<span class="o">]</span>
-<span class="w">                            </span><span class="o">[</span>--seed_everything<span class="w"> </span>SEED_EVERYTHING<span class="o">]</span><span class="w"> </span><span class="o">[</span>--trainer<span class="w"> </span>CONFIG<span class="o">]</span>
-<span class="w">                            </span>...
-<span class="w">                            </span><span class="o">[</span>--ckpt_path<span class="w"> </span>CKPT_PATH<span class="o">]</span>
-<span class="w">    </span>--trainer.logger<span class="w"> </span>LOGGER
-
-optional<span class="w"> </span>arguments:
-&lt;class<span class="w"> </span><span class="s1">&#39;__main__.DemoModel&#39;</span>&gt;:
-<span class="w">    </span>--model.out_dim<span class="w"> </span>OUT_DIM
-<span class="w">                            </span><span class="o">(</span>type:<span class="w"> </span>int,<span class="w"> </span>default:<span class="w"> </span><span class="m">10</span><span class="o">)</span>
-<span class="w">    </span>--model.learning_rate<span class="w"> </span>LEARNING_RATE
-<span class="w">                            </span><span class="o">(</span>type:<span class="w"> </span>float,<span class="w"> </span>default:<span class="w"> </span><span class="m">0</span>.02<span class="o">)</span>
-&lt;class<span class="w"> </span><span class="s1">&#39;lightning.pytorch.demos.boring_classes.BoringDataModule&#39;</span>&gt;:
---data<span class="w"> </span>CONFIG<span class="w">         </span>Path<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>configuration<span class="w"> </span>file.
---data.data_dir<span class="w"> </span>DATA_DIR
-<span class="w">                        </span><span class="o">(</span>type:<span class="w"> </span>str,<span class="w"> </span>default:<span class="w"> </span>./<span class="o">)</span>
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--help
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>usage:<span class="w"> </span>main.py<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>fit<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-c<span class="w"> </span>CONFIG<span class="o">]</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">                            </span><span class="o">[</span>--seed_everything<span class="w"> </span>SEED_EVERYTHING<span class="o">]</span><span class="w"> </span><span class="o">[</span>--trainer<span class="w"> </span>CONFIG<span class="o">]</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">                            </span>...
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">                            </span><span class="o">[</span>--ckpt_path<span class="w"> </span>CKPT_PATH<span class="o">]</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span>--trainer.logger<span class="w"> </span>LOGGER
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>optional<span class="w"> </span>arguments:
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>&lt;class<span class="w"> </span><span class="s1">&#39;__main__.DemoModel&#39;</span>&gt;:
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span>--model.out_dim<span class="w"> </span>OUT_DIM
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">                            </span><span class="o">(</span>type:<span class="w"> </span>int,<span class="w"> </span>default:<span class="w"> </span><span class="m">10</span><span class="o">)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">    </span>--model.learning_rate<span class="w"> </span>LEARNING_RATE
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">                            </span><span class="o">(</span>type:<span class="w"> </span>float,<span class="w"> </span>default:<span class="w"> </span><span class="m">0</span>.02<span class="o">)</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>&lt;class<span class="w"> </span><span class="s1">&#39;lightning.pytorch.demos.boring_classes.BoringDataModule&#39;</span>&gt;:
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>--data<span class="w"> </span>CONFIG<span class="w">         </span>Path<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>configuration<span class="w"> </span>file.
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>--data.data_dir<span class="w"> </span>DATA_DIR
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">                        </span><span class="o">(</span>type:<span class="w"> </span>str,<span class="w"> </span>default:<span class="w"> </span>./<span class="o">)</span>
+</span></code></pre></div>
 <p>With the Lightning CLI enabled, you can now change the parameters without touching your code:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># change the learning_rate</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model.learning_rate<span class="w"> </span><span class="m">0</span>.1
-
-<span class="c1"># change the output dimensions also</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model.out_dim<span class="w"> </span><span class="m">10</span><span class="w"> </span>--model.learning_rate<span class="w"> </span><span class="m">0</span>.1
-
-<span class="c1"># change trainer and data arguments too</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model.out_dim<span class="w"> </span><span class="m">2</span><span class="w"> </span>--model.learning_rate<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span>--data.data_dir<span class="w"> </span><span class="s1">&#39;~/&#39;</span><span class="w"> </span>--trainer.logger<span class="w"> </span>False
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># change the learning_rate</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model.learning_rate<span class="w"> </span><span class="m">0</span>.1
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># change the output dimensions also</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model.out_dim<span class="w"> </span><span class="m">10</span><span class="w"> </span>--model.learning_rate<span class="w"> </span><span class="m">0</span>.1
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># change trainer and data arguments too</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model.out_dim<span class="w"> </span><span class="m">2</span><span class="w"> </span>--model.learning_rate<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span>--data.data_dir<span class="w"> </span><span class="s1">&#39;~/&#39;</span><span class="w"> </span>--trainer.logger<span class="w"> </span>False
+</span></code></pre></div>
 <blockquote>
 <p>The options that become available in the CLI are the <code>__init__</code> parameters of the <code>LightningModule</code> and <code>LightningDataModule</code> classes. Thus, to make hyperparameters configurable, just add them to your class’s <code>__init__</code>. It is highly recommended that these parameters are described in the docstring so that the CLI shows them in the help. Also, the parameters should have accurate type hints so that the CLI can fail early and give understandable error messages when incorrect values are given.</p>
 </blockquote>
 <h3 id="why-mix-models-and-datasets">Why mix models and datasets</h3>
 <p>Lightning projects usually begin with one model and one dataset. As the project grows in complexity and you introduce more models and more datasets, it becomes desirable to mix any model with any dataset directly from the command line without changing your code.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Mix and match anything</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="o">=</span>GAN<span class="w"> </span>--data<span class="o">=</span>MNIST
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="o">=</span>Transformer<span class="w"> </span>--data<span class="o">=</span>MNIST
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Mix and match anything</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="o">=</span>GAN<span class="w"> </span>--data<span class="o">=</span>MNIST
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="o">=</span>Transformer<span class="w"> </span>--data<span class="o">=</span>MNIST
+</span></code></pre></div>
 <p><code>LightningCLI</code> makes this very simple. Otherwise, this kind of configuration requires a significant amount of boilerplate that often looks like this:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># choose model</span>
-<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;gan&quot;</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">GAN</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">feat_dim</span><span class="p">)</span>
-<span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;transformer&quot;</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">feat_dim</span><span class="p">)</span>
-<span class="o">...</span>
-
-<span class="c1"># choose datamodule</span>
-<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">:</span>
-    <span class="n">datamodule</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">()</span>
-<span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="s2">&quot;imagenet&quot;</span><span class="p">:</span>
-    <span class="n">datamodule</span> <span class="o">=</span> <span class="n">Imagenet</span><span class="p">()</span>
-<span class="o">...</span>
-
-<span class="c1"># mix them!</span>
-<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># choose model</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;gan&quot;</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">GAN</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">feat_dim</span><span class="p">)</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;transformer&quot;</span><span class="p">:</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">feat_dim</span><span class="p">)</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="o">...</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="c1"># choose datamodule</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">:</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">datamodule</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">()</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="s2">&quot;imagenet&quot;</span><span class="p">:</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="n">datamodule</span> <span class="o">=</span> <span class="n">Imagenet</span><span class="p">()</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="o">...</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="c1"># mix them!</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="p">)</span>
+</span></code></pre></div>
 <p>NOTE: It is highly recommended that you avoid writing this kind of boilerplate and use <code>LightningCLI</code> instead.</p>
 <h3 id="multiple-lightningmodules">Multiple LightningModules</h3>
 <p>To support multiple models, when instantiating <code>LightningCLI</code> omit the <code>model_class</code> parameter:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># main.py</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
-
-
-<span class="k">class</span> <span class="nc">Model1</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using Model1&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_optimizers</span><span class="p">()</span>
-
-
-<span class="k">class</span> <span class="nc">Model2</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using Model2&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_optimizers</span><span class="p">()</span>
-
-
-<span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">datamodule_class</span><span class="o">=</span><span class="n">BoringDataModule</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># main.py</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">class</span> <span class="nc">Model1</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">):</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using Model1&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_optimizers</span><span class="p">()</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="k">class</span> <span class="nc">Model2</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">):</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using Model2&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_optimizers</span><span class="p">()</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">datamodule_class</span><span class="o">=</span><span class="n">BoringDataModule</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Now you can choose between any model from the CLI:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># use Model1</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="w"> </span>Model1
-
-<span class="c1"># use Model2</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="w"> </span>Model2
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># use Model1</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="w"> </span>Model1
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># use Model2</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--model<span class="w"> </span>Model2
+</span></code></pre></div>
 <blockquote>
 <p>Note: Instead of omitting the model_class parameter, you can give a base class and <code>subclass_mode_model=True</code>. This will make the CLI only accept models which are a subclass of the given base class.</p>
 </blockquote>
 <h3 id="multiple-lightningdatamodules">Multiple LightningDataModules</h3>
 <p>To support multiple data modules, when instantiating <code>LightningCLI</code> omit the <code>datamodule_class</code> parameter:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># main.py</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
-
-
-<span class="k">class</span> <span class="nc">FakeDataset1</span><span class="p">(</span><span class="n">BoringDataModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using FakeDataset1&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_train</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">FakeDataset2</span><span class="p">(</span><span class="n">BoringDataModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using FakeDataset2&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_train</span><span class="p">)</span>
-
-
-<span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># main.py</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">import</span> <span class="nn">torch</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="k">class</span> <span class="nc">FakeDataset1</span><span class="p">(</span><span class="n">BoringDataModule</span><span class="p">):</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using FakeDataset1&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_train</span><span class="p">)</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="k">class</span> <span class="nc">FakeDataset2</span><span class="p">(</span><span class="n">BoringDataModule</span><span class="p">):</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using FakeDataset2&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_train</span><span class="p">)</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Now you can choose between any dataset at runtime:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># use Model1</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--data<span class="w"> </span>FakeDataset1
-
-<span class="c1"># use Model2</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--data<span class="w"> </span>FakeDataset2
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># use Model1</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--data<span class="w"> </span>FakeDataset1
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># use Model2</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--data<span class="w"> </span>FakeDataset2
+</span></code></pre></div>
 <blockquote>
 <p>Instead of omitting the <code>datamodule_class</code> parameter, you can give a base class and <code>subclass_mode_data=True</code>. This will make the CLI only accept data modules that are a subclass of the given base class.</p>
 </blockquote>
 <h3 id="multiple-optimizers">Multiple optimizers</h3>
 <p>Standard optimizers from <code>torch.optim</code> work out of the box:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>AdamW
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>AdamW
+</span></code></pre></div>
 <p>If the optimizer you want needs other arguments, add them via the CLI (no need to change your code)!</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>SGD<span class="w"> </span>--optimizer.lr<span class="o">=</span><span class="m">0</span>.01
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>SGD<span class="w"> </span>--optimizer.lr<span class="o">=</span><span class="m">0</span>.01
+</span></code></pre></div>
 <p>Furthermore, any custom subclass of <code>torch.optim.Optimizer</code> can be used as an optimizer:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># main.py</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
-<span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
-
-
-<span class="k">class</span> <span class="nc">LitAdam</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using LitAdam&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">FancyAdam</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using FancyAdam&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
-
-
-<span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># main.py</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">import</span> <span class="nn">torch</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LightningCLI</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="kn">from</span> <span class="nn">lightning.pytorch.demos.boring_classes</span> <span class="kn">import</span> <span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="k">class</span> <span class="nc">LitAdam</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">):</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using LitAdam&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="k">class</span> <span class="nc">FancyAdam</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">):</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚡&quot;</span><span class="p">,</span> <span class="s2">&quot;using FancyAdam&quot;</span><span class="p">,</span> <span class="s2">&quot;⚡&quot;</span><span class="p">)</span>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>
+</span><span id="__span-18-19"><a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a><span class="n">cli</span> <span class="o">=</span> <span class="n">LightningCLI</span><span class="p">(</span><span class="n">DemoModel</span><span class="p">,</span> <span class="n">BoringDataModule</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Now you can choose between any optimizer at runtime:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># use LitAdam</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>LitAdam
-
-<span class="c1"># use FancyAdam</span>
-python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>FancyAdam
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># use LitAdam</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>LitAdam
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># use FancyAdam</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w"> </span>--optimizer<span class="w"> </span>FancyAdam
+</span></code></pre></div>
 <p>Maybe it's an overhead. I'm not sure about this approach.</p>
 <h4 id="more-details-are-here-configure-hyperparameters-from-the-cli-intermediate_1"><a href="https://lightning.ai/docs/pytorch/stable/cli/lightning_cli_intermediate_2.html">More details are here: Configure hyperparameters from the CLI (Intermediate)</a></h4>
 
@@ -4351,11 +4349,11 @@ python<span class="w"> </span>main.py<span class="w"> </span>fit<span class="w">
     
       <script src="../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../javascripts/katex.js"></script>
+        <script src="../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

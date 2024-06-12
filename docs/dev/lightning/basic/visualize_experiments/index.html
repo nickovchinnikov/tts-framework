@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.6">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.4.6">
     
     
       
@@ -44,8 +44,6 @@
     
     
       <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
-    
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -3997,45 +3995,45 @@
 <p>With Lightning, you can visualize virtually anything you can think of: numbers, text, images, audio. Your creativity and imagination are the only limiting factor.</p>
 <h3 id="track-metrics">Track metrics</h3>
 <p>To track a metric, simply use the <code>self.log</code> method available inside the <code>LightningModule</code></p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LitModel</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="o">...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;some_value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span> <span class="nc">LitModel</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="n">value</span> <span class="o">=</span> <span class="o">...</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;some_value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span></code></pre></div>
 <p>To log multiple metrics at once, use <code>self.log_dict</code></p>
-<div class="highlight"><pre><span></span><code><span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">,</span> <span class="s2">&quot;metric_n&quot;</span><span class="p">:</span> <span class="n">metric_n</span><span class="p">}</span>  <span class="c1"># add more items if needed</span>
-<span class="bp">self</span><span class="o">.</span><span class="n">log_dict</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">,</span> <span class="s2">&quot;metric_n&quot;</span><span class="p">:</span> <span class="n">metric_n</span><span class="p">}</span>  <span class="c1"># add more items if needed</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">log_dict</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="view-in-the-commandline">View in the commandline</h3>
 <p>To view metrics in the commandline progress bar, set the <code>prog_bar</code> argument to True.</p>
-<div class="highlight"><pre><span></span><code><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="view-in-the-browser">View in the browser</h3>
 <p>By Default, <code>Lightning</code> uses <code>Tensorboard</code> (if available) and a simple CSV logger otherwise.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># every trainer already has tensorboard enabled by default (if the dependency is available)</span>
-<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># every trainer already has tensorboard enabled by default (if the dependency is available)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">()</span>
+</span></code></pre></div>
 <p>To launch the <code>tensorboard</code> dashboard run the following command on the commandline.</p>
-<div class="highlight"><pre><span></span><code><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">lightning_logs</span><span class="o">/</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">lightning_logs</span><span class="o">/</span>
+</span></code></pre></div>
 <p>If you’re using a notebook environment, launch Tensorboard with this command</p>
-<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">reload_ext</span> <span class="n">tensorboard</span>
-<span class="o">%</span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">lightning_logs</span><span class="o">/</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="o">%</span><span class="n">reload_ext</span> <span class="n">tensorboard</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="o">%</span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">lightning_logs</span><span class="o">/</span>
+</span></code></pre></div>
 <h3 id="accumulate-a-metric">Accumulate a metric</h3>
 <p>When <code>self.log</code> is called inside the <code>training_step</code>, it generates a timeseries showing how the metric behaves over time.</p>
 <p>When you call <code>self.log</code> inside the <code>validation_step</code> and <code>test_step</code>, Lightning automatically accumulates the metric and averages it once it’s gone through the whole split (epoch).</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;average_value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">value</span> <span class="o">=</span> <span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;average_value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span></code></pre></div>
 <p>If you don't want to average you can also choose from <code>{min,max,sum}</code> by passing the <code>reduce_fx</code> argument.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># default function</span>
-<span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">reduce_fx</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># default function</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">reduce_fx</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="configure-the-saving-directory">Configure the saving directory</h3>
-<div class="highlight"><pre><span></span><code><span class="n">Trainer</span><span class="p">(</span><span class="n">default_root_dir</span><span class="o">=</span><span class="s2">&quot;/your/custom/path&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">Trainer</span><span class="p">(</span><span class="n">default_root_dir</span><span class="o">=</span><span class="s2">&quot;/your/custom/path&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 
 
 
@@ -4119,11 +4117,11 @@
     
       <script src="../../../../assets/javascripts/bundle.aecac24b.min.js"></script>
       
-        <script src="../../../../javascripts/katex.js"></script>
+        <script src="../../../../javascripts/mathjax.js"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>
