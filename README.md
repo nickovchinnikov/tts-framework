@@ -8,6 +8,10 @@
   <a href="https://huggingface.co/spaces/peechapp/PeechTTSv22050"  style='padding-left: 0.5rem;'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-orange'></a>
 </p>
 
+## [A comprehensive review of opensource Text-to-Speech (TTS) Models](https://nickovchinnikov.github.io/tts-framework/review/)
+
+Medium series (with memes): [Machine Learning Text-To-Speech: Intro, Little Theory and Math](https://medium.com/@peechapp/text-to-speech-models-part-1-intro-little-theory-and-math-0ffa5d3e0e3f)
+
 ## Demo and weights
 
 **Weights can be found inside the hf space.**
